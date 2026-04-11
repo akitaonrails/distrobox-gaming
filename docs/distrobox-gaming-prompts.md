@@ -274,6 +274,37 @@ Flycast (Dreamcast) — CRITICAL FORMAT NOTE:
 Dolphin (GC/Wii):
   wideScreenHack=True, ShaderCompilationMode=2 (hybrid ubershaders)
   WaitForShadersBeforeStarting=True, DisableCopyFilter=True
+  If an 8BitDo Ultimate 2 is the main pad, replace the default
+  XInput2/keyboard placeholder config with SDL-based bindings:
+    GCPadNew.ini:
+      Device = SDL/0/8BitDo Ultimate 2
+      A/B/X/Y = Button A/Button B/Button X/Button Y
+      Z = Shoulder R
+      Start = Start
+      left stick = Main Stick
+      right stick = C-Stick
+      Trigger L/Trigger R = L/R (+ analog)
+      d-pad = Pad N/S/W/E
+    WiimoteNew.ini default:
+      Device = SDL/0/8BitDo Ultimate 2
+      A = Button A
+      B = Trigger R
+      1/2 = Button X/Button Y
+      -/+ = Back/Start
+      Home = Guide
+      d-pad = Pad N/S/W/E
+      IR = right stick
+      Extension = Nunchuk
+      Nunchuk stick = left stick
+      Nunchuk C/Z = Shoulder L/Trigger L
+      Wii shake = Thumb R
+      Nunchuk shake = Thumb L
+  Also create reusable profiles under:
+    ~/.config/dolphin-emu/Profiles/GCPad/8BitDo Ultimate 2 SDL.ini
+    ~/.config/dolphin-emu/Profiles/Wiimote/8BitDo Ultimate 2 Nunchuk.ini
+    ~/.config/dolphin-emu/Profiles/Wiimote/8BitDo Ultimate 2 Classic.ini
+  Use the Classic profile for Wii games that support Classic Controller and do
+  not need pointer-style input.
 
 PPSSPP: SplineBezierQuality=4, TexHardwareScaling=True
 Eden: resolution_setup=3 (2x=1440p), enable_compute_pipelines=true

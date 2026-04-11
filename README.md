@@ -132,6 +132,8 @@ the run fails early instead of prompting halfway through a long setup.
 - Flycast high-resolution wrapper at `$DG_BOX_HOME/bin/flycast-hires`
 - Flycast Vulkan/upscale/frame-pacing settings
 - PCSX2 `Select+Start` shutdown hotkey
+- Dolphin 8BitDo Ultimate 2 defaults for GameCube plus Wii Remote/Nunchuk
+  and Classic Controller profiles
 - DuckStation Vulkan/PGXP/widescreen defaults
 - shadPS4 wrapper at `$DG_SHADPS4_BIN` that launches the QtLauncher-managed build
 - official shadPS4 QtLauncher wrapper at `$DG_SHADPS4_QTLAUNCHER_BIN`
