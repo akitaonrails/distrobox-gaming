@@ -42,6 +42,7 @@ DG_ROM_ROOT=/mnt/terachad/Emulators/EmuDeck/roms
 DG_ROM_HEAVY_ROOT=/mnt/terachad/Emulators/EmuDeck/roms_heavy
 DG_ROM_RARE_ROOT=/mnt/terachad/Emulators/EmuDeck/roms_rare
 DG_PS4_ROM_ROOT=/mnt/terachad/Emulators/EmuDeck/roms_rare/ps4
+DG_SHADPS4_GAME_DIR=/mnt/terachad/Emulators/EmuDeck/roms_rare/ps4/CUSA00003
 DG_PS4_FIRMWARE_MODULES=/mnt/terachad/Emulators/EmuDeck/roms_rare/ps4-firmware/11.00_sys_modules
 ```
 
@@ -59,6 +60,17 @@ DG_EMUDECK_ROOT=/media/games/EmuDeck ./bin/dg verify
 
 Scripts should never hardcode `/mnt/terachad` directly. Use the `DG_*`
 variables in `lib/paths.sh`.
+
+For PS4, the expected layout is a clean root with extracted title directories,
+not raw `.pkg` files or Windows extraction tools mixed into the same folder. In
+this setup that means:
+
+```text
+$DG_PS4_ROM_ROOT/
+  CUSA00003/
+    eboot.bin
+    ...
+```
 
 ## UID/GID And Permissions
 
@@ -92,6 +104,7 @@ the run fails early instead of prompting halfway through a long setup.
 ./bin/dg check       # host path, permission, command, and UID/GID checks
 ./bin/dg create      # create the distrobox if it does not exist
 ./bin/dg bootstrap   # install pacman and AUR packages
+./bin/dg shadps4     # refresh only shadPS4 links, config, launcher, and ES-DE
 ./bin/dg configure   # apply links, configs, wrappers, desktop files, ES-DE
 ./bin/dg verify      # verify commands and generated files
 ./bin/dg all         # run every phase
@@ -108,6 +121,7 @@ the run fails early instead of prompting halfway through a long setup.
 - DuckStation Vulkan/PGXP/widescreen defaults
 - shadPS4 Driveclub config for `CUSA00003`
 - shadPS4 Driveclub v1.28 patch XML
+- extracted Driveclub directory at `$DG_SHADPS4_GAME_DIR`
 - PS4 11.00 sys_module symlinks for shadPS4
 - Walker desktop entries for Flycast and Driveclub
 
@@ -134,4 +148,3 @@ machine. They should not delete ROMs, BIOS, saves, firmware, or game data.
 
 Generated emulator state, shader caches, saves, logs, firmware modules, and ROMs
 must not be committed.
-

@@ -95,9 +95,9 @@ cat > "$esde_xml" <<EOF
     <system>
         <name>ps4</name>
         <fullname>Sony PlayStation 4</fullname>
-        <path>%ROMPATH%/ps4</path>
-        <extension>.bin .BIN .elf .ELF .self .SELF .pkg .PKG</extension>
-        <command label="shadPS4 Driveclub (Standalone)">shadps4 -g $DG_SHADPS4_TITLE_ID -p $DG_SHADPS4_PATCH_XML -f true</command>
+        <path>%ROMPATH%/ps4/$DG_SHADPS4_TITLE_ID</path>
+        <extension>.bin .BIN</extension>
+        <command label="shadPS4 Driveclub (Standalone)">shadps4 -g %ROM% -p $DG_SHADPS4_PATCH_XML -f true</command>
         <platform>ps4</platform>
         <theme>ps4</theme>
     </system>
@@ -136,4 +136,3 @@ cat > "$esde_xml" <<EOF
 EOF
 
 log "ES-DE configuration completed: $esde_xml"
-

@@ -22,6 +22,14 @@ require_readable_dir "$DG_BIOS_ROOT"
 [ -d "$DG_ROM_HEAVY_ROOT" ] || warn "Heavy ROM root missing: $DG_ROM_HEAVY_ROOT"
 [ -d "$DG_ROM_RARE_ROOT" ] || warn "Rare ROM root missing: $DG_ROM_RARE_ROOT"
 require_writable_dir "$DG_HOST_APPLICATIONS_DIR"
+if [ -d "$DG_PS4_ROM_ROOT" ]; then
+  extras="$(find "$DG_PS4_ROM_ROOT" -mindepth 1 -maxdepth 1 ! -name "$(basename "$DG_SHADPS4_GAME_DIR")" | wc -l | tr -d ' ')"
+  [ "$extras" = "0" ] || warn "PS4 root should contain only $(basename "$DG_SHADPS4_GAME_DIR"); found $extras extra top-level entries in $DG_PS4_ROM_ROOT"
+else
+  warn "PS4 ROM root missing: $DG_PS4_ROM_ROOT"
+fi
+[ -d "$DG_SHADPS4_GAME_DIR" ] || warn "shadPS4 game dir missing: $DG_SHADPS4_GAME_DIR"
+[ -f "$DG_SHADPS4_GAME_BOOT" ] || warn "shadPS4 game boot file missing: $DG_SHADPS4_GAME_BOOT"
 
 if [ -d "$DG_PS4_FIRMWARE_MODULES" ]; then
   [ -r "$DG_PS4_FIRMWARE_MODULES/libSceFont.sprx" ] || warn "PS4 firmware dir exists but libSceFont.sprx is missing"
@@ -42,4 +50,3 @@ else
 fi
 
 log "Host check completed"
-

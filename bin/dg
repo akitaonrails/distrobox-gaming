@@ -13,6 +13,7 @@ Commands:
   check       Verify host paths, permissions, commands, and existing box identity.
   create      Create the gaming distrobox if it does not already exist.
   bootstrap   Install base pacman packages and AUR helpers/packages.
+  shadps4     Refresh shadPS4 links, Driveclub config, desktop launcher, and ES-DE PS4 entry.
   configure   Apply emulator configs, wrappers, ES-DE systems, and desktop entries.
   verify      Verify emulator commands and key runtime configuration.
   all         Run check, create, bootstrap, configure, verify.
@@ -34,6 +35,7 @@ case "$cmd" in
   check) run_script 00-check-host.sh ;;
   create) run_script 01-create-box.sh ;;
   bootstrap) run_script 02-bootstrap-packages.sh ;;
+  shadps4) run_script 09-refresh-shadps4.sh ;;
   configure)
     run_script 04-link-storage.sh
     run_script 05-seed-configs.sh
@@ -54,4 +56,3 @@ case "$cmd" in
   ""|-h|--help|help) usage ;;
   *) usage >&2; exit 2 ;;
 esac
-

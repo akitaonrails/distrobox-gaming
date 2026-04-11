@@ -12,7 +12,7 @@ log "Writing Walker/desktop launchers"
 cat > "$DG_HOST_APPLICATIONS_DIR/gaming-shadps4.desktop" <<EOF
 [Desktop Entry]
 Name=shadPS4 Driveclub (on $DG_BOX_NAME)
-Exec=/usr/bin/distrobox-enter -n $DG_BOX_NAME -- shadps4 -g $DG_SHADPS4_TITLE_ID -p $DG_SHADPS4_PATCH_XML -f true
+Exec=/usr/bin/distrobox-enter -n $DG_BOX_NAME -- shadps4 -g $DG_SHADPS4_GAME_DIR -p $DG_SHADPS4_PATCH_XML -f true
 Terminal=false
 Type=Application
 Icon=shadps4
@@ -43,4 +43,3 @@ if command -v pkill >/dev/null 2>&1; then
 fi
 
 log "Desktop integration completed"
-

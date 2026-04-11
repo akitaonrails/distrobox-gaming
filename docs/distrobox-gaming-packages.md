@@ -190,8 +190,9 @@ Things that differ from a standard Arch install and break common setup guides:
 
 Driveclub-specific shadPS4 notes:
 
-- Local packages identify as `CUSA00003`, with base game and v1.28 patch under
-  `/mnt/terachad/Emulators/EmuDeck/roms_rare/ps4`.
+- Local Driveclub runtime content is now expected as an extracted
+  `CUSA00003/` directory under
+  `/mnt/terachad/Emulators/EmuDeck/roms_rare/ps4`, with `eboot.bin` inside it.
 - shadPS4 runtime config is under
   `/mnt/data/distrobox/gaming/.local/share/shadPS4/`, not `~/.config/shadPS4`.
 - PS4 11.00 firmware modules live in
@@ -201,14 +202,16 @@ Driveclub-specific shadPS4 notes:
 - Game-specific config: `custom_configs/CUSA00003.toml`.
 - Patch file: `patches/Driveclub.xml`, with the official `60 FPS with deltatime`
   v1.28 patch enabled.
-- ES-DE PS4 launcher is Driveclub-specific:
-  `shadps4 -g CUSA00003 -p /mnt/data/distrobox/gaming/.local/share/shadPS4/patches/Driveclub.xml -f true`.
+- ES-DE PS4 launcher is Driveclub-specific and points at the extracted game
+  boot file:
+  `shadps4 -g %ROM% -p /mnt/data/distrobox/gaming/.local/share/shadPS4/patches/Driveclub.xml -f true`.
 - Current upstream/forum guidance for Linux mainline/nightly is: Driveclub needs
   readbacks enabled, readback linear images disabled, v1.28, 1920x1080 window and
   internal size, and the 60fps deltatime patch. Expect shader/cache warm-up and
   occasional crashes; this title is still experimental.
-- Do not point ES-DE at raw `.pkg` files and expect them to run directly. This
-  shadPS4 build launches an installed/dumped game directory or `eboot.bin`.
+- Keep the PS4 root clean. Do not leave raw `.pkg` files or Windows extraction
+  tools mixed beside the extracted game directory. This shadPS4 build launches
+  an installed/dumped game directory or `eboot.bin`.
 | Xbox 360 emulation | `xenia-canary-git` exists on AUR but Linux support is experimental. Many games don't boot. |
 | 3DS AES keys | NOT in EmuDeck or any package. Must come from a real 3DS hardware dump. |
 | Tokyo Night Kvantum theme | Does not exist. Closest Qt match is Catppuccin Mocha (blue accent). Tokyo Night GTK theme exists (`tokyonight-gtk-theme-git`). |
