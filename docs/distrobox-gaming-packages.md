@@ -186,15 +186,17 @@ Things that differ from a standard Arch install and break common setup guides:
 | `libretro-stella`, `libretro-bluemsx`, `libretro-handy`, `libretro-prosystem`, `libretro-o2em`, `libretro-mednafen-{ngp,pcfx,saturn}`, `libretro-virtualjaguar`, `libretro-vecx` | None in extras. Use mednafen standalone for covered systems, or AUR -git builds. |
 | `melonds` standalone | Not in extras. Only AUR git builds. Use `libretro-melonds` (extras, via RetroArch) or `desmume` standalone (extras). |
 | Sega Model 2 emulator | No native Linux emulator at all. Use MAME's partial Model 2 driver, or run the Windows "Sega Model 2 Emulator" via Wine/Lutris. |
-| PS4 emulation | Keep `shadps4-bin` installed as a fallback/icon source, but Driveclub currently launches through the official Linux nightly runtime wrapper at `/mnt/data/distrobox/gaming/bin/shadps4-current`. |
+| PS4 emulation | Keep `shadps4-bin` installed as a fallback/icon source, but Driveclub now launches through `/mnt/data/distrobox/gaming/bin/shadps4-current`, a wrapper that targets the QtLauncher-managed Pre-release build. |
 
 Driveclub-specific shadPS4 notes:
 
 - Local Driveclub runtime content is now expected as an extracted
   `CUSA00003/` directory under
   `/mnt/terachad/Emulators/EmuDeck/roms_rare/ps4`, with `eboot.bin` inside it.
-- shadPS4 runtime config is under
-  `/mnt/data/distrobox/gaming/.local/share/shadPS4/`, not `~/.config/shadPS4`.
+- shadPS4 runtime state is under
+  `/mnt/data/distrobox/gaming/.local/share/shadPS4/`, and the setup mirrors
+  `CUSA00003.toml` into `/mnt/data/distrobox/gaming/.config/shadPS4/custom_configs/`
+  because current Linux builds do not consistently agree on the game-config path.
 - PS4 11.00 firmware modules live in
   `/mnt/terachad/Emulators/EmuDeck/roms_rare/ps4-firmware/11.00_sys_modules`.
   They are symlinked into shadPS4's `sys_modules` directory to avoid duplicating

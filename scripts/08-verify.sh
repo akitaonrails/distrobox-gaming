@@ -42,8 +42,11 @@ done
 
 log "Verifying generated files"
 [ -x "$DG_BOX_HOME/bin/flycast-hires" ] || die "Flycast wrapper missing or not executable"
-[ -x "$DG_SHADPS4_BIN" ] || die "shadPS4 nightly wrapper missing or not executable"
+[ -x "$DG_SHADPS4_BIN" ] || die "shadPS4 wrapper missing or not executable"
+[ -x "$DG_SHADPS4_QTLAUNCHER_BIN" ] || die "shadPS4 QtLauncher wrapper missing or not executable"
+[ -x "$DG_SHADPS4_MANAGED_BIN" ] || die "QtLauncher-managed shadPS4 build missing or not executable"
 [ -f "$DG_BOX_HOME/.local/share/shadPS4/custom_configs/$DG_SHADPS4_TITLE_ID.toml" ] || die "shadPS4 game config missing"
+[ -f "$DG_BOX_HOME/.config/shadPS4/custom_configs/$DG_SHADPS4_TITLE_ID.toml" ] || die "shadPS4 mirrored game config missing"
 [ -f "$DG_SHADPS4_PATCH_XML" ] || die "shadPS4 Driveclub patch XML missing"
 [ -d "$DG_SHADPS4_GAME_DIR" ] || die "shadPS4 game dir missing"
 [ -f "$DG_SHADPS4_GAME_BOOT" ] || die "shadPS4 boot file missing"

@@ -35,7 +35,8 @@ All NAS and storage paths are configurable. Your current paths are the defaults:
 
 ```sh
 DG_BOX_NAME=gaming
-DG_BOX_HOME=/mnt/data/distrobox/gaming
+DG_DATA_ROOT=/mnt/data
+DG_BOX_HOME=$DG_DATA_ROOT/distrobox/gaming
 DG_EMUDECK_ROOT=/mnt/terachad/Emulators/EmuDeck
 DG_BIOS_ROOT=/mnt/terachad/Emulators/EmuDeck/Emulation/bios
 DG_ROM_ROOT=/mnt/terachad/Emulators/EmuDeck/roms
@@ -44,10 +45,12 @@ DG_ROM_RARE_ROOT=/mnt/terachad/Emulators/EmuDeck/roms_rare
 DG_PS4_ROM_ROOT=/mnt/terachad/Emulators/EmuDeck/roms_rare/ps4
 DG_SHADPS4_GAME_DIR=/mnt/terachad/Emulators/EmuDeck/roms_rare/ps4/CUSA00003
 DG_PS4_FIRMWARE_MODULES=/mnt/terachad/Emulators/EmuDeck/roms_rare/ps4-firmware/11.00_sys_modules
-DG_SHADPS4_RUNTIME_ROOT=/mnt/data/distrobox/gaming/tools/shadps4-nightly
-DG_SHADPS4_BIN=/mnt/data/distrobox/gaming/bin/shadps4-current
-DG_SHADPS4_QTLAUNCHER_ROOT=/mnt/data/distrobox/gaming/tools/shadps4-qtlauncher
-DG_SHADPS4_QTLAUNCHER_BIN=/mnt/data/distrobox/gaming/bin/shadps4-qtlauncher-current
+DG_SHADPS4_QTLAUNCHER_ROOT=$DG_BOX_HOME/tools/shadps4-qtlauncher
+DG_SHADPS4_QTLAUNCHER_BIN=$DG_BOX_HOME/bin/shadps4-qtlauncher-current
+DG_SHADPS4_VERSIONS_ROOT=$DG_BOX_HOME/.local/share/shadPS4QtLauncher/versions
+DG_SHADPS4_CHANNEL=Pre-release
+DG_SHADPS4_MANAGED_BIN=$DG_SHADPS4_VERSIONS_ROOT/$DG_SHADPS4_CHANNEL/Shadps4-sdl.AppImage
+DG_SHADPS4_BIN=$DG_BOX_HOME/bin/shadps4-current
 ```
 
 For another machine, copy and edit:
@@ -61,6 +64,9 @@ Runtime overrides also work:
 ```sh
 DG_EMUDECK_ROOT=/media/games/EmuDeck ./bin/dg verify
 ```
+
+To move the whole gaming box off `/mnt/data`, set `DG_DATA_ROOT` in
+`config/distrobox-gaming.env` and let `DG_BOX_ROOT`/`DG_BOX_HOME` follow it.
 
 Scripts should never hardcode `/mnt/terachad` directly. Use the `DG_*`
 variables in `lib/paths.sh`.
@@ -127,7 +133,7 @@ the run fails early instead of prompting halfway through a long setup.
 - Flycast Vulkan/upscale/frame-pacing settings
 - PCSX2 `Select+Start` shutdown hotkey
 - DuckStation Vulkan/PGXP/widescreen defaults
-- official shadPS4 nightly runtime wrapper at `$DG_SHADPS4_BIN`
+- shadPS4 wrapper at `$DG_SHADPS4_BIN` that launches the QtLauncher-managed build
 - official shadPS4 QtLauncher wrapper at `$DG_SHADPS4_QTLAUNCHER_BIN`
 - shadPS4 Driveclub config for `CUSA00003`
 - shadPS4 Driveclub v1.28 patch XML

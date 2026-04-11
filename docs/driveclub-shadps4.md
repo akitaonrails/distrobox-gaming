@@ -28,8 +28,10 @@ v1.28.
 Runtime files:
 
 - `$DG_BOX_HOME/.local/share/shadPS4/custom_configs/CUSA00003.toml`
+- `$DG_BOX_HOME/.config/shadPS4/custom_configs/CUSA00003.toml`
 - `$DG_BOX_HOME/.local/share/shadPS4/patches/Driveclub.xml`
 - `$DG_BOX_HOME/.local/share/shadPS4/sys_modules/`
+- `$DG_BOX_HOME/.local/share/shadPS4QtLauncher/versions/$DG_SHADPS4_CHANNEL/Shadps4-sdl.AppImage`
 
 Known-good shadPS4 guidance collected from the current setup:
 
@@ -55,8 +57,9 @@ The repo owns the custom desktop entries as templates under
 `config/desktop/templates/`. The scripts render concrete `.desktop` files into
 `config/desktop/rendered/` and symlink those into the host applications
 directory so Walker sees the project-managed copies. The GUI entry should use
-`$DG_SHADPS4_QTLAUNCHER_BIN`; the emulator binary itself is CLI-only on current
-nightlies.
+`$DG_SHADPS4_QTLAUNCHER_BIN`; the standalone launcher should use
+`$DG_SHADPS4_BIN`, which resolves to the QtLauncher-managed
+`$DG_SHADPS4_MANAGED_BIN`.
 
 If Driveclub fails because of sysmodule behavior, the official patch XML also
 has a `Run without sysmodules` option upstream. It is not enabled here because

@@ -48,8 +48,10 @@ fi
 
 log "Installing shadPS4 Driveclub config and patch"
 ensure_dir "$DG_BOX_HOME/.local/share/shadPS4/custom_configs"
+ensure_dir "$DG_BOX_HOME/.config/shadPS4/custom_configs"
 ensure_dir "$DG_BOX_HOME/.local/share/shadPS4/patches"
 cp -p "$DG_PROJECT_ROOT/config/emulator-overrides/shadPS4/CUSA00003.toml" "$DG_BOX_HOME/.local/share/shadPS4/custom_configs/$DG_SHADPS4_TITLE_ID.toml"
+cp -p "$DG_PROJECT_ROOT/config/emulator-overrides/shadPS4/CUSA00003.toml" "$DG_BOX_HOME/.config/shadPS4/custom_configs/$DG_SHADPS4_TITLE_ID.toml"
 cp -p "$DG_PROJECT_ROOT/config/emulator-overrides/shadPS4/Driveclub.xml" "$DG_SHADPS4_PATCH_XML"
 
 log "Config seeding completed"

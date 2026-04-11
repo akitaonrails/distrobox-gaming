@@ -9,7 +9,7 @@ log "Preparing shadPS4 runtime directories"
 ensure_dir "$DG_BOX_HOME/.local/share/shadPS4/sys_modules"
 ensure_dir "$DG_BOX_HOME/.local/share/shadPS4/patches"
 ensure_dir "$DG_BOX_HOME/.local/share/shadPS4/custom_configs"
-ensure_dir "$DG_BOX_HOME/.config/shadPS4"
+ensure_dir "$DG_BOX_HOME/.config/shadPS4/custom_configs"
 
 if [ -d "$DG_PS4_FIRMWARE_MODULES" ]; then
   log "Linking PS4 firmware modules from $DG_PS4_FIRMWARE_MODULES"
