@@ -57,26 +57,37 @@ it can remove text and slow boot. Treat it as a fallback after inspecting logs.
 
 ## Local PKG Tools
 
-For future PS4 PKG debugging, keep the locally built `pkg_pfs_tool` here:
+For future PS4 PKG debugging, keep the working `ShadPKG` build here:
 
 ```text
-/mnt/data/distrobox/gaming/tools/pkg_pfs_tool
+/mnt/data/distrobox/gaming/tools/ShadPKG
 ```
 
-The built binary is:
+The working CLI binary is:
 
 ```text
-/mnt/data/distrobox/gaming/tools/pkg_pfs_tool/build/pkg_pfs_tool
+/mnt/data/distrobox/gaming/tools/ShadPKG/build-cli/shadpkg
 ```
 
-Notes from the current attempt:
+What worked:
 
-- the upstream `pkg_pfs_tool` repo needed a small local CMake fix so it uses
-  its bundled `mbedtls 2.24.0` headers instead of Arch's incompatible
-  `mbedtls 3` headers
-- `blz-dc.pkg` and the v1.28 patch identify as `CUSA00003`
-- the tool can be used for `--help` and should stay available for future tests
-- on the current Driveclub retail PKG, `-i` and `-l` failed because the
-  required retail entry decryption keys/passcode are not available locally
-- this means the tool is preserved for future work, but it is not currently a
-  complete extraction path for the retail Driveclub PKGs on this machine
+- `shadpkg sfo-info blz-dc.pkg` correctly reads `CUSA00003`
+- `shadpkg pfs-info blz-dc.pkg` and the v1.28 patch both work
+- `shadpkg extract blz-dc.pkg ...` succeeds
+- `shadpkg extract Driveclub.v1.28.PATCH.REPACK.PS4-GCMR.pkg ...` succeeds
+
+What this proved:
+
+- the base and patch PKGs are readable and extractable on Linux with `ShadPKG`
+- the union of extracted base+patch files has nothing missing compared to the
+  live `CUSA00003` tree
+- the repeated `/app0/audio/fmodstudio/*.bank` open failures in shadPS4 are not
+  explained by missing extracted filesystem files from the PKGs
+- this points more toward shadPS4 runtime handling of Driveclub's packed data
+  layout than a simple bad extraction
+
+Discarded tool:
+
+- `pkg_pfs_tool` was tested first, but it could not decrypt this retail PKG on
+  this machine because the needed retail entry-key/passcode material was not
+  available locally, so it was removed

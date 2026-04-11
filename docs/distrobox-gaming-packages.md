@@ -215,15 +215,22 @@ Driveclub-specific shadPS4 notes:
 
 PS4 PKG tooling notes:
 
-- `pkg_pfs_tool` was built and left under
-  `/mnt/data/distrobox/gaming/tools/pkg_pfs_tool`.
-- A local CMake fix was needed so the build uses the repo's bundled
-  `mbedtls 2.24.0` headers/libs instead of Arch's incompatible `mbedtls 3`
-  headers.
-- The tool works for CLI help and is available for future read-only tests.
-- On the current Driveclub retail PKGs, `pkg_pfs_tool -i` / `-l` failed with
-  missing retail entry-key decryption material, so it cannot currently unpack
-  `blz-dc.pkg` on this machine.
+- Working tool: `ShadPKG`, kept under
+  `/mnt/data/distrobox/gaming/tools/ShadPKG`.
+- Working CLI binary:
+  `/mnt/data/distrobox/gaming/tools/ShadPKG/build-cli/shadpkg`.
+- Local Linux build worked with `BUILD_GUI=OFF` plus a small local
+  `Findcapstone.cmake` helper for Arch.
+- `ShadPKG` successfully handled both:
+  - `blz-dc.pkg`
+  - `Driveclub.v1.28.PATCH.REPACK.PS4-GCMR.pkg`
+- `sfo-info`, `pfs-info`, and full `extract` succeeded on both PKGs.
+- Comparing extracted base+patch contents against the live
+  `/mnt/terachad/Emulators/EmuDeck/roms_rare/ps4/CUSA00003` tree showed no
+  missing files from the package view; the live tree only has extra metadata
+  files and Synology `@eaDir` artifacts.
+- That makes a plain "bad extraction" explanation unlikely for the current
+  Driveclub black-screen hang.
 | Xbox 360 emulation | `xenia-canary-git` exists on AUR but Linux support is experimental. Many games don't boot. |
 | 3DS AES keys | NOT in EmuDeck or any package. Must come from a real 3DS hardware dump. |
 | Tokyo Night Kvantum theme | Does not exist. Closest Qt match is Catppuccin Mocha (blue accent). Tokyo Night GTK theme exists (`tokyonight-gtk-theme-git`). |
