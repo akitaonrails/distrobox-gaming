@@ -36,7 +36,7 @@ require_writable_dir "$DG_HOST_APPLICATIONS_DIR"
 cat > "$DG_HOST_APPLICATIONS_DIR/gaming-shadps4.desktop" <<EOF
 [Desktop Entry]
 Name=shadPS4 Driveclub (on $DG_BOX_NAME)
-Exec=/usr/bin/distrobox-enter -n $DG_BOX_NAME -- shadps4 -g $DG_SHADPS4_GAME_DIR -p $DG_SHADPS4_PATCH_XML -f true
+Exec=/usr/bin/distrobox-enter -n $DG_BOX_NAME -- $DG_SHADPS4_BIN -g $DG_SHADPS4_GAME_DIR -p $DG_SHADPS4_PATCH_XML -f true
 Terminal=false
 Type=Application
 Icon=shadps4
@@ -45,8 +45,21 @@ Categories=Game;Emulator;
 StartupWMClass=shadps4;
 EOF
 
+cat > "$DG_HOST_APPLICATIONS_DIR/gaming-shadps4-driveclub-no-patch.desktop" <<EOF
+[Desktop Entry]
+Name=shadPS4 Driveclub No Patch (on $DG_BOX_NAME)
+Exec=/usr/bin/distrobox-enter -n $DG_BOX_NAME -- $DG_SHADPS4_BIN -g $DG_SHADPS4_GAME_DIR -f true
+Terminal=false
+Type=Application
+Icon=shadps4
+Comment=PlayStation 4 emulator configured for Driveclub without XML patches
+Categories=Game;Emulator;
+StartupWMClass=shadps4;
+EOF
+
 if command -v desktop-file-validate >/dev/null 2>&1; then
   desktop-file-validate "$DG_HOST_APPLICATIONS_DIR/gaming-shadps4.desktop"
+  desktop-file-validate "$DG_HOST_APPLICATIONS_DIR/gaming-shadps4-driveclub-no-patch.desktop"
 fi
 
 if command -v pkill >/dev/null 2>&1; then

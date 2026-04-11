@@ -44,6 +44,8 @@ DG_ROM_RARE_ROOT=/mnt/terachad/Emulators/EmuDeck/roms_rare
 DG_PS4_ROM_ROOT=/mnt/terachad/Emulators/EmuDeck/roms_rare/ps4
 DG_SHADPS4_GAME_DIR=/mnt/terachad/Emulators/EmuDeck/roms_rare/ps4/CUSA00003
 DG_PS4_FIRMWARE_MODULES=/mnt/terachad/Emulators/EmuDeck/roms_rare/ps4-firmware/11.00_sys_modules
+DG_SHADPS4_RUNTIME_ROOT=/mnt/data/distrobox/gaming/tools/shadps4-nightly
+DG_SHADPS4_BIN=/mnt/data/distrobox/gaming/bin/shadps4-current
 ```
 
 For another machine, copy and edit:
@@ -119,11 +121,13 @@ the run fails early instead of prompting halfway through a long setup.
 - Flycast Vulkan/upscale/frame-pacing settings
 - PCSX2 `Select+Start` shutdown hotkey
 - DuckStation Vulkan/PGXP/widescreen defaults
+- official shadPS4 nightly runtime wrapper at `$DG_SHADPS4_BIN`
 - shadPS4 Driveclub config for `CUSA00003`
 - shadPS4 Driveclub v1.28 patch XML
 - extracted Driveclub directory at `$DG_SHADPS4_GAME_DIR`
 - PS4 11.00 sys_module symlinks for shadPS4
 - Walker desktop entries for Flycast and Driveclub
+- no-patch Driveclub launcher for A/B testing
 
 ## Documentation
 

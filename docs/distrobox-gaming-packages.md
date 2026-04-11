@@ -186,7 +186,7 @@ Things that differ from a standard Arch install and break common setup guides:
 | `libretro-stella`, `libretro-bluemsx`, `libretro-handy`, `libretro-prosystem`, `libretro-o2em`, `libretro-mednafen-{ngp,pcfx,saturn}`, `libretro-virtualjaguar`, `libretro-vecx` | None in extras. Use mednafen standalone for covered systems, or AUR -git builds. |
 | `melonds` standalone | Not in extras. Only AUR git builds. Use `libretro-melonds` (extras, via RetroArch) or `desmume` standalone (extras). |
 | Sega Model 2 emulator | No native Linux emulator at all. Use MAME's partial Model 2 driver, or run the Windows "Sega Model 2 Emulator" via Wine/Lutris. |
-| PS4 emulation | `shadps4-bin` exists but is ~30-40% game compat as of v0.15.0 (March 2026). Very experimental. |
+| PS4 emulation | Keep `shadps4-bin` installed as a fallback/icon source, but Driveclub currently launches through the official Linux nightly runtime wrapper at `/mnt/data/distrobox/gaming/bin/shadps4-current`. |
 
 Driveclub-specific shadPS4 notes:
 
@@ -204,7 +204,7 @@ Driveclub-specific shadPS4 notes:
   v1.28 patch enabled.
 - ES-DE PS4 launcher is Driveclub-specific and points at the extracted game
   boot file:
-  `shadps4 -g %ROM% -p /mnt/data/distrobox/gaming/.local/share/shadPS4/patches/Driveclub.xml -f true`.
+  `/mnt/data/distrobox/gaming/bin/shadps4-current -g %ROM% -p /mnt/data/distrobox/gaming/.local/share/shadPS4/patches/Driveclub.xml -f true`.
 - Current upstream/forum guidance for Linux mainline/nightly is: Driveclub needs
   readbacks enabled, readback linear images disabled, v1.28, 1920x1080 window and
   internal size, and the 60fps deltatime patch. Expect shader/cache warm-up and

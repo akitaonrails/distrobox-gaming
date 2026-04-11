@@ -42,6 +42,7 @@ done
 
 log "Verifying generated files"
 [ -x "$DG_BOX_HOME/bin/flycast-hires" ] || die "Flycast wrapper missing or not executable"
+[ -x "$DG_SHADPS4_BIN" ] || die "shadPS4 nightly wrapper missing or not executable"
 [ -f "$DG_BOX_HOME/.local/share/shadPS4/custom_configs/$DG_SHADPS4_TITLE_ID.toml" ] || die "shadPS4 game config missing"
 [ -f "$DG_SHADPS4_PATCH_XML" ] || die "shadPS4 Driveclub patch XML missing"
 [ -d "$DG_SHADPS4_GAME_DIR" ] || die "shadPS4 game dir missing"

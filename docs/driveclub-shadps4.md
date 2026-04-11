@@ -44,11 +44,11 @@ Known-good shadPS4 guidance collected from the current setup:
 The desktop launcher uses the extracted game directory directly:
 
 ```sh
-shadps4 -g "$DG_SHADPS4_GAME_DIR" -p "$DG_BOX_HOME/.local/share/shadPS4/patches/Driveclub.xml" -f true
+$DG_SHADPS4_BIN -g "$DG_SHADPS4_GAME_DIR" -p "$DG_BOX_HOME/.local/share/shadPS4/patches/Driveclub.xml" -f true
 ```
 
 ES-DE should point to `$DG_PS4_ROM_ROOT/$DG_SHADPS4_TITLE_ID/eboot.bin` and run
-`shadps4 -g %ROM% -p ...`, which keeps the library view aligned with the clean
+`$DG_SHADPS4_BIN -g %ROM% -p ...`, which keeps the library view aligned with the clean
 directory layout.
 
 If Driveclub fails because of sysmodule behavior, the official patch XML also
