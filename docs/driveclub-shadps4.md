@@ -54,3 +54,29 @@ directory layout.
 If Driveclub fails because of sysmodule behavior, the official patch XML also
 has a `Run without sysmodules` option upstream. It is not enabled here because
 it can remove text and slow boot. Treat it as a fallback after inspecting logs.
+
+## Local PKG Tools
+
+For future PS4 PKG debugging, keep the locally built `pkg_pfs_tool` here:
+
+```text
+/mnt/data/distrobox/gaming/tools/pkg_pfs_tool
+```
+
+The built binary is:
+
+```text
+/mnt/data/distrobox/gaming/tools/pkg_pfs_tool/build/pkg_pfs_tool
+```
+
+Notes from the current attempt:
+
+- the upstream `pkg_pfs_tool` repo needed a small local CMake fix so it uses
+  its bundled `mbedtls 2.24.0` headers instead of Arch's incompatible
+  `mbedtls 3` headers
+- `blz-dc.pkg` and the v1.28 patch identify as `CUSA00003`
+- the tool can be used for `--help` and should stay available for future tests
+- on the current Driveclub retail PKG, `-i` and `-l` failed because the
+  required retail entry decryption keys/passcode are not available locally
+- this means the tool is preserved for future work, but it is not currently a
+  complete extraction path for the retail Driveclub PKGs on this machine

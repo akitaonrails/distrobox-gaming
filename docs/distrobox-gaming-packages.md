@@ -212,6 +212,18 @@ Driveclub-specific shadPS4 notes:
 - Keep the PS4 root clean. Do not leave raw `.pkg` files or Windows extraction
   tools mixed beside the extracted game directory. This shadPS4 build launches
   an installed/dumped game directory or `eboot.bin`.
+
+PS4 PKG tooling notes:
+
+- `pkg_pfs_tool` was built and left under
+  `/mnt/data/distrobox/gaming/tools/pkg_pfs_tool`.
+- A local CMake fix was needed so the build uses the repo's bundled
+  `mbedtls 2.24.0` headers/libs instead of Arch's incompatible `mbedtls 3`
+  headers.
+- The tool works for CLI help and is available for future read-only tests.
+- On the current Driveclub retail PKGs, `pkg_pfs_tool -i` / `-l` failed with
+  missing retail entry-key decryption material, so it cannot currently unpack
+  `blz-dc.pkg` on this machine.
 | Xbox 360 emulation | `xenia-canary-git` exists on AUR but Linux support is experimental. Many games don't boot. |
 | 3DS AES keys | NOT in EmuDeck or any package. Must come from a real 3DS hardware dump. |
 | Tokyo Night Kvantum theme | Does not exist. Closest Qt match is Catppuccin Mocha (blue accent). Tokyo Night GTK theme exists (`tokyonight-gtk-theme-git`). |
