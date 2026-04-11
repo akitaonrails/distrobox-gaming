@@ -1,0 +1,20 @@
+.dg-state/
+config/distrobox-gaming.env
+*.bak
+*.bak.*
+*.log
+
+# Never commit emulator runtime state, saves, firmware, ROMs, or caches.
+runtime/
+roms/
+bios/
+firmware/
+sys_modules/
+game_data/
+cache/
+shader/
+saves/
+states/
+screenshots/
+captures/
+

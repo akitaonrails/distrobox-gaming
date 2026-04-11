@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+exec flycast \
+  -config config:pvr.rend=4 \
+  -config config:rend.Resolution=2880 \
+  -config config:rend.EmulateFramebuffer=no \
+  -config config:rend.WideScreen=yes \
+  -config config:rend.DupeFrames=yes \
+  -config config:rend.DelayFrameSwapping=no \
+  -config config:pvr.AutoSkipFrame=0 \
+  "$@"
+

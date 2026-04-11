@@ -1,0 +1,11 @@
+# AUR binary emulator packages. These avoid long local compile times.
+yay-bin
+duckstation-qt-bin
+pcsx2-latest-bin
+rpcs3-bin
+eden-bin
+cemu-bin
+xemu-bin
+vita3k-bin
+shadps4-bin
+

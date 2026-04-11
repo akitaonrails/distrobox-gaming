@@ -1,0 +1,57 @@
+#!/usr/bin/env sh
+set -eu
+
+DG_PROJECT_ROOT="${DG_PROJECT_ROOT:-$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)}"
+. "$DG_PROJECT_ROOT/lib/paths.sh"
+. "$DG_PROJECT_ROOT/lib/common.sh"
+
+usage() {
+  cat <<'USAGE'
+Usage: dg <command>
+
+Commands:
+  check       Verify host paths, permissions, commands, and existing box identity.
+  create      Create the gaming distrobox if it does not already exist.
+  bootstrap   Install base pacman packages and AUR helpers/packages.
+  configure   Apply emulator configs, wrappers, ES-DE systems, and desktop entries.
+  verify      Verify emulator commands and key runtime configuration.
+  all         Run check, create, bootstrap, configure, verify.
+
+Config:
+  Copy config/distrobox-gaming.env.example to config/distrobox-gaming.env
+  and edit paths for your machine. Environment variables override defaults.
+USAGE
+}
+
+run_script() {
+  script="$1"
+  shift || true
+  "$DG_PROJECT_ROOT/scripts/$script" "$@"
+}
+
+cmd="${1:-}"
+case "$cmd" in
+  check) run_script 00-check-host.sh ;;
+  create) run_script 01-create-box.sh ;;
+  bootstrap) run_script 02-bootstrap-packages.sh ;;
+  configure)
+    run_script 04-link-storage.sh
+    run_script 05-seed-configs.sh
+    run_script 06-export-desktop-apps.sh
+    run_script 07-configure-es-de.sh
+    ;;
+  verify) run_script 08-verify.sh ;;
+  all)
+    run_script 00-check-host.sh
+    run_script 01-create-box.sh
+    run_script 02-bootstrap-packages.sh
+    run_script 04-link-storage.sh
+    run_script 05-seed-configs.sh
+    run_script 06-export-desktop-apps.sh
+    run_script 07-configure-es-de.sh
+    run_script 08-verify.sh
+    ;;
+  ""|-h|--help|help) usage ;;
+  *) usage >&2; exit 2 ;;
+esac
+
