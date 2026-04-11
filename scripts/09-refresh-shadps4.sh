@@ -10,6 +10,7 @@ ensure_dir "$DG_BOX_HOME/.local/share/shadPS4/sys_modules"
 ensure_dir "$DG_BOX_HOME/.local/share/shadPS4/patches"
 ensure_dir "$DG_BOX_HOME/.local/share/shadPS4/custom_configs"
 ensure_dir "$DG_BOX_HOME/.config/shadPS4"
+ensure_dir "$DG_BOX_HOME/bin"
 
 if [ -d "$DG_PS4_FIRMWARE_MODULES" ]; then
   log "Linking PS4 firmware modules from $DG_PS4_FIRMWARE_MODULES"
@@ -30,6 +31,9 @@ cp -p "$DG_PROJECT_ROOT/config/emulator-overrides/shadPS4/CUSA00003.toml" \
   "$DG_BOX_HOME/.local/share/shadPS4/custom_configs/$DG_SHADPS4_TITLE_ID.toml"
 cp -p "$DG_PROJECT_ROOT/config/emulator-overrides/shadPS4/Driveclub.xml" \
   "$DG_SHADPS4_PATCH_XML"
+
+log "Linking shadPS4 command alias for QtLauncher"
+ln -sfn "$DG_SHADPS4_BIN" "$DG_SHADPS4_CMD_ALIAS"
 
 log "Refreshing desktop launchers from project templates"
 "$DG_PROJECT_ROOT/scripts/06-export-desktop-apps.sh"

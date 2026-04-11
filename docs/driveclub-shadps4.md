@@ -54,7 +54,9 @@ anchored on `$DG_PS4_ROM_ROOT/$DG_SHADPS4_TITLE_ID` for library discovery.
 The repo owns the custom desktop entries as templates under
 `config/desktop/templates/`. The scripts render concrete `.desktop` files into
 `config/desktop/rendered/` and symlink those into the host applications
-directory so Walker sees the project-managed copies.
+directory so Walker sees the project-managed copies. The GUI entry should use
+`$DG_SHADPS4_QTLAUNCHER_BIN`; the emulator binary itself is CLI-only on current
+nightlies.
 
 If Driveclub fails because of sysmodule behavior, the official patch XML also
 has a `Run without sysmodules` option upstream. It is not enabled here because

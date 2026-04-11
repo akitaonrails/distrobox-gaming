@@ -1,9 +1,9 @@
 [Desktop Entry]
 Name=shadPS4 GUI (on @DG_BOX_NAME@)
-Exec=/usr/bin/distrobox-enter -n @DG_BOX_NAME@ -- @DG_SHADPS4_BIN@
+Exec=/usr/bin/distrobox-enter -n @DG_BOX_NAME@ -- @DG_SHADPS4_QTLAUNCHER_BIN@
 Terminal=false
 Type=Application
 Icon=shadps4
 Comment=PlayStation 4 emulator GUI
 Categories=Game;Emulator;
-StartupWMClass=shadps4;
+StartupWMClass=shadPS4QtLauncher;
