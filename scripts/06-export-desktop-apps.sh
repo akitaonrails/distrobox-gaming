@@ -6,48 +6,28 @@ DG_PROJECT_ROOT="${DG_PROJECT_ROOT:-$(CDPATH= cd -- "$(dirname -- "$0")/.." && p
 . "$DG_PROJECT_ROOT/lib/common.sh"
 
 require_writable_dir "$DG_HOST_APPLICATIONS_DIR"
+ensure_dir "$DG_DESKTOP_RENDER_DIR"
 
-log "Writing Walker/desktop launchers"
+log "Rendering Walker/desktop launchers into $DG_DESKTOP_RENDER_DIR"
 
-cat > "$DG_HOST_APPLICATIONS_DIR/gaming-shadps4.desktop" <<EOF
-[Desktop Entry]
-Name=shadPS4 Driveclub (on $DG_BOX_NAME)
-Exec=/usr/bin/distrobox-enter -n $DG_BOX_NAME -- $DG_SHADPS4_BIN -g $DG_SHADPS4_GAME_DIR -p $DG_SHADPS4_PATCH_XML -f true
-Terminal=false
-Type=Application
-Icon=shadps4
-Comment=PlayStation 4 emulator configured for Driveclub
-Categories=Game;Emulator;
-StartupWMClass=shadps4;
-EOF
-
-cat > "$DG_HOST_APPLICATIONS_DIR/gaming-flycast.desktop" <<EOF
-[Desktop Entry]
-Name=Flycast Hi-Res (on $DG_BOX_NAME)
-Exec=/usr/bin/distrobox-enter -n $DG_BOX_NAME -- $DG_BOX_HOME/bin/flycast-hires %f
-Terminal=false
-Type=Application
-Icon=flycast
-Comment=Dreamcast and Naomi emulator
-Categories=Game;Emulator;
-StartupWMClass=flycast;
-EOF
-
-cat > "$DG_HOST_APPLICATIONS_DIR/gaming-shadps4-driveclub-no-patch.desktop" <<EOF
-[Desktop Entry]
-Name=shadPS4 Driveclub No Patch (on $DG_BOX_NAME)
-Exec=/usr/bin/distrobox-enter -n $DG_BOX_NAME -- $DG_SHADPS4_BIN -g $DG_SHADPS4_GAME_DIR -f true
-Terminal=false
-Type=Application
-Icon=shadps4
-Comment=PlayStation 4 emulator configured for Driveclub without XML patches
-Categories=Game;Emulator;
-StartupWMClass=shadps4;
-EOF
+for desktop in \
+  gaming-shadps4.desktop \
+  gaming-shadps4-driveclub-no-patch.desktop \
+  gaming-shadps4-gui.desktop \
+  gaming-flycast.desktop
+do
+  render_template \
+    "$DG_DESKTOP_TEMPLATE_DIR/$desktop.in" \
+    "$DG_DESKTOP_RENDER_DIR/$desktop"
+  install_desktop_symlink \
+    "$DG_DESKTOP_RENDER_DIR/$desktop" \
+    "$DG_HOST_APPLICATIONS_DIR/$desktop"
+done
 
 if command -v desktop-file-validate >/dev/null 2>&1; then
   desktop-file-validate "$DG_HOST_APPLICATIONS_DIR/gaming-shadps4.desktop"
   desktop-file-validate "$DG_HOST_APPLICATIONS_DIR/gaming-shadps4-driveclub-no-patch.desktop"
+  desktop-file-validate "$DG_HOST_APPLICATIONS_DIR/gaming-shadps4-gui.desktop"
   desktop-file-validate "$DG_HOST_APPLICATIONS_DIR/gaming-flycast.desktop"
 fi
 

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Flycast Hi-Res (on @DG_BOX_NAME@)
+Exec=/usr/bin/distrobox-enter -n @DG_BOX_NAME@ -- @DG_BOX_HOME@/bin/flycast-hires %f
+Terminal=false
+Type=Application
+Icon=flycast
+Comment=Dreamcast and Naomi emulator
+Categories=Game;Emulator;
+StartupWMClass=flycast;

@@ -63,6 +63,10 @@ DG_EMUDECK_ROOT=/media/games/EmuDeck ./bin/dg verify
 Scripts should never hardcode `/mnt/terachad` directly. Use the `DG_*`
 variables in `lib/paths.sh`.
 
+Desktop launchers owned by this project live under `config/desktop/templates/`.
+The scripts render machine-specific copies into `config/desktop/rendered/` and
+symlink those into `$DG_HOST_APPLICATIONS_DIR`.
+
 For PS4, the expected layout is a clean root with extracted title directories,
 not raw `.pkg` files or Windows extraction tools mixed into the same folder. In
 this setup that means:
@@ -126,7 +130,7 @@ the run fails early instead of prompting halfway through a long setup.
 - shadPS4 Driveclub v1.28 patch XML
 - extracted Driveclub directory at `$DG_SHADPS4_GAME_DIR`
 - PS4 11.00 sys_module symlinks for shadPS4
-- Walker desktop entries for Flycast and Driveclub
+- repo-managed Walker desktop entries symlinked from `config/desktop/rendered/`
 - no-patch Driveclub launcher for A/B testing
 
 ## Documentation

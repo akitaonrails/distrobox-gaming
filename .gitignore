@@ -3,6 +3,7 @@ config/distrobox-gaming.env
 *.bak
 *.bak.*
 *.log
+config/desktop/rendered/
 
 # Never commit emulator runtime state, saves, firmware, ROMs, or caches.
 runtime/
@@ -17,4 +18,3 @@ saves/
 states/
 screenshots/
 captures/
-

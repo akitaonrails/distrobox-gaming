@@ -97,7 +97,7 @@ cat > "$esde_xml" <<EOF
         <fullname>Sony PlayStation 4</fullname>
         <path>%ROMPATH%/ps4/$DG_SHADPS4_TITLE_ID</path>
         <extension>.bin .BIN</extension>
-        <command label="shadPS4 Driveclub (Standalone)">$DG_SHADPS4_BIN -g %ROM% -p $DG_SHADPS4_PATCH_XML -f true</command>
+        <command label="shadPS4 Driveclub (Standalone)">$DG_SHADPS4_BIN -g $DG_SHADPS4_GAME_ARG -p $DG_SHADPS4_PATCH_XML -f true</command>
         <platform>ps4</platform>
         <theme>ps4</theme>
     </system>

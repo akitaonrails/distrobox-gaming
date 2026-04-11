@@ -44,12 +44,17 @@ Known-good shadPS4 guidance collected from the current setup:
 The desktop launcher uses the extracted game directory directly:
 
 ```sh
-$DG_SHADPS4_BIN -g "$DG_SHADPS4_GAME_DIR" -p "$DG_BOX_HOME/.local/share/shadPS4/patches/Driveclub.xml" -f true
+$DG_SHADPS4_BIN -g "$DG_SHADPS4_GAME_ARG" -p "$DG_BOX_HOME/.local/share/shadPS4/patches/Driveclub.xml" -f true
 ```
 
 ES-DE should point to `$DG_PS4_ROM_ROOT/$DG_SHADPS4_TITLE_ID/eboot.bin` and run
-`$DG_SHADPS4_BIN -g %ROM% -p ...`, which keeps the library view aligned with the clean
-directory layout.
+`$DG_SHADPS4_BIN -g $DG_SHADPS4_GAME_ARG -p ...`, while the system path stays
+anchored on `$DG_PS4_ROM_ROOT/$DG_SHADPS4_TITLE_ID` for library discovery.
+
+The repo owns the custom desktop entries as templates under
+`config/desktop/templates/`. The scripts render concrete `.desktop` files into
+`config/desktop/rendered/` and symlink those into the host applications
+directory so Walker sees the project-managed copies.
 
 If Driveclub fails because of sysmodule behavior, the official patch XML also
 has a `Run without sysmodules` option upstream. It is not enabled here because

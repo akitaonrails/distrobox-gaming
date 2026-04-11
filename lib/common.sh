@@ -52,6 +52,27 @@ write_test() {
   rm -f "$tmp"
 }
 
+render_template() {
+  template="$1"
+  output="$2"
+
+  ensure_dir "$(dirname "$output")"
+  sed \
+    -e "s|@DG_BOX_NAME@|$DG_BOX_NAME|g" \
+    -e "s|@DG_BOX_HOME@|$DG_BOX_HOME|g" \
+    -e "s|@DG_SHADPS4_BIN@|$DG_SHADPS4_BIN|g" \
+    -e "s|@DG_SHADPS4_GAME_ARG@|$DG_SHADPS4_GAME_ARG|g" \
+    -e "s|@DG_SHADPS4_PATCH_XML@|$DG_SHADPS4_PATCH_XML|g" \
+    "$template" > "$output"
+}
+
+install_desktop_symlink() {
+  source_file="$1"
+  target_file="$2"
+  ensure_dir "$(dirname "$target_file")"
+  ln -sfn "$source_file" "$target_file"
+}
+
 sudo_begin() {
   sudo -v || die "sudo authentication failed"
   (
