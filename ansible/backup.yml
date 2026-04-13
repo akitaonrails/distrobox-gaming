@@ -4,13 +4,25 @@
   connection: local
   gather_facts: true
   vars:
-    backup_timestamp: "{{ ansible_date_time.iso8601_basic_short }}"
+    backup_timestamp: "{{ ansible_facts.date_time.iso8601_basic_short }}"
   tasks:
     - name: Create backup directory
       ansible.builtin.file:
         path: "{{ dg_backup_dir }}"
         state: directory
         mode: "0755"
+
+    - name: Detect container runtime
+      ansible.builtin.command: "which {{ item }}"
+      loop: [podman, docker]
+      register: _runtime_check
+      changed_when: false
+      failed_when: false
+
+    - name: Set container runtime
+      ansible.builtin.set_fact:
+        _container_runtime: >-
+          {{ 'podman' if _runtime_check.results[0].rc == 0 else 'docker' }}
 
     - name: Stop distrobox container
       ansible.builtin.command: "distrobox stop -Y {{ dg_box_name }}"
@@ -19,31 +31,42 @@
 
     - name: Commit container image to backup tag
       ansible.builtin.command: >-
-        podman container commit {{ dg_box_name }}
+        {{ _container_runtime }} container commit {{ dg_box_name }}
         distrobox-gaming-backup:{{ backup_timestamp }}
       register: _commit
 
     - name: Save container image to tarball
       ansible.builtin.command: >-
-        podman save distrobox-gaming-backup:{{ backup_timestamp }}
+        {{ _container_runtime }} save distrobox-gaming-backup:{{ backup_timestamp }}
         -o {{ dg_backup_dir }}/{{ dg_box_name }}-image-{{ backup_timestamp }}.tar
       when: _commit.rc == 0
 
-    - name: Archive box home config state
-      community.general.archive:
-        path:
-          - "{{ dg_box_home }}/.config"
-          - "{{ dg_box_home }}/.local/share"
-          - "{{ dg_box_home }}/bin"
-          - "{{ dg_box_home }}/tools"
-          - "{{ dg_box_home }}/ES-DE"
-        dest: "{{ dg_backup_dir }}/{{ dg_box_name }}-home-{{ backup_timestamp }}.tar.gz"
-        format: gz
-        exclusion_patterns:
-          - "*/cache/*"
-          - "*/shader/*"
-          - "*/screenshots/*"
-          - "*/captures/*"
+    - name: Archive box config state
+      ansible.builtin.shell: |
+        tar czf "{{ dg_backup_dir }}/{{ dg_box_name }}-home-{{ backup_timestamp }}.tar.gz" \
+          -C "{{ dg_box_home }}" \
+          --exclude='*/cache/*' \
+          --exclude='*/shader*' \
+          --exclude='*/screenshots/*' \
+          --exclude='*/captures/*' \
+          --exclude='*/logs/*' \
+          --exclude='*/saves/*' \
+          --exclude='*/states/*' \
+          .config/dolphin-emu \
+          .config/duckstation \
+          .config/PCSX2 \
+          .config/flycast \
+          .config/xemu \
+          .config/shadPS4 \
+          .local/share/shadPS4 \
+          .local/share/shadPS4QtLauncher \
+          .local/share/xemu \
+          bin \
+          tools \
+          ES-DE \
+          2>/dev/null || true
+      args:
+        creates: "{{ dg_backup_dir }}/{{ dg_box_name }}-home-{{ backup_timestamp }}.tar.gz"
 
     - name: Record backup metadata
       ansible.builtin.copy:

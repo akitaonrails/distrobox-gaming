@@ -7,35 +7,47 @@
       Accept: application/vnd.github.v3+json
   register: _qt_releases
 
+- name: Filter non-draft QtLauncher releases
+  ansible.builtin.set_fact:
+    _qt_candidates: "{{ _qt_releases.json | rejectattr('draft') | list }}"
+
 - name: Select matching QtLauncher release
   ansible.builtin.set_fact:
     _qt_release: >-
-      {{
-        (_qt_releases.json
-          | rejectattr('draft')
-          | selectattr('tag_name', 'search', dg_shadps4_qtlauncher_release)
-          | list
-          | first
-        ) if (_qt_releases.json
-          | rejectattr('draft')
-          | selectattr('tag_name', 'search', dg_shadps4_qtlauncher_release)
-          | list | length > 0)
-        else (_qt_releases.json | rejectattr('draft') | list | first)
-      }}
+      {{ (_qt_candidates | selectattr('tag_name', 'search', dg_shadps4_qtlauncher_release) | list | first)
+         if (dg_shadps4_qtlauncher_release | length > 0 and
+             _qt_candidates | selectattr('tag_name', 'search', dg_shadps4_qtlauncher_release) | list | length > 0)
+         else (_qt_candidates | first) }}
 
-- name: Extract QtLauncher asset info
+- name: Set QtLauncher tag and suffix
   ansible.builtin.set_fact:
     _qt_tag: "{{ _qt_release.tag_name }}"
     _qt_release_suffix: >-
       {{ _qt_release.tag_name.split('shadPS4QtLauncher-')[1]
          if 'shadPS4QtLauncher-' in _qt_release.tag_name
          else _qt_release.tag_name }}
-    _qt_asset: >-
-      {{
-        (_qt_release.assets | selectattr('name', 'equalto', dg_shadps4_qtlauncher_asset_name) | list | first)
-        if (_qt_release.assets | selectattr('name', 'equalto', dg_shadps4_qtlauncher_asset_name) | list | length > 0)
-        else (_qt_release.assets | selectattr('name', 'match', '.*\\.AppImage$') | list | first)
-      }}
+
+- name: Find Linux asset by exact name
+  ansible.builtin.set_fact:
+    _qt_asset_candidates: "{{ _qt_release.assets | selectattr('name', 'equalto', dg_shadps4_qtlauncher_asset_name) | list }}"
+
+- name: Fall back to Linux zip/AppImage asset
+  ansible.builtin.set_fact:
+    _qt_asset_candidates: "{{ _qt_release.assets | selectattr('name', 'match', '(?i).*linux.*') | list }}"
+  when: _qt_asset_candidates | length == 0
+
+- name: Fall back to any downloadable asset
+  ansible.builtin.set_fact:
+    _qt_asset_candidates: "{{ _qt_release.assets | list }}"
+  when: _qt_asset_candidates | length == 0
+
+- name: Select first matching asset
+  ansible.builtin.set_fact:
+    _qt_asset: "{{ _qt_asset_candidates | first }}"
+
+- name: Display selected QtLauncher release
+  ansible.builtin.debug:
+    msg: "QtLauncher {{ _qt_tag | trim }}: {{ _qt_asset.name }}"
 
 - name: Create QtLauncher directories
   ansible.builtin.file:
@@ -57,30 +69,20 @@
   ansible.builtin.set_fact:
     _qt_release_root: "{{ dg_shadps4_qtlauncher_root }}/releases/{{ _qt_release_suffix | trim }}"
 
-- name: Handle zip asset extraction
+- name: Extract QtLauncher zip
+  ansible.builtin.unarchive:
+    src: "{{ dg_shadps4_qtlauncher_root }}/downloads/{{ _qt_tag | trim }}-{{ _qt_asset.name }}"
+    dest: "{{ _qt_release_root }}"
+    remote_src: true
   when: _qt_asset.name.endswith('.zip')
-  block:
-    - name: Check if AppImage already extracted from zip
-      ansible.builtin.stat:
-        path: "{{ _qt_release_root }}/shadPS4QtLauncher-qt.AppImage"
-      register: _qt_zip_extracted
 
-    - name: Extract QtLauncher zip
-      ansible.builtin.unarchive:
-        src: "{{ dg_shadps4_qtlauncher_root }}/downloads/{{ _qt_tag | trim }}-{{ _qt_asset.name }}"
-        dest: "{{ _qt_release_root }}"
-        remote_src: true
-      when: not _qt_zip_extracted.stat.exists
-
-- name: Handle AppImage asset copy
+- name: Copy AppImage to release directory
+  ansible.builtin.copy:
+    src: "{{ dg_shadps4_qtlauncher_root }}/downloads/{{ _qt_tag | trim }}-{{ _qt_asset.name }}"
+    dest: "{{ _qt_release_root }}/{{ _qt_asset.name }}"
+    remote_src: true
+    mode: "0755"
   when: not _qt_asset.name.endswith('.zip')
-  block:
-    - name: Copy AppImage to release directory
-      ansible.builtin.copy:
-        src: "{{ dg_shadps4_qtlauncher_root }}/downloads/{{ _qt_tag | trim }}-{{ _qt_asset.name }}"
-        dest: "{{ _qt_release_root }}/{{ _qt_asset.name }}"
-        remote_src: true
-        mode: "0755"
 
 - name: Check if AppImage is already extracted
   ansible.builtin.stat:
@@ -90,7 +92,7 @@
 - name: Find QtLauncher AppImage in release directory
   ansible.builtin.find:
     paths: "{{ _qt_release_root }}"
-    patterns: "shadPS4QtLauncher-qt.AppImage,*.AppImage"
+    patterns: "*.AppImage"
     recurse: true
     depth: 2
   register: _qt_appimage_files

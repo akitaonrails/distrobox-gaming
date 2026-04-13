@@ -27,6 +27,18 @@
           Backup files not found for timestamp {{ backup_timestamp }} in {{ dg_backup_dir }}.
           Available backups: ls {{ dg_backup_dir }}/*.meta
 
+    - name: Detect container runtime
+      ansible.builtin.command: "which {{ item }}"
+      loop: [podman, docker]
+      register: _runtime_check
+      changed_when: false
+      failed_when: false
+
+    - name: Set container runtime
+      ansible.builtin.set_fact:
+        _container_runtime: >-
+          {{ 'podman' if _runtime_check.results[0].rc == 0 else 'docker' }}
+
     - name: Stop existing box
       ansible.builtin.command: "distrobox stop -Y {{ dg_box_name }}"
       failed_when: false
@@ -39,7 +51,7 @@
 
     - name: Load backup image
       ansible.builtin.command: >-
-        podman load -i {{ dg_backup_dir }}/{{ dg_box_name }}-image-{{ backup_timestamp }}.tar
+        {{ _container_runtime }} load -i {{ dg_backup_dir }}/{{ dg_box_name }}-image-{{ backup_timestamp }}.tar
 
     - name: Restore home directory from archive
       ansible.builtin.unarchive:

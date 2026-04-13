@@ -11,15 +11,21 @@
     state: directory
     mode: "0755"
 
+- name: Build distrobox create command
+  ansible.builtin.set_fact:
+    _distrobox_volumes: >-
+      --volume {{ dg_emudeck_root }}:{{ dg_emudeck_root }}:rw
+      --volume {{ dg_host_applications_dir }}:{{ dg_host_applications_dir }}:rw
+      {{ '--volume ' + dg_box_root + ':' + dg_box_root + ':rw'
+         if dg_box_root != dg_box_home else '' }}
+
 - name: Create distrobox
   ansible.builtin.command: >-
     distrobox create
     --name {{ dg_box_name }}
     --image {{ dg_image }}
     --home {{ dg_box_home }}
-    --volume {{ dg_emudeck_root }}:{{ dg_emudeck_root }}:rw
-    --volume {{ dg_box_root }}:{{ dg_box_root }}:rw
-    --volume {{ dg_host_applications_dir }}:{{ dg_host_applications_dir }}:rw
+    {{ _distrobox_volumes }}
   when: _box_exists.rc != 0
 
 - name: Verify box UID matches host

@@ -49,4 +49,4 @@ dg_project_root: "{{ playbook_dir | dirname }}"
 dg_in_box: "distrobox-enter -n {{ dg_box_name }} --"
 
 # Backup location for backup/restore playbooks.
-dg_backup_dir: "{{ dg_data_root }}/distrobox-backups"
+dg_backup_dir: "{{ dg_box_home }}/backups"

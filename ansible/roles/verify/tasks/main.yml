@@ -172,7 +172,14 @@
 
     - name: Check wine available in box
       ansible.builtin.shell: "{{ dg_in_box }} sh -lc 'command -v wine'"
+      register: _wine_check
       changed_when: false
+      failed_when: false
+
+    - name: Warn if wine missing in box
+      ansible.builtin.debug:
+        msg: "WARNING: wine not found in box — run install-xenia.yml to install"
+      when: _wine_check.rc != 0
 
 # Root-owned file check
 
