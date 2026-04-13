@@ -40,6 +40,8 @@ dg_pacman_packages:
   - zlib-ng-compat
   - dolphin-emu
   - ppsspp
+  - zsh
+  - starship
 
 dg_aur_packages:
   - duckstation-qt-bin

@@ -1,0 +1,27 @@
+---
+- name: Ensure zsh config directory exists
+  ansible.builtin.file:
+    path: "{{ dg_box_home }}/.config"
+    state: directory
+    mode: "0755"
+
+- name: Deploy minimal zshrc
+  ansible.builtin.template:
+    src: zshrc.j2
+    dest: "{{ dg_box_home }}/.zshrc"
+    backup: true
+    mode: "0644"
+
+- name: Deploy starship config
+  ansible.builtin.template:
+    src: starship.toml.j2
+    dest: "{{ dg_box_home }}/.config/starship.toml"
+    backup: true
+    mode: "0644"
+
+- name: Set zsh as default shell inside box
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sudo chsh -s /usr/bin/zsh $(whoami)
+  register: _chsh
+  changed_when: "'changed' in _chsh.stdout or _chsh.rc == 0"
+  failed_when: false

@@ -7,6 +7,7 @@
 #   ansible-playbook playbooks/reset-configs.yml --tags esde    # reset only ES-DE
 #   ansible-playbook playbooks/reset-configs.yml --tags configs # reset only emulator INIs
 #   ansible-playbook playbooks/reset-configs.yml --tags desktop # reset only desktop entries
+#   ansible-playbook reset-configs.yml --tags shell   # reset only zshrc/starship
 
 - name: Reset emulator configs to defaults
   hosts: localhost
@@ -17,4 +18,5 @@
     - { role: seed_configs,    tags: [configs] }
     - { role: desktop_apps,    tags: [desktop] }
     - { role: configure_esde,  tags: [esde] }
+    - { role: shell_config,    tags: [shell] }
     - { role: verify,          tags: [verify] }

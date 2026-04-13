@@ -12,4 +12,5 @@
     - { role: seed_configs,        tags: [configure, configs, reset_configs] }
     - { role: desktop_apps,        tags: [configure, desktop, reset_configs] }
     - { role: configure_esde,      tags: [configure, esde, reset_configs] }
+    - { role: shell_config,        tags: [configure, shell, reset_configs] }
     - { role: verify,              tags: [verify] }

@@ -1,0 +1,16 @@
+# Gaming box starship prompt — managed by Ansible.
+
+format = """$hostname$directory$character"""
+
+[hostname]
+ssh_only = false
+format = "[{{ dg_box_name }}]($style) "
+style = "bold green"
+
+[directory]
+truncation_length = 3
+style = "bold cyan"
+
+[character]
+success_symbol = "[>](bold green)"
+error_symbol = "[>](bold red)"

@@ -1,0 +1,26 @@
+# Gaming box shell — managed by Ansible.
+# Run: ansible-playbook reset-configs.yml --tags shell to restore.
+
+# History
+HISTFILE=~/.zsh_history
+HISTSIZE=5000
+SAVEHIST=5000
+setopt appendhistory sharehistory hist_ignore_dups hist_ignore_space
+
+# Completion
+autoload -Uz compinit && compinit
+zstyle ':completion:*' menu select
+
+# Key bindings (emacs mode)
+bindkey -e
+
+# Aliases
+alias ls='ls --color=auto'
+alias ll='ls -lah'
+alias grep='grep --color=auto'
+
+# Starship prompt
+if command -v starship &>/dev/null; then
+  export STARSHIP_LOG=error
+  eval "$(starship init zsh)"
+fi
