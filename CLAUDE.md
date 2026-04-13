@@ -4,81 +4,81 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Repo Does
 
-Reproducible setup scripts for an Arch-based distrobox named `gaming`. The box hosts ES-DE, standalone emulators (shadPS4, Dolphin, PCSX2, DuckStation, Flycast, xemu, RPCS3, PPSSPP), Walker desktop entries, and an optional Wine-managed Xenia Manager for Xbox 360. The current machine already has a working box — these scripts exist for future rebuilds and to document the known-good configuration.
+Ansible playbooks for reproducibly creating and configuring an Arch-based distrobox named `gaming`. The box hosts ES-DE, standalone emulators (shadPS4, Dolphin, PCSX2, DuckStation, Flycast, xemu, RPCS3, PPSSPP), Walker desktop entries, and an optional Wine-managed Xenia Manager for Xbox 360.
 
 ## Commands
 
-All operations go through the `./bin/dg` wrapper:
-
-```sh
-./bin/dg check       # validate host paths, permissions, UID/GID
-./bin/dg create      # create the distrobox
-./bin/dg bootstrap   # install pacman + AUR packages
-./bin/dg shadps4     # install/update shadPS4 QtLauncher + managed build, refresh PS4 config
-./bin/dg xenia       # install/update Wine-managed Xenia Manager (optional)
-./bin/dg configure   # apply configs, wrappers, desktop entries, ES-DE
-./bin/dg verify      # regression check: commands, generated files, symlinks
-./bin/dg all         # run all phases in order
-```
-
-There is no unit test suite. `./bin/dg verify` is the validation step. After any functional change, run the affected phase then verify:
-
-```sh
-./bin/dg configure && ./bin/dg verify
-```
-
-For desktop entry changes, also inspect `config/desktop/rendered/`.
-
-## Architecture
-
-- **`bin/dg`** — CLI entrypoint; dispatches to numbered scripts in `scripts/`.
-- **`scripts/NN-action.sh`** — Each phase is a standalone script. Numbering defines execution order. `bin/dg all` runs them sequentially.
-- **`lib/paths.sh`** — All `DG_*` environment variables with defaults. Sources `config/distrobox-gaming.env` if it exists. Every path the scripts touch is defined here.
-- **`lib/common.sh`** — Shared helpers: logging (`log`/`warn`/`die`), `in_box` (distrobox exec), `render_template`, `replace_or_add_ini_key`, `sudo_begin`/`box_sudo_begin` (keepalive wrappers), `ensure_multilib`.
-- **`config/`** — Static inputs: `package-lists/` (pacman.txt, aur.txt, xenia-pacman.txt), `desktop/templates/` (`.desktop.in` files with `@DG_*@` placeholders), `emulator-overrides/` (per-emulator configs and profiles), `wrappers/` (e.g. flycast-hires), `ES-DE/`, and `distrobox-gaming.env.example`.
-- **`config/desktop/templates/` → `config/desktop/rendered/`** — `render_template` in `lib/common.sh` does sed substitution of `@DG_*@` placeholders. Rendered files are gitignored; templates are committed.
-
-## Ansible Setup
-
-The `ansible/` directory contains an Ansible conversion of the shell scripts. It is the preferred way to manage the gaming distrobox going forward.
+All operations run from the `ansible/` directory:
 
 ```sh
 cd ansible
 ansible-playbook site.yml              # full setup from scratch
-ansible-playbook reset-configs.yml      # reset emulator configs only
+ansible-playbook reset-configs.yml      # reset emulator configs without rebuilding
 ansible-playbook backup.yml             # backup before destructive testing
 ansible-playbook restore.yml            # restore from backup
 ansible-playbook refresh-shadps4.yml    # update shadPS4 builds
-ansible-playbook install-xenia.yml      # install/update Xenia Manager
+ansible-playbook install-xenia.yml      # install/update Xenia Manager (optional)
 ```
 
-Tags allow running subsets: `--tags esde`, `--tags configs`, `--tags desktop`, `--tags bootstrap`.
+Tags allow running subsets:
 
-### Ansible Architecture
+```sh
+ansible-playbook site.yml --tags check       # host validation only
+ansible-playbook site.yml --tags bootstrap   # packages only
+ansible-playbook site.yml --tags configure   # configs, desktop entries, ES-DE
+ansible-playbook site.yml --tags verify      # post-setup assertions
+ansible-playbook reset-configs.yml --tags esde     # reset only ES-DE
+ansible-playbook reset-configs.yml --tags configs   # reset only emulator INIs
+ansible-playbook reset-configs.yml --tags desktop   # reset only desktop entries
+```
 
-- **`group_vars/all/`** — All `dg_*` variables split by concern: `main.yml` (paths, identity), `packages.yml`, `emulators.yml`, `shadps4.yml`, `xenia.yml`, `esde.yml`.
-- **Roles** map 1:1 to the original shell script phases: `check_host`, `create_box`, `bootstrap_packages`, `link_storage`, `seed_configs`, `desktop_apps`, `configure_esde`, `verify`, `refresh_shadps4`, `install_xenia`.
-- Tasks run on `localhost` targeting the bind-mounted box home. In-container commands use `shell: "{{ dg_in_box }} ..."`.
-- Override defaults by creating `host_vars/localhost.yml` (see `.example`).
-- `reset-configs.yml` re-applies `seed_configs`, `desktop_apps`, `configure_esde` without rebuilding the box.
+There is no unit test suite. The `verify` role is the validation step — run it after any change.
+
+## Architecture
+
+### Ansible (primary)
+
+- **`ansible/site.yml`** — Full setup playbook. Roles execute in order: `check_host` → `create_box` → `bootstrap_packages` → `refresh_shadps4` → `link_storage` → `seed_configs` → `desktop_apps` → `configure_esde` → `verify`.
+- **`ansible/reset-configs.yml`** — Re-applies config roles without rebuilding the box or reinstalling packages. For when you screw up emulator settings and want to restore defaults.
+- **`ansible/group_vars/all/`** — All `dg_*` variables split by concern: `main.yml` (paths, box identity, UID/GID), `packages.yml` (pacman + AUR lists), `emulators.yml` (INI settings as structured data), `shadps4.yml`, `xenia.yml`, `esde.yml` (system definitions as YAML list).
+- **`ansible/roles/`** — One role per phase. Each is idempotent. Key roles:
+  - `seed_configs` — Subtask files per emulator (`dolphin.yml`, `pcsx2.yml`, etc.). Uses `community.general.ini_file` for INI manipulation, `ansible.builtin.template` for xemu TOML.
+  - `desktop_apps` — Jinja2 `.desktop.j2` templates rendered to `config/desktop/rendered/`, symlinked to `~/.local/share/applications/`.
+  - `configure_esde` — `es_systems.xml.j2` loops over `dg_esde_systems` list. Adding systems is a YAML data change.
+  - `refresh_shadps4` — Fetches releases via `ansible.builtin.uri` against GitHub API, downloads/extracts AppImages, deploys wrapper scripts.
+- Tasks run on `localhost` targeting the bind-mounted box home at `dg_box_home`. Commands that must execute inside the container use `shell: "{{ dg_in_box }} ..."`.
+- Override defaults by creating `ansible/host_vars/localhost.yml` (see `.example`).
 - UID 1026 is the default for NAS access — set `dg_host_uid`/`dg_host_gid` to override.
+
+### Legacy shell scripts (retained for reference)
+
+The `bin/dg`, `scripts/`, `lib/`, and `config/` directories contain the original POSIX shell implementation. The Ansible playbooks are the primary interface; the shell scripts are kept as reference.
 
 ## Coding Conventions
 
+### Ansible roles
+
+- Variables use `dg_*` lowercase names in `group_vars/all/`.
+- Roles use `ansible.builtin.*` fully qualified module names.
+- File operations use `backup: true` so user state is preserved.
+- Per-emulator config is split into subtask files under `seed_configs/tasks/`.
+- Static config files live in role `files/` directories; templates in `templates/`.
+
+### Legacy shell scripts
+
 - POSIX `sh`, not Bash. Every script starts `#!/usr/bin/env sh` + `set -eu`.
-- All exported config uses `DG_*` uppercase names (defined in `lib/paths.sh`). Local variables use descriptive lowercase names.
-- Scripts never hardcode mount paths like `/mnt/terachad` directly — use the `DG_*` variables from `lib/paths.sh`.
-- Script filenames are numbered `NN-action.sh` to preserve execution order.
-- Existing `# shellcheck disable=...` comments are intentional; keep them narrowly scoped.
-- Shared logic goes in `lib/common.sh` or `lib/paths.sh`. Use the existing helpers (`log`, `die`, `in_box`, `ensure_dir`, `render_template`, etc.) rather than reinventing.
+- All exported config uses `DG_*` uppercase names (defined in `lib/paths.sh`).
+- Scripts never hardcode mount paths — use `DG_*` variables.
 
 ## Path Configuration
 
-For a new machine: `cp config/distrobox-gaming.env.example config/distrobox-gaming.env` and edit. Runtime overrides also work: `DG_EMUDECK_ROOT=/other/path ./bin/dg verify`.
+For Ansible: create `ansible/host_vars/localhost.yml` and override any `dg_*` variable. Or pass `-e dg_emudeck_root=/other/path` on the command line.
+
+For legacy shell scripts: `cp config/distrobox-gaming.env.example config/distrobox-gaming.env` and edit.
 
 ## Safety
 
-Scripts only detect, link, and configure existing files. They must not delete ROMs, BIOS, saves, firmware, or game data. Never commit generated state, shader caches, saves, logs, firmware, or ROMs — the `.gitignore` already excludes these.
+Playbooks and scripts only detect, link, and configure existing files. They must not delete ROMs, BIOS, saves, firmware, or game data. Never commit generated state, shader caches, saves, logs, firmware, or ROMs.
 
 ## Commit and PR Style
 

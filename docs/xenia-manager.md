@@ -1,9 +1,15 @@
 # Xenia Manager in the Gaming Box
 
 This repo treats Xbox 360 support as an optional Wine-managed toolchain.
-Use `./bin/dg xenia` to prepare a dedicated prefix and install Xenia Manager.
 
-What the script does:
+## Installation
+
+```sh
+cd ansible
+ansible-playbook install-xenia.yml
+```
+
+What the playbook does:
 
 - enables `[multilib]` inside the distrobox if needed
 - installs `wine` and `winetricks`
@@ -15,12 +21,13 @@ What the script does:
 - extracts it into `$DG_XENIA_MANAGER_RELEASES_DIR`
 - points `$DG_XENIA_MANAGER_CURRENT` at the active release
 - writes the stable launcher wrapper to `$DG_XENIA_MANAGER_BIN`
+- renders the desktop entry and symlinks it to the host
 
 The manager and the Canary builds it downloads stay in the same prefix. That
 is the cleanest maintenance model on Linux because Xenia Manager expects a
 Windows-style environment and already owns Canary download/update logic.
 
-After `./bin/dg xenia` finishes:
+## Post-install setup
 
 1. Launch `Xenia Manager (on gaming)` from the host menu.
 2. Go to `Manage`.

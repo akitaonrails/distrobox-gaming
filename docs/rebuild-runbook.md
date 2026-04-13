@@ -2,57 +2,81 @@
 
 Use this when recreating the gaming distrobox from scratch.
 
-1. Configure paths:
+## Using Ansible (recommended)
+
+1. Install prerequisites:
 
    ```sh
-   cp config/distrobox-gaming.env.example config/distrobox-gaming.env
-   $EDITOR config/distrobox-gaming.env
+   pip install ansible-core
+   ansible-galaxy collection install community.general
    ```
 
-2. Check host paths and permissions:
+2. Configure paths for your machine (optional — defaults match the current NAS layout):
 
    ```sh
-   ./bin/dg check
+   cd ansible
+   cp host_vars/localhost.yml.example host_vars/localhost.yml
+   $EDITOR host_vars/localhost.yml
    ```
 
-3. Create the distrobox:
+3. Backup existing box (if rebuilding an existing setup):
 
    ```sh
-   ./bin/dg create
+   ansible-playbook backup.yml
    ```
 
-4. Install packages:
+4. Full setup from scratch:
 
    ```sh
-   ./bin/dg bootstrap
+   ansible-playbook site.yml
    ```
 
-5. Install or update shadPS4 QtLauncher and the managed build:
+5. Optional: install Xenia Manager:
 
    ```sh
-   ./bin/dg shadps4
+   ansible-playbook install-xenia.yml
    ```
 
-6. Apply configuration:
+6. If something goes wrong, restore from backup:
 
    ```sh
-   ./bin/dg configure
+   ansible-playbook restore.yml
    ```
 
-7. Optional: install Xenia Manager into its Wine prefix:
+### Running individual phases
 
-   ```sh
-   ./bin/dg xenia
-   ```
+```sh
+ansible-playbook site.yml --tags check       # validate host paths and UID/GID
+ansible-playbook site.yml --tags create      # create the distrobox
+ansible-playbook site.yml --tags bootstrap   # install packages
+ansible-playbook site.yml --tags shadps4     # install/update shadPS4
+ansible-playbook site.yml --tags configure   # apply configs, desktop entries, ES-DE
+ansible-playbook site.yml --tags verify      # post-setup assertions
+```
 
-8. Verify:
+### Resetting configs without rebuilding
 
-   ```sh
-   ./bin/dg verify
-   ```
+```sh
+ansible-playbook reset-configs.yml                 # reset all configs
+ansible-playbook reset-configs.yml --tags esde     # reset only ES-DE
+ansible-playbook reset-configs.yml --tags configs   # reset only emulator INIs
+```
 
-The scripts are intended to be idempotent. Re-run individual phases after
-changing config paths or templates.
+All playbooks are idempotent — re-run any phase safely.
+
+## Using legacy shell scripts
+
+The `bin/dg` wrapper and `scripts/` directory contain the original shell
+implementation. These are retained as reference but the Ansible playbooks
+are the primary interface.
+
+```sh
+cp config/distrobox-gaming.env.example config/distrobox-gaming.env
+$EDITOR config/distrobox-gaming.env
+./bin/dg all
+```
+
+## Safety
 
 Do not run cleanup commands against ROM, BIOS, save, firmware, or game-data
-directories from these scripts.
+directories from these playbooks or scripts.
