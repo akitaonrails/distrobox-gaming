@@ -10,6 +10,22 @@ ensure_dir "$DG_BOX_HOME/bin"
 cp -p "$DG_PROJECT_ROOT/config/wrappers/flycast-hires" "$DG_BOX_HOME/bin/flycast-hires"
 chmod +x "$DG_BOX_HOME/bin/flycast-hires"
 
+log "Applying Dolphin controller defaults"
+ensure_dir "$DG_DOLPHIN_CONFIG_DIR"
+ensure_dir "$DG_DOLPHIN_CONFIG_DIR/Profiles/GCPad"
+ensure_dir "$DG_DOLPHIN_CONFIG_DIR/Profiles/Wiimote"
+for relative_path in \
+  "GCPadNew.ini" \
+  "WiimoteNew.ini" \
+  "Profiles/GCPad/8BitDo Ultimate 2 SDL.ini" \
+  "Profiles/Wiimote/8BitDo Ultimate 2 Classic.ini" \
+  "Profiles/Wiimote/8BitDo Ultimate 2 Nunchuk.ini"
+do
+  target="$DG_DOLPHIN_CONFIG_DIR/$relative_path"
+  backup_once "$target"
+  cp -p "$DG_PROJECT_ROOT/config/emulator-overrides/dolphin/$relative_path" "$target"
+done
+
 log "Applying PCSX2 controller hotkey"
 pcsx2_ini="$DG_BOX_HOME/.config/PCSX2/inis/PCSX2.ini"
 replace_or_add_ini_key "$pcsx2_ini" "UI" "ConfirmShutdown" "false"
@@ -46,6 +62,13 @@ else
   warn "Flycast config not found yet; wrapper will force the critical runtime settings"
 fi
 
+log "Applying xemu defaults"
+ensure_dir "$DG_XEMU_CONFIG_DIR"
+backup_once "$DG_XEMU_CONFIG"
+render_template \
+  "$DG_PROJECT_ROOT/config/emulator-overrides/xemu/xemu.toml.in" \
+  "$DG_XEMU_CONFIG"
+
 log "Installing shadPS4 Driveclub config and patch"
 ensure_dir "$DG_BOX_HOME/.local/share/shadPS4/custom_configs"
 ensure_dir "$DG_BOX_HOME/.config/shadPS4/custom_configs"
@@ -55,4 +78,3 @@ cp -p "$DG_PROJECT_ROOT/config/emulator-overrides/shadPS4/CUSA00003.toml" "$DG_B
 cp -p "$DG_PROJECT_ROOT/config/emulator-overrides/shadPS4/Driveclub.xml" "$DG_SHADPS4_PATCH_XML"
 
 log "Config seeding completed"
-

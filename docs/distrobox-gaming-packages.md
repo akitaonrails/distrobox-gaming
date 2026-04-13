@@ -1,5 +1,9 @@
 # Package Management Lessons — Distrobox + NVIDIA + Emulators (2026-04)
 
+Historical note: this file is retained as setup background. The current source
+of truth for active rebuilds is `README.md` plus the numbered scripts under
+`scripts/`.
+
 What we learned about package sources, selection priorities, and gotchas
 when building a gaming distrobox container on Arch with an NVIDIA GPU.
 
@@ -233,6 +237,6 @@ PS4 PKG tooling notes:
   files and Synology `@eaDir` artifacts.
 - That makes a plain "bad extraction" explanation unlikely for the current
   Driveclub black-screen hang.
-| Xbox 360 emulation | `xenia-canary-git` exists on AUR but Linux support is experimental. Many games don't boot. |
+| Xbox 360 emulation | Prefer Xenia Manager in its own Wine prefix so the manager and Canary stay in one place. Native/AUR Linux Xenia remains experimental. |
 | 3DS AES keys | NOT in EmuDeck or any package. Must come from a real 3DS hardware dump. |
 | Tokyo Night Kvantum theme | Does not exist. Closest Qt match is Catppuccin Mocha (blue accent). Tokyo Night GTK theme exists (`tokyonight-gtk-theme-git`). |

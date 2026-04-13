@@ -31,7 +31,17 @@ Runtime files:
 - `$DG_BOX_HOME/.config/shadPS4/custom_configs/CUSA00003.toml`
 - `$DG_BOX_HOME/.local/share/shadPS4/patches/Driveclub.xml`
 - `$DG_BOX_HOME/.local/share/shadPS4/sys_modules/`
+- `$DG_SHADPS4_QTLAUNCHER_ROOT/current/AppRun`
 - `$DG_BOX_HOME/.local/share/shadPS4QtLauncher/versions/$DG_SHADPS4_CHANNEL/Shadps4-sdl.AppImage`
+
+`./bin/dg shadps4` now handles the Linux end-user install path:
+
+- downloads the pinned QtLauncher AppImage release
+- extracts it under `$DG_SHADPS4_QTLAUNCHER_ROOT/releases/`
+- points `$DG_SHADPS4_QTLAUNCHER_ROOT/current` at the extracted launcher
+- downloads the current official shadPS4 AppImage for `$DG_SHADPS4_CHANNEL`
+- writes `versions.json` and `cache.version` for QtLauncher
+- refreshes the wrapper scripts, desktop launchers, and ES-DE PS4 entry
 
 Known-good shadPS4 guidance collected from the current setup:
 

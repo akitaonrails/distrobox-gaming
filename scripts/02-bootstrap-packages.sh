@@ -27,6 +27,6 @@ fi
 log "Installing AUR emulator packages"
 aur_packages="$(sed '/^[[:space:]]*#/d; /^[[:space:]]*$/d; /yay-bin/d' "$aur_list")"
 # shellcheck disable=SC2086
-in_box yay -S --needed --noconfirm $aur_packages
+in_box yay -S --needed --noconfirm --answerclean None --answerdiff None $aur_packages
 
 log "Package bootstrap completed"

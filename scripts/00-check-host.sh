@@ -37,6 +37,10 @@ else
   warn "PS4 firmware modules not found: $DG_PS4_FIRMWARE_MODULES"
 fi
 
+[ -f "$DG_XEMU_BOOTROM_SOURCE" ] || warn "xemu MCPX boot ROM missing: $DG_XEMU_BOOTROM_SOURCE"
+[ -f "$DG_XEMU_FLASHROM_SOURCE" ] || warn "xemu flash ROM missing: $DG_XEMU_FLASHROM_SOURCE"
+[ -f "$DG_XEMU_HDD_SOURCE" ] || warn "xemu HDD image missing: $DG_XEMU_HDD_SOURCE"
+
 log "Host UID/GID: $DG_HOST_UID:$DG_HOST_GID ($DG_HOST_USER:$DG_HOST_GROUP)"
 
 if distrobox list 2>/dev/null | awk '{print $3}' | grep -qx "$DG_BOX_NAME"; then

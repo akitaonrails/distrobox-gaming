@@ -64,6 +64,9 @@ render_template() {
     -e "s|@DG_SHADPS4_QTLAUNCHER_BIN@|$DG_SHADPS4_QTLAUNCHER_BIN|g" \
     -e "s|@DG_SHADPS4_GAME_ARG@|$DG_SHADPS4_GAME_ARG|g" \
     -e "s|@DG_SHADPS4_PATCH_XML@|$DG_SHADPS4_PATCH_XML|g" \
+    -e "s|@DG_XEMU_BOOTROM@|$DG_XEMU_BOOTROM|g" \
+    -e "s|@DG_XEMU_FLASHROM@|$DG_XEMU_FLASHROM|g" \
+    -e "s|@DG_XEMU_HDD@|$DG_XEMU_HDD|g" \
     "$template" > "$output"
 }
 
@@ -87,7 +90,8 @@ sudo_begin() {
 }
 
 box_sudo_begin() {
-  in_box sudo -v || die "sudo inside distrobox '$DG_BOX_NAME' is not available"
+  ensure_box_sudo
+  in_box sudo -n true || die "sudo inside distrobox '$DG_BOX_NAME' is not available"
   (
     while true; do
       in_box sudo -n true >/dev/null 2>&1 || exit 0
@@ -148,4 +152,73 @@ replace_or_add_ini_key() {
     }
   ' "$file" > "$file.tmp.$$"
   mv "$file.tmp.$$" "$file"
+}
+
+ensure_multilib() {
+  log "Ensuring multilib is enabled inside $DG_BOX_NAME"
+  in_box sudo sh -eu -c '
+    pacman_conf=/etc/pacman.conf
+    if grep -q "^\[multilib\]$" "$pacman_conf"; then
+      exit 0
+    fi
+
+    tmp="$(mktemp)"
+    awk "
+      BEGIN { pending_options = 0 }
+      /^\[options\]$/ { pending_options = 1; next }
+      {
+        if (pending_options && \$0 !~ /^[[:space:]]*$/) {
+          print \"[options]\"
+          pending_options = 0
+        }
+        print
+      }
+      END {
+        if (pending_options) {
+          print \"[options]\"
+        }
+      }
+    " "$pacman_conf" > "$tmp"
+
+    cat >> "$tmp" <<EOF
+
+[multilib]
+Include = /etc/pacman.d/mirrorlist
+EOF
+    mv "$tmp" "$pacman_conf"
+  '
+}
+
+container_root_exec() {
+  if command -v docker >/dev/null 2>&1; then
+    docker exec -u root "$DG_BOX_NAME" "$@"
+    return 0
+  fi
+
+  if command -v podman >/dev/null 2>&1; then
+    podman exec -u root "$DG_BOX_NAME" "$@"
+    return 0
+  fi
+
+  die "Could not find docker or podman to repair sudo inside $DG_BOX_NAME"
+}
+
+ensure_box_sudo() {
+  if in_box sudo -n true >/dev/null 2>&1; then
+    return 0
+  fi
+
+  log "Repairing sudo policy inside $DG_BOX_NAME"
+  container_root_exec sh -eu -c '
+    install -d -m 0755 /etc/sudoers.d
+    cat > /etc/sudoers.d/zz-distrobox-gaming-nopasswd <<EOF
+%wheel ALL=(ALL:ALL) NOPASSWD: ALL
+EOF
+    chmod 0440 /etc/sudoers.d/zz-distrobox-gaming-nopasswd
+    if [ -d /etc/sudoers.d ]; then
+      find /etc/sudoers.d -maxdepth 1 -type f -exec chmod 0440 {} +
+    fi
+  '
+
+  in_box sudo -n true >/dev/null 2>&1 || die "sudo inside distrobox '$DG_BOX_NAME' is not available"
 }

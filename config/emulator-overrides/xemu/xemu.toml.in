@@ -1,0 +1,69 @@
+# xemu config - repo-managed defaults
+# Local BIOS/HDD files are linked into the box paths below by scripts/04-link-storage.sh.
+
+[general]
+show_welcome = false
+skip_boot_anim = true
+last_viewed_menu_index = 0
+screenshot_dir = ''
+discord_presence = false
+
+[general.updates]
+check = false
+
+[input]
+keyboard_controller_scene_reload_key = 'f5'
+keyboard_controller_scene_save_key = 'f8'
+keyboard_controller_scene_load_key = 'f9'
+auto_bind = true
+background_input_capture = false
+auto_assign_default_devices = true
+
+[display]
+quit_on_window_close = false
+ui_scale = 1.0
+
+[display.window]
+fullscreen_on_startup = true
+last_width = 2560
+last_height = 1440
+startup_size = 'native'
+
+[display.quality]
+surface_scale = 4
+render_scale = 4
+
+[display.renderer]
+backend = 'vulkan'
+stretch_mode = 'scale'
+
+[audio]
+use_dsp = true
+
+[net]
+enable = false
+backend = 'user'
+
+[sys]
+mem_limit = '128'
+avpack = 'hdtv'
+hdd_model = ''
+
+[sys.files]
+bootrom_path = '@DG_XEMU_BOOTROM@'
+flashrom_path = '@DG_XEMU_FLASHROM@'
+hdd_path = '@DG_XEMU_HDD@'
+dvd_path = ''
+eeprom_path = ''
+
+[perf]
+hard_fpu = true
+cache_shaders = true
+sb_fastmath_workaround = true
+
+[debug]
+intercept_filesystem = false
+output = false
+
+[advanced]
+multisampling = 8

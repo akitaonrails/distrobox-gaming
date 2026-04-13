@@ -21,7 +21,7 @@ require_writable_dir "$DG_BOX_HOME"
 write_test "$DG_BOX_HOME"
 
 log "Verifying emulator commands"
-for cmd in duckstation-qt pcsx2-qt flycast dolphin-emu PPSSPPQt rpcs3 shadps4; do
+for cmd in duckstation-qt pcsx2-qt flycast dolphin-emu PPSSPPQt rpcs3 shadps4 xemu; do
   if in_box sh -lc "command -v '$cmd'" >/dev/null 2>&1; then
     printf 'OK command: %s\n' "$cmd"
   else
@@ -42,8 +42,18 @@ done
 
 log "Verifying generated files"
 [ -x "$DG_BOX_HOME/bin/flycast-hires" ] || die "Flycast wrapper missing or not executable"
+[ -f "$DG_DOLPHIN_CONFIG_DIR/GCPadNew.ini" ] || die "Dolphin GameCube pad config missing"
+[ -f "$DG_DOLPHIN_CONFIG_DIR/WiimoteNew.ini" ] || die "Dolphin Wiimote config missing"
+[ -f "$DG_DOLPHIN_CONFIG_DIR/Profiles/GCPad/8BitDo Ultimate 2 SDL.ini" ] || die "Dolphin GameCube profile missing"
+[ -f "$DG_DOLPHIN_CONFIG_DIR/Profiles/Wiimote/8BitDo Ultimate 2 Classic.ini" ] || die "Dolphin Classic profile missing"
+[ -f "$DG_DOLPHIN_CONFIG_DIR/Profiles/Wiimote/8BitDo Ultimate 2 Nunchuk.ini" ] || die "Dolphin Nunchuk profile missing"
+[ -f "$DG_XEMU_CONFIG" ] || die "xemu config missing"
+[ -e "$DG_XEMU_BOOTROM" ] || die "xemu MCPX boot ROM missing"
+[ -e "$DG_XEMU_FLASHROM" ] || die "xemu flash ROM missing"
+[ -e "$DG_XEMU_HDD" ] || die "xemu HDD image missing"
 [ -x "$DG_SHADPS4_BIN" ] || die "shadPS4 wrapper missing or not executable"
 [ -x "$DG_SHADPS4_QTLAUNCHER_BIN" ] || die "shadPS4 QtLauncher wrapper missing or not executable"
+[ -x "$DG_SHADPS4_QTLAUNCHER_ROOT/current/AppRun" ] || die "shadPS4 QtLauncher AppRun missing"
 [ -x "$DG_SHADPS4_MANAGED_BIN" ] || die "QtLauncher-managed shadPS4 build missing or not executable"
 [ -f "$DG_BOX_HOME/.local/share/shadPS4/custom_configs/$DG_SHADPS4_TITLE_ID.toml" ] || die "shadPS4 game config missing"
 [ -f "$DG_BOX_HOME/.config/shadPS4/custom_configs/$DG_SHADPS4_TITLE_ID.toml" ] || die "shadPS4 mirrored game config missing"
@@ -52,6 +62,17 @@ log "Verifying generated files"
 [ -f "$DG_SHADPS4_GAME_BOOT" ] || die "shadPS4 boot file missing"
 [ -f "$DG_BOX_HOME/ES-DE/custom_systems/es_systems.xml" ] || die "ES-DE custom systems XML missing"
 [ -f "$DG_HOST_APPLICATIONS_DIR/gaming-shadps4.desktop" ] || warn "Host shadPS4 desktop entry missing"
+
+if [ -x "$DG_XENIA_MANAGER_BIN" ] || [ -e "$DG_XENIA_MANAGER_CURRENT" ] || [ -d "$DG_XENIA_PREFIX" ]; then
+  log "Verifying Xenia Manager prefix"
+  [ -x "$DG_XENIA_MANAGER_BIN" ] || die "Xenia Manager launcher missing"
+  [ -f "$DG_XENIA_MANAGER_EXE" ] || die "Xenia Manager executable missing"
+  [ -d "$DG_XENIA_PREFIX/drive_c" ] || die "Xenia Manager Wine prefix missing"
+  in_box sh -lc "command -v wine" >/dev/null 2>&1 || die "wine missing in box for Xenia Manager"
+  if [ -d "$DG_XENIA_GAME_DIR" ]; then
+    [ -L "$DG_XENIA_PREFIX/dosdevices/g:" ] || warn "Xenia Manager G: drive link missing"
+  fi
+fi
 
 log "Checking for root-owned config files"
 root_owned="$(find "$DG_BOX_HOME/.config" "$DG_BOX_HOME/.local/share" -maxdepth 4 -user 0 -print 2>/dev/null | sed -n '1,20p')"

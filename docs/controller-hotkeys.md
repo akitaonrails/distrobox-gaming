@@ -26,7 +26,8 @@ Settings -> Controllers -> Hotkeys -> Shutdown VM / Close Game
 
 Then press `Select+Start`.
 
-Dolphin is pre-configured for the 8BitDo Ultimate 2:
+Dolphin is pre-configured for the 8BitDo Ultimate 2 through repo-managed
+templates copied into `$DG_DOLPHIN_CONFIG_DIR` by `./bin/dg configure`:
 
 - GameCube default:
   - left stick = main stick
@@ -44,7 +45,13 @@ Dolphin is pre-configured for the 8BitDo Ultimate 2:
   - `Thumb R` = Wii shake
   - `Thumb L` = Nunchuk shake
 
-Reusable Dolphin profiles are stored at:
+Repo-owned Dolphin templates live under:
+
+- [`config/emulator-overrides/dolphin/Profiles/GCPad/8BitDo Ultimate 2 SDL.ini`](../config/emulator-overrides/dolphin/Profiles/GCPad/8BitDo%20Ultimate%202%20SDL.ini)
+- [`config/emulator-overrides/dolphin/Profiles/Wiimote/8BitDo Ultimate 2 Nunchuk.ini`](../config/emulator-overrides/dolphin/Profiles/Wiimote/8BitDo%20Ultimate%202%20Nunchuk.ini)
+- [`config/emulator-overrides/dolphin/Profiles/Wiimote/8BitDo Ultimate 2 Classic.ini`](../config/emulator-overrides/dolphin/Profiles/Wiimote/8BitDo%20Ultimate%202%20Classic.ini)
+
+The live copies inside the box are:
 
 - [`Profiles/GCPad/8BitDo Ultimate 2 SDL.ini`](/mnt/data/distrobox/gaming/.config/dolphin-emu/Profiles/GCPad/8BitDo%20Ultimate%202%20SDL.ini)
 - [`Profiles/Wiimote/8BitDo Ultimate 2 Nunchuk.ini`](/mnt/data/distrobox/gaming/.config/dolphin-emu/Profiles/Wiimote/8BitDo%20Ultimate%202%20Nunchuk.ini)

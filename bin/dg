@@ -13,10 +13,11 @@ Commands:
   check       Verify host paths, permissions, commands, and existing box identity.
   create      Create the gaming distrobox if it does not already exist.
   bootstrap   Install base pacman packages and AUR helpers/packages.
-  shadps4     Refresh shadPS4 links, Driveclub config, desktop launcher, and ES-DE PS4 entry.
+  shadps4     Install/update shadPS4 QtLauncher and managed build, then refresh PS4 config.
+  xenia       Install or update the Wine-managed Xenia Manager runtime.
   configure   Apply emulator configs, wrappers, ES-DE systems, and desktop entries.
   verify      Verify emulator commands and key runtime configuration.
-  all         Run check, create, bootstrap, configure, verify.
+  all         Run check, create, bootstrap, shadps4, configure, verify.
 
 Config:
   Copy config/distrobox-gaming.env.example to config/distrobox-gaming.env
@@ -36,6 +37,7 @@ case "$cmd" in
   create) run_script 01-create-box.sh ;;
   bootstrap) run_script 02-bootstrap-packages.sh ;;
   shadps4) run_script 09-refresh-shadps4.sh ;;
+  xenia) run_script 10-install-xenia-manager.sh ;;
   configure)
     run_script 04-link-storage.sh
     run_script 05-seed-configs.sh
@@ -47,6 +49,7 @@ case "$cmd" in
     run_script 00-check-host.sh
     run_script 01-create-box.sh
     run_script 02-bootstrap-packages.sh
+    run_script 09-refresh-shadps4.sh
     run_script 04-link-storage.sh
     run_script 05-seed-configs.sh
     run_script 06-export-desktop-apps.sh

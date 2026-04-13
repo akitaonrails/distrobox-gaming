@@ -16,8 +16,15 @@ $EDITOR config/distrobox-gaming.env
 ./bin/dg check
 ./bin/dg create
 ./bin/dg bootstrap
+./bin/dg shadps4
 ./bin/dg configure
 ./bin/dg verify
+```
+
+Optional Xbox 360/Xenia Manager setup:
+
+```sh
+./bin/dg xenia
 ```
 
 For a full run:
@@ -118,7 +125,8 @@ the run fails early instead of prompting halfway through a long setup.
 ./bin/dg check       # host path, permission, command, and UID/GID checks
 ./bin/dg create      # create the distrobox if it does not exist
 ./bin/dg bootstrap   # install pacman and AUR packages
-./bin/dg shadps4     # refresh only shadPS4 links, config, launcher, and ES-DE
+./bin/dg shadps4     # install/update shadPS4 QtLauncher + managed build, then refresh PS4 config
+./bin/dg xenia       # install/update Wine, Xenia Manager, and its dedicated prefix
 ./bin/dg configure   # apply links, configs, wrappers, desktop files, ES-DE
 ./bin/dg verify      # verify commands and generated files
 ./bin/dg all         # run every phase
@@ -132,17 +140,45 @@ the run fails early instead of prompting halfway through a long setup.
 - Flycast high-resolution wrapper at `$DG_BOX_HOME/bin/flycast-hires`
 - Flycast Vulkan/upscale/frame-pacing settings
 - PCSX2 `Select+Start` shutdown hotkey
-- Dolphin 8BitDo Ultimate 2 defaults for GameCube plus Wii Remote/Nunchuk
-  and Classic Controller profiles
+- Dolphin 8BitDo Ultimate 2 defaults for GameCube and Wii profiles
 - DuckStation Vulkan/PGXP/widescreen defaults
+- xemu config plus BIOS/HDD links from `$DG_BIOS_ROOT`
 - shadPS4 wrapper at `$DG_SHADPS4_BIN` that launches the QtLauncher-managed build
 - official shadPS4 QtLauncher wrapper at `$DG_SHADPS4_QTLAUNCHER_BIN`
+- shadPS4 QtLauncher AppImage extracted under `$DG_SHADPS4_QTLAUNCHER_ROOT/releases/`
 - shadPS4 Driveclub config for `CUSA00003`
 - shadPS4 Driveclub v1.28 patch XML
 - extracted Driveclub directory at `$DG_SHADPS4_GAME_DIR`
 - PS4 11.00 sys_module symlinks for shadPS4
 - repo-managed Walker desktop entries symlinked from `config/desktop/rendered/`
 - no-patch Driveclub launcher for A/B testing
+- optional Wine-managed Xenia Manager launcher at `$DG_XENIA_MANAGER_BIN`
+- optional dedicated Xenia Manager prefix at `$DG_XENIA_PREFIX`
+
+## Xenia Manager
+
+Xbox 360 support in this repo is handled through Xenia Manager inside a
+dedicated Wine prefix, not through a separate native Linux Xenia package.
+That keeps the manager and the Canary builds it downloads in one place.
+
+`./bin/dg xenia` will:
+
+- enable `multilib` inside the box if needed
+- install `wine` and `winetricks`
+- create `$DG_XENIA_PREFIX`
+- install the required Windows runtimes for Xenia Manager
+- download the latest Xenia Manager release into `$DG_XENIA_MANAGER_RELEASES_DIR`
+- write the stable launcher wrapper at `$DG_XENIA_MANAGER_BIN`
+- export a host desktop entry named `gaming-xenia-manager.desktop`
+
+After that, launch Xenia Manager and use its `Manage` page to install Canary.
+The manager owns the Canary download/update flow.
+
+## Historical Docs
+
+`docs/distrobox-gaming-prompts.md` and parts of
+`docs/distrobox-gaming-packages.md` are retained as working notes from the
+original setup. The current source of truth is the scripts plus this README.
 
 ## Documentation
 
@@ -157,6 +193,7 @@ Focused docs:
 - [Flycast Resolution](docs/flycast-resolution.md)
 - [Controller Hotkeys](docs/controller-hotkeys.md)
 - [Rebuild Runbook](docs/rebuild-runbook.md)
+- [Xenia Manager](docs/xenia-manager.md)
 
 ## Safety Rules
 

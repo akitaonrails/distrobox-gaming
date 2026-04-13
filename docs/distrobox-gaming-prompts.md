@@ -1,5 +1,9 @@
 # Distrobox Gaming Container — Replication Prompts
 
+Historical archive: these prompts document the original interactive setup and
+contain stale details. Use `README.md` and the numbered scripts as the current
+source of truth for rebuilds.
+
 Step-by-step prompts to replicate the gaming distrobox setup from scratch.
 Each prompt is self-contained and can be pasted into a new Claude Code session.
 Full reference: `arch-distrobox.md` in this same directory.

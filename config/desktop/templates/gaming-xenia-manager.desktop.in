@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Xenia Manager (on @DG_BOX_NAME@)
+Exec=/usr/bin/distrobox-enter -n @DG_BOX_NAME@ -- @DG_BOX_HOME@/bin/xenia-manager
+Terminal=false
+Type=Application
+Icon=wine
+Comment=Xbox 360 manager and launcher
+Categories=Game;Emulator;
+StartupWMClass=XeniaManager.exe;

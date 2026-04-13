@@ -27,13 +27,25 @@ Use this when recreating the gaming distrobox from scratch.
    ./bin/dg bootstrap
    ```
 
-5. Apply configuration:
+5. Install or update shadPS4 QtLauncher and the managed build:
+
+   ```sh
+   ./bin/dg shadps4
+   ```
+
+6. Apply configuration:
 
    ```sh
    ./bin/dg configure
    ```
 
-6. Verify:
+7. Optional: install Xenia Manager into its Wine prefix:
+
+   ```sh
+   ./bin/dg xenia
+   ```
+
+8. Verify:
 
    ```sh
    ./bin/dg verify
@@ -44,4 +56,3 @@ changing config paths or templates.
 
 Do not run cleanup commands against ROM, BIOS, save, firmware, or game-data
 directories from these scripts.
-
