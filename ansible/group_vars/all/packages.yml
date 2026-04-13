@@ -38,6 +38,8 @@ dg_pacman_packages:
   - fuse2
   - fuse3
   - zlib-ng-compat
+  - dolphin-emu
+  - ppsspp
 
 dg_aur_packages:
   - duckstation-qt-bin
@@ -48,6 +50,7 @@ dg_aur_packages:
   - xemu-bin
   - vita3k-bin
   - shadps4-bin
+  - flycast-git
 
 dg_xenia_pacman_packages:
   - wine
