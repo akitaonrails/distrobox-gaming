@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Xenia Manager (on {{ dg_box_name }})
-Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_box_home }}/bin/xenia-manager
+Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_gpu_env }} {{ dg_box_home }}/bin/xenia-manager
 Terminal=false
 Type=Application
 Icon=wine

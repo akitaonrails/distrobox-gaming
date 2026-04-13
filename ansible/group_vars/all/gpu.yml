@@ -1,0 +1,18 @@
+# GPU preference configuration.
+# When dg_nvidia_enabled is true, the distrobox is created with --nvidia
+# and all emulator launches are wrapped with VK_ICD_FILENAMES pointing
+# to the NVIDIA Vulkan ICD, so emulators use the discrete GPU instead
+# of the AMD iGPU.
+
+dg_nvidia_enabled: true
+dg_nvidia_icd: /usr/share/vulkan/icd.d/nvidia_icd.json
+
+# Environment variables injected into desktop entries and ES-DE commands
+# when NVIDIA is preferred. These operate at the Vulkan loader level so
+# all Vulkan apps only see the NVIDIA GPU.
+dg_gpu_env: "{{ 'env VK_ICD_FILENAMES=' + dg_nvidia_icd + ' __GLX_VENDOR_LIBRARY_NAME=nvidia' if dg_nvidia_enabled else '' }}"
+
+# shadPS4-specific GPU device index. Set to the NVIDIA device index
+# once the box has both GPUs visible. Use -1 for auto-select.
+# After --nvidia, GPU0 is typically NVIDIA and GPU1 is AMD iGPU.
+dg_shadps4_gpu_id: 0

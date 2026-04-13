@@ -8,7 +8,7 @@
         <path>{{ sys.path }}</path>
         <extension>{{ sys.extension }}</extension>
 {% for cmd in sys.commands %}
-        <command label="{{ cmd.label }}">{{ cmd.cmd }}</command>
+        <command label="{{ cmd.label }}">{{ dg_gpu_env + ' ' if dg_gpu_env }}{{ cmd.cmd }}</command>
 {% endfor %}
         <platform>{{ sys.platform }}</platform>
         <theme>{{ sys.theme }}</theme>

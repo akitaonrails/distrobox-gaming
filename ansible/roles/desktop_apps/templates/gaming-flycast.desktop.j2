@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Flycast Hi-Res (on {{ dg_box_name }})
-Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_box_home }}/bin/flycast-hires %f
+Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_gpu_env }} {{ dg_box_home }}/bin/flycast-hires %f
 Terminal=false
 Type=Application
 Icon=flycast

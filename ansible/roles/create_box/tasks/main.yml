@@ -25,6 +25,7 @@
     --name {{ dg_box_name }}
     --image {{ dg_image }}
     --home {{ dg_box_home }}
+    {{ '--nvidia' if dg_nvidia_enabled else '' }}
     {{ _distrobox_volumes }}
   when: _box_exists.rc != 0
 

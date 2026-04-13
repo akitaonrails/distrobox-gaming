@@ -181,6 +181,36 @@
         msg: "WARNING: wine not found in box — run install-xenia.yml to install"
       when: _wine_check.rc != 0
 
+# GPU preference verification
+
+- name: Check NVIDIA Vulkan ICD inside box
+  ansible.builtin.stat:
+    path: "{{ dg_nvidia_icd }}"
+  register: _nvidia_icd
+  when: dg_nvidia_enabled
+
+- name: Warn if NVIDIA ICD missing (box may need --nvidia recreation)
+  ansible.builtin.debug:
+    msg: >-
+      WARNING: NVIDIA Vulkan ICD not found at {{ dg_nvidia_icd }}.
+      The box may need to be recreated with --nvidia support.
+      Run: distrobox rm -f {{ dg_box_name }} && ansible-playbook site.yml
+  when: dg_nvidia_enabled and not (_nvidia_icd.stat.exists | default(false))
+
+- name: Verify NVIDIA GPU visible via Vulkan
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} env VK_ICD_FILENAMES={{ dg_nvidia_icd }}
+    vulkaninfo --summary 2>/dev/null | grep -i nvidia
+  register: _nvidia_vulkan
+  changed_when: false
+  failed_when: false
+  when: dg_nvidia_enabled and (_nvidia_icd.stat.exists | default(false))
+
+- name: Report GPU status
+  ansible.builtin.debug:
+    msg: "{{ 'NVIDIA GPU visible: ' + _nvidia_vulkan.stdout_lines[0] if _nvidia_vulkan.stdout_lines | default([]) | length > 0 else 'WARNING: NVIDIA GPU not detected in Vulkan' }}"
+  when: dg_nvidia_enabled and (_nvidia_icd.stat.exists | default(false))
+
 # Root-owned file check
 
 - name: Find root-owned files in config directories
