@@ -1,0 +1,8 @@
+---
+- name: Refresh shadPS4 QtLauncher and managed build
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - refresh_shadps4
+    - { role: verify, tags: [verify] }

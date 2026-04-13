@@ -1,0 +1,8 @@
+---
+- name: Install or update Xenia Manager
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_xenia
+    - { role: verify, tags: [verify] }

@@ -1,0 +1,63 @@
+---
+- name: Backup gaming distrobox
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  vars:
+    backup_timestamp: "{{ ansible_date_time.iso8601_basic_short }}"
+  tasks:
+    - name: Create backup directory
+      ansible.builtin.file:
+        path: "{{ dg_backup_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Stop distrobox container
+      ansible.builtin.command: "distrobox stop -Y {{ dg_box_name }}"
+      failed_when: false
+      changed_when: false
+
+    - name: Commit container image to backup tag
+      ansible.builtin.command: >-
+        podman container commit {{ dg_box_name }}
+        distrobox-gaming-backup:{{ backup_timestamp }}
+      register: _commit
+
+    - name: Save container image to tarball
+      ansible.builtin.command: >-
+        podman save distrobox-gaming-backup:{{ backup_timestamp }}
+        -o {{ dg_backup_dir }}/{{ dg_box_name }}-image-{{ backup_timestamp }}.tar
+      when: _commit.rc == 0
+
+    - name: Archive box home config state
+      community.general.archive:
+        path:
+          - "{{ dg_box_home }}/.config"
+          - "{{ dg_box_home }}/.local/share"
+          - "{{ dg_box_home }}/bin"
+          - "{{ dg_box_home }}/tools"
+          - "{{ dg_box_home }}/ES-DE"
+        dest: "{{ dg_backup_dir }}/{{ dg_box_name }}-home-{{ backup_timestamp }}.tar.gz"
+        format: gz
+        exclusion_patterns:
+          - "*/cache/*"
+          - "*/shader/*"
+          - "*/screenshots/*"
+          - "*/captures/*"
+
+    - name: Record backup metadata
+      ansible.builtin.copy:
+        content: |
+          timestamp: {{ backup_timestamp }}
+          box_name: {{ dg_box_name }}
+          image: {{ dg_image }}
+          host_uid: {{ dg_host_uid }}
+          host_gid: {{ dg_host_gid }}
+        dest: "{{ dg_backup_dir }}/{{ dg_box_name }}-{{ backup_timestamp }}.meta"
+        mode: "0644"
+
+    - name: Report backup location
+      ansible.builtin.debug:
+        msg: >-
+          Backup complete: {{ dg_backup_dir }}/{{ dg_box_name }}-image-{{ backup_timestamp }}.tar
+          and {{ dg_backup_dir }}/{{ dg_box_name }}-home-{{ backup_timestamp }}.tar.gz

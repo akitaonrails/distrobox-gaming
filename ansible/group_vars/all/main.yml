@@ -1,0 +1,52 @@
+# Core paths, box identity, and UID/GID defaults.
+# Override in host_vars/localhost.yml or via -e on the command line.
+
+dg_box_name: gaming
+dg_image: "archlinux:latest"
+
+# NAS requires UID/GID 1026 for file access.
+dg_host_uid: 1026
+dg_host_gid: 1026
+
+dg_data_root: /mnt/data
+dg_box_root: "{{ dg_data_root }}/distrobox/gaming"
+dg_box_home: "{{ dg_box_root }}"
+
+dg_emudeck_root: /mnt/terachad/Emulators/EmuDeck
+dg_rom_root: "{{ dg_emudeck_root }}/roms"
+dg_rom_heavy_root: "{{ dg_emudeck_root }}/roms_heavy"
+dg_rom_rare_root: "{{ dg_emudeck_root }}/roms_rare"
+dg_bios_root: "{{ dg_emudeck_root }}/Emulation/bios"
+
+dg_ps4_rom_root: "{{ dg_rom_rare_root }}/ps4"
+dg_ps4_firmware_modules: "{{ dg_rom_rare_root }}/ps4-firmware/11.00_sys_modules"
+dg_shadps4_title_id: CUSA00003
+dg_shadps4_game_dir: "{{ dg_ps4_rom_root }}/{{ dg_shadps4_title_id }}"
+dg_shadps4_game_boot: "{{ dg_shadps4_game_dir }}/eboot.bin"
+dg_shadps4_game_arg: "{{ dg_shadps4_title_id }}"
+dg_shadps4_patch_name: Driveclub.xml
+dg_shadps4_patch_xml: "{{ dg_box_home }}/.local/share/shadPS4/patches/{{ dg_shadps4_patch_name }}"
+
+dg_dolphin_config_dir: "{{ dg_box_home }}/.config/dolphin-emu"
+
+dg_xemu_config_dir: "{{ dg_box_home }}/.config/xemu"
+dg_xemu_data_dir: "{{ dg_box_home }}/.local/share/xemu"
+dg_xemu_config: "{{ dg_xemu_config_dir }}/xemu.toml"
+dg_xemu_bootrom_source: "{{ dg_bios_root }}/mcpx_1.0.bin"
+dg_xemu_flashrom_source: "{{ dg_bios_root }}/Complex_4627.bin"
+dg_xemu_hdd_source: "{{ dg_bios_root }}/xbox_hdd.qcow2"
+dg_xemu_bootrom: "{{ dg_xemu_config_dir }}/mcpx_1.0.bin"
+dg_xemu_flashrom: "{{ dg_xemu_config_dir }}/Complex_4627.bin"
+dg_xemu_hdd: "{{ dg_xemu_data_dir }}/xbox_hdd.qcow2"
+
+dg_desktop_template_dir: "{{ dg_project_root }}/config/desktop/templates"
+dg_desktop_render_dir: "{{ dg_project_root }}/config/desktop/rendered"
+dg_host_applications_dir: "{{ ansible_facts.env.HOME }}/.local/share/applications"
+
+dg_project_root: "{{ playbook_dir | dirname }}"
+
+# Helper for running commands inside the distrobox.
+dg_in_box: "distrobox-enter -n {{ dg_box_name }} --"
+
+# Backup location for backup/restore playbooks.
+dg_backup_dir: "{{ dg_data_root }}/distrobox-backups"

@@ -1,0 +1,14 @@
+# shadPS4 and QtLauncher release configuration.
+
+dg_shadps4_qtlauncher_root: "{{ dg_box_home }}/tools/shadps4-qtlauncher"
+dg_shadps4_qtlauncher_release: "2026-04-12-51b62bd"
+dg_shadps4_qtlauncher_releases_api: https://api.github.com/repos/shadps4-emu/shadps4-qtlauncher/releases
+dg_shadps4_qtlauncher_asset_name: shadPS4QtLauncher-qt.AppImage
+dg_shadps4_qtlauncher_bin: "{{ dg_box_home }}/bin/shadps4-qtlauncher-current"
+
+dg_shadps4_versions_root: "{{ dg_box_home }}/.local/share/shadPS4QtLauncher/versions"
+dg_shadps4_releases_api: https://api.github.com/repos/shadps4-emu/shadPS4/releases
+dg_shadps4_channel: Pre-release
+dg_shadps4_managed_bin: "{{ dg_shadps4_versions_root }}/{{ dg_shadps4_channel }}/Shadps4-sdl.AppImage"
+dg_shadps4_bin: "{{ dg_box_home }}/bin/shadps4-current"
+dg_shadps4_cmd_alias: "{{ dg_box_home }}/bin/shadps4"

@@ -1,0 +1,14 @@
+---
+- name: Ensure box bin directory exists
+  ansible.builtin.file:
+    path: "{{ dg_box_home }}/bin"
+    state: directory
+    mode: "0755"
+
+- ansible.builtin.include_tasks: wrappers.yml
+- ansible.builtin.include_tasks: dolphin.yml
+- ansible.builtin.include_tasks: pcsx2.yml
+- ansible.builtin.include_tasks: duckstation.yml
+- ansible.builtin.include_tasks: flycast.yml
+- ansible.builtin.include_tasks: xemu.yml
+- ansible.builtin.include_tasks: shadps4.yml

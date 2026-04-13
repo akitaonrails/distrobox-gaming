@@ -1,0 +1,114 @@
+---
+- name: Fetch QtLauncher releases from GitHub
+  ansible.builtin.uri:
+    url: "{{ dg_shadps4_qtlauncher_releases_api }}"
+    return_content: true
+    headers:
+      Accept: application/vnd.github.v3+json
+  register: _qt_releases
+
+- name: Select matching QtLauncher release
+  ansible.builtin.set_fact:
+    _qt_release: >-
+      {{
+        (_qt_releases.json
+          | rejectattr('draft')
+          | selectattr('tag_name', 'search', dg_shadps4_qtlauncher_release)
+          | list
+          | first
+        ) if (_qt_releases.json
+          | rejectattr('draft')
+          | selectattr('tag_name', 'search', dg_shadps4_qtlauncher_release)
+          | list | length > 0)
+        else (_qt_releases.json | rejectattr('draft') | list | first)
+      }}
+
+- name: Extract QtLauncher asset info
+  ansible.builtin.set_fact:
+    _qt_tag: "{{ _qt_release.tag_name }}"
+    _qt_release_suffix: >-
+      {{ _qt_release.tag_name.split('shadPS4QtLauncher-')[1]
+         if 'shadPS4QtLauncher-' in _qt_release.tag_name
+         else _qt_release.tag_name }}
+    _qt_asset: >-
+      {{
+        (_qt_release.assets | selectattr('name', 'equalto', dg_shadps4_qtlauncher_asset_name) | list | first)
+        if (_qt_release.assets | selectattr('name', 'equalto', dg_shadps4_qtlauncher_asset_name) | list | length > 0)
+        else (_qt_release.assets | selectattr('name', 'match', '.*\\.AppImage$') | list | first)
+      }}
+
+- name: Create QtLauncher directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_shadps4_qtlauncher_root }}/downloads"
+    - "{{ dg_shadps4_qtlauncher_root }}/releases"
+    - "{{ dg_shadps4_qtlauncher_root }}/releases/{{ _qt_release_suffix | trim }}"
+
+- name: Download QtLauncher asset
+  ansible.builtin.get_url:
+    url: "{{ _qt_asset.browser_download_url }}"
+    dest: "{{ dg_shadps4_qtlauncher_root }}/downloads/{{ _qt_tag | trim }}-{{ _qt_asset.name }}"
+    mode: "0755"
+
+- name: Set QtLauncher release root path
+  ansible.builtin.set_fact:
+    _qt_release_root: "{{ dg_shadps4_qtlauncher_root }}/releases/{{ _qt_release_suffix | trim }}"
+
+- name: Handle zip asset extraction
+  when: _qt_asset.name.endswith('.zip')
+  block:
+    - name: Check if AppImage already extracted from zip
+      ansible.builtin.stat:
+        path: "{{ _qt_release_root }}/shadPS4QtLauncher-qt.AppImage"
+      register: _qt_zip_extracted
+
+    - name: Extract QtLauncher zip
+      ansible.builtin.unarchive:
+        src: "{{ dg_shadps4_qtlauncher_root }}/downloads/{{ _qt_tag | trim }}-{{ _qt_asset.name }}"
+        dest: "{{ _qt_release_root }}"
+        remote_src: true
+      when: not _qt_zip_extracted.stat.exists
+
+- name: Handle AppImage asset copy
+  when: not _qt_asset.name.endswith('.zip')
+  block:
+    - name: Copy AppImage to release directory
+      ansible.builtin.copy:
+        src: "{{ dg_shadps4_qtlauncher_root }}/downloads/{{ _qt_tag | trim }}-{{ _qt_asset.name }}"
+        dest: "{{ _qt_release_root }}/{{ _qt_asset.name }}"
+        remote_src: true
+        mode: "0755"
+
+- name: Check if AppImage is already extracted
+  ansible.builtin.stat:
+    path: "{{ _qt_release_root }}/squashfs-root/AppRun"
+  register: _qt_appimage_extracted
+
+- name: Find QtLauncher AppImage in release directory
+  ansible.builtin.find:
+    paths: "{{ _qt_release_root }}"
+    patterns: "shadPS4QtLauncher-qt.AppImage,*.AppImage"
+    recurse: true
+    depth: 2
+  register: _qt_appimage_files
+  when: not _qt_appimage_extracted.stat.exists
+
+- name: Extract QtLauncher AppImage
+  ansible.builtin.shell: |
+    cd "{{ _qt_release_root }}"
+    rm -rf squashfs-root
+    chmod +x "{{ _qt_appimage_files.files[0].path }}"
+    "{{ _qt_appimage_files.files[0].path }}" --appimage-extract >/dev/null
+  args:
+    creates: "{{ _qt_release_root }}/squashfs-root/AppRun"
+  when: not _qt_appimage_extracted.stat.exists and (_qt_appimage_files.files | default([]) | length > 0)
+
+- name: Link current QtLauncher
+  ansible.builtin.file:
+    src: "{{ _qt_release_root }}/squashfs-root"
+    dest: "{{ dg_shadps4_qtlauncher_root }}/current"
+    state: link
+    force: true

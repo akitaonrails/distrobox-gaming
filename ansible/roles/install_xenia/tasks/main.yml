@@ -1,0 +1,198 @@
+---
+- name: Create Xenia Manager directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_xenia_prefix }}"
+    - "{{ dg_xenia_cache_dir }}"
+    - "{{ dg_xenia_manager_releases_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+# Enable multilib and install Wine packages inside the box
+
+- name: Check if multilib is enabled
+  ansible.builtin.shell: "{{ dg_in_box }} grep -q '^\\[multilib\\]$' /etc/pacman.conf"
+  register: _multilib_check
+  changed_when: false
+  failed_when: false
+
+- name: Enable multilib repository inside box
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sudo sh -c '
+      cat >> /etc/pacman.conf <<MULTILIB
+
+    [multilib]
+    Include = /etc/pacman.d/mirrorlist
+    MULTILIB
+    '
+  when: _multilib_check.rc != 0
+
+- name: Install Xenia pacman packages inside box
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sudo pacman -Syu --needed --noconfirm
+    {{ dg_xenia_pacman_packages | join(' ') }}
+  register: _xenia_pacman
+  changed_when: "'installing' in _xenia_pacman.stdout"
+
+# Wine prefix initialization
+
+- name: Check if Wine prefix is initialized
+  ansible.builtin.stat:
+    path: "{{ dg_xenia_prefix }}/system.reg"
+  register: _prefix_exists
+
+- name: Initialize Wine prefix
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} env
+    WINEPREFIX="{{ dg_xenia_prefix }}"
+    WINEARCH=win64
+    WINEDEBUG=-all
+    wineboot -u
+  when: not _prefix_exists.stat.exists
+
+- name: Wait for wineserver after init
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} env
+    WINEPREFIX="{{ dg_xenia_prefix }}"
+    WINEDEBUG=-all
+    wineserver -w
+  when: not _prefix_exists.stat.exists
+
+# Link Xbox 360 game directory
+
+- name: Stat Xbox 360 game directory
+  ansible.builtin.stat:
+    path: "{{ dg_xenia_game_dir }}"
+  register: _xenia_game_dir
+
+- name: "Link Xbox 360 game directory as G: drive"
+  ansible.builtin.file:
+    src: "{{ dg_xenia_game_dir }}"
+    dest: "{{ dg_xenia_prefix }}/dosdevices/g:"
+    state: link
+  when: _xenia_game_dir.stat.exists | default(false)
+
+# Windows runtime dependencies
+
+- name: Download .NET Desktop Runtime
+  ansible.builtin.get_url:
+    url: "{{ dg_xenia_dotnet_url }}"
+    dest: "{{ dg_xenia_cache_dir }}/windowsdesktop-runtime-win-x64.exe"
+    mode: "0644"
+
+- name: Download Visual C++ Redistributable
+  ansible.builtin.get_url:
+    url: "{{ dg_xenia_vcredist_url }}"
+    dest: "{{ dg_xenia_cache_dir }}/vc_redist.x64.exe"
+    mode: "0644"
+
+- name: Install .NET Desktop Runtime via Wine
+  ansible.builtin.shell: |
+    {{ dg_in_box }} env \
+      WINEPREFIX="{{ dg_xenia_prefix }}" \
+      WINEARCH=win64 \
+      WINEDEBUG=-all \
+      wine "Z:{{ dg_xenia_cache_dir }}/windowsdesktop-runtime-win-x64.exe" /install /quiet /norestart || true
+    {{ dg_in_box }} env \
+      WINEPREFIX="{{ dg_xenia_prefix }}" \
+      WINEDEBUG=-all \
+      wineserver -w
+  changed_when: true
+
+- name: Install Visual C++ Redistributable via Wine
+  ansible.builtin.shell: |
+    {{ dg_in_box }} env \
+      WINEPREFIX="{{ dg_xenia_prefix }}" \
+      WINEARCH=win64 \
+      WINEDEBUG=-all \
+      wine "Z:{{ dg_xenia_cache_dir }}/vc_redist.x64.exe" /install /quiet /norestart || true
+    {{ dg_in_box }} env \
+      WINEPREFIX="{{ dg_xenia_prefix }}" \
+      WINEDEBUG=-all \
+      wineserver -w
+  changed_when: true
+
+# Fetch and install Xenia Manager
+
+- name: Fetch Xenia Manager release info
+  ansible.builtin.uri:
+    url: "{{ dg_xenia_manager_release_api }}"
+    return_content: true
+    headers:
+      Accept: application/vnd.github.v3+json
+  register: _xenia_release
+  when: dg_xenia_manager_zip_url | length == 0
+
+- name: Extract Xenia Manager tag and URL from GitHub
+  ansible.builtin.set_fact:
+    _xenia_tag: "{{ _xenia_release.json.tag_name }}"
+    _xenia_zip_url: >-
+      {{
+        (_xenia_release.json.assets
+          | selectattr('name', 'match', '(?i).*win.*x64.*\\.zip$')
+          | list | first).browser_download_url
+        if (_xenia_release.json.assets
+          | selectattr('name', 'match', '(?i).*win.*x64.*\\.zip$')
+          | list | length > 0)
+        else (_xenia_release.json.assets
+          | selectattr('name', 'match', '.*\\.zip$')
+          | list | first).browser_download_url
+      }}
+  when: dg_xenia_manager_zip_url | length == 0
+
+- name: Use manually specified Xenia Manager URL
+  ansible.builtin.set_fact:
+    _xenia_tag: manual
+    _xenia_zip_url: "{{ dg_xenia_manager_zip_url }}"
+  when: dg_xenia_manager_zip_url | length > 0
+
+- name: Download Xenia Manager zip
+  ansible.builtin.get_url:
+    url: "{{ _xenia_zip_url }}"
+    dest: "{{ dg_xenia_cache_dir }}/{{ _xenia_tag }}.zip"
+    mode: "0644"
+
+- name: Check if release is already extracted
+  ansible.builtin.stat:
+    path: "{{ dg_xenia_manager_releases_dir }}/{{ _xenia_tag }}"
+  register: _xenia_extracted
+
+- name: Extract Xenia Manager
+  ansible.builtin.unarchive:
+    src: "{{ dg_xenia_cache_dir }}/{{ _xenia_tag }}.zip"
+    dest: "{{ dg_xenia_manager_releases_dir }}/{{ _xenia_tag }}"
+    remote_src: true
+  when: not _xenia_extracted.stat.exists
+
+- name: Find XeniaManager.exe in extracted directory
+  ansible.builtin.find:
+    paths: "{{ dg_xenia_manager_releases_dir }}/{{ _xenia_tag }}"
+    patterns: XeniaManager.exe
+    recurse: true
+  register: _xenia_exe_files
+
+- name: Assert Xenia Manager executable found
+  ansible.builtin.assert:
+    that: _xenia_exe_files.files | length > 0
+    fail_msg: "XeniaManager.exe not found after extracting {{ _xenia_tag }}.zip"
+
+- name: Link current Xenia Manager release
+  ansible.builtin.file:
+    src: "{{ _xenia_exe_files.files[0].path | dirname }}"
+    dest: "{{ dg_xenia_manager_current }}"
+    state: link
+    force: true
+
+# Wrapper script and desktop entry
+
+- name: Deploy Xenia Manager launcher wrapper
+  ansible.builtin.template:
+    src: xenia-manager.sh.j2
+    dest: "{{ dg_xenia_manager_bin }}"
+    mode: "0755"
+
+- name: Refresh desktop launchers
+  ansible.builtin.include_role:
+    name: desktop_apps

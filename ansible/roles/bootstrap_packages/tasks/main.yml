@@ -1,0 +1,70 @@
+---
+- name: Check sudo availability inside box
+  ansible.builtin.shell: "{{ dg_in_box }} sudo -n true"
+  register: _sudo_check
+  changed_when: false
+  failed_when: false
+
+- name: Repair sudo inside box if needed
+  when: _sudo_check.rc != 0
+  block:
+    - name: Detect container runtime
+      ansible.builtin.command: "which podman"
+      register: _has_podman
+      changed_when: false
+      failed_when: false
+
+    - name: Set container runtime command
+      ansible.builtin.set_fact:
+        _container_exec: "{{ 'podman' if _has_podman.rc == 0 else 'docker' }}"
+
+    - name: Install passwordless sudo policy
+      ansible.builtin.shell: |
+        {{ _container_exec }} exec -u root {{ dg_box_name }} sh -c '
+          install -d -m 0755 /etc/sudoers.d
+          printf "%wheel ALL=(ALL:ALL) NOPASSWD: ALL\n" > /etc/sudoers.d/zz-distrobox-gaming-nopasswd
+          chmod 0440 /etc/sudoers.d/zz-distrobox-gaming-nopasswd
+        '
+      changed_when: true
+
+    - name: Verify sudo works after repair
+      ansible.builtin.shell: "{{ dg_in_box }} sudo -n true"
+      changed_when: false
+
+- name: Full system upgrade
+  ansible.builtin.shell: "{{ dg_in_box }} sudo pacman -Syu --noconfirm"
+  register: _upgrade
+  changed_when: "'upgraded' in _upgrade.stdout or 'installing' in _upgrade.stdout"
+
+- name: Install pacman packages
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sudo pacman -S --needed --noconfirm
+    {{ dg_pacman_packages | join(' ') }}
+  register: _pacman
+  changed_when: "'installing' in _pacman.stdout"
+
+- name: Check if yay is installed
+  ansible.builtin.shell: "{{ dg_in_box }} sh -lc 'command -v yay'"
+  register: _yay_check
+  changed_when: false
+  failed_when: false
+
+- name: Install yay-bin from AUR
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -c '
+      tmp="$(mktemp -d)"
+      cd "$tmp"
+      git clone https://aur.archlinux.org/yay-bin.git
+      cd yay-bin
+      makepkg -si --noconfirm
+      rm -rf "$tmp"
+    '
+  when: _yay_check.rc != 0
+
+- name: Install AUR packages via yay
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} yay -S --needed --noconfirm
+    --answerclean None --answerdiff None
+    {{ dg_aur_packages | join(' ') }}
+  register: _yay
+  changed_when: "'installing' in _yay.stdout"

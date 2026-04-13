@@ -1,0 +1,42 @@
+---
+- name: Check if distrobox exists
+  ansible.builtin.shell: "distrobox list 2>/dev/null | awk '{print $3}' | grep -qx {{ dg_box_name }}"
+  register: _box_exists
+  changed_when: false
+  failed_when: false
+
+- name: Ensure box home directory exists
+  ansible.builtin.file:
+    path: "{{ dg_box_home }}"
+    state: directory
+    mode: "0755"
+
+- name: Create distrobox
+  ansible.builtin.command: >-
+    distrobox create
+    --name {{ dg_box_name }}
+    --image {{ dg_image }}
+    --home {{ dg_box_home }}
+    --volume {{ dg_emudeck_root }}:{{ dg_emudeck_root }}:rw
+    --volume {{ dg_box_root }}:{{ dg_box_root }}:rw
+    --volume {{ dg_host_applications_dir }}:{{ dg_host_applications_dir }}:rw
+  when: _box_exists.rc != 0
+
+- name: Verify box UID matches host
+  ansible.builtin.shell: "{{ dg_in_box }} id -u"
+  register: _box_uid
+  changed_when: false
+
+- name: Verify box GID matches host
+  ansible.builtin.shell: "{{ dg_in_box }} id -g"
+  register: _box_gid
+  changed_when: false
+
+- name: Assert UID/GID match
+  ansible.builtin.assert:
+    that:
+      - _box_uid.stdout | trim | int == dg_host_uid | int
+      - _box_gid.stdout | trim | int == dg_host_gid | int
+    fail_msg: >-
+      Box UID:GID {{ _box_uid.stdout | trim }}:{{ _box_gid.stdout | trim }}
+      does not match expected {{ dg_host_uid }}:{{ dg_host_gid }}

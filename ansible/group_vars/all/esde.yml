@@ -1,0 +1,112 @@
+# ES-DE custom system definitions.
+# Each entry generates a <system> block in es_systems.xml.
+
+dg_esde_systems:
+  - name: switch
+    fullname: Nintendo Switch
+    path: "%ROMPATH%/switch"
+    extension: ".nca .NCA .nro .NRO .nso .NSO .nsp .NSP .xci .XCI"
+    commands:
+      - { label: "Eden (Standalone)", cmd: "env -u QT_STYLE_OVERRIDE eden %ROM%" }
+      - { label: "Ryujinx (Standalone)", cmd: "%EMULATOR_RYUJINX% %ROM%" }
+    platform: switch
+    theme: switch
+
+  - name: psx
+    fullname: Sony PlayStation
+    path: "%ROMPATH%/psx"
+    extension: ".bin .BIN .cbn .CBN .ccd .CCD .chd .CHD .cue .CUE .ecm .ECM .exe .EXE .img .IMG .iso .ISO .m3u .M3U .mdf .MDF .mds .MDS .minipsf .MINIPSF .pbp .PBP .psexe .PSEXE .psf .PSF .toc .TOC .z .Z .znx .ZNX .7z .7Z .zip .ZIP"
+    commands:
+      - { label: "DuckStation (Standalone)", cmd: "duckstation-qt -batch %ROM%" }
+      - { label: "Beetle PSX HW", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/mednafen_psx_hw_libretro.so %ROM%" }
+      - { label: "Beetle PSX", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/mednafen_psx_libretro.so %ROM%" }
+    platform: psx
+    theme: psx
+
+  - name: ps2
+    fullname: Sony PlayStation 2
+    path: "%ROMPATH%/ps2"
+    extension: ".bin .BIN .chd .CHD .ciso .CISO .cso .CSO .dump .DUMP .elf .ELF .gz .GZ .m3u .M3U .mdf .MDF .img .IMG .iso .ISO .isz .ISZ .ngr .NRG .zso .ZSO"
+    commands:
+      - { label: "PCSX2 (Standalone)", cmd: "pcsx2-qt -batch %ROM%" }
+      - { label: "PCSX2 (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/pcsx2_libretro.so %ROM%" }
+    platform: ps2
+    theme: ps2
+
+  - name: dreamcast
+    fullname: Sega Dreamcast
+    path: "%ROMPATH%/dreamcast"
+    extension: ".cdi .CDI .chd .CHD .cue .CUE .dat .DAT .elf .ELF .gdi .GDI .iso .ISO .lst .LST .m3u .M3U .7z .7Z .zip .ZIP"
+    commands:
+      - { label: "Flycast (Standalone)", cmd: "{{ dg_box_home }}/bin/flycast-hires %ROM%" }
+      - { label: "Flycast (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/flycast_libretro.so %ROM%" }
+    platform: dreamcast
+    theme: dreamcast
+
+  - name: gc
+    fullname: Nintendo GameCube
+    path: "%ROMPATH%/gc"
+    extension: ".ciso .CISO .dff .DFF .dol .DOL .elf .ELF .gcm .GCM .gcz .GCZ .iso .ISO .json .JSON .m3u .M3U .rvz .RVZ .tgc .TGC .wad .WAD .wbfs .WBFS .wia .WIA .7z .7Z .zip .ZIP"
+    commands:
+      - { label: "Dolphin (Standalone)", cmd: "dolphin-emu -b -e %ROM%" }
+      - { label: "Dolphin (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/dolphin_libretro.so %ROM%" }
+    platform: gc
+    theme: gc
+
+  - name: wii
+    fullname: Nintendo Wii
+    path: "%ROMPATH%/wii"
+    extension: ".ciso .CISO .dff .DFF .dol .DOL .elf .ELF .gcm .GCM .gcz .GCZ .iso .ISO .json .JSON .m3u .M3U .rvz .RVZ .tgc .TGC .wad .WAD .wbfs .WBFS .wia .WIA .7z .7Z .zip .ZIP"
+    commands:
+      - { label: "Dolphin (Standalone)", cmd: "dolphin-emu -b -e %ROM%" }
+      - { label: "Dolphin (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/dolphin_libretro.so %ROM%" }
+    platform: wii
+    theme: wii
+
+  - name: psp
+    fullname: Sony PlayStation Portable
+    path: "%ROMPATH%/psp"
+    extension: ".chd .CHD .cso .CSO .elf .ELF .iso .ISO .pbp .PBP .prx .PRX .7z .7Z .zip .ZIP"
+    commands:
+      - { label: "PPSSPP (Standalone)", cmd: "PPSSPPQt %ROM%" }
+      - { label: "PPSSPP (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/ppsspp_libretro.so %ROM%" }
+    platform: psp
+    theme: psp
+
+  - name: ps4
+    fullname: Sony PlayStation 4
+    path: "%ROMPATH%/ps4/{{ dg_shadps4_title_id }}"
+    extension: ".bin .BIN"
+    commands:
+      - label: "shadPS4 Driveclub (Standalone)"
+        cmd: "{{ dg_shadps4_bin }} -g {{ dg_shadps4_game_arg }} -p {{ dg_shadps4_patch_xml }} -f true"
+    platform: ps4
+    theme: ps4
+
+  - name: xbox
+    fullname: Microsoft Xbox
+    path: "%ROMPATH%/xbox"
+    extension: ".iso .ISO .xiso .XISO"
+    commands:
+      - { label: "xemu (Standalone)", cmd: "xemu -dvd_path %ROM%" }
+    platform: xbox
+    theme: xbox
+
+  - name: model3
+    fullname: Sega Model 3
+    path: "%ROMPATH%/model3"
+    extension: ".zip .ZIP"
+    commands:
+      - { label: "Supermodel (Standalone)", cmd: "supermodel %ROM%" }
+    platform: arcade
+    theme: model3
+
+  - name: naomi
+    fullname: Sega NAOMI
+    path: "%ROMPATH%/naomi"
+    extension: ".bin .BIN .cdi .CDI .chd .CHD .cue .CUE .dat .DAT .elf .ELF .gdi .GDI .iso .ISO .lst .LST .zip .ZIP .7z .7Z"
+    commands:
+      - { label: "Flycast (Standalone)", cmd: "{{ dg_box_home }}/bin/flycast-hires %ROM%" }
+      - { label: "Flycast (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/flycast_libretro.so %ROM%" }
+    platform: arcade
+    theme: naomi

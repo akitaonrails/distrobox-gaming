@@ -1,0 +1,193 @@
+---
+# UID/GID verification
+
+- name: Get box UID
+  ansible.builtin.shell: "{{ dg_in_box }} id -u"
+  register: _box_uid
+  changed_when: false
+
+- name: Get box GID
+  ansible.builtin.shell: "{{ dg_in_box }} id -g"
+  register: _box_gid
+  changed_when: false
+
+- name: Assert box UID/GID match host
+  ansible.builtin.assert:
+    that:
+      - _box_uid.stdout | trim | int == dg_host_uid | int
+      - _box_gid.stdout | trim | int == dg_host_gid | int
+    fail_msg: >-
+      Box UID:GID {{ _box_uid.stdout | trim }}:{{ _box_gid.stdout | trim }}
+      does not match expected {{ dg_host_uid }}:{{ dg_host_gid }}
+
+- name: Display verified identity
+  ansible.builtin.debug:
+    msg: "Host UID:GID {{ dg_host_uid }}:{{ dg_host_gid }} — Box UID:GID {{ _box_uid.stdout | trim }}:{{ _box_gid.stdout | trim }}"
+
+# Path verification
+
+- name: Verify BIOS root is readable
+  ansible.builtin.stat:
+    path: "{{ dg_bios_root }}"
+  register: _bios_dir
+
+- name: Assert BIOS root exists
+  ansible.builtin.assert:
+    that: _bios_dir.stat.exists and _bios_dir.stat.isdir
+    fail_msg: "BIOS root missing: {{ dg_bios_root }}"
+
+# Emulator command verification
+
+- name: Check emulator commands inside box
+  ansible.builtin.shell: "{{ dg_in_box }} sh -lc 'command -v {{ item }}'"
+  loop: "{{ dg_emulator_commands }}"
+  register: _cmd_checks
+  changed_when: false
+  failed_when: false
+
+- name: Report missing emulator commands
+  ansible.builtin.debug:
+    msg: "WARNING: Missing command in box: {{ item.item }}"
+  loop: "{{ _cmd_checks.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+  when: item.rc != 0
+
+# shadPS4 module verification
+
+- name: Find shadPS4 module symlinks
+  ansible.builtin.find:
+    paths: "{{ dg_box_home }}/.local/share/shadPS4/sys_modules"
+    file_type: link
+    recurse: false
+  register: _module_links
+
+- name: Find broken shadPS4 module symlinks
+  ansible.builtin.shell: "find {{ dg_box_home }}/.local/share/shadPS4/sys_modules -maxdepth 1 -xtype l 2>/dev/null"
+  register: _broken_links
+  changed_when: false
+
+- name: Assert no broken module symlinks
+  ansible.builtin.assert:
+    that: _broken_links.stdout_lines | length == 0
+    fail_msg: "Broken shadPS4 sys_module symlinks: {{ _broken_links.stdout_lines }}"
+
+- name: Verify critical shadPS4 modules exist
+  ansible.builtin.stat:
+    path: "{{ dg_box_home }}/.local/share/shadPS4/sys_modules/{{ item }}"
+  loop:
+    - libSceFont.sprx
+    - libSceNgs2.sprx
+    - libSceUlt.sprx
+    - libSceJson.sprx
+    - libSceJson2.sprx
+    - libSceLibcInternal.sprx
+  register: _module_files
+
+- name: Assert critical modules present
+  ansible.builtin.assert:
+    that: item.stat.exists
+    fail_msg: "Missing shadPS4 module: {{ item.item }}"
+  loop: "{{ _module_files.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+# Generated file verification
+
+- name: Stat critical generated files
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop:
+    - "{{ dg_box_home }}/bin/flycast-hires"
+    - "{{ dg_dolphin_config_dir }}/GCPadNew.ini"
+    - "{{ dg_dolphin_config_dir }}/WiimoteNew.ini"
+    - "{{ dg_dolphin_config_dir }}/Profiles/GCPad/8BitDo Ultimate 2 SDL.ini"
+    - "{{ dg_dolphin_config_dir }}/Profiles/Wiimote/8BitDo Ultimate 2 Classic.ini"
+    - "{{ dg_dolphin_config_dir }}/Profiles/Wiimote/8BitDo Ultimate 2 Nunchuk.ini"
+    - "{{ dg_xemu_config }}"
+    - "{{ dg_xemu_bootrom }}"
+    - "{{ dg_xemu_flashrom }}"
+    - "{{ dg_xemu_hdd }}"
+    - "{{ dg_shadps4_bin }}"
+    - "{{ dg_shadps4_qtlauncher_bin }}"
+    - "{{ dg_shadps4_qtlauncher_root }}/current/AppRun"
+    - "{{ dg_shadps4_managed_bin }}"
+    - "{{ dg_box_home }}/.local/share/shadPS4/custom_configs/{{ dg_shadps4_title_id }}.toml"
+    - "{{ dg_box_home }}/.config/shadPS4/custom_configs/{{ dg_shadps4_title_id }}.toml"
+    - "{{ dg_shadps4_patch_xml }}"
+    - "{{ dg_shadps4_game_dir }}"
+    - "{{ dg_shadps4_game_boot }}"
+    - "{{ dg_box_home }}/ES-DE/custom_systems/es_systems.xml"
+  register: _file_checks
+
+- name: Assert critical files exist
+  ansible.builtin.assert:
+    that: item.stat.exists
+    fail_msg: "Missing: {{ item.item }}"
+  loop: "{{ _file_checks.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+# Desktop entry verification
+
+- name: Check host desktop entry
+  ansible.builtin.stat:
+    path: "{{ dg_host_applications_dir }}/gaming-shadps4.desktop"
+  register: _desktop_entry
+
+- name: Warn if host desktop entry missing
+  ansible.builtin.debug:
+    msg: "WARNING: Host shadPS4 desktop entry missing"
+  when: not _desktop_entry.stat.exists
+
+# Xenia Manager verification (optional)
+
+- name: Check if Xenia Manager is installed
+  ansible.builtin.stat:
+    path: "{{ dg_xenia_manager_bin }}"
+  register: _xenia_installed
+
+- name: Verify Xenia Manager components
+  when: _xenia_installed.stat.exists
+  block:
+    - name: Stat Xenia Manager executable
+      ansible.builtin.stat:
+        path: "{{ dg_xenia_manager_exe }}"
+      register: _xenia_exe
+
+    - name: Assert Xenia Manager executable exists
+      ansible.builtin.assert:
+        that: _xenia_exe.stat.exists
+        fail_msg: "Xenia Manager executable missing: {{ dg_xenia_manager_exe }}"
+
+    - name: Stat Xenia Wine prefix
+      ansible.builtin.stat:
+        path: "{{ dg_xenia_prefix }}/drive_c"
+      register: _xenia_prefix
+
+    - name: Assert Xenia Wine prefix exists
+      ansible.builtin.assert:
+        that: _xenia_prefix.stat.exists
+        fail_msg: "Xenia Manager Wine prefix missing"
+
+    - name: Check wine available in box
+      ansible.builtin.shell: "{{ dg_in_box }} sh -lc 'command -v wine'"
+      changed_when: false
+
+# Root-owned file check
+
+- name: Find root-owned files in config directories
+  ansible.builtin.shell: >-
+    find "{{ dg_box_home }}/.config" "{{ dg_box_home }}/.local/share"
+    -maxdepth 4 -user 0 -print 2>/dev/null | head -20
+  register: _root_owned
+  changed_when: false
+
+- name: Assert no root-owned files
+  ansible.builtin.assert:
+    that: _root_owned.stdout_lines | length == 0
+    fail_msg: "Root-owned files found: {{ _root_owned.stdout_lines }}"
+
+- name: Verification completed
+  ansible.builtin.debug:
+    msg: "All verification checks passed"

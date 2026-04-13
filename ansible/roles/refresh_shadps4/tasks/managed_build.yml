@@ -1,0 +1,142 @@
+---
+- name: Fetch shadPS4 releases from GitHub
+  ansible.builtin.uri:
+    url: "{{ dg_shadps4_releases_api }}"
+    return_content: true
+    headers:
+      Accept: application/vnd.github.v3+json
+  register: _shadps4_releases
+
+- name: Determine if we want prerelease builds
+  ansible.builtin.set_fact:
+    _want_prerelease: "{{ (dg_shadps4_channel | lower).startswith('pre') }}"
+
+- name: Select matching shadPS4 release
+  ansible.builtin.set_fact:
+    _shadps4_release: >-
+      {{
+        _shadps4_releases.json
+        | rejectattr('draft')
+        | selectattr('prerelease', 'equalto', _want_prerelease | bool)
+        | list | first
+      }}
+
+- name: Extract shadPS4 asset info
+  ansible.builtin.set_fact:
+    _shadps4_tag: "{{ _shadps4_release.tag_name }}"
+    _shadps4_display_name: "{{ 'Pre-release (Nightly)' if _shadps4_release.prerelease else 'Stable' }}"
+    _shadps4_date: "{{ _shadps4_release.published_at[:10] if _shadps4_release.published_at | length >= 10 else '' }}"
+    _shadps4_codename: "{{ _shadps4_release.target_commitish | default(_shadps4_release.tag_name) }}"
+    _shadps4_type: "{{ 1 if _shadps4_release.prerelease else 0 }}"
+
+- name: Select Linux SDL asset
+  ansible.builtin.set_fact:
+    _shadps4_asset: >-
+      {{
+        (_shadps4_release.assets
+          | selectattr('name', 'match', '(?i).*sdl.*\.(AppImage|zip)$')
+          | list | first)
+        if (_shadps4_release.assets
+          | selectattr('name', 'match', '(?i).*sdl.*\.(AppImage|zip)$')
+          | list | length > 0)
+        else (_shadps4_release.assets
+          | selectattr('name', 'match', '.*\\.AppImage$')
+          | list | first)
+      }}
+
+- name: Create managed build directory
+  ansible.builtin.file:
+    path: "{{ dg_shadps4_versions_root }}/{{ dg_shadps4_channel }}"
+    state: directory
+    mode: "0755"
+
+- name: Check current installed tag
+  ansible.builtin.slurp:
+    src: "{{ dg_shadps4_versions_root }}/{{ dg_shadps4_channel }}/release.tag"
+  register: _current_tag
+  failed_when: false
+
+- name: Download and install shadPS4 build
+  when: >-
+    _current_tag is failed or
+    (_current_tag.content | default('') | b64decode | trim) != (_shadps4_tag | trim)
+  block:
+    - name: Download shadPS4 asset
+      ansible.builtin.get_url:
+        url: "{{ _shadps4_asset.browser_download_url }}"
+        dest: "/tmp/shadps4-{{ _shadps4_tag | trim }}.download"
+        mode: "0755"
+
+    - name: Install from zip asset
+      when: _shadps4_asset.name.endswith('.zip')
+      block:
+        - name: Create temp extraction directory
+          ansible.builtin.tempfile:
+            state: directory
+            prefix: shadps4-extract-
+          register: _extract_dir
+
+        - name: Extract zip
+          ansible.builtin.unarchive:
+            src: "/tmp/shadps4-{{ _shadps4_tag | trim }}.download"
+            dest: "{{ _extract_dir.path }}"
+            remote_src: true
+
+        - name: Find extracted AppImage
+          ansible.builtin.find:
+            paths: "{{ _extract_dir.path }}"
+            patterns: "Shadps4-sdl.AppImage"
+            recurse: true
+            depth: 2
+          register: _extracted_appimage
+
+        - name: Move AppImage to managed location
+          ansible.builtin.copy:
+            src: "{{ _extracted_appimage.files[0].path }}"
+            dest: "{{ dg_shadps4_managed_bin }}"
+            remote_src: true
+            mode: "0755"
+          when: _extracted_appimage.files | length > 0
+
+        - name: Clean up temp extraction
+          ansible.builtin.file:
+            path: "{{ _extract_dir.path }}"
+            state: absent
+
+    - name: Install AppImage asset directly
+      ansible.builtin.copy:
+        src: "/tmp/shadps4-{{ _shadps4_tag | trim }}.download"
+        dest: "{{ dg_shadps4_managed_bin }}"
+        remote_src: true
+        mode: "0755"
+      when: not _shadps4_asset.name.endswith('.zip')
+
+    - name: Clean up download
+      ansible.builtin.file:
+        path: "/tmp/shadps4-{{ _shadps4_tag | trim }}.download"
+        state: absent
+
+    - name: Record installed tag
+      ansible.builtin.copy:
+        content: "{{ _shadps4_tag | trim }}\n"
+        dest: "{{ dg_shadps4_versions_root }}/{{ dg_shadps4_channel }}/release.tag"
+        mode: "0644"
+
+- name: Deploy versions.json
+  ansible.builtin.template:
+    src: versions.json.j2
+    dest: "{{ dg_box_home }}/.local/share/shadPS4QtLauncher/versions.json"
+    mode: "0644"
+
+- name: Write cache.version file
+  ansible.builtin.copy:
+    content: "{{ _shadps4_display_name }}\n"
+    dest: "{{ dg_shadps4_versions_root }}/cache.version"
+    mode: "0644"
+
+- name: Deploy qt_ui.ini (first time only)
+  ansible.builtin.template:
+    src: qt_ui.ini.j2
+    dest: "{{ dg_box_home }}/.local/share/shadPS4QtLauncher/qt_ui.ini"
+    force: false
+    mode: "0644"

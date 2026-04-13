@@ -1,0 +1,31 @@
+---
+- name: Ensure shadPS4 config directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_box_home }}/.local/share/shadPS4/custom_configs"
+    - "{{ dg_box_home }}/.config/shadPS4/custom_configs"
+    - "{{ dg_box_home }}/.local/share/shadPS4/patches"
+
+- name: Copy Driveclub game config to local share
+  ansible.builtin.copy:
+    src: shadPS4/CUSA00003.toml
+    dest: "{{ dg_box_home }}/.local/share/shadPS4/custom_configs/{{ dg_shadps4_title_id }}.toml"
+    backup: true
+    mode: "0644"
+
+- name: Copy Driveclub game config to XDG config
+  ansible.builtin.copy:
+    src: shadPS4/CUSA00003.toml
+    dest: "{{ dg_box_home }}/.config/shadPS4/custom_configs/{{ dg_shadps4_title_id }}.toml"
+    backup: true
+    mode: "0644"
+
+- name: Copy Driveclub patch XML
+  ansible.builtin.copy:
+    src: shadPS4/Driveclub.xml
+    dest: "{{ dg_shadps4_patch_xml }}"
+    backup: true
+    mode: "0644"

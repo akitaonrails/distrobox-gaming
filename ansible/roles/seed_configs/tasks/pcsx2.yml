@@ -1,0 +1,18 @@
+---
+- name: Ensure PCSX2 config directory exists
+  ansible.builtin.file:
+    path: "{{ dg_pcsx2_ini | dirname }}"
+    state: directory
+    mode: "0755"
+
+- name: Set PCSX2 INI keys
+  community.general.ini_file:
+    path: "{{ dg_pcsx2_ini }}"
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    backup: true
+    mode: "0644"
+  loop: "{{ dg_pcsx2_settings }}"
+  loop_control:
+    label: "[{{ item.section }}] {{ item.option }}"

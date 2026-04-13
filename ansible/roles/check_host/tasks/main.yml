@@ -1,0 +1,127 @@
+---
+- name: Verify required host commands
+  ansible.builtin.command: "which {{ item }}"
+  loop:
+    - distrobox
+    - id
+    - find
+    - awk
+    - sed
+    - git
+    - curl
+    - python
+  changed_when: false
+
+- name: Verify box root is writable
+  ansible.builtin.file:
+    path: "{{ dg_box_root }}"
+    state: directory
+    mode: "0755"
+
+- name: Write-test box root
+  ansible.builtin.tempfile:
+    path: "{{ dg_box_root }}"
+    state: file
+    prefix: .dg-write-test-
+  register: _write_test
+
+- name: Remove write-test file
+  ansible.builtin.file:
+    path: "{{ _write_test.path }}"
+    state: absent
+
+- name: Check host desktop entry directory
+  ansible.builtin.file:
+    path: "{{ dg_host_applications_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Stat required readable directories
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop:
+    - "{{ dg_emudeck_root }}"
+    - "{{ dg_bios_root }}"
+  register: _required_dirs
+
+- name: Assert required directories exist and are readable
+  ansible.builtin.assert:
+    that:
+      - item.stat.exists
+      - item.stat.isdir
+      - item.stat.readable
+    fail_msg: "Required directory missing or unreadable: {{ item.item }}"
+  loop: "{{ _required_dirs.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: Stat optional storage directories
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop:
+    - "{{ dg_rom_root }}"
+    - "{{ dg_rom_heavy_root }}"
+    - "{{ dg_rom_rare_root }}"
+    - "{{ dg_ps4_rom_root }}"
+    - "{{ dg_ps4_firmware_modules }}"
+  register: _optional_dirs
+
+- name: Warn about missing optional directories
+  ansible.builtin.debug:
+    msg: "WARNING: optional directory does not exist: {{ item.item }}"
+  loop: "{{ _optional_dirs.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+  when: not item.stat.exists
+
+- name: Stat xemu BIOS/HDD source files
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop:
+    - "{{ dg_xemu_bootrom_source }}"
+    - "{{ dg_xemu_flashrom_source }}"
+    - "{{ dg_xemu_hdd_source }}"
+  register: _xemu_sources
+
+- name: Warn about missing xemu BIOS files
+  ansible.builtin.debug:
+    msg: "WARNING: xemu BIOS/HDD file missing: {{ item.item }}"
+  loop: "{{ _xemu_sources.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+  when: not item.stat.exists
+
+- name: Assert host UID matches expected value
+  ansible.builtin.assert:
+    that: ansible_facts.user_uid == dg_host_uid | int
+    fail_msg: >-
+      Host UID {{ ansible_facts.user_uid }} does not match expected dg_host_uid {{ dg_host_uid }}.
+      NAS access requires UID {{ dg_host_uid }}.
+
+- name: Check if distrobox already exists
+  ansible.builtin.shell: "distrobox list 2>/dev/null | awk '{print $3}' | grep -qx {{ dg_box_name }}"
+  register: _box_exists
+  changed_when: false
+  failed_when: false
+
+- name: Verify existing box UID/GID match
+  when: _box_exists.rc == 0
+  block:
+    - name: Get box UID
+      ansible.builtin.shell: "{{ dg_in_box }} id -u"
+      register: _box_uid
+      changed_when: false
+
+    - name: Get box GID
+      ansible.builtin.shell: "{{ dg_in_box }} id -g"
+      register: _box_gid
+      changed_when: false
+
+    - name: Assert box UID/GID match host
+      ansible.builtin.assert:
+        that:
+          - _box_uid.stdout | trim | int == dg_host_uid | int
+          - _box_gid.stdout | trim | int == dg_host_gid | int
+        fail_msg: >-
+          Box UID:GID {{ _box_uid.stdout | trim }}:{{ _box_gid.stdout | trim }}
+          does not match expected {{ dg_host_uid }}:{{ dg_host_gid }}

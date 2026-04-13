@@ -1,0 +1,54 @@
+# Package lists for the gaming distrobox.
+
+dg_pacman_packages:
+  - base-devel
+  - git
+  - curl
+  - wget
+  - unzip
+  - p7zip
+  - rsync
+  - which
+  - sed
+  - grep
+  - ripgrep
+  - awk
+  - mesa
+  - vulkan-icd-loader
+  - vulkan-tools
+  - libva
+  - libva-utils
+  - pipewire
+  - pipewire-pulse
+  - alsa-utils
+  - sdl2
+  - sdl3
+  - qt5-base
+  - qt5-wayland
+  - qt6-base
+  - qt6-wayland
+  - qt6-svg
+  - qt6-multimedia
+  - qt6-shadertools
+  - gtk3
+  - gtk4
+  - xdg-utils
+  - desktop-file-utils
+  - libarchive
+  - fuse2
+  - fuse3
+  - zlib-ng-compat
+
+dg_aur_packages:
+  - duckstation-qt-bin
+  - pcsx2-latest-bin
+  - rpcs3-bin
+  - eden-bin
+  - cemu-bin
+  - xemu-bin
+  - vita3k-bin
+  - shadps4-bin
+
+dg_xenia_pacman_packages:
+  - wine
+  - winetricks

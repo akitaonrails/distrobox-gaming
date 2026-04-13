@@ -1,0 +1,53 @@
+# Per-emulator INI settings applied by the seed_configs role.
+# Each entry maps to a community.general.ini_file call.
+
+dg_pcsx2_ini: "{{ dg_box_home }}/.config/PCSX2/inis/PCSX2.ini"
+dg_pcsx2_settings:
+  - { section: UI, option: ConfirmShutdown, value: "false" }
+  - { section: Hotkeys, option: ShutdownVM, value: "SDL-0/Start & SDL-0/Back" }
+
+dg_duckstation_ini: "{{ dg_box_home }}/.config/duckstation/settings.ini"
+dg_duckstation_settings:
+  - { section: Main, option: ConfirmPowerOff, value: "false" }
+  - { section: Main, option: SaveStateOnExit, value: "true" }
+  - { section: Main, option: StartFullscreen, value: "true" }
+  - { section: BIOS, option: SearchDirectory, value: "{{ dg_bios_root }}" }
+  - { section: GPU, option: Renderer, value: Vulkan }
+  - { section: GPU, option: ResolutionScale, value: "8" }
+  - { section: GPU, option: PGXPEnable, value: "true" }
+  - { section: GPU, option: PGXPDepthBuffer, value: "true" }
+  - { section: GPU, option: PGXPPreserveProjFP, value: "true" }
+  - { section: GPU, option: PGXPVertexCache, value: "false" }
+  - { section: GPU, option: WidescreenHack, value: "true" }
+  - { section: Display, option: VSync, value: "true" }
+  - { section: Display, option: OptimalFramePacing, value: "true" }
+
+dg_flycast_ini: "{{ dg_box_home }}/.config/flycast/emu.cfg"
+dg_flycast_settings:
+  - { section: config, option: pvr.AutoSkipFrame, value: "0" }
+  - { section: config, option: pvr.rend, value: "4" }
+  - { section: config, option: rend.DelayFrameSwapping, value: "no" }
+  - { section: config, option: rend.DupeFrames, value: "yes" }
+  - { section: config, option: rend.EmulateFramebuffer, value: "no" }
+  - { section: config, option: rend.Resolution, value: "2880" }
+  - { section: config, option: rend.WideScreen, value: "yes" }
+  - { section: config, option: rend.vsync, value: "yes" }
+
+# Emulator commands verified by the verify role.
+dg_emulator_commands:
+  - duckstation-qt
+  - pcsx2-qt
+  - flycast
+  - dolphin-emu
+  - PPSSPPQt
+  - rpcs3
+  - shadps4
+  - xemu
+
+# Dolphin controller config files to copy.
+dg_dolphin_configs:
+  - GCPadNew.ini
+  - WiimoteNew.ini
+  - Profiles/GCPad/8BitDo Ultimate 2 SDL.ini
+  - Profiles/Wiimote/8BitDo Ultimate 2 Classic.ini
+  - Profiles/Wiimote/8BitDo Ultimate 2 Nunchuk.ini

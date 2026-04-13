@@ -1,0 +1,33 @@
+---
+- name: Ensure shadPS4 QtLauncher data directory exists
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_box_home }}/.local/share/shadPS4QtLauncher"
+    - "{{ dg_box_home }}/.local/share/shadPS4QtLauncher/game_data"
+    - "{{ dg_box_home }}/bin"
+
+- ansible.builtin.include_tasks: qtlauncher.yml
+- ansible.builtin.include_tasks: managed_build.yml
+- ansible.builtin.include_tasks: wrappers.yml
+
+# Re-run config roles that depend on shadPS4 paths
+
+- name: Refresh shadPS4 runtime directories and configs
+  ansible.builtin.include_role:
+    name: link_storage
+
+- name: Refresh shadPS4 game configs
+  ansible.builtin.include_role:
+    name: seed_configs
+    tasks_from: shadps4.yml
+
+- name: Refresh desktop launchers
+  ansible.builtin.include_role:
+    name: desktop_apps
+
+- name: Regenerate ES-DE config
+  ansible.builtin.include_role:
+    name: configure_esde

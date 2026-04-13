@@ -1,0 +1,13 @@
+# Xenia Manager / Wine prefix configuration.
+
+dg_xenia_prefix: "{{ dg_box_home }}/wineprefixes/xenia-manager"
+dg_xenia_cache_dir: "{{ dg_box_home }}/cache/xenia-manager"
+dg_xenia_manager_releases_dir: "{{ dg_box_home }}/tools/xenia-manager/releases"
+dg_xenia_manager_current: "{{ dg_box_home }}/tools/xenia-manager/current"
+dg_xenia_manager_exe: "{{ dg_xenia_manager_current }}/XeniaManager.exe"
+dg_xenia_manager_bin: "{{ dg_box_home }}/bin/xenia-manager"
+dg_xenia_manager_release_api: https://api.github.com/repos/xenia-manager/xenia-manager/releases/latest
+dg_xenia_manager_zip_url: ""
+dg_xenia_dotnet_url: https://aka.ms/dotnet/10.0/windowsdesktop-runtime-win-x64.exe
+dg_xenia_vcredist_url: https://aka.ms/vs/17/release/vc_redist.x64.exe
+dg_xenia_game_dir: "{{ dg_rom_root }}/xbox360"

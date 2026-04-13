@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<Patch>
+    <TitleID>
+        <ID>CUSA00003</ID>
+        <ID>CUSA00064</ID>
+        <ID>CUSA00066</ID>
+        <ID>CUSA00093</ID>
+        <ID>CUSA00879</ID>
+    </TitleID>
+    <Metadata Title="Driveclub"
+              Name="60 FPS with deltatime"
+              Note="Patch version 2.0 features deltatime. This can break some things in the game; if that is an issue, use the fixed tickrate patch instead."
+              Author="illusion, u/Charlie_Muggins"
+              PatchVer="2.0"
+              AppVer="01.28"
+              AppElf="eboot.bin"
+              isEnabled="true">
+        <PatchList>
+            <Line Type="bytes" Address="0x01184800" Value="b801000000"/>
+            <Line Type="bytes" Address="0x01184725" Value="48b001"/>
+            <Line Type="bytes" Address="0x00a6306e" Value="9090"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub"
+              Name="60 FPS with fixed tickrate"
+              Note="Alternative 60 FPS patch using the engine's builtin path."
+              Author="kalaposfos"
+              PatchVer="1.0"
+              AppVer="01.28"
+              AppElf="eboot.bin"
+              isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x01762801" Value="67"/>
+        </PatchList>
+    </Metadata>
+</Patch>
+

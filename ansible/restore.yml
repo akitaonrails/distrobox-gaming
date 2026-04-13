@@ -1,0 +1,62 @@
+---
+- name: Restore gaming distrobox from backup
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  vars_prompt:
+    - name: backup_timestamp
+      prompt: "Enter backup timestamp to restore (from .meta filename, e.g. 20260413T120000)"
+      private: false
+  tasks:
+    - name: Verify backup image exists
+      ansible.builtin.stat:
+        path: "{{ dg_backup_dir }}/{{ dg_box_name }}-image-{{ backup_timestamp }}.tar"
+      register: _backup_image
+
+    - name: Verify backup home archive exists
+      ansible.builtin.stat:
+        path: "{{ dg_backup_dir }}/{{ dg_box_name }}-home-{{ backup_timestamp }}.tar.gz"
+      register: _backup_home
+
+    - name: Fail if backup files not found
+      ansible.builtin.assert:
+        that:
+          - _backup_image.stat.exists
+          - _backup_home.stat.exists
+        fail_msg: >-
+          Backup files not found for timestamp {{ backup_timestamp }} in {{ dg_backup_dir }}.
+          Available backups: ls {{ dg_backup_dir }}/*.meta
+
+    - name: Stop existing box
+      ansible.builtin.command: "distrobox stop -Y {{ dg_box_name }}"
+      failed_when: false
+      changed_when: false
+
+    - name: Remove existing box
+      ansible.builtin.command: "distrobox rm -f {{ dg_box_name }}"
+      failed_when: false
+      changed_when: true
+
+    - name: Load backup image
+      ansible.builtin.command: >-
+        podman load -i {{ dg_backup_dir }}/{{ dg_box_name }}-image-{{ backup_timestamp }}.tar
+
+    - name: Restore home directory from archive
+      ansible.builtin.unarchive:
+        src: "{{ dg_backup_dir }}/{{ dg_box_name }}-home-{{ backup_timestamp }}.tar.gz"
+        dest: "{{ dg_box_home }}"
+        remote_src: true
+
+    - name: Recreate distrobox from backup image
+      ansible.builtin.command: >-
+        distrobox create
+        --name {{ dg_box_name }}
+        --image distrobox-gaming-backup:{{ backup_timestamp }}
+        --home {{ dg_box_home }}
+        --volume {{ dg_emudeck_root }}:{{ dg_emudeck_root }}:rw
+        --volume {{ dg_box_root }}:{{ dg_box_root }}:rw
+        --volume {{ dg_host_applications_dir }}:{{ dg_host_applications_dir }}:rw
+
+    - name: Report restore complete
+      ansible.builtin.debug:
+        msg: "Restore complete from backup {{ backup_timestamp }}. Run verify to check state."

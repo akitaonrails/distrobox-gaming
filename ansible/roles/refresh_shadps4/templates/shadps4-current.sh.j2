@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+set -eu
+target="{{ dg_shadps4_managed_bin }}"
+if [ ! -x "$target" ]; then
+  printf '%s\n' "ERROR: QtLauncher-managed shadPS4 build missing: $target" >&2
+  printf '%s\n' "Install or update the {{ dg_shadps4_channel }} build from shadPS4 QtLauncher first." >&2
+  exit 1
+fi
+exec "$target" "$@"

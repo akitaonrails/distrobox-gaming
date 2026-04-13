@@ -1,0 +1,20 @@
+---
+# Reset emulator configs to Ansible-managed defaults.
+# Does NOT reinstall the box, packages, or shadPS4 binaries.
+#
+# Usage:
+#   ansible-playbook playbooks/reset-configs.yml               # reset everything
+#   ansible-playbook playbooks/reset-configs.yml --tags esde    # reset only ES-DE
+#   ansible-playbook playbooks/reset-configs.yml --tags configs # reset only emulator INIs
+#   ansible-playbook playbooks/reset-configs.yml --tags desktop # reset only desktop entries
+
+- name: Reset emulator configs to defaults
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - { role: link_storage,    tags: [storage] }
+    - { role: seed_configs,    tags: [configs] }
+    - { role: desktop_apps,    tags: [desktop] }
+    - { role: configure_esde,  tags: [esde] }
+    - { role: verify,          tags: [verify] }

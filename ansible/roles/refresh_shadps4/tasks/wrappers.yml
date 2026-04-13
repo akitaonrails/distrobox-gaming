@@ -1,0 +1,19 @@
+---
+- name: Deploy shadps4-current wrapper
+  ansible.builtin.template:
+    src: shadps4-current.sh.j2
+    dest: "{{ dg_shadps4_bin }}"
+    mode: "0755"
+
+- name: Deploy shadps4-qtlauncher-current wrapper
+  ansible.builtin.template:
+    src: shadps4-qtlauncher-current.sh.j2
+    dest: "{{ dg_shadps4_qtlauncher_bin }}"
+    mode: "0755"
+
+- name: Create shadps4 command alias symlink
+  ansible.builtin.file:
+    src: "{{ dg_shadps4_bin }}"
+    dest: "{{ dg_shadps4_cmd_alias }}"
+    state: link
+    force: true

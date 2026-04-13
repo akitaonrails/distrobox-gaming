@@ -1,0 +1,73 @@
+---
+# xemu BIOS/HDD symlinks
+
+- name: Create xemu config directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_xemu_config_dir }}"
+    - "{{ dg_xemu_data_dir }}"
+
+- name: Stat xemu BIOS source files
+  ansible.builtin.stat:
+    path: "{{ item.src }}"
+  loop:
+    - { src: "{{ dg_xemu_bootrom_source }}", dest: "{{ dg_xemu_bootrom }}" }
+    - { src: "{{ dg_xemu_flashrom_source }}", dest: "{{ dg_xemu_flashrom }}" }
+    - { src: "{{ dg_xemu_hdd_source }}", dest: "{{ dg_xemu_hdd }}" }
+  register: _xemu_sources
+  loop_control:
+    label: "{{ item.src | basename }}"
+
+- name: Symlink xemu BIOS/HDD files
+  ansible.builtin.file:
+    src: "{{ item.item.src }}"
+    dest: "{{ item.item.dest }}"
+    state: link
+    force: true
+  loop: "{{ _xemu_sources.results }}"
+  loop_control:
+    label: "{{ item.item.src | basename }}"
+  when: item.stat.exists
+
+# shadPS4 firmware module symlinks
+
+- name: Create shadPS4 runtime directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_box_home }}/.local/share/shadPS4/sys_modules"
+    - "{{ dg_box_home }}/.local/share/shadPS4/patches"
+    - "{{ dg_box_home }}/.local/share/shadPS4/custom_configs"
+    - "{{ dg_box_home }}/.config/shadPS4/custom_configs"
+
+- name: Stat PS4 firmware modules directory
+  ansible.builtin.stat:
+    path: "{{ dg_ps4_firmware_modules }}"
+  register: _fw_dir
+
+- name: Find PS4 firmware module files
+  ansible.builtin.find:
+    paths: "{{ dg_ps4_firmware_modules }}"
+    file_type: file
+    recurse: false
+  register: _fw_files
+  when: _fw_dir.stat.exists
+
+- name: Symlink PS4 firmware modules
+  ansible.builtin.file:
+    src: "{{ item.path }}"
+    dest: "{{ dg_box_home }}/.local/share/shadPS4/sys_modules/{{ item.path | basename }}"
+    state: link
+  loop: "{{ _fw_files.files | default([]) }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
+
+- name: Warn if firmware modules directory missing
+  ansible.builtin.debug:
+    msg: "WARNING: PS4 firmware modules missing: {{ dg_ps4_firmware_modules }}"
+  when: not _fw_dir.stat.exists

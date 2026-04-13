@@ -1,0 +1,7 @@
+---
+- name: Install flycast-hires wrapper
+  ansible.builtin.copy:
+    src: wrappers/flycast-hires
+    dest: "{{ dg_box_home }}/bin/flycast-hires"
+    mode: "0755"
+    backup: true

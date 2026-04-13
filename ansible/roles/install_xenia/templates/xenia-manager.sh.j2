@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+set -eu
+if [ ! -f "{{ dg_xenia_manager_exe }}" ]; then
+  printf '%s\n' "ERROR: Xenia Manager is not installed at {{ dg_xenia_manager_exe }}" >&2
+  printf '%s\n' "Run: ansible-playbook playbooks/site.yml --tags xenia" >&2
+  exit 1
+fi
+export WINEPREFIX="{{ dg_xenia_prefix }}"
+export WINEARCH=win64
+export WINEDEBUG=-all
+exec wine "{{ dg_xenia_manager_exe }}" "$@"

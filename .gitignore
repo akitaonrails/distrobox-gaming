@@ -5,6 +5,10 @@ config/distrobox-gaming.env
 *.log
 config/desktop/rendered/
 
+# Ansible local overrides and retry files.
+ansible/host_vars/localhost.yml
+*.retry
+
 # Never commit emulator runtime state, saves, firmware, ROMs, or caches.
 runtime/
 roms/

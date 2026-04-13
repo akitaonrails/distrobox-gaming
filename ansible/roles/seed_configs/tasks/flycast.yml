@@ -1,0 +1,23 @@
+---
+- name: Check if Flycast config exists
+  ansible.builtin.stat:
+    path: "{{ dg_flycast_ini }}"
+  register: _flycast_ini
+
+- name: Set Flycast INI keys when config exists
+  community.general.ini_file:
+    path: "{{ dg_flycast_ini }}"
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    backup: true
+    mode: "0644"
+  loop: "{{ dg_flycast_settings }}"
+  loop_control:
+    label: "[{{ item.section }}] {{ item.option }}"
+  when: _flycast_ini.stat.exists
+
+- name: Note if Flycast config not found
+  ansible.builtin.debug:
+    msg: "Flycast config not found yet; wrapper will force critical runtime settings"
+  when: not _flycast_ini.stat.exists

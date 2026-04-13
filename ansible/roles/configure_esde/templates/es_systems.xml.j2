@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!-- Managed by Ansible - run reset-configs.yml to restore defaults. -->
+<systemList>
+{% for sys in dg_esde_systems %}
+    <system>
+        <name>{{ sys.name }}</name>
+        <fullname>{{ sys.fullname }}</fullname>
+        <path>{{ sys.path }}</path>
+        <extension>{{ sys.extension }}</extension>
+{% for cmd in sys.commands %}
+        <command label="{{ cmd.label }}">{{ cmd.cmd }}</command>
+{% endfor %}
+        <platform>{{ sys.platform }}</platform>
+        <theme>{{ sys.theme }}</theme>
+    </system>
+{% if not loop.last %}
+
+{% endif %}
+{% endfor %}
+</systemList>

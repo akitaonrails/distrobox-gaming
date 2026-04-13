@@ -1,0 +1,7 @@
+# Machine-specific overrides.
+# Copy to localhost.yml and edit for your setup.
+#
+# dg_host_uid: 1000
+# dg_host_gid: 1000
+# dg_data_root: /home/me/gaming
+# dg_emudeck_root: /media/games/EmuDeck
