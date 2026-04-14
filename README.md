@@ -45,10 +45,6 @@ ansible-playbook site.yml --tags create          # create the distrobox
 ansible-playbook site.yml --tags bootstrap       # install pacman + AUR packages
 ansible-playbook site.yml --tags shadps4         # install/update shadPS4
 ansible-playbook site.yml --tags configure       # configs, desktop entries, ES-DE
-ansible-playbook site.yml --tags dlcs            # install PS3 DLCs + Switch NSPs
-ansible-playbook site.yml --tags cheats          # link Switch cheats to Eden
-ansible-playbook site.yml --tags rpcs3_configs   # per-game RPCS3 tuning
-ansible-playbook site.yml --tags retroarch       # download RA cores + assets
 ansible-playbook site.yml --tags scripts         # deploy box helper scripts
 ansible-playbook site.yml --tags shell           # deploy zsh + starship
 ansible-playbook site.yml --tags verify          # post-setup assertions
@@ -56,6 +52,18 @@ ansible-playbook reset-configs.yml --tags esde     # reset only ES-DE
 ansible-playbook reset-configs.yml --tags configs   # reset only emulator INIs
 ansible-playbook reset-configs.yml --tags desktop   # reset only desktop entries
 ansible-playbook reset-configs.yml --tags shell     # reset only zsh/starship
+```
+
+### Opt-in roles (skipped by default)
+
+These roles touch your specific ROM/NAS layout or perform large downloads,
+so they only run when the matching tag is explicitly passed:
+
+```sh
+ansible-playbook site.yml --tags dlcs            # install PS3 DLCs + Switch NSPs
+ansible-playbook site.yml --tags cheats          # link Switch cheats to Eden
+ansible-playbook site.yml --tags rpcs3_configs   # per-game RPCS3 tuning
+ansible-playbook site.yml --tags retroarch       # download RA cores + assets
 ```
 
 ## Path Configuration

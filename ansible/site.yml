@@ -11,10 +11,13 @@
     - { role: link_storage,              tags: [configure, storage] }
     - { role: seed_configs,              tags: [configure, configs, reset_configs] }
     - { role: scripts_in_box,            tags: [configure, scripts] }
-    - { role: install_dlcs,              tags: [dlcs] }
-    - { role: switch_cheats,             tags: [cheats] }
-    - { role: rpcs3_per_game_configs,    tags: [rpcs3_configs] }
-    - { role: retroarch_extras,          tags: [retroarch] }
+    # Opt-in roles: skipped by default, run only when the matching tag
+    # is explicitly passed (e.g. --tags dlcs). These operate against
+    # your specific NAS/ROM layout or make large downloads.
+    - { role: install_dlcs,              tags: [dlcs, never] }
+    - { role: switch_cheats,             tags: [cheats, never] }
+    - { role: rpcs3_per_game_configs,    tags: [rpcs3_configs, never] }
+    - { role: retroarch_extras,          tags: [retroarch, never] }
     - { role: desktop_apps,              tags: [configure, desktop, reset_configs] }
     - { role: configure_esde,            tags: [configure, esde, reset_configs] }
     - { role: shell_config,              tags: [configure, shell, reset_configs] }
