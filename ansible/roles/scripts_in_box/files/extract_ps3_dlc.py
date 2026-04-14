@@ -16,6 +16,7 @@ Usage:
 Default dest: ~/.config/rpcs3/dev_hdd0/game/
 """
 
+import re
 import struct
 import os
 import sys
@@ -27,6 +28,48 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 PS3_PKG_AES_KEY = bytes.fromhex('2E7B71D7C9C9A14EA3221F188828B8F8')
 
 DEFAULT_DEST = os.path.expanduser('~/.config/rpcs3/dev_hdd0/game')
+
+# Game patch PKG filenames encode the version as -A<major><minor>- where
+# both halves are zero-padded 2-digit decimal: e.g. -A0122- -> 01.22.
+PATCH_VER_RE = re.compile(r'-A(\d{2})(\d{2})-V')
+
+
+def sfo_version(sfo_path: str) -> str | None:
+    """Extract the VERSION field from a PS3 PARAM.SFO, if present."""
+    try:
+        with open(sfo_path, 'rb') as f:
+            data = f.read()
+    except OSError:
+        return None
+    if len(data) < 20 or data[:4] != b'\x00PSF':
+        return None
+    key_table_off = struct.unpack('<I', data[8:12])[0]
+    data_table_off = struct.unpack('<I', data[12:16])[0]
+    num_entries = struct.unpack('<I', data[16:20])[0]
+    for i in range(num_entries):
+        idx = 20 + i * 16
+        if idx + 16 > len(data):
+            break
+        key_off = struct.unpack('<H', data[idx:idx + 2])[0]
+        data_len = struct.unpack('<I', data[idx + 4:idx + 8])[0]
+        data_off = struct.unpack('<I', data[idx + 12:idx + 16])[0]
+        kp = key_table_off + key_off
+        ke = data.index(b'\x00', kp) if b'\x00' in data[kp:] else len(data)
+        key = data[kp:ke].decode('utf-8', errors='replace')
+        if key == 'VERSION':
+            raw = data[data_table_off + data_off:data_table_off + data_off + data_len]
+            return raw.split(b'\x00', 1)[0].decode('utf-8', errors='replace')
+    return None
+
+
+def patch_ver_from_filename(pkg_name: str) -> str | None:
+    m = PATCH_VER_RE.search(pkg_name)
+    return f'{m.group(1)}.{m.group(2)}' if m else None
+
+
+def ver_tuple(v: str) -> tuple:
+    parts = v.split('.')
+    return tuple(int(x) for x in parts) if all(p.isdigit() for p in parts) else (0,)
 
 
 def increment_iv(iv_bytes: bytes, blocks: int) -> bytes:
@@ -95,6 +138,17 @@ def extract_pkg(pkg_path: str, dest_base: str, dry_run: bool = False) -> bool:
 
         dest_dir = os.path.join(dest_base, content_id)
 
+        # Patch-version idempotency: if this PKG is a game patch and the
+        # destination already contains an equal-or-newer PARAM.SFO VERSION,
+        # skip the whole file. File-size checks alone aren't sufficient
+        # because different patch versions often share file sizes.
+        patch_ver = patch_ver_from_filename(pkg_name)
+        if patch_ver:
+            existing_ver = sfo_version(os.path.join(dest_dir, 'PARAM.SFO'))
+            if existing_ver and ver_tuple(existing_ver) >= ver_tuple(patch_ver):
+                print(f'  SKIP {pkg_name}: existing {content_id} already at version {existing_ver}')
+                return True
+
         if dry_run:
             print(f'  DRY RUN: {pkg_name} -> {dest_dir} ({item_count} items)')
             return True
@@ -144,6 +198,9 @@ def extract_pkg(pkg_path: str, dest_base: str, dry_run: bool = False) -> bool:
         # Extract files
         extracted = 0
         skipped = 0
+        # Patch PKGs must overwrite even when sizes match (different content);
+        # for DLC PKGs (no patch_ver) the size check is a safe idempotency hint.
+        is_patch = patch_ver is not None
         for name, file_off, file_sz, is_dir, ctype in entries:
             if is_dir or file_sz == 0:
                 continue
@@ -151,8 +208,8 @@ def extract_pkg(pkg_path: str, dest_base: str, dry_run: bool = False) -> bool:
             file_path = os.path.join(dest_dir, name)
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
-            # Skip if already extracted and same size
-            if os.path.exists(file_path) and os.path.getsize(file_path) == file_sz:
+            # Skip if already extracted and same size (DLCs only)
+            if not is_patch and os.path.exists(file_path) and os.path.getsize(file_path) == file_sz:
                 skipped += 1
                 continue
 
