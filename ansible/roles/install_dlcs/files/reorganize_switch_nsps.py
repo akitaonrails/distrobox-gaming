@@ -143,7 +143,7 @@ def scan(source: str):
     unresolved = []
     for dirpath, _, files in os.walk(source):
         for fn in files:
-            if not fn.lower().endswith(".nsp"):
+            if not fn.lower().endswith((".nsp", ".nsz", ".xci", ".xcz")):
                 continue
             full = os.path.join(dirpath, fn)
             tid = extract_tid_from_nsp(full)
@@ -220,10 +220,24 @@ def main(argv: list) -> int:
     if dry_run:
         return 0
 
+    # Safety guard: detect dst collisions before any move happens.
+    seen_dst = set()
+    for _, dst in moves:
+        if dst in seen_dst:
+            print(f"ERROR: destination collision, refusing to run: {dst}",
+                  file=sys.stderr)
+            return 1
+        seen_dst.add(dst)
+
     moved = 0
     errors = 0
     for src, dst in moves:
         os.makedirs(os.path.dirname(dst), exist_ok=True)
+        # Refuse to overwrite an existing file at destination.
+        if os.path.exists(dst):
+            print(f"  SKIP (exists): {dst}", file=sys.stderr)
+            errors += 1
+            continue
         try:
             os.rename(src, dst)
             moved += 1
@@ -231,12 +245,17 @@ def main(argv: list) -> int:
             print(f"  ERROR moving {src}: {e}", file=sys.stderr)
             errors += 1
 
-    # Clean up now-empty source dirs
+    # Clean up now-empty source dirs. Skip any directory whose name looks
+    # like one of our destination TID folders (16 hex chars) or UNKNOWN —
+    # those are the ones we just moved files INTO and should preserve even
+    # if they happen to be empty.
+    import re
+    tid_re = re.compile(r"^[0-9A-Fa-f]{16}$")
     for dirpath, dirnames, filenames in os.walk(source, topdown=False):
         if dirpath == source:
             continue
-        # Only remove if outside dest tree (avoid removing destination dirs)
-        if os.path.commonpath([dirpath, dest]) == os.path.abspath(dest):
+        name = os.path.basename(dirpath)
+        if tid_re.match(name) or name == "UNKNOWN":
             continue
         if not filenames and not dirnames:
             try:
