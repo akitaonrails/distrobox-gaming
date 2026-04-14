@@ -4,13 +4,18 @@
   connection: local
   gather_facts: true
   roles:
-    - { role: check_host,          tags: [check] }
-    - { role: create_box,          tags: [create] }
-    - { role: bootstrap_packages,  tags: [bootstrap] }
-    - { role: refresh_shadps4,     tags: [shadps4] }
-    - { role: link_storage,        tags: [configure, storage] }
-    - { role: seed_configs,        tags: [configure, configs, reset_configs] }
-    - { role: desktop_apps,        tags: [configure, desktop, reset_configs] }
-    - { role: configure_esde,      tags: [configure, esde, reset_configs] }
-    - { role: shell_config,        tags: [configure, shell, reset_configs] }
-    - { role: verify,              tags: [verify] }
+    - { role: check_host,                tags: [check] }
+    - { role: create_box,                tags: [create] }
+    - { role: bootstrap_packages,        tags: [bootstrap] }
+    - { role: refresh_shadps4,           tags: [shadps4] }
+    - { role: link_storage,              tags: [configure, storage] }
+    - { role: seed_configs,              tags: [configure, configs, reset_configs] }
+    - { role: scripts_in_box,            tags: [configure, scripts] }
+    - { role: install_dlcs,              tags: [dlcs] }
+    - { role: switch_cheats,             tags: [cheats] }
+    - { role: rpcs3_per_game_configs,    tags: [rpcs3_configs] }
+    - { role: retroarch_extras,          tags: [retroarch] }
+    - { role: desktop_apps,              tags: [configure, desktop, reset_configs] }
+    - { role: configure_esde,            tags: [configure, esde, reset_configs] }
+    - { role: shell_config,              tags: [configure, shell, reset_configs] }
+    - { role: verify,                    tags: [verify] }

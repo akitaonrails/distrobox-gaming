@@ -1,0 +1,27 @@
+---
+- name: Ensure scripts and bin directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_box_home }}/scripts"
+    - "{{ dg_box_home }}/bin"
+
+- name: Deploy PS3 PKG/DLC extractor
+  ansible.builtin.copy:
+    src: extract_ps3_dlc.py
+    dest: "{{ dg_box_home }}/scripts/extract_ps3_dlc.py"
+    mode: "0755"
+
+- name: Deploy Switch NSP installer for Eden
+  ansible.builtin.copy:
+    src: install_switch_updates.py
+    dest: "{{ dg_box_home }}/scripts/install_switch_updates.py"
+    mode: "0755"
+
+- name: Deploy update-gaming one-shot updater
+  ansible.builtin.copy:
+    src: update-gaming
+    dest: "{{ dg_box_home }}/bin/update-gaming"
+    mode: "0755"

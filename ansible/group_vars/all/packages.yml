@@ -42,6 +42,8 @@ dg_pacman_packages:
   - ppsspp
   - zsh
   - starship
+  - retroarch
+  - python-cryptography
 
 dg_aur_packages:
   - duckstation-qt-bin

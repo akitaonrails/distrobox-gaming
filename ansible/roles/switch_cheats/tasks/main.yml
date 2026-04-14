@@ -1,0 +1,37 @@
+---
+- name: Stat Switch cheats source directory
+  ansible.builtin.stat:
+    path: "{{ dg_switch_cheats_source }}"
+  register: _switch_cheats_dir
+  when: dg_switch_cheats_source | length > 0
+
+- name: Warn if Switch cheats source missing
+  ansible.builtin.debug:
+    msg: "WARNING: Switch cheats source not found: {{ dg_switch_cheats_source }}"
+  when:
+    - dg_switch_cheats_source | length > 0
+    - not (_switch_cheats_dir.stat.exists | default(false))
+
+- name: Deploy Switch cheats linker script
+  ansible.builtin.copy:
+    src: link_switch_cheats.py
+    dest: "{{ dg_box_home }}/scripts/link_switch_cheats.py"
+    mode: "0755"
+  when: dg_switch_cheats_source | length > 0 and (_switch_cheats_dir.stat.exists | default(false))
+
+- name: Symlink Switch cheats into Eden load path
+  ansible.builtin.command: >-
+    python3 {{ dg_box_home }}/scripts/link_switch_cheats.py
+    {{ dg_switch_cheats_source }}
+    --dest {{ dg_eden_load_dir }}
+  register: _cheat_link
+  changed_when: "'linked, ' in _cheat_link.stdout and not _cheat_link.stdout is search('0 linked')"
+  when: dg_switch_cheats_source | length > 0 and (_switch_cheats_dir.stat.exists | default(false))
+
+- name: Report cheat link summary
+  ansible.builtin.debug:
+    msg: "{{ _cheat_link.stdout_lines[-1] }}"
+  when:
+    - dg_switch_cheats_source | length > 0
+    - _cheat_link is defined
+    - _cheat_link.stdout_lines is defined

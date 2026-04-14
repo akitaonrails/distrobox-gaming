@@ -19,9 +19,12 @@
     backup: true
     mode: "0644"
 
+- name: Check current shell inside box
+  ansible.builtin.shell: "{{ dg_in_box }} getent passwd $(whoami) | cut -d: -f7"
+  register: _current_shell
+  changed_when: false
+
 - name: Set zsh as default shell inside box
-  ansible.builtin.shell: >-
-    {{ dg_in_box }} sudo chsh -s /usr/bin/zsh $(whoami)
-  register: _chsh
-  changed_when: "'changed' in _chsh.stdout or _chsh.rc == 0"
-  failed_when: false
+  ansible.builtin.shell: "{{ dg_in_box }} sudo chsh -s /usr/bin/zsh $(whoami)"
+  when: _current_shell.stdout | trim != '/usr/bin/zsh'
+  changed_when: true

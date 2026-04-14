@@ -1,0 +1,43 @@
+---
+# Generate per-game RPCS3 custom configs based on RPCS3.net compatibility API.
+# Only writes configs for games that benefit from tuning (Ingame, Loadable);
+# skips Playable games (defaults work) and Nothing/Unknown (no point).
+
+- name: Stat PS3 ROM root
+  ansible.builtin.stat:
+    path: "{{ dg_rom_heavy_root }}/ps3"
+  register: _ps3_root
+
+- name: Skip per-game configs if PS3 ROMs missing
+  ansible.builtin.debug:
+    msg: "PS3 ROM root not found at {{ dg_rom_heavy_root }}/ps3 — skipping per-game configs"
+  when: not _ps3_root.stat.exists
+
+- name: Per-game config generation
+  when: _ps3_root.stat.exists
+  block:
+    - name: Ensure RPCS3 custom_configs directory exists
+      ansible.builtin.file:
+        path: "{{ dg_rpcs3_custom_configs }}"
+        state: directory
+        mode: "0755"
+
+    - name: Deploy RPCS3 per-game config generator
+      ansible.builtin.copy:
+        src: generate_rpcs3_configs.py
+        dest: "{{ dg_box_home }}/scripts/generate_rpcs3_configs.py"
+        mode: "0755"
+
+    - name: Generate per-game RPCS3 configs
+      ansible.builtin.command: >-
+        python3 {{ dg_box_home }}/scripts/generate_rpcs3_configs.py
+        {{ dg_rom_heavy_root }}/ps3
+        --dest {{ dg_rpcs3_custom_configs }}
+        {{ '--force' if dg_rpcs3_force_overwrite | default(false) else '' }}
+      register: _gen
+      changed_when: "'written' in _gen.stdout and not _gen.stdout is search('0 written')"
+
+    - name: Show generation summary
+      ansible.builtin.debug:
+        msg: "{{ _gen.stdout_lines[-15:] }}"
+      when: _gen.stdout_lines is defined

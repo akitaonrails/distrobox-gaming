@@ -1,0 +1,101 @@
+---
+# Install RetroArch buildbot cores and asset packs.
+# Cores are downloaded as .zip and unpacked into ~/.config/retroarch/cores/.
+# Assets are downloaded and unpacked into their respective subdirectories.
+# get_url with skip-if-exists keeps this idempotent.
+
+- name: Ensure RetroArch directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_retroarch_dir }}"
+    - "{{ dg_retroarch_dir }}/cores"
+    - "{{ dg_retroarch_cache_dir }}"
+
+# Cores: only download if the unpacked .so doesn't exist yet.
+
+- name: Stat installed RetroArch cores
+  ansible.builtin.stat:
+    path: "{{ dg_retroarch_dir }}/cores/{{ item }}_libretro.so"
+  loop: "{{ dg_retroarch_cores }}"
+  register: _core_stat
+  loop_control:
+    label: "{{ item }}"
+
+- name: Download missing RetroArch buildbot cores
+  ansible.builtin.get_url:
+    url: "{{ dg_retroarch_buildbot }}/nightly/linux/x86_64/latest/{{ item.item }}_libretro.so.zip"
+    dest: "{{ dg_retroarch_cache_dir }}/{{ item.item }}_libretro.so.zip"
+    mode: "0644"
+    timeout: 60
+    force: false
+  loop: "{{ _core_stat.results }}"
+  when: not item.stat.exists
+  failed_when: false
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: Extract RetroArch cores
+  ansible.builtin.unarchive:
+    src: "{{ dg_retroarch_cache_dir }}/{{ item.item }}_libretro.so.zip"
+    dest: "{{ dg_retroarch_dir }}/cores/"
+    remote_src: true
+    creates: "{{ dg_retroarch_dir }}/cores/{{ item.item }}_libretro.so"
+  loop: "{{ _core_stat.results }}"
+  when: not item.stat.exists
+  loop_control:
+    label: "{{ item.item }}"
+
+# Assets: stamp file marks completion so re-runs skip the whole download/extract.
+
+- name: Ensure RetroArch asset directories exist
+  ansible.builtin.file:
+    path: "{{ dg_retroarch_dir }}/{{ item.dir }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ dg_retroarch_assets }}"
+  loop_control:
+    label: "{{ item.dir }}"
+
+- name: Stat asset stamp files
+  ansible.builtin.stat:
+    path: "{{ dg_retroarch_dir }}/{{ item.dir }}/.dg-installed"
+  loop: "{{ dg_retroarch_assets }}"
+  register: _asset_stamp
+  loop_control:
+    label: "{{ item.dir }}"
+
+- name: Download missing RetroArch asset packs
+  ansible.builtin.get_url:
+    url: "{{ dg_retroarch_buildbot }}/assets/frontend/{{ item.item.zip }}"
+    dest: "{{ dg_retroarch_cache_dir }}/{{ item.item.zip }}"
+    mode: "0644"
+    timeout: 120
+    force: false
+  loop: "{{ _asset_stamp.results }}"
+  when: not item.stat.exists
+  failed_when: false
+  loop_control:
+    label: "{{ item.item.zip }}"
+
+- name: Extract RetroArch asset packs
+  ansible.builtin.unarchive:
+    src: "{{ dg_retroarch_cache_dir }}/{{ item.item.zip }}"
+    dest: "{{ dg_retroarch_dir }}/{{ item.item.dir }}/"
+    remote_src: true
+  loop: "{{ _asset_stamp.results }}"
+  when: not item.stat.exists
+  loop_control:
+    label: "{{ item.item.zip }}"
+
+- name: Mark asset packs as installed
+  ansible.builtin.copy:
+    content: "Installed by Ansible. Delete to force re-extraction.\n"
+    dest: "{{ dg_retroarch_dir }}/{{ item.item.dir }}/.dg-installed"
+    mode: "0644"
+  loop: "{{ _asset_stamp.results }}"
+  when: not item.stat.exists
+  loop_control:
+    label: "{{ item.item.dir }}"

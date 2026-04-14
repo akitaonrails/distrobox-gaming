@@ -1,0 +1,108 @@
+---
+# Batch-install PS3 PKG DLCs and Switch NSP updates from staging directories.
+# Both extractors are idempotent — they skip files that already exist with
+# matching sizes, so re-running is cheap.
+
+# ============================================================
+# PS3 DLC / patch extraction
+# ============================================================
+
+- name: Stat PS3 DLC source directory
+  ansible.builtin.stat:
+    path: "{{ dg_ps3_dlc_source }}"
+  register: _ps3_dlc_dir
+  when: dg_ps3_dlc_source | length > 0
+
+- name: Ensure RPCS3 dev_hdd0/game directory exists
+  ansible.builtin.file:
+    path: "{{ dg_rpcs3_dev_hdd0_game }}"
+    state: directory
+    mode: "0755"
+  when: dg_ps3_dlc_source | length > 0 and (_ps3_dlc_dir.stat.exists | default(false))
+
+- name: Find PS3 PKG files in staging directory
+  ansible.builtin.find:
+    paths: "{{ dg_ps3_dlc_source }}"
+    patterns: "*.pkg"
+    recurse: true
+  register: _ps3_pkgs
+  when: dg_ps3_dlc_source | length > 0 and (_ps3_dlc_dir.stat.exists | default(false))
+
+- name: Extract PS3 PKGs to RPCS3 dev_hdd0/game
+  ansible.builtin.command: >-
+    python3 {{ dg_box_home }}/scripts/extract_ps3_dlc.py
+    {{ dg_ps3_dlc_source }}
+    --dest {{ dg_rpcs3_dev_hdd0_game }}
+  register: _ps3_extract
+  changed_when: "'extracted' in _ps3_extract.stdout and '0 files extracted' not in _ps3_extract.stdout"
+  when:
+    - dg_ps3_dlc_source | length > 0
+    - _ps3_dlc_dir.stat.exists | default(false)
+    - _ps3_pkgs.files | default([]) | length > 0
+
+- name: Report PS3 DLC extraction summary
+  ansible.builtin.debug:
+    msg: "{{ _ps3_extract.stdout_lines[-1] }}"
+  when:
+    - dg_ps3_dlc_source | length > 0
+    - _ps3_extract is defined
+    - _ps3_extract.stdout_lines is defined
+
+- name: Warn if PS3 DLC source missing
+  ansible.builtin.debug:
+    msg: "WARNING: PS3 DLC source not found: {{ dg_ps3_dlc_source }}"
+  when:
+    - dg_ps3_dlc_source | length > 0
+    - not (_ps3_dlc_dir.stat.exists | default(false))
+
+# ============================================================
+# Switch update / DLC NSP extraction
+# ============================================================
+
+- name: Stat Switch updates source directory
+  ansible.builtin.stat:
+    path: "{{ dg_switch_updates_source }}"
+  register: _switch_updates_dir
+  when: dg_switch_updates_source | length > 0
+
+- name: Ensure Eden NAND registered directory exists
+  ansible.builtin.file:
+    path: "{{ dg_eden_nand_registered }}"
+    state: directory
+    mode: "0755"
+  when: dg_switch_updates_source | length > 0 and (_switch_updates_dir.stat.exists | default(false))
+
+- name: Find Switch NSP files in staging directory
+  ansible.builtin.find:
+    paths: "{{ dg_switch_updates_source }}"
+    patterns: "*.nsp"
+    recurse: true
+  register: _switch_nsps
+  when: dg_switch_updates_source | length > 0 and (_switch_updates_dir.stat.exists | default(false))
+
+- name: Extract Switch NSPs to Eden NAND
+  ansible.builtin.command: >-
+    python3 {{ dg_box_home }}/scripts/install_switch_updates.py
+    {{ dg_switch_updates_source }}
+    --dest {{ dg_eden_nand_registered }}
+  register: _switch_extract
+  changed_when: "'extracted' in _switch_extract.stdout and '0 NCAs' not in _switch_extract.stdout"
+  when:
+    - dg_switch_updates_source | length > 0
+    - _switch_updates_dir.stat.exists | default(false)
+    - _switch_nsps.files | default([]) | length > 0
+
+- name: Report Switch NSP extraction summary
+  ansible.builtin.debug:
+    msg: "{{ _switch_extract.stdout_lines[-1] }}"
+  when:
+    - dg_switch_updates_source | length > 0
+    - _switch_extract is defined
+    - _switch_extract.stdout_lines is defined
+
+- name: Warn if Switch updates source missing
+  ansible.builtin.debug:
+    msg: "WARNING: Switch updates source not found: {{ dg_switch_updates_source }}"
+  when:
+    - dg_switch_updates_source | length > 0
+    - not (_switch_updates_dir.stat.exists | default(false))

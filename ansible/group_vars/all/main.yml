@@ -50,3 +50,54 @@ dg_in_box: "distrobox-enter -n {{ dg_box_name }} --"
 
 # Backup location for backup/restore playbooks.
 dg_backup_dir: "{{ dg_box_home }}/backups"
+
+# DLC / patch staging directories. Set to empty string to skip.
+dg_ps3_dlc_source: "{{ dg_rom_heavy_root }}/ps3-DLC"
+dg_switch_updates_source: "{{ dg_rom_heavy_root }}/switch_updates"
+dg_switch_cheats_source: "{{ dg_rom_heavy_root }}/switch_cheats"
+
+# RPCS3 paths
+dg_rpcs3_config_dir: "{{ dg_box_home }}/.config/rpcs3"
+dg_rpcs3_dev_hdd0_game: "{{ dg_rpcs3_config_dir }}/dev_hdd0/game"
+dg_rpcs3_custom_configs: "{{ dg_rpcs3_config_dir }}/custom_configs"
+
+# Eden / Switch paths
+dg_eden_data_dir: "{{ dg_box_home }}/.local/share/eden"
+dg_eden_load_dir: "{{ dg_eden_data_dir }}/load"
+dg_eden_nand_registered: "{{ dg_eden_data_dir }}/nand/user/Contents/registered"
+
+# RetroArch
+dg_retroarch_dir: "{{ dg_box_home }}/.config/retroarch"
+dg_retroarch_cache_dir: "{{ dg_box_home }}/cache/retroarch-downloads"
+dg_retroarch_buildbot: https://buildbot.libretro.com
+dg_retroarch_cores:
+  - fbneo
+  - stella
+  - prosystem
+  - handy
+  - gambatte
+  - mednafen_ngp
+  - bluemsx
+  - fmsx
+  - o2em
+  - opera
+  - mednafen_saturn
+  - mednafen_wswan
+  - mednafen_vb
+  - mednafen_supergrafx
+  - vecx
+  - neocd
+  - fceumm
+  - puae
+  - hatari
+  - vice_x64
+  - atari800
+dg_retroarch_assets:
+  - { zip: info.zip,             dir: info }
+  - { zip: assets.zip,           dir: assets }
+  - { zip: autoconfig.zip,       dir: autoconfig }
+  - { zip: cheats.zip,           dir: cheats }
+  - { zip: database-rdb.zip,     dir: database/rdb }
+  - { zip: database-cursors.zip, dir: database/cursors }
+  - { zip: shaders_slang.zip,    dir: shaders }
+  - { zip: overlays.zip,         dir: overlays }

@@ -1,0 +1,181 @@
+#!/usr/bin/env bash
+#
+# update-gaming — one-shot updater for the distrobox gaming container
+#
+# Updates: pacman packages, AUR packages, RetroArch cores + assets,
+# core info files, controller profiles, cheats, databases, shaders, overlays.
+#
+# Run from INSIDE the container:
+#   distrobox enter gaming -- ~/bin/update-gaming
+#
+# Or from the host:
+#   distrobox enter gaming -- /mnt/data/distrobox/gaming/bin/update-gaming
+#
+# Options:
+#   --dry-run     Show what would be updated without changing anything
+#   --skip-aur    Skip AUR package updates (saves time if yay is slow)
+#   --skip-cores  Skip RetroArch core downloads
+#   --skip-assets Skip RetroArch asset downloads
+#   --help        Show this help
+
+set -euo pipefail
+
+SKIP_AUR=false
+SKIP_CORES=false
+SKIP_ASSETS=false
+DRY_RUN=false
+
+for arg in "$@"; do
+    case "$arg" in
+        --dry-run)     DRY_RUN=true ;;
+        --skip-aur)    SKIP_AUR=true ;;
+        --skip-cores)  SKIP_CORES=true ;;
+        --skip-assets) SKIP_ASSETS=true ;;
+        --help|-h)
+            head -16 "$0" | tail -14
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $arg"
+            exit 1
+            ;;
+    esac
+done
+
+RA_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/retroarch"
+RA_CORES="$RA_DIR/cores"
+BUILDBOT="https://buildbot.libretro.com"
+CORES_URL="$BUILDBOT/nightly/linux/x86_64/latest"
+ASSETS_URL="$BUILDBOT/assets/frontend"
+
+log()  { echo -e "\033[1;34m==>\033[0m \033[1m$*\033[0m"; }
+ok()   { echo -e "  \033[32m✓\033[0m $*"; }
+fail() { echo -e "  \033[31m✗\033[0m $*"; }
+skip() { echo -e "  \033[33m–\033[0m $*"; }
+
+# ============================================================
+# 1. System packages (pacman)
+# ============================================================
+log "Updating system packages (pacman -Syu)"
+if $DRY_RUN; then
+    skip "dry run"
+else
+    sudo pacman -Syu --noconfirm 2>&1 | tail -5
+fi
+
+# ============================================================
+# 2. AUR packages (yay)
+# ============================================================
+if $SKIP_AUR; then
+    log "Skipping AUR updates (--skip-aur)"
+else
+    log "Updating AUR packages (yay -Syu)"
+    if $DRY_RUN; then
+        skip "dry run"
+    else
+        yay -Syu --noconfirm --answerclean All --answerdiff None 2>&1 | tail -10
+    fi
+fi
+
+# ============================================================
+# 3. RetroArch cores
+# ============================================================
+if $SKIP_CORES; then
+    log "Skipping RetroArch cores (--skip-cores)"
+else
+    log "Updating RetroArch cores from buildbot"
+    mkdir -p "$RA_CORES"
+
+    # Get list of currently installed downloaded cores
+    INSTALLED_CORES=()
+    for so in "$RA_CORES"/*_libretro.so; do
+        [ -f "$so" ] || continue
+        INSTALLED_CORES+=("$(basename "$so" .so)")
+    done
+
+    if [ ${#INSTALLED_CORES[@]} -eq 0 ]; then
+        skip "no downloaded cores found in $RA_CORES"
+    else
+        UPDATED=0
+        FAILED=0
+        for core_base in "${INSTALLED_CORES[@]}"; do
+            FILE="${core_base}.so.zip"
+            SO="${core_base}.so"
+
+            if $DRY_RUN; then
+                skip "would update: $SO"
+                continue
+            fi
+
+            # Download to temp, compare size, replace if different
+            if curl -sfL "$CORES_URL/$FILE" -o "/tmp/$FILE" 2>/dev/null; then
+                if unzip -qo "/tmp/$FILE" -d "/tmp/core_check/" 2>/dev/null; then
+                    NEW_SIZE=$(stat -c %s "/tmp/core_check/$SO" 2>/dev/null || echo 0)
+                    OLD_SIZE=$(stat -c %s "$RA_CORES/$SO" 2>/dev/null || echo 0)
+                    if [ "$NEW_SIZE" != "$OLD_SIZE" ]; then
+                        mv "/tmp/core_check/$SO" "$RA_CORES/$SO"
+                        ok "$SO (updated: $OLD_SIZE → $NEW_SIZE bytes)"
+                        UPDATED=$((UPDATED + 1))
+                    fi
+                    rm -rf "/tmp/core_check/"
+                else
+                    fail "$SO (unzip failed)"
+                    FAILED=$((FAILED + 1))
+                fi
+                rm -f "/tmp/$FILE"
+            else
+                fail "$SO (download failed)"
+                FAILED=$((FAILED + 1))
+            fi
+        done
+        echo "  Cores: ${#INSTALLED_CORES[@]} checked, $UPDATED updated, $FAILED failed"
+    fi
+fi
+
+# ============================================================
+# 4. RetroArch assets (info, assets, autoconfig, cheats, db, shaders, overlays)
+# ============================================================
+if $SKIP_ASSETS; then
+    log "Skipping RetroArch assets (--skip-assets)"
+else
+    log "Updating RetroArch assets from buildbot"
+
+    ASSET_ZIPS=(
+        "info.zip|info|Core info files"
+        "assets.zip|assets|Menu assets (icons, fonts)"
+        "autoconfig.zip|autoconfig|Controller profiles"
+        "cheats.zip|cheats|Cheat database"
+        "database-rdb.zip|database/rdb|ROM scanning databases"
+        "database-cursors.zip|database/cursors|Database cursors"
+        "shaders_slang.zip|shaders|Vulkan shaders"
+        "overlays.zip|overlays|Screen overlays"
+    )
+
+    for entry in "${ASSET_ZIPS[@]}"; do
+        IFS='|' read -r zip_name dest_dir desc <<< "$entry"
+        dest="$RA_DIR/$dest_dir"
+
+        if $DRY_RUN; then
+            skip "would update: $desc → $dest"
+            continue
+        fi
+
+        if curl -sfL "$ASSETS_URL/$zip_name" -o "/tmp/$zip_name" 2>/dev/null; then
+            mkdir -p "$dest"
+            unzip -qo "/tmp/$zip_name" -d "$dest/" 2>/dev/null
+            rm -f "/tmp/$zip_name"
+            ok "$desc"
+        else
+            fail "$desc (download failed)"
+        fi
+    done
+fi
+
+# ============================================================
+# Summary
+# ============================================================
+echo
+log "Update complete"
+echo "  Pacman packages: $(pacman -Q 2>/dev/null | wc -l)"
+echo "  RetroArch cores: $(ls "$RA_CORES"/*.so 2>/dev/null | wc -l) (downloaded) + $(ls /usr/lib/libretro/*.so 2>/dev/null | wc -l) (pacman)"
+echo "  RetroArch data:  $(du -sh "$RA_DIR" 2>/dev/null | cut -f1)"
