@@ -9,6 +9,12 @@ config/desktop/rendered/
 ansible/host_vars/localhost.yml
 *.retry
 
+# Tooling artifacts (Claude Code scheduled tasks, Lobster staging, ai-jail).
+.claude/
+.lobster/
+.ai-jail
+.codex
+
 # Never commit emulator runtime state, saves, firmware, ROMs, or caches.
 runtime/
 roms/

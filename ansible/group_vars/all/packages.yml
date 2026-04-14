@@ -53,6 +53,7 @@ dg_aur_packages:
   - vita3k-bin
   - shadps4-bin
   - flycast-git
+  - emulationstation-de
 
 dg_xenia_pacman_packages:
   - wine

@@ -27,6 +27,26 @@
     - gaming-shadps4-gui.desktop
     - gaming-flycast.desktop
 
+- name: Render generic emulator launcher desktop entries
+  ansible.builtin.template:
+    src: emulator-launcher.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/{{ launcher.name }}.desktop"
+    mode: "0644"
+  loop: "{{ dg_emulator_launchers }}"
+  loop_control:
+    loop_var: launcher
+    label: "{{ launcher.name }}"
+
+- name: Symlink generic emulator launchers to host applications dir
+  ansible.builtin.file:
+    src: "{{ dg_desktop_render_dir }}/{{ launcher.name }}.desktop"
+    dest: "{{ dg_host_applications_dir }}/{{ launcher.name }}.desktop"
+    state: link
+  loop: "{{ dg_emulator_launchers }}"
+  loop_control:
+    loop_var: launcher
+    label: "{{ launcher.name }}"
+
 - name: Check if Xenia Manager launcher exists
   ansible.builtin.stat:
     path: "{{ dg_xenia_manager_bin }}"

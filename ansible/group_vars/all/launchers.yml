@@ -1,0 +1,74 @@
+# Host-side desktop launchers for emulators installed in the box.
+# Each entry renders a .desktop file that runs the emulator through
+# distrobox-enter with NVIDIA GPU env vars injected.
+
+dg_emulator_launchers:
+  - name: gaming-es-de
+    display_name: "ES-DE (on {{ dg_box_name }})"
+    exec: es-de
+    icon: es-de
+    comment: "Emulator frontend"
+    wm_class: es-de
+
+  - name: gaming-dolphin
+    display_name: "Dolphin (on {{ dg_box_name }})"
+    exec: dolphin-emu
+    icon: dolphin-emu
+    comment: "GameCube and Wii emulator"
+    wm_class: dolphin-emu
+
+  - name: gaming-duckstation
+    display_name: "DuckStation (on {{ dg_box_name }})"
+    exec: duckstation-qt
+    icon: duckstation
+    comment: "PlayStation 1 emulator"
+    wm_class: duckstation-qt
+
+  - name: gaming-pcsx2
+    display_name: "PCSX2 (on {{ dg_box_name }})"
+    exec: pcsx2-qt
+    icon: PCSX2
+    comment: "PlayStation 2 emulator"
+    wm_class: pcsx2-qt
+
+  - name: gaming-ppsspp
+    display_name: "PPSSPP (on {{ dg_box_name }})"
+    exec: PPSSPPQt
+    icon: ppsspp
+    comment: "PSP emulator"
+    wm_class: ppsspp
+
+  - name: gaming-rpcs3
+    display_name: "RPCS3 (on {{ dg_box_name }})"
+    exec: rpcs3
+    icon: rpcs3
+    comment: "PlayStation 3 emulator"
+    wm_class: rpcs3
+
+  - name: gaming-xemu
+    display_name: "xemu (on {{ dg_box_name }})"
+    exec: xemu
+    icon: xemu
+    comment: "Xbox emulator"
+    wm_class: xemu
+
+  - name: gaming-eden
+    display_name: "Eden (on {{ dg_box_name }})"
+    exec: "env -u QT_STYLE_OVERRIDE eden"
+    icon: eden
+    comment: "Nintendo Switch emulator"
+    wm_class: eden
+
+  - name: gaming-cemu
+    display_name: "Cemu (on {{ dg_box_name }})"
+    exec: cemu
+    icon: info.cemu.Cemu
+    comment: "Wii U emulator"
+    wm_class: cemu
+
+  - name: gaming-vita3k
+    display_name: "Vita3K (on {{ dg_box_name }})"
+    exec: vita3k
+    icon: vita3k
+    comment: "PS Vita emulator"
+    wm_class: vita3k
