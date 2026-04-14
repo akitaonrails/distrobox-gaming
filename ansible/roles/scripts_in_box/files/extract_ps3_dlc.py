@@ -13,6 +13,11 @@ Usage:
     python3 extract_ps3_dlc.py /path/to/dlc-folder [--dest /path/to/dev_hdd0/game]
     python3 extract_ps3_dlc.py /path/to/single-file.pkg
 
+    --max-version 01.12   # for game patches, skip any PKG whose filename
+                          # version exceeds this limit (useful for games
+                          # where the latest patches break emulator compat)
+    --dry-run             # don't write anything, print plan only
+
 Default dest: ~/.config/rpcs3/dev_hdd0/game/
 """
 
@@ -106,7 +111,8 @@ def decrypt_at_offset(f, data_offset: int, base_iv: bytes, offset: int, size: in
     return decrypted[block_offset:block_offset + size]
 
 
-def extract_pkg(pkg_path: str, dest_base: str, dry_run: bool = False) -> bool:
+def extract_pkg(pkg_path: str, dest_base: str, dry_run: bool = False,
+                max_version: str | None = None) -> bool:
     """Extract a single PS3 PKG file to dest_base/<content_id>/."""
     pkg_name = os.path.basename(pkg_path)
 
@@ -144,6 +150,9 @@ def extract_pkg(pkg_path: str, dest_base: str, dry_run: bool = False) -> bool:
         # because different patch versions often share file sizes.
         patch_ver = patch_ver_from_filename(pkg_name)
         if patch_ver:
+            if max_version and ver_tuple(patch_ver) > ver_tuple(max_version):
+                print(f'  SKIP {pkg_name}: version {patch_ver} exceeds --max-version {max_version}')
+                return True
             existing_ver = sfo_version(os.path.join(dest_dir, 'PARAM.SFO'))
             if existing_ver and ver_tuple(existing_ver) >= ver_tuple(patch_ver):
                 print(f'  SKIP {pkg_name}: existing {content_id} already at version {existing_ver}')
@@ -240,12 +249,16 @@ def main():
     source = sys.argv[1]
     dest = DEFAULT_DEST
     dry_run = False
+    max_version = None
 
     # Parse optional args
     args = sys.argv[2:]
     while args:
         if args[0] == '--dest' and len(args) > 1:
             dest = args[1]
+            args = args[2:]
+        elif args[0] == '--max-version' and len(args) > 1:
+            max_version = args[1]
             args = args[2:]
         elif args[0] == '--dry-run':
             dry_run = True
@@ -269,6 +282,8 @@ def main():
 
     print(f'Found {len(pkg_files)} PKG files')
     print(f'Destination: {dest}')
+    if max_version:
+        print(f'Max patch version: {max_version}')
     if dry_run:
         print('DRY RUN MODE — no files will be extracted')
     print()
@@ -279,7 +294,7 @@ def main():
     fail = 0
     for pkg in pkg_files:
         try:
-            if extract_pkg(pkg, dest, dry_run):
+            if extract_pkg(pkg, dest, dry_run, max_version):
                 success += 1
             else:
                 fail += 1
