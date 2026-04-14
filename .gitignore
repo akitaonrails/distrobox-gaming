@@ -15,6 +15,10 @@ ansible/host_vars/localhost.yml
 .ai-jail
 .codex
 
+# Python bytecode.
+__pycache__/
+*.pyc
+
 # Never commit emulator runtime state, saves, firmware, ROMs, or caches.
 runtime/
 roms/

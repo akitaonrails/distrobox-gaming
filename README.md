@@ -207,6 +207,7 @@ python3 $DG_BOX_HOME/scripts/check_switch_updates.py \
     --updates-dir /mnt/terachad/Emulators/EmuDeck/roms_heavy/switch_updates
 
 # Reorganize a messy switch_updates dump into per-title-ID folders
+# (handles .nsp/.nsz/.xci/.xcz; mods and non-patch files are left alone)
 python3 $DG_BOX_HOME/scripts/reorganize_switch_nsps.py \
     /mnt/terachad/Emulators/EmuDeck/roms_heavy/switch_updates --dry-run
 ```
@@ -215,6 +216,54 @@ Note on Switch updates: Nintendo's update CDN requires device-specific
 certificates from a hacked Switch. `check_switch_updates.py` only reports
 what's outdated (using the public blawar/titledb version database) — you
 source the NSPs yourself.
+
+### Full PS3 update workflow
+
+1. Check what's outdated:
+   ```sh
+   python3 $DG_BOX_HOME/scripts/check_ps3_updates.py \
+       $DG_ROM_HEAVY_ROOT/ps3 --dlc-dir $DG_ROM_HEAVY_ROOT/ps3-DLC --list
+   ```
+2. Download missing patches to a temp dir (keeps the NAS dir read-only
+   until you review):
+   ```sh
+   python3 $DG_BOX_HOME/scripts/check_ps3_updates.py \
+       $DG_ROM_HEAVY_ROOT/ps3 --dlc-dir $DG_ROM_HEAVY_ROOT/ps3-DLC \
+       --download-dir $DG_BOX_HOME/dlc-temp --download
+   ```
+3. Review `$DG_BOX_HOME/dlc-temp`, then copy into the canonical cache:
+   ```sh
+   rsync -av $DG_BOX_HOME/dlc-temp/ $DG_ROM_HEAVY_ROOT/ps3-DLC/
+   ```
+4. Re-run the install_dlcs role to extract them into RPCS3:
+   ```sh
+   cd ansible && ansible-playbook site.yml --tags dlcs
+   ```
+
+The `extract_ps3_dlc.py` extractor uses the PKG's filename version
+(e.g. `-A0122-V0100-`) and compares against the destination's
+`PARAM.SFO` VERSION to decide whether to re-extract. Re-running after
+all patches are applied is a no-op.
+
+### Capping a game at a specific patch version
+
+Some PS3 games regress on current RPCS3 when patched to the latest
+version (GT6 is notorious — older RPCS3 builds broke above 1.12 or so).
+To cap a game at a specific patch level:
+
+```sh
+# Wipe the current patch content dir so the version check doesn't block
+rm -rf $DG_BOX_HOME/.config/rpcs3/dev_hdd0/game/<CONTENT_ID>
+
+# Re-extract only patches up to the target version
+python3 $DG_BOX_HOME/scripts/extract_ps3_dlc.py \
+    $DG_ROM_HEAVY_ROOT/ps3-DLC/<TITLE_ID> \
+    --max-version 01.12
+```
+
+`--max-version` skips any patch PKG whose filename-encoded version
+exceeds the limit. Without the `rm -rf` first, the version-aware
+idempotency check would refuse to downgrade.
 
 ## PS4 Game Layout
 
