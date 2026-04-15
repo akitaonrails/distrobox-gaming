@@ -5,6 +5,45 @@ dg_pcsx2_ini: "{{ dg_box_home }}/.config/PCSX2/inis/PCSX2.ini"
 dg_pcsx2_settings:
   - { section: UI, option: ConfirmShutdown, value: "false" }
   - { section: Hotkeys, option: ShutdownVM, value: "SDL-0/Start & SDL-0/Back" }
+  # Renderer 14 = Vulkan; NVIDIA selection comes from VK_ICD_FILENAMES
+  # injected by the desktop launcher, so the Adapter setting can stay Auto.
+  - { section: "EmuCore/GS", option: "Renderer", value: "14" }
+  - { section: "EmuCore/GS", option: "AspectRatio", value: "Widescreen (16:9)" }
+  - { section: "EmuCore/GS", option: "FMVAspectRatioSwitch", value: "Off" }
+  - { section: "EmuCore/GS", option: "upscale_multiplier", value: "4.000000" }
+  - { section: "EmuCore/GS", option: "MaxAnisotropy", value: "16" }
+  - { section: "EmuCore/GS", option: "TextureFiltering", value: "2" }
+  # Apply PCSX2's built-in widescreen patches when a match exists for the game
+  - { section: "EmuCore", option: "EnableWideScreenPatches", value: "true" }
+  # Input source: SDL gamepad backend covers Xbox One/Series, 8BitDo, etc.
+  - { section: InputSources, option: SDL, value: "true" }
+  - { section: InputSources, option: SDLControllerEnhancedMode, value: "true" }
+  # Pad1: standard Xbox-style mapping with PS-style Cross/Circle/Square/Triangle.
+  - { section: Pad1, option: Type, value: "DualShock2" }
+  - { section: Pad1, option: Cross, value: "SDL-0/A" }
+  - { section: Pad1, option: Circle, value: "SDL-0/B" }
+  - { section: Pad1, option: Square, value: "SDL-0/X" }
+  - { section: Pad1, option: Triangle, value: "SDL-0/Y" }
+  - { section: Pad1, option: DPadUp, value: "SDL-0/DPadUp" }
+  - { section: Pad1, option: DPadDown, value: "SDL-0/DPadDown" }
+  - { section: Pad1, option: DPadLeft, value: "SDL-0/DPadLeft" }
+  - { section: Pad1, option: DPadRight, value: "SDL-0/DPadRight" }
+  - { section: Pad1, option: L1, value: "SDL-0/LeftShoulder" }
+  - { section: Pad1, option: R1, value: "SDL-0/RightShoulder" }
+  - { section: Pad1, option: L2, value: "SDL-0/+LeftTrigger" }
+  - { section: Pad1, option: R2, value: "SDL-0/+RightTrigger" }
+  - { section: Pad1, option: L3, value: "SDL-0/LeftStick" }
+  - { section: Pad1, option: R3, value: "SDL-0/RightStick" }
+  - { section: Pad1, option: Select, value: "SDL-0/Back" }
+  - { section: Pad1, option: Start, value: "SDL-0/Start" }
+  - { section: Pad1, option: LUp, value: "SDL-0/-LeftY" }
+  - { section: Pad1, option: LDown, value: "SDL-0/+LeftY" }
+  - { section: Pad1, option: LLeft, value: "SDL-0/-LeftX" }
+  - { section: Pad1, option: LRight, value: "SDL-0/+LeftX" }
+  - { section: Pad1, option: RUp, value: "SDL-0/-RightY" }
+  - { section: Pad1, option: RDown, value: "SDL-0/+RightY" }
+  - { section: Pad1, option: RLeft, value: "SDL-0/-RightX" }
+  - { section: Pad1, option: RRight, value: "SDL-0/+RightX" }
 
 dg_duckstation_ini: "{{ dg_box_home }}/.config/duckstation/settings.ini"
 dg_duckstation_settings:

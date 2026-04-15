@@ -25,3 +25,31 @@ dg_pcsx2_texture_packs:
     patches:
       - "{{ dg_pcsx2_ps2_root }}/Gran Turismo 4 Remaster/06AD9CA0.pnach"
       - "{{ dg_pcsx2_ps2_root }}/Gran Turismo 4 Remaster/44A61C8F.pnach"
+
+  - serial: SLUS-20967              # Enthusia Professional Racing (NTSC-U)
+    name: "Enthusia Professional Racing"
+    sources:
+      - path: "{{ dg_pcsx2_ps2_root }}/Enthusia/SLUS-20967/replacements"
+        link_as: hd-textures
+    patches: []
+
+# Per-game graphics/system settings written to
+#   ~/.config/PCSX2/gamesettings/<SERIAL>.ini
+# overriding the global PCSX2.ini for that game.
+dg_pcsx2_per_game_settings:
+  - serial: SCUS-97328
+    name: "Gran Turismo 4"
+    settings:
+      - { section: "EmuCore/GS", option: "AspectRatio", value: "Widescreen (16:9)" }
+      - { section: "EmuCore/GS", option: "AccurateBlendingUnit", value: "Basic" }
+      - { section: "EmuCore/GS", option: "MaxAnisotropy", value: "16" }
+      - { section: "EmuCore/GS", option: "TextureFiltering", value: "2" }
+      - { section: "EmuCore", option: "EnableWideScreenPatches", value: "true" }
+
+  - serial: SLUS-20967
+    name: "Enthusia Professional Racing"
+    settings:
+      - { section: "EmuCore/GS", option: "AspectRatio", value: "Widescreen (16:9)" }
+      - { section: "EmuCore/GS", option: "MaxAnisotropy", value: "16" }
+      - { section: "EmuCore/GS", option: "TextureFiltering", value: "2" }
+      - { section: "EmuCore", option: "EnableWideScreenPatches", value: "true" }

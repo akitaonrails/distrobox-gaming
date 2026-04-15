@@ -4,7 +4,7 @@
 # caches textures in RAM after first read so the NFS latency only
 # matters at first paint per texture.
 
-- name: Ensure PCSX2 textures and patches directories exist
+- name: Ensure PCSX2 directories exist
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
@@ -12,6 +12,7 @@
   loop:
     - "{{ dg_pcsx2_textures_root }}"
     - "{{ dg_pcsx2_patches_dir }}"
+    - "{{ dg_box_home }}/.config/PCSX2/gamesettings"
 
 - name: Per-game texture pack deployment
   ansible.builtin.include_tasks: deploy_pack.yml
@@ -19,6 +20,19 @@
   loop_control:
     loop_var: pack
     label: "{{ pack.serial }} ({{ pack.name }})"
+
+- name: Per-game PCSX2 settings (aspect ratio, blending, AF, etc.)
+  community.general.ini_file:
+    path: "{{ dg_box_home }}/.config/PCSX2/gamesettings/{{ pgs.0.serial }}.ini"
+    section: "{{ pgs.1.section }}"
+    option: "{{ pgs.1.option }}"
+    value: "{{ pgs.1.value }}"
+    create: true
+    mode: "0644"
+  loop: "{{ dg_pcsx2_per_game_settings | subelements('settings') }}"
+  loop_control:
+    loop_var: pgs
+    label: "{{ pgs.0.serial }} [{{ pgs.1.section }}] {{ pgs.1.option }}"
 
 - name: Enable texture replacements in PCSX2 global config
   community.general.ini_file:
