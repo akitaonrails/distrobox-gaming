@@ -4,6 +4,8 @@
 dg_pcsx2_ini: "{{ dg_box_home }}/.config/PCSX2/inis/PCSX2.ini"
 dg_pcsx2_settings:
   - { section: UI, option: ConfirmShutdown, value: "false" }
+  # Without Language set, PCSX2 tries to load pcsx2-qt_.qm and errors out.
+  - { section: UI, option: Language, value: "en-US" }
   - { section: Hotkeys, option: ShutdownVM, value: "SDL-0/Start & SDL-0/Back" }
   # Renderer 14 = Vulkan; NVIDIA selection comes from VK_ICD_FILENAMES
   # injected by the desktop launcher, so the Adapter setting can stay Auto.
