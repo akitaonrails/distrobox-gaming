@@ -12,7 +12,57 @@
   loop:
     - "{{ dg_pcsx2_textures_root }}"
     - "{{ dg_pcsx2_patches_dir }}"
+    - "{{ dg_pcsx2_cheats_dir }}"
     - "{{ dg_box_home }}/.config/PCSX2/gamesettings"
+
+- name: Find .pnach files in NAS cheats dir
+  ansible.builtin.find:
+    paths: "{{ dg_pcsx2_cheats_source }}"
+    patterns: "*.pnach"
+    file_type: file
+  register: _nas_cheats
+  failed_when: false
+
+- name: Symlink NAS cheats into PCSX2 cheats dir
+  ansible.builtin.file:
+    src: "{{ item.path }}"
+    dest: "{{ dg_pcsx2_cheats_dir }}/{{ item.path | basename }}"
+    state: link
+    force: true
+  loop: "{{ _nas_cheats.files | default([]) }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
+
+- name: Stat extra standalone .pnach patch files
+  ansible.builtin.stat:
+    path: "{{ extra_patch }}"
+  loop: "{{ dg_pcsx2_extra_patches | default([]) }}"
+  loop_control:
+    loop_var: extra_patch
+    label: "{{ extra_patch | basename }}"
+  register: _extra_patches
+
+- name: Symlink extra standalone .pnach patches into PCSX2 patches dir
+  ansible.builtin.file:
+    src: "{{ item.extra_patch }}"
+    dest: "{{ dg_pcsx2_patches_dir }}/{{ item.extra_patch | basename }}"
+    state: link
+    force: true
+  loop: "{{ _extra_patches.results }}"
+  loop_control:
+    label: "{{ item.extra_patch | basename }}"
+  when: item.stat.exists | default(false)
+
+- name: Download Silent's GT4 USA patches from public source
+  ansible.builtin.get_url:
+    url: "{{ item }}"
+    dest: "{{ dg_pcsx2_patches_dir }}/{{ item | basename | urldecode }}"
+    mode: "0644"
+    timeout: 30
+  loop: "{{ dg_pcsx2_patch_urls | default([]) }}"
+  loop_control:
+    label: "{{ item | basename | urldecode }}"
+  failed_when: false
 
 - name: Per-game texture pack deployment
   ansible.builtin.include_tasks: deploy_pack.yml

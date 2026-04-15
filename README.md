@@ -182,17 +182,32 @@ dg_host_gid: 1000
   `custom_configs/<TITLE_ID>_config.yml` for games with "Ingame" or "Loadable"
   status. Hand-curated overrides for known-problematic titles (Gran Turismo 6,
   Gran Turismo 5, Metal Gear Solid 4).
-- **PCSX2 HD texture packs + per-game settings**: `pcsx2_textures` role
-  symlinks per-game texture replacement directories into
-  `~/.config/PCSX2/textures/<SERIAL>/replacements/<link_as>/` (no copy —
-  textures live on NAS, PCSX2 caches in RAM after first load), symlinks
-  `.pnach` patch files into `~/.config/PCSX2/patches/`, and writes per-game
-  override INIs to `~/.config/PCSX2/gamesettings/<SERIAL>.ini`. Initial
-  configs cover Gran Turismo 4 (SCUS-97328) with Silentwarior112's HD HUD/UI
-  pack + update 2.1 + blocky-haze-fix overlay + progressive-scan patches,
-  and Enthusia Professional Racing (SLUS-20967) HD textures. Adding more
-  games is a YAML data change to `dg_pcsx2_texture_packs` and
-  `dg_pcsx2_per_game_settings` in `group_vars/all/pcsx2.yml`.
+- **PCSX2 HD texture packs + per-game settings + .pnach patches**:
+  `pcsx2_textures` role symlinks per-game texture replacement directories
+  into `~/.config/PCSX2/textures/<SERIAL>/replacements/<link_as>/` (no
+  copy — textures live on NAS, PCSX2 caches in RAM after first load),
+  symlinks `.pnach` patch files into `~/.config/PCSX2/patches/`, mass-symlinks
+  `~/.config/PCSX2/cheats/` from a NAS cheats source, downloads a curated
+  list of public `.pnach` URLs (e.g. Silent's GT4 USA patches from his
+  GitHub), and writes per-game override INIs to
+  `~/.config/PCSX2/gamesettings/<SERIAL>.ini`. Initial configs cover Gran
+  Turismo 4 (SCUS-97328) with Silentwarior112's HD HUD/UI pack + update 2.1
+  + blocky-haze-fix overlay + Silent's adjusted triggers / GT3 cam / far
+  chase cam patches, and Enthusia Professional Racing (SLUS-20967) HD
+  textures. Adding more games is a YAML data change to
+  `dg_pcsx2_texture_packs`, `dg_pcsx2_per_game_settings`,
+  `dg_pcsx2_extra_patches`, and `dg_pcsx2_patch_urls` in
+  `group_vars/all/pcsx2.yml`.
+
+  **Texture pack updates are a manual process** — the source forums
+  (GTPlanet, Nexus Mods, Silent's Blog) are Cloudflare-walled and
+  Drive/MEGA links throttle scripted downloads. Check periodically:
+  - GT4 retexture mod: https://www.gtplanet.net/forum/threads/gran-turismo-4-retexture-mod-v2-2.408852/
+  - Silentwarior's HD HUD/UI pack: https://cookieplmonster.github.io/mods/gran-turismo-4/
+  - Silent's pnach patches: https://silentsblog.com/mods/gran-turismo-4/
+
+  When a new version drops, download manually and drop into the existing
+  pack directory in your NAS — the role re-symlinks on next run.
 
 ### Host-side launchers
 

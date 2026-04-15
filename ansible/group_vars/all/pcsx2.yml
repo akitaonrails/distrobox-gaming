@@ -11,6 +11,19 @@
 dg_pcsx2_ps2_root: /mnt/terachad/Emulators/ps2
 dg_pcsx2_textures_root: "{{ dg_box_home }}/.config/PCSX2/textures"
 dg_pcsx2_patches_dir: "{{ dg_box_home }}/.config/PCSX2/patches"
+dg_pcsx2_cheats_dir: "{{ dg_box_home }}/.config/PCSX2/cheats"
+
+# Per-CRC pnach files that go into ~/.config/PCSX2/cheats/. These are
+# "user cheats" that PCSX2 only applies when "Enable Cheats" is on per
+# game (Game Properties → Patches → Enable Cheats). Symlinking the
+# whole NAS cheats dir.
+dg_pcsx2_cheats_source: "{{ dg_pcsx2_ps2_root }}/cheats"
+
+# Standalone .pnach patch files in the NAS that should symlink into
+# ~/.config/PCSX2/patches/ (auto-applied when CRC matches loaded ROM).
+# Skip files that duplicate dg_pcsx2_patch_urls (e.g. Silent's triggers
+# patch is fetched fresh from his GitHub above; the NAS copy is identical).
+dg_pcsx2_extra_patches: []
 
 dg_pcsx2_texture_packs:
   - serial: SCUS-97328              # Gran Turismo 4 (NTSC-U / USA)
@@ -32,6 +45,19 @@ dg_pcsx2_texture_packs:
       - path: "{{ dg_pcsx2_ps2_root }}/Enthusia/SLUS-20967/replacements"
         link_as: hd-textures
     patches: []
+
+# Per-game .pnach patches fetched from public sources at deploy time.
+# Each entry is downloaded with ansible.builtin.get_url and written to
+#   ~/.config/PCSX2/patches/<basename>
+# PCSX2 only loads .pnach files whose CRC in the filename matches the
+# loaded ROM's CRC, so dropping in patches for other regions is harmless.
+dg_pcsx2_patch_urls:
+  # Silent's GT4 USA patches (https://silentsblog.com/mods/gran-turismo-4/)
+  # SCUS-97328 / CRC 77E61C8A — adjusted triggers, GT3-style cam, far chase cam.
+  # No deinterlace patch needed: USA retail GT4 has progressive scan natively.
+  - https://raw.githubusercontent.com/CookiePLMonster/Console-Cheat-Codes/master/PS2/Gran%20Turismo%204/Adjusted%20triggers%20sensitivity/SCUS-97328_77E61C8A_triggers.pnach
+  - https://raw.githubusercontent.com/CookiePLMonster/Console-Cheat-Codes/master/PS2/Gran%20Turismo%204/GT3%20style%20camera/SCUS-97328_77E61C8A_gt3cam.pnach
+  - https://raw.githubusercontent.com/CookiePLMonster/Console-Cheat-Codes/master/PS2/Gran%20Turismo%204/Far%20chase%20camera/SCUS-97328_77E61C8A_farchasecam.pnach
 
 # Per-game graphics/system settings written to
 #   ~/.config/PCSX2/gamesettings/<SERIAL>.ini
