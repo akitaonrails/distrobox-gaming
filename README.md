@@ -64,6 +64,7 @@ ansible-playbook site.yml --tags dlcs            # install PS3 DLCs + Switch NSP
 ansible-playbook site.yml --tags cheats          # link Switch cheats to Eden
 ansible-playbook site.yml --tags rpcs3_configs   # per-game RPCS3 tuning
 ansible-playbook site.yml --tags retroarch       # download RA cores + assets
+ansible-playbook site.yml --tags pcsx2_textures  # PCSX2 HD texture packs + per-game settings + .pnach patches
 ```
 
 ## Path Configuration
@@ -157,7 +158,9 @@ dg_host_gid: 1000
 ### Per-emulator
 
 - Flycast high-resolution wrapper at `$DG_BOX_HOME/bin/flycast-hires`
-- PCSX2 `Select+Start` shutdown hotkey
+- PCSX2: Vulkan @ 4x upscale (4K from PS2 480p), widescreen 16:9, 16x AF,
+  PS2 bilinear filtering, built-in widescreen patches enabled, full
+  Xbox-style Pad1 binding via SDL backend, `Select+Start` shutdown hotkey
 - Dolphin 8BitDo Ultimate 2 defaults for GameCube and Wii profiles
 - DuckStation Vulkan/PGXP/widescreen defaults
 - xemu config plus BIOS/HDD links from `$DG_BIOS_ROOT`
@@ -179,6 +182,17 @@ dg_host_gid: 1000
   `custom_configs/<TITLE_ID>_config.yml` for games with "Ingame" or "Loadable"
   status. Hand-curated overrides for known-problematic titles (Gran Turismo 6,
   Gran Turismo 5, Metal Gear Solid 4).
+- **PCSX2 HD texture packs + per-game settings**: `pcsx2_textures` role
+  symlinks per-game texture replacement directories into
+  `~/.config/PCSX2/textures/<SERIAL>/replacements/<link_as>/` (no copy —
+  textures live on NAS, PCSX2 caches in RAM after first load), symlinks
+  `.pnach` patch files into `~/.config/PCSX2/patches/`, and writes per-game
+  override INIs to `~/.config/PCSX2/gamesettings/<SERIAL>.ini`. Initial
+  configs cover Gran Turismo 4 (SCUS-97328) with Silentwarior112's HD HUD/UI
+  pack + update 2.1 + blocky-haze-fix overlay + progressive-scan patches,
+  and Enthusia Professional Racing (SLUS-20967) HD textures. Adding more
+  games is a YAML data change to `dg_pcsx2_texture_packs` and
+  `dg_pcsx2_per_game_settings` in `group_vars/all/pcsx2.yml`.
 
 ### Host-side launchers
 
@@ -315,6 +329,7 @@ ansible/                            # Ansible playbooks and roles (primary)
     gpu.yml                         # NVIDIA preference config
     shadps4.yml                     # shadPS4 release / path config
     xenia.yml                       # Xenia Manager config
+    pcsx2.yml                       # PCSX2 texture packs and per-game overrides
   host_vars/localhost.yml.example   # machine-specific overrides template
   roles/                            # one role per setup phase
     check_host/                     # host validation
@@ -327,6 +342,7 @@ ansible/                            # Ansible playbooks and roles (primary)
     switch_cheats/                  # symlink cheats into Eden load path
     rpcs3_per_game_configs/         # per-title RPCS3 tuning from API
     retroarch_extras/               # 21 buildbot cores + 8 asset packs
+    pcsx2_textures/                 # PCSX2 HD textures + per-game settings + .pnach patches
     desktop_apps/                   # .desktop entry rendering and symlinks
     configure_esde/                 # ES-DE custom systems XML
     shell_config/                   # minimal zsh + starship
