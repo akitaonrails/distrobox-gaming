@@ -49,6 +49,87 @@
   when: _multilib_check.rc != 0
   changed_when: true
 
+- name: Sync pacman metadata (needed after multilib enablement)
+  ansible.builtin.shell: "{{ dg_in_box }} sudo pacman -Syy --noconfirm"
+  when: _multilib_check.rc != 0
+  changed_when: true
+
+# NVIDIA dummy packages: distrobox --nvidia bind-mounts host NVIDIA libs
+# into /usr/lib, which conflicts with pacman installing nvidia-utils.
+# Install dummy packages that satisfy the dependency without writing files.
+- name: Install NVIDIA dummy packages when --nvidia is enabled
+  when: dg_nvidia_enabled
+  block:
+    - name: Detect host NVIDIA driver version
+      ansible.builtin.command: "nvidia-smi --query-gpu=driver_version --format=csv,noheader"
+      register: _nvidia_ver
+      changed_when: false
+      failed_when: false
+
+    - name: Check if nvidia-utils-dummy is already installed in box
+      ansible.builtin.shell: "{{ dg_in_box }} pacman -Q nvidia-utils-dummy"
+      register: _dummy_check
+      changed_when: false
+      failed_when: false
+
+    - name: Build and install nvidia-utils dummy packages
+      when:
+        - _nvidia_ver.rc == 0
+        - _nvidia_ver.stdout | trim | length > 0
+        - _dummy_check.rc != 0
+      ansible.builtin.shell: |
+        {{ dg_in_box }} bash -c '
+          set -e
+          tmp="$(mktemp -d)"
+          cd "$tmp"
+          cat > PKGBUILD <<PKG
+        pkgname=nvidia-utils-dummy
+        pkgver={{ _nvidia_ver.stdout | trim }}
+        pkgrel=1
+        arch=("x86_64")
+        provides=("nvidia-utils=\$pkgver" "vulkan-driver" "opengl-driver" "nvidia-libgl")
+        conflicts=("nvidia-libgl" "nvidia-utils")
+        package() { :; }
+        PKG
+          makepkg -f
+          sudo pacman -U --noconfirm nvidia-utils-dummy-*.pkg.tar.zst
+          cd /
+          rm -rf "$tmp"
+        '
+      changed_when: true
+
+    - name: Check if lib32-nvidia-utils-dummy is needed
+      ansible.builtin.shell: "{{ dg_in_box }} pacman -Q lib32-nvidia-utils-dummy lib32-nvidia-utils"
+      register: _lib32_check
+      changed_when: false
+      failed_when: false
+
+    - name: Build and install lib32-nvidia-utils dummy package
+      when:
+        - _nvidia_ver.rc == 0
+        - _nvidia_ver.stdout | trim | length > 0
+        - _lib32_check.rc != 0
+      ansible.builtin.shell: |
+        {{ dg_in_box }} bash -c '
+          set -e
+          tmp="$(mktemp -d)"
+          cd "$tmp"
+          cat > PKGBUILD <<PKG
+        pkgname=lib32-nvidia-utils-dummy
+        pkgver={{ _nvidia_ver.stdout | trim }}
+        pkgrel=1
+        arch=("x86_64")
+        provides=("lib32-nvidia-utils=\$pkgver" "lib32-vulkan-driver" "lib32-opengl-driver" "lib32-nvidia-libgl")
+        conflicts=("lib32-nvidia-libgl" "lib32-nvidia-utils")
+        package() { :; }
+        PKG
+          makepkg -f
+          sudo pacman -U --noconfirm lib32-nvidia-utils-dummy-*.pkg.tar.zst
+          cd /
+          rm -rf "$tmp"
+        '
+      changed_when: true
+
 - name: Full system upgrade
   ansible.builtin.shell: "{{ dg_in_box }} sudo pacman -Syu --noconfirm"
   register: _upgrade

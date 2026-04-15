@@ -48,7 +48,10 @@ dg_pacman_packages:
 
 dg_aur_packages:
   - duckstation-qt-bin
-  - pcsx2-latest-bin
+  # Using stable `pcsx2` (v2.6.3) from AUR instead of `pcsx2-latest-bin`
+  # because the latter's PKGBUILD is broken upstream: pkgver says 2.7.254
+  # but the source URL is hardcoded to a non-existent v2.7.260 AppImage.
+  - pcsx2
   - rpcs3-bin
   - eden-bin
   - cemu-bin
