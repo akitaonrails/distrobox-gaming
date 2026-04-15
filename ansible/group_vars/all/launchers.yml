@@ -72,3 +72,10 @@ dg_emulator_launchers:
     icon: vita3k
     comment: "PS Vita emulator"
     wm_class: vita3k
+
+  - name: gaming-steam
+    display_name: "Steam (on {{ dg_box_name }})"
+    exec: steam
+    icon: steam
+    comment: "Steam game launcher"
+    wm_class: Steam

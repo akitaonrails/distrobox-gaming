@@ -31,6 +31,24 @@
       ansible.builtin.shell: "{{ dg_in_box }} sudo -n true"
       changed_when: false
 
+- name: Check if multilib is enabled
+  ansible.builtin.shell: "{{ dg_in_box }} grep -qx '\\[multilib\\]' /etc/pacman.conf"
+  register: _multilib_check
+  changed_when: false
+  failed_when: false
+
+- name: Enable multilib repository
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sudo sh -c '
+      cat >> /etc/pacman.conf <<MULTILIB
+
+    [multilib]
+    Include = /etc/pacman.d/mirrorlist
+    MULTILIB
+    '
+  when: _multilib_check.rc != 0
+  changed_when: true
+
 - name: Full system upgrade
   ansible.builtin.shell: "{{ dg_in_box }} sudo pacman -Syu --noconfirm"
   register: _upgrade

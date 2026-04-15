@@ -44,6 +44,7 @@ dg_pacman_packages:
   - starship
   - retroarch
   - python-cryptography
+  - steam
 
 dg_aur_packages:
   - duckstation-qt-bin
