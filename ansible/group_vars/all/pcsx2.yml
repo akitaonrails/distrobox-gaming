@@ -70,6 +70,9 @@ dg_pcsx2_per_game_settings:
       - { section: "EmuCore/GS", option: "AccurateBlendingUnit", value: "Basic" }
       - { section: "EmuCore/GS", option: "MaxAnisotropy", value: "16" }
       - { section: "EmuCore/GS", option: "TextureFiltering", value: "2" }
+      - { section: "EmuCore/GS", option: "LoadTextureReplacements", value: "true" }
+      - { section: "EmuCore/GS", option: "PrecacheTextureReplacements", value: "false" }
+      - { section: "EmuCore/GS", option: "TextureReplacementsAsync", value: "true" }
       - { section: "EmuCore", option: "EnableWideScreenPatches", value: "true" }
 
   - serial: SLUS-20967
@@ -78,4 +81,7 @@ dg_pcsx2_per_game_settings:
       - { section: "EmuCore/GS", option: "AspectRatio", value: "Widescreen (16:9)" }
       - { section: "EmuCore/GS", option: "MaxAnisotropy", value: "16" }
       - { section: "EmuCore/GS", option: "TextureFiltering", value: "2" }
+      - { section: "EmuCore/GS", option: "LoadTextureReplacements", value: "true" }
+      - { section: "EmuCore/GS", option: "PrecacheTextureReplacements", value: "false" }
+      - { section: "EmuCore/GS", option: "TextureReplacementsAsync", value: "true" }
       - { section: "EmuCore", option: "EnableWideScreenPatches", value: "true" }
