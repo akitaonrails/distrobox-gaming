@@ -1,0 +1,54 @@
+---
+- name: "Ensure replacements dir for {{ pack.serial }}"
+  ansible.builtin.file:
+    path: "{{ dg_pcsx2_textures_root }}/{{ pack.serial }}/replacements"
+    state: directory
+    mode: "0755"
+
+- name: "Stat sources for {{ pack.serial }}"
+  ansible.builtin.stat:
+    path: "{{ source.path }}"
+  loop: "{{ pack.sources }}"
+  loop_control:
+    loop_var: source
+    label: "{{ source.link_as }}"
+  register: _source_stats
+
+- name: "Warn about missing texture sources for {{ pack.serial }}"
+  ansible.builtin.debug:
+    msg: "WARNING: missing texture source for {{ pack.serial }}: {{ item.source.path }}"
+  loop: "{{ _source_stats.results }}"
+  loop_control:
+    label: "{{ item.source.link_as }}"
+  when: not (item.stat.exists | default(false))
+
+- name: "Symlink texture pack subdirectories for {{ pack.serial }}"
+  ansible.builtin.file:
+    src: "{{ item.source.path }}"
+    dest: "{{ dg_pcsx2_textures_root }}/{{ pack.serial }}/replacements/{{ item.source.link_as }}"
+    state: link
+    force: true
+  loop: "{{ _source_stats.results }}"
+  loop_control:
+    label: "{{ item.source.link_as }}"
+  when: item.stat.exists | default(false)
+
+- name: "Stat patch files for {{ pack.serial }}"
+  ansible.builtin.stat:
+    path: "{{ patch }}"
+  loop: "{{ pack.patches | default([]) }}"
+  loop_control:
+    loop_var: patch
+    label: "{{ patch | basename }}"
+  register: _patch_stats
+
+- name: "Symlink .pnach patch files for {{ pack.serial }}"
+  ansible.builtin.file:
+    src: "{{ item.patch }}"
+    dest: "{{ dg_pcsx2_patches_dir }}/{{ item.patch | basename }}"
+    state: link
+    force: true
+  loop: "{{ _patch_stats.results }}"
+  loop_control:
+    label: "{{ item.patch | basename }}"
+  when: item.stat.exists | default(false)

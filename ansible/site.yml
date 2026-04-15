@@ -18,6 +18,7 @@
     - { role: switch_cheats,             tags: [cheats, never] }
     - { role: rpcs3_per_game_configs,    tags: [rpcs3_configs, never] }
     - { role: retroarch_extras,          tags: [retroarch, never] }
+    - { role: pcsx2_textures,            tags: [pcsx2_textures, never] }
     - { role: desktop_apps,              tags: [configure, desktop, reset_configs] }
     - { role: configure_esde,            tags: [configure, esde, reset_configs] }
     - { role: shell_config,              tags: [configure, shell, reset_configs] }

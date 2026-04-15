@@ -1,0 +1,36 @@
+---
+# Deploy per-game PCSX2 texture replacement packs and patches.
+# Symlinks (not copies) keep the texture packs on the NAS — PCSX2
+# caches textures in RAM after first read so the NFS latency only
+# matters at first paint per texture.
+
+- name: Ensure PCSX2 textures and patches directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_pcsx2_textures_root }}"
+    - "{{ dg_pcsx2_patches_dir }}"
+
+- name: Per-game texture pack deployment
+  ansible.builtin.include_tasks: deploy_pack.yml
+  loop: "{{ dg_pcsx2_texture_packs }}"
+  loop_control:
+    loop_var: pack
+    label: "{{ pack.serial }} ({{ pack.name }})"
+
+- name: Enable texture replacements in PCSX2 global config
+  community.general.ini_file:
+    path: "{{ dg_box_home }}/.config/PCSX2/inis/PCSX2.ini"
+    section: EmuCore/GS
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    backup: true
+    mode: "0644"
+  loop:
+    - { option: LoadTextureReplacements, value: "true" }
+    - { option: PrecacheTextureReplacements, value: "false" }
+    - { option: TextureReplacementsAsync, value: "true" }
+  loop_control:
+    label: "[EmuCore/GS] {{ item.option }}"

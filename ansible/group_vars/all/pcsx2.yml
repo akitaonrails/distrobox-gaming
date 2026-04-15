@@ -1,0 +1,27 @@
+# PCSX2 texture replacements and per-game patches.
+#
+# Each entry under dg_pcsx2_texture_packs deploys to
+#   $DG_BOX_HOME/.config/PCSX2/textures/<serial>/replacements/<link_as>/
+# by symlinking from the source path. Symlinking keeps the 8 GB+ texture
+# packs on the NAS instead of duplicating to local disk; PCSX2 caches
+# textures in RAM after first use, so the NFS hit only happens once.
+#
+# .pnach patch files symlink into ~/.config/PCSX2/patches/<basename>.
+
+dg_pcsx2_ps2_root: /mnt/terachad/Emulators/ps2
+dg_pcsx2_textures_root: "{{ dg_box_home }}/.config/PCSX2/textures"
+dg_pcsx2_patches_dir: "{{ dg_box_home }}/.config/PCSX2/patches"
+
+dg_pcsx2_texture_packs:
+  - serial: SCUS-97328              # Gran Turismo 4 (NTSC-U / USA)
+    name: "Gran Turismo 4"
+    sources:
+      - path: "{{ dg_pcsx2_ps2_root }}/Gran Turismo 4 Remaster/Gran Turismo 4 HD HUD & UI Texture pack by Silentwarior112/replacements"
+        link_as: hd-hud-ui
+      - path: "{{ dg_pcsx2_ps2_root }}/Gran Turismo 4 Remaster/update 2.1/replacements"
+        link_as: hd-hud-ui-update-2.1
+      - path: "{{ dg_pcsx2_ps2_root }}/Gran Turismo 4 Remaster/HD HUD & U.I. blocky haze fix v2/text files jap kor usa pal shared"
+        link_as: blocky-haze-fix
+    patches:
+      - "{{ dg_pcsx2_ps2_root }}/Gran Turismo 4 Remaster/06AD9CA0.pnach"
+      - "{{ dg_pcsx2_ps2_root }}/Gran Turismo 4 Remaster/44A61C8F.pnach"
