@@ -11,6 +11,7 @@ dg_host_gid: 1026
 dg_data_root: /mnt/data
 dg_box_root: "{{ dg_data_root }}/distrobox/gaming"
 dg_box_home: "{{ dg_box_root }}"
+dg_steam_root: "{{ dg_data_root }}/steam"
 
 dg_emudeck_root: /mnt/terachad/Emulators/EmuDeck
 dg_rom_root: "{{ dg_emudeck_root }}/roms"

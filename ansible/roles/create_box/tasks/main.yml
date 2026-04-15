@@ -12,9 +12,16 @@
     mode: "0755"
 
 - name: Build distrobox create command
+  # Note on :ro for NFS paths: when the host has the same NFS share
+  # mounted RW (e.g. via autofs), the kernel resolves writes through
+  # the parent RW mount and bypasses our :ro bind. The :ro flag IS set
+  # (visible in findmnt / mount tables and respected by mount(2) calls)
+  # but ordinary write(2) calls succeed. For strict RO enforcement,
+  # restrict at the NFS server side instead.
   ansible.builtin.set_fact:
     _distrobox_volumes: >-
-      --volume {{ dg_emudeck_root }}:{{ dg_emudeck_root }}:rw
+      --volume {{ dg_emudeck_root }}:{{ dg_emudeck_root }}:ro,rprivate
+      --volume {{ dg_steam_root }}:{{ dg_steam_root }}:rw
       --volume {{ dg_host_applications_dir }}:{{ dg_host_applications_dir }}:rw
       {{ '--volume ' + dg_box_root + ':' + dg_box_root + ':rw'
          if dg_box_root != dg_box_home else '' }}
