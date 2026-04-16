@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Baseline Cemu settings deployed by Ansible.
+     Only written if settings.xml doesn't already exist (force=false).
+     Once Cemu runs, it rewrites this file with user state (window position,
+     game cache, etc.) — our values remain as the seeded starting point. -->
+<content>
+    <logflag>0</logflag>
+    <advanced_ppc_logging>false</advanced_ppc_logging>
+    <permanent_storage>true</permanent_storage>
+    <language>1</language>
+    <use_discord_presence>false</use_discord_presence>
+    <fullscreen_menubar>false</fullscreen_menubar>
+    <feral_gamemode>false</feral_gamemode>
+    <check_update>false</check_update>
+    <save_screenshot>true</save_screenshot>
+    <did_show_graphic_pack_download>true</did_show_graphic_pack_download>
+    <did_show_macos_disclaimer>true</did_show_macos_disclaimer>
+    <fullscreen>true</fullscreen>
+    <proxy_server></proxy_server>
+    <console_region>2</console_region>
+    <console_language>1</console_language>
+    <window_size>
+        <x>2560</x>
+        <y>1440</y>
+    </window_size>
+    <window_maximized>true</window_maximized>
+    <GamePaths>
+        <Entry>{{ dg_rom_heavy_root }}/wiiu</Entry>
+    </GamePaths>
+    <Graphic>
+        <!-- api: 0=OpenGL, 1=Vulkan. NVIDIA selection comes from
+             VK_ICD_FILENAMES injected by the desktop launcher, so device
+             stays empty (auto-select among visible Vulkan ICDs). -->
+        <api>1</api>
+        <device></device>
+        <VSync>1</VSync>
+        <GX2DrawdoneSync>true</GX2DrawdoneSync>
+        <UpscaleFilter>2</UpscaleFilter>
+        <DownscaleFilter>0</DownscaleFilter>
+        <FullscreenScaling>0</FullscreenScaling>
+        <AsyncCompile>true</AsyncCompile>
+        <vkAccurateBarriers>true</vkAccurateBarriers>
+    </Graphic>
+    <Audio>
+        <api>4</api>
+        <delay>2</delay>
+        <TVChannels>1</TVChannels>
+        <PadChannels>0</PadChannels>
+        <MicChannels>0</MicChannels>
+        <TVVolume>100</TVVolume>
+        <PadVolume>0</PadVolume>
+        <MicVolume>0</MicVolume>
+    </Audio>
+</content>

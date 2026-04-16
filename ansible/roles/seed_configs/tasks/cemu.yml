@@ -1,0 +1,16 @@
+---
+- name: Ensure Cemu config directory exists
+  ansible.builtin.file:
+    path: "{{ dg_box_home }}/.config/Cemu"
+    state: directory
+    mode: "0755"
+
+# force: false — Cemu mutates settings.xml at runtime (window position,
+# game cache, recent files). Re-running the playbook after Cemu has
+# written its own state would clobber that user data. Only seed if absent.
+- name: Deploy Cemu baseline settings.xml (seed only if missing)
+  ansible.builtin.template:
+    src: cemu-settings.xml.j2
+    dest: "{{ dg_box_home }}/.config/Cemu/settings.xml"
+    force: false
+    mode: "0644"
