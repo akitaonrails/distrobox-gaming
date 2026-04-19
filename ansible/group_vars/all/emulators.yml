@@ -21,6 +21,19 @@ dg_pcsx2_settings:
   - { section: "EmuCore/GS", option: "upscale_multiplier", value: "4.000000" }
   - { section: "EmuCore/GS", option: "MaxAnisotropy", value: "16" }
   - { section: "EmuCore/GS", option: "TextureFiltering", value: "2" }
+  # TriFilter -1 = Automatic (PCSX2's recommended default). Values 1 or 2
+  # force trilinear globally and cause PCSX2 to log "Trilinear filtering
+  # is not set to automatic. This may break rendering in some games."
+  # Leave it on Automatic.
+  - { section: "EmuCore/GS", option: "TriFilter", value: "-1" }
+  # FXAA post-process — cheap (~1-2% perf) edge-smoothing on top of the
+  # 4x upscale SSAA. Catches sub-pixel aliasing the integer upscale misses
+  # (e.g. thin lines, sprite edges in UI/HUD).
+  - { section: "EmuCore/GS", option: "fxaa", value: "true" }
+  # PCRTC Anti-blur — PCSX2's PCRTC emulation applies a slight blur to
+  # match CRT scanline behavior. Turn off for a sharper output now that
+  # we upscale 4x and we're not on a CRT.
+  - { section: "EmuCore/GS", option: "pcrtc_antiblur", value: "true" }
   - { section: "EmuCore/GS", option: "AccurateBlendingUnit", value: "Basic" }
   # Async replacement texture load avoids stalls when a game first hits
   # a texture; precache off keeps startup fast (textures load on demand).
