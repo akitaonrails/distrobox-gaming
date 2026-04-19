@@ -11,8 +11,6 @@
     dest: "{{ dg_desktop_render_dir }}/{{ item }}"
     mode: "0644"
   loop:
-    - gaming-shadps4.desktop
-    - gaming-shadps4-driveclub-no-patch.desktop
     - gaming-shadps4-gui.desktop
     - gaming-flycast.desktop
 
@@ -22,8 +20,6 @@
     dest: "{{ dg_host_applications_dir }}/{{ item }}"
     state: link
   loop:
-    - gaming-shadps4.desktop
-    - gaming-shadps4-driveclub-no-patch.desktop
     - gaming-shadps4-gui.desktop
     - gaming-flycast.desktop
 
@@ -75,8 +71,6 @@
 - name: Validate desktop files
   ansible.builtin.command: "desktop-file-validate {{ dg_desktop_render_dir }}/{{ item }}"
   loop:
-    - gaming-shadps4.desktop
-    - gaming-shadps4-driveclub-no-patch.desktop
     - gaming-shadps4-gui.desktop
     - gaming-flycast.desktop
   changed_when: false

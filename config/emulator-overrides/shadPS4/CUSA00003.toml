@@ -14,7 +14,7 @@ readbackLinearImages = false
 readbacksMode = 0
 copyGPUBuffers = false
 directMemoryAccess = false
-vblankFrequency = 30
+vblankFrequency = 60
 
 [Vulkan]
 gpuId = -1
