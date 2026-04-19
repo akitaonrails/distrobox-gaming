@@ -309,6 +309,81 @@ speed band (0 = 20–100 mph, 1 = 100–150, 2 = 150+):
 - `HoodCam\FOV0,1,2` — Hood
 - `BumperHighCam\FOV0,1,2` — Bumper
 
+## Forza Horizon 1 XE Mod — 60 FPS + expanded car roster
+
+Sibling community project to PFP, for **Forza Horizon 1** (Xbox 360, title
+ID `4D5309C9`). Adds the Fast & Furious 7 cars, FH2-era cars, traffic
+cars (marked `[x] - TRAFFIC`), AWD swaps, FM4 engines, and Project
+Underground engine swaps. Ships a modded `default.xex` that drives
+native 60 FPS — no Xenia config changes needed.
+
+- **Authors**: Teancum, D3FEKT, Wonder2K19, Modforce
+- **Home**: https://www.moddb.com/mods/forza-horizon-xe-mod
+- **v1.0 base**: `Forza_Horizon_1_XE_Mod_v1.0.7z` (~2.0 GB)
+- **v1.01 hotfix**: `FH1XE_v1.01_hotfix.7z` (~1.6 GB) — apply after v1.0
+
+### Hard requirements (from mod readme)
+
+Non-negotiable — the modded xex is incompatible with stock TUs/DLC/saves:
+
+1. **Base FH1 must be extracted as XEX/files**, not loaded as an ISO.
+2. **Remove all title updates** from `content/.../4D5309C9/000B0000/`.
+   Xenia Manager → Manage → Install Content does NOT have a "remove"
+   button; delete the subdir directly.
+3. **Remove Rally Expansion Pack DLC** if installed. Other DLC can stay.
+4. **Delete any save created with a TU installed** —
+   `content/.../4D5309C9/00000001/` — the mod's xex can't reuse it.
+
+### Install steps (Xenia Canary, Linux)
+
+```sh
+# 1. Extract FH1 ISO to a new dir (keeps the ISO intact for revert)
+mkdir -p "/mnt/terachad/Emulators/EmuDeck/roms_heavy/xbox360/FH (XE Mod)"
+distrobox enter gaming -- extract-xiso -x \
+  "/mnt/terachad/Emulators/EmuDeck/roms_heavy/xbox360/Forza Horizon (USA)*.iso" \
+  -d "/mnt/terachad/Emulators/EmuDeck/roms_heavy/xbox360/FH (XE Mod)"
+
+# 2. Keep a backup of the vanilla xex (mod overwrites it)
+cd "/mnt/terachad/Emulators/EmuDeck/roms_heavy/xbox360/FH (XE Mod)"
+cp default.xex default.xex.vanilla
+
+# 3. Merge v1.0 base over the extracted game
+7z x -aoa "/mnt/terachad/Emulators/Forza Horizon XE Mod/Forza_Horizon_1_XE_Mod_v1.0.7z"
+
+# 4. Merge v1.01 hotfix on top
+7z x -aoa "/mnt/terachad/Emulators/Forza Horizon XE Mod/FH1XE_v1.01_hotfix.7z"
+
+# 5. Clear Xenia's FH1 content (TU + save + Headers)
+rm -rf "/mnt/data/distrobox/gaming/tools/xenia-manager/current/Emulators/Xenia Canary/content/0000000000000000/4D5309C9/"{000B0000,00000001,Headers}
+
+# 6. Update Xenia Manager's games.json to point at the modded xex
+#    (or do this via the XM UI: remove FH, re-add pointing at
+#    FH (XE Mod)/default.xex).
+```
+
+The mod installs three xex modules at the game root:
+- `default.xex` (modded boot executable)
+- `SpeechFacade_default.xex`
+- `XMediaFacade_default.xex`
+
+Plus the `media/` tree replacements. Vanilla xex is preserved as
+`default.xex.vanilla` — swap these back to revert to stock FH1 (or just
+re-register the ISO path in games.json).
+
+### Xenia config
+
+No per-game toml changes required. Default Xenia Canary settings
+(`vsync = false`, `framerate_limit = 0`, `mount_cache = true`,
+`render_target_path_vulkan = "fsi"`, `use_fuzzy_alpha_epsilon = true`)
+are already what the mod expects. The earlier belief that
+`vsync_interval = 16` was needed came from stale research — that key
+doesn't exist in current Xenia Canary.
+
+### Car list
+
+Curated list of added cars:
+https://docs.google.com/spreadsheets/d/1Uqk6q3LTR2U5nWZOcK1cnkyphE0q6hk7MeRI3_l31SQ/edit?usp=sharing
+
 ## FM3 + PFP-3 on newer Xenia Canary — the TU/xex compatibility maze
 
 FM3 has the most constraints of the three Forza games in this repo because
