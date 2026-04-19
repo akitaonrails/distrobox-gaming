@@ -48,10 +48,13 @@ dg_pacman_packages:
 
 dg_aur_packages:
   - duckstation-qt-bin
-  # Using stable `pcsx2` (v2.6.3) from AUR instead of `pcsx2-latest-bin`
-  # because the latter's PKGBUILD is broken upstream: pkgver says 2.7.254
-  # but the source URL is hardcoded to a non-existent v2.7.260 AppImage.
-  - pcsx2
+  # pcsx2-latest-bin tracks the rolling 2.7.x AppImage (currently 2.7.274).
+  # The stable 2.6.3 (pure `pcsx2`) hard-crashes on GT3 at the car-showcase
+  # screen due to a GS renderer regression that was fixed sometime in
+  # 2.7.x. Previously pinned to 2.6.3 because the `pcsx2-latest-bin`
+  # PKGBUILD had a URL mismatch; upstream has since corrected the build
+  # (verified installing 2.7.274 successfully April 2026).
+  - pcsx2-latest-bin
   - rpcs3-bin
   - eden-bin
   - cemu-bin

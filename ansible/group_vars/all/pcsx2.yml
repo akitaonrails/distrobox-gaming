@@ -135,10 +135,14 @@ dg_pcsx2_patch_url_renames:
     dest_name: PBPX-95503_8AA991B0.pnach
 
 # Per-game graphics/system settings written to
-#   ~/.config/PCSX2/gamesettings/<SERIAL>.ini
-# overriding the global PCSX2.ini for that game.
+#   ~/.config/PCSX2/gamesettings/<SERIAL>_<CRC>.ini
+# PCSX2 ≥ 2.7 reads ONLY the CRC-suffixed form; files named just
+# <SERIAL>.ini are silently ignored ("using globals" in Game Properties).
+# Specify the CRC per entry — print it via PCSX2 log on first boot:
+# "CRC: <8 hex chars>".
 dg_pcsx2_per_game_settings:
   - serial: SCUS-97328
+    crc: 77E61C8A
     name: "Gran Turismo 4"
     settings:
       - { section: "EmuCore/GS", option: "AspectRatio", value: "16:9" }
@@ -150,7 +154,8 @@ dg_pcsx2_per_game_settings:
       - { section: "EmuCore/GS", option: "TextureReplacementsAsync", value: "true" }
       - { section: "EmuCore", option: "EnableWideScreenPatches", value: "true" }
 
-  - serial: SCUS-97436              # GT4 Spec II (CRC 4CE521F2)
+  - serial: SCUS-97436              # GT4 Spec II
+    crc: 4CE521F2
     name: "Gran Turismo 4 Spec II"
     settings:
       - { section: "EmuCore/GS", option: "AspectRatio", value: "16:9" }
@@ -166,7 +171,8 @@ dg_pcsx2_per_game_settings:
       # dg_pcsx2_patch_url_renames below — keep this true so PCSX2 loads it.
       - { section: "EmuCore", option: "EnableWideScreenPatches", value: "true" }
 
-  - serial: SCUS-97102              # GT3 A-spec — USA retail path (CRC 85AE91B3)
+  - serial: SCUS-97102              # GT3 A-spec — USA retail
+    crc: 85AE91B3
     name: "Gran Turismo 3 A-spec"
     settings: &gt3_settings
       - { section: "EmuCore/GS", option: "AspectRatio", value: "16:9" }
@@ -178,11 +184,13 @@ dg_pcsx2_per_game_settings:
       - { section: "EmuCore/GS", option: "TextureReplacementsAsync", value: "true" }
       - { section: "EmuCore", option: "EnableWideScreenPatches", value: "true" }
 
-  - serial: PBPX-95503              # GT3 A-spec PS2 Bundle variant (CRC 8AA991B0) — same settings
+  - serial: PBPX-95503              # GT3 A-spec PS2 Bundle variant — same settings
+    crc: 8AA991B0
     name: "Gran Turismo 3 A-spec (PS2 Bundle)"
     settings: *gt3_settings
 
   - serial: SLUS-20967
+    crc: 4CE521F2                   # Enthusia USA retail — user's disc CRC; adjust if yours differs
     name: "Enthusia Professional Racing"
     settings:
       - { section: "EmuCore/GS", option: "AspectRatio", value: "16:9" }

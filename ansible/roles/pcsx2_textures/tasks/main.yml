@@ -97,9 +97,13 @@
     loop_var: pack
     label: "{{ pack.serial }} ({{ pack.name }})"
 
+# PCSX2 >= 2.7 per-game settings convention: gamesettings/<SERIAL>_<CRC>.ini
+# Files named just <SERIAL>.ini are silently ignored (Game Properties will
+# show "using globals"). Each entry in dg_pcsx2_per_game_settings must
+# carry a `crc:` field — the 8-hex-char ELF CRC PCSX2 logs on boot.
 - name: Per-game PCSX2 settings (aspect ratio, blending, AF, etc.)
   community.general.ini_file:
-    path: "{{ dg_box_home }}/.config/PCSX2/gamesettings/{{ pgs.0.serial }}.ini"
+    path: "{{ dg_box_home }}/.config/PCSX2/gamesettings/{{ pgs.0.serial }}_{{ pgs.0.crc }}.ini"
     section: "{{ pgs.1.section }}"
     option: "{{ pgs.1.option }}"
     value: "{{ pgs.1.value }}"
@@ -108,7 +112,7 @@
   loop: "{{ dg_pcsx2_per_game_settings | subelements('settings') }}"
   loop_control:
     loop_var: pgs
-    label: "{{ pgs.0.serial }} [{{ pgs.1.section }}] {{ pgs.1.option }}"
+    label: "{{ pgs.0.serial }}_{{ pgs.0.crc }} [{{ pgs.1.section }}] {{ pgs.1.option }}"
 
 - name: Enable texture replacements in PCSX2 global config
   community.general.ini_file:
