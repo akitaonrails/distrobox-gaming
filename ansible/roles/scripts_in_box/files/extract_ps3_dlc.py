@@ -38,6 +38,21 @@ DEFAULT_DEST = os.path.expanduser('~/.config/rpcs3/dev_hdd0/game')
 # both halves are zero-padded 2-digit decimal: e.g. -A0122- -> 01.22.
 PATCH_VER_RE = re.compile(r'-A(\d{2})(\d{2})-V')
 
+# Per-title upper bound on patch versions to install. Games listed here
+# will NOT receive patch PKGs newer than the pinned version, even when
+# staging dirs contain them. Use when newer patches introduce
+# regressions under RPCS3 that downgrade the play experience.
+PER_GAME_MAX_VERSION = {
+    # Gran Turismo 6: v1.06+ introduces visual regressions on RPCS3
+    # (issue #17453 black reflections, menu glitches, black track/car
+    # surfaces). v1.05 is the community-recognized "safe stop".
+    "BCES01893": "01.05",
+    "BCUS98296": "01.05",  # US release of GT6
+    "BCJS37016": "01.05",  # JP
+    "BCAS25018": "01.05",  # Asia
+    "BCES01977": "01.05",  # EU re-issue
+}
+
 
 def sfo_version(sfo_path: str) -> str | None:
     """Extract the VERSION field from a PS3 PARAM.SFO, if present."""
@@ -159,13 +174,23 @@ def extract_pkg(pkg_path: str, dest_base: str, dry_run: bool = False,
         else:
             dest_dir = os.path.join(dest_base, content_id)
 
-        # Patch-version idempotency: if this PKG is a game patch and the
-        # destination already contains an equal-or-newer PARAM.SFO VERSION,
-        # skip the whole file. File-size checks alone aren't sufficient
-        # because different patch versions often share file sizes.
+        # Patch-version idempotency + per-game cap.
+        # - --max-version caps every game to a common ceiling.
+        # - PER_GAME_MAX_VERSION caps specific titles where newer patches
+        #   cause regressions under RPCS3. The stricter of the two applies.
+        # - If the destination already has an equal-or-newer PARAM.SFO
+        #   VERSION, skip (file-size checks alone don't catch patch diffs
+        #   cleanly; different patch versions often share file sizes).
         if patch_ver:
-            if max_version and ver_tuple(patch_ver) > ver_tuple(max_version):
-                print(f'  SKIP {pkg_name}: version {patch_ver} exceeds --max-version {max_version}')
+            per_game_cap = tid_match and PER_GAME_MAX_VERSION.get(tid_match.group(1))
+            effective_max = None
+            if max_version and per_game_cap:
+                effective_max = max_version if ver_tuple(max_version) < ver_tuple(per_game_cap) else per_game_cap
+            else:
+                effective_max = max_version or per_game_cap
+            if effective_max and ver_tuple(patch_ver) > ver_tuple(effective_max):
+                label = 'per-game cap' if per_game_cap and effective_max == per_game_cap else '--max-version'
+                print(f'  SKIP {pkg_name}: version {patch_ver} exceeds {label} {effective_max}')
                 return True
             existing_ver = sfo_version(os.path.join(dest_dir, 'PARAM.SFO'))
             if existing_ver and ver_tuple(existing_ver) >= ver_tuple(patch_ver):
