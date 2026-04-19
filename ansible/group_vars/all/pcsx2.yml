@@ -55,6 +55,13 @@ dg_pcsx2_texture_packs:
         link_as: blocky-haze-fix
     patches: []
 
+  - serial: SCUS-97102              # Gran Turismo 3 A-spec (NTSC-U, v1.10 on user's NAS)
+    name: "Gran Turismo 3 A-spec"
+    sources:
+      - path: "{{ dg_pcsx2_ps2_root }}/GT3 Retexture 1.0/replacements"
+        link_as: retexture-1.0
+    patches: []
+
   - serial: SLUS-20967              # Enthusia Professional Racing (NTSC-U)
     name: "Enthusia Professional Racing"
     sources:
@@ -102,6 +109,14 @@ dg_pcsx2_patch_url_renames:
   - url: https://raw.githubusercontent.com/PCSX2/pcsx2_patches/main/patches/SCUS-97436_32A1C752.pnach
     dest_name: SCUS-97436_4CE521F2.pnach
 
+  # GT3 A-spec widescreen — PCSX2 upstream ships a pnach for CRC
+  # 85AE91B3 (USA retail). User's v1.10 ISO may have a different CRC;
+  # PCSX2 filename-matches by CRC so if yours differs, rename the
+  # deployed file to SCUS-97102_<your CRC>.pnach once — PCSX2 prints
+  # the CRC to its log on first boot.
+  - url: https://raw.githubusercontent.com/PCSX2/pcsx2_patches/main/patches/SCUS-97102_85AE91B3.pnach
+    dest_name: SCUS-97102_85AE91B3.pnach
+
 # Per-game graphics/system settings written to
 #   ~/.config/PCSX2/gamesettings/<SERIAL>.ini
 # overriding the global PCSX2.ini for that game.
@@ -132,6 +147,20 @@ dg_pcsx2_per_game_settings:
       # DB misses it. We ship the Online-Public-Beta widescreen pnach
       # (CRC 32A1C752, same code layout) renamed to Spec II's CRC via
       # dg_pcsx2_patch_url_renames below — keep this true so PCSX2 loads it.
+      - { section: "EmuCore", option: "EnableWideScreenPatches", value: "true" }
+
+  - serial: SCUS-97102              # GT3 A-spec (NTSC-U). Works with v1.00 or v1.10 — PCSX2 loads
+                                    # the right widescreen pnach based on ELF CRC; if yours isn't
+                                    # 85AE91B3, rename the shipped pnach (see dg_pcsx2_patch_url_renames).
+    name: "Gran Turismo 3 A-spec"
+    settings:
+      - { section: "EmuCore/GS", option: "AspectRatio", value: "16:9" }
+      - { section: "EmuCore/GS", option: "AccurateBlendingUnit", value: "Basic" }
+      - { section: "EmuCore/GS", option: "MaxAnisotropy", value: "16" }
+      - { section: "EmuCore/GS", option: "TextureFiltering", value: "2" }
+      - { section: "EmuCore/GS", option: "LoadTextureReplacements", value: "true" }
+      - { section: "EmuCore/GS", option: "PrecacheTextureReplacements", value: "false" }
+      - { section: "EmuCore/GS", option: "TextureReplacementsAsync", value: "true" }
       - { section: "EmuCore", option: "EnableWideScreenPatches", value: "true" }
 
   - serial: SLUS-20967
