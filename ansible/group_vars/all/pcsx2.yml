@@ -179,9 +179,14 @@ dg_pcsx2_per_game_settings:
       - { section: "EmuCore/GS", option: "AccurateBlendingUnit", value: "Basic" }
       - { section: "EmuCore/GS", option: "MaxAnisotropy", value: "16" }
       - { section: "EmuCore/GS", option: "TextureFiltering", value: "2" }
-      - { section: "EmuCore/GS", option: "LoadTextureReplacements", value: "true" }
+      # GT3 retexture pack (4.7 GB, 566 PNGs) is configured but NOT loaded
+      # by default: streaming the PNGs from NFS during car-showcase caused
+      # visible flicker during live testing. Flip to `true` here if you
+      # want the pack and accept the flicker, or look into mirroring the
+      # pack onto local disk first.
+      - { section: "EmuCore/GS", option: "LoadTextureReplacements", value: "false" }
       - { section: "EmuCore/GS", option: "PrecacheTextureReplacements", value: "false" }
-      - { section: "EmuCore/GS", option: "TextureReplacementsAsync", value: "true" }
+      - { section: "EmuCore/GS", option: "TextureReplacementsAsync", value: "false" }
       - { section: "EmuCore", option: "EnableWideScreenPatches", value: "true" }
 
   - serial: PBPX-95503              # GT3 A-spec PS2 Bundle variant — same settings
