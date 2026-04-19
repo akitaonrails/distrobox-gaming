@@ -340,7 +340,7 @@ Non-negotiable — the modded xex is incompatible with stock TUs/DLC/saves:
 # 1. Extract FH1 ISO to a new dir (keeps the ISO intact for revert)
 mkdir -p "/mnt/terachad/Emulators/EmuDeck/roms_heavy/xbox360/FH (XE Mod)"
 distrobox enter gaming -- extract-xiso -x \
-  "/mnt/terachad/Emulators/EmuDeck/roms_heavy/xbox360/Forza Horizon (USA)*.iso" \
+  "/mnt/terachad/Emulators/ROMS_FINAL/xbox360/Forza Horizon (USA)*.iso" \
   -d "/mnt/terachad/Emulators/EmuDeck/roms_heavy/xbox360/FH (XE Mod)"
 
 # 2. Keep a backup of the vanilla xex (mod overwrites it)
@@ -353,10 +353,13 @@ cp default.xex default.xex.vanilla
 # 4. Merge v1.01 hotfix on top
 7z x -aoa "/mnt/terachad/Emulators/Forza Horizon XE Mod/FH1XE_v1.01_hotfix.7z"
 
-# 5. Clear Xenia's FH1 content (TU + save + Headers)
+# 5. CRITICAL: fix case-sensitivity collisions from the 7z merge (see below)
+#    Run the case-normalization script at the end of this section.
+
+# 6. Clear Xenia's FH1 content (TU + save + Headers)
 rm -rf "/mnt/data/distrobox/gaming/tools/xenia-manager/current/Emulators/Xenia Canary/content/0000000000000000/4D5309C9/"{000B0000,00000001,Headers}
 
-# 6. Update Xenia Manager's games.json to point at the modded xex
+# 7. Update Xenia Manager's games.json to point at the modded xex
 #    (or do this via the XM UI: remove FH, re-add pointing at
 #    FH (XE Mod)/default.xex).
 ```
@@ -367,8 +370,106 @@ The mod installs three xex modules at the game root:
 - `XMediaFacade_default.xex`
 
 Plus the `media/` tree replacements. Vanilla xex is preserved as
-`default.xex.vanilla` — swap these back to revert to stock FH1 (or just
-re-register the ISO path in games.json).
+`default.xex.vanilla` — swap these back to revert to stock FH1 (or
+re-extract the original ISO from `/mnt/terachad/Emulators/ROMS_FINAL/xbox360/`
+where it's archived after successful mod install).
+
+### Case-sensitivity trap (critical for ANY Xbox 360 mod on Linux)
+
+Xbox 360 filesystems are case-insensitive; the Linux NAS storing the
+extracted game is case-**sensitive**. The XE Mod's 7z archive ships some
+paths in different case than what `extract-xiso` produces from the
+original ISO. When `7z x -aoa` merges, Linux treats `media/ui` and
+`media/UI` as **separate** directories — it does not overwrite files
+across cases. Result: half the mod's assets land in orphaned uppercase
+dirs the game's code never queries, and FH boots into a hang state
+looping `ResolvePath(\media\ui)` forever.
+
+Concrete breakage seen during install (Apr 2026):
+
+- `media/ui` + `media/UI` — separate
+- `media/cars` + `media/Cars`
+- `media/tracks` + `media/Tracks`
+- `media/tracks/colorado` + `media/tracks/Colorado`
+- `media/audio/cars/Engines/damage/damage.fev` + `Damage.fev`
+- `media/audio/cars/Engines/soundbanks/lod1` + `LOD1`
+- Lots more — 41 case-duplicate entries total in this mod install.
+
+**Fix: recursively merge case-duplicate entries into a single
+lowercase-named canonical**, with mod files winning on collision.
+Inline Python script (works for any Xbox 360 mod install, not just XE Mod):
+
+```python
+# Run inside the target game dir (e.g. FH (XE Mod)/)
+import os, shutil
+
+def ci_entry(parent, name):
+    target = name.lower()
+    try:
+        for e in os.listdir(parent):
+            if e.lower() == target:
+                return e
+    except FileNotFoundError:
+        pass
+    return None
+
+def merge_dir(src, dst):
+    for item in os.listdir(src):
+        spath = os.path.join(src, item)
+        existing = ci_entry(dst, item)
+        if existing is None:
+            shutil.move(spath, os.path.join(dst, item))
+        else:
+            tp = os.path.join(dst, existing)
+            if os.path.isdir(spath) and os.path.isdir(tp):
+                merge_dir(spath, tp)
+            else:
+                if os.path.isdir(tp):
+                    shutil.rmtree(tp)
+                else:
+                    os.remove(tp)
+                shutil.move(spath, os.path.join(dst, item))
+    os.rmdir(src)
+
+def normalize(parent):
+    entries = os.listdir(parent)
+    by_lower = {}
+    for e in entries:
+        by_lower.setdefault(e.lower(), []).append(e)
+    n = 0
+    for lk, members in by_lower.items():
+        if len(members) < 2:
+            continue
+        canonical = lk if lk in members else members[0]
+        cp = os.path.join(parent, canonical)
+        if canonical != lk:
+            tmp = cp + "__tmp"
+            os.rename(cp, tmp)
+            cp = os.path.join(parent, lk)
+            os.rename(tmp, cp)
+        for other in members:
+            if other == (lk if lk in members else canonical):
+                continue
+            src = os.path.join(parent, other)
+            if os.path.isdir(src) and os.path.isdir(cp):
+                merge_dir(src, cp)
+            else:
+                if os.path.isdir(cp):
+                    shutil.rmtree(cp)
+                else:
+                    os.remove(cp)
+                shutil.move(src, cp)
+            n += 1
+    return n
+
+for _ in range(5):
+    c = sum(normalize(d) for d, _, _ in os.walk(".", topdown=False))
+    if c == 0:
+        break
+```
+
+After this runs, `os.walk` should find zero case-duplicate groups at
+any level.
 
 ### Xenia config
 
