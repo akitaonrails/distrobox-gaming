@@ -228,17 +228,56 @@ dg_pcsx2_per_game_settings:
       - { section: "EmuCore/GS", option: "TextureReplacementsAsync", value: "true" }
       - { section: "EmuCore", option: "EnableWideScreenPatches", value: "true" }
 
+  - serial: SLES-51824              # Colin McRae Rally 04 — PAL, En,Fr,De,Es,It
+    crc: DAF18A40                   # computed from ELF inside user's ISO
+    name: "Colin McRae Rally 04"
+    # Known HW-renderer bug: ground and sky render black without the CRC
+    # hack. The combo CRC Hack = Partial + Blending Accuracy = High +
+    # Skipdraw = 3 is the community-documented workaround (PCSX2 issues
+    # #1546, #13136). No upstream pnach exists for this serial; the
+    # PCSX2/pcsx2_patches repo has nothing for CMR04/CMR05 PAL.
+    settings:
+      - { section: "EmuCore/GS", option: "AspectRatio", value: "16:9" }
+      - { section: "EmuCore/GS", option: "MaxAnisotropy", value: "16" }
+      - { section: "EmuCore/GS", option: "TextureFiltering", value: "2" }
+      - { section: "EmuCore/GS", option: "AccurateBlendingUnit", value: "High" }
+      - { section: "EmuCore/GS", option: "UserHacks", value: "true" }
+      - { section: "EmuCore/GS", option: "UserHacks_SkipDraw_Start", value: "1" }
+      - { section: "EmuCore/GS", option: "UserHacks_SkipDraw_End", value: "3" }
+
+  - serial: SLES-52636              # Colin McRae Rally 2005 — PAL, En,Fr,De,Es,It
+    crc: 5D4A4D86                   # computed from ELF inside user's ISO
+    name: "Colin McRae Rally 2005"
+    # Same black-ground/sky HW bug as CMR 04 (#1546). No pnach exists;
+    # the game's built-in 16:9 option breaks the cockpit camera, so we
+    # leave AspectRatio at 16:9 in PCSX2 instead of toggling in-game.
+    # Issue #8877 tracks in-race graphical breakage in clear weather +
+    # framerate/timer problems — no emulator-side fix available.
+    settings:
+      - { section: "EmuCore/GS", option: "AspectRatio", value: "16:9" }
+      - { section: "EmuCore/GS", option: "MaxAnisotropy", value: "16" }
+      - { section: "EmuCore/GS", option: "TextureFiltering", value: "2" }
+      - { section: "EmuCore/GS", option: "AccurateBlendingUnit", value: "High" }
+      - { section: "EmuCore/GS", option: "UserHacks", value: "true" }
+      - { section: "EmuCore/GS", option: "UserHacks_CPUCLUTRender", value: "1" }
+      - { section: "EmuCore/GS", option: "UserHacks_SkipDraw_Start", value: "1" }
+      - { section: "EmuCore/GS", option: "UserHacks_SkipDraw_End", value: "3" }
+
   - serial: SLUS-20002              # Ridge Racer V — PS2 launch title, USA retail
     crc: 06AD9CA0
     name: "Ridge Racer V"
-    # Known quirk: car-texture flickering in HW renderer (PCSX2 issue #3639,
-    # #13729 still open on master as of Apr 2026). Digital Foundry's John
-    # Linneman (Jul 2024): "finally pretty good using the HW renderer in
-    # PCSX2 2.0. Still some texture glitching" — default HW is acceptable
-    # for racing; if flicker is distracting, toggle Software renderer
-    # in-session (no per-game setting required).
+    # Known quirks:
+    # - Car-texture flickering in HW renderer (PCSX2 issue #3639, #13729
+    #   still open on master as of Apr 2026). Digital Foundry's John
+    #   Linneman (Jul 2024): "finally pretty good using the HW renderer in
+    #   PCSX2 2.0. Still some texture glitching" — default HW is acceptable
+    #   for racing; if flicker is distracting, toggle Software renderer
+    #   in-session (no per-game setting required).
+    # - Vertical flicker at 1080i output: fixed by enabling the pnach's
+    #   [No-Interlacing] block via EnableNoInterlacingPatches = true.
     settings:
       - { section: "EmuCore/GS", option: "AspectRatio", value: "16:9" }
       - { section: "EmuCore/GS", option: "MaxAnisotropy", value: "16" }
       - { section: "EmuCore/GS", option: "TextureFiltering", value: "2" }
       - { section: "EmuCore", option: "EnableWideScreenPatches", value: "true" }
+      - { section: "EmuCore", option: "EnableNoInterlacingPatches", value: "true" }
