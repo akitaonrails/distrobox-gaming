@@ -385,6 +385,7 @@ Focused docs:
 - [Controller Hotkeys](docs/controller-hotkeys.md)
 - [Rebuild Runbook](docs/rebuild-runbook.md)
 - [Xenia Manager](docs/xenia-manager.md)
+- [Project Forza Plus (FM2/3/4 on Xenia)](docs/project-forza.md)
 
 ## Safety Rules
 
