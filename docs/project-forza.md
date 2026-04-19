@@ -225,6 +225,57 @@ NVIDIA Control Panel / MangoHud.
 ### All three
 - Any graphical glitch is Xenia-side, not a pack bug.
 
+## FM4 Xenia Canary settings (April 2026)
+
+This repo's FM4 setup runs on current **Xenia Canary** (post-Oct-2022,
+fully-updated April 2026) under Wine+Vulkan on NVIDIA. The Oct-2022
+`50fce8b` build is no longer required. Set all of these in the Xenia
+Manager per-game toml for FM4 (NOT in the root `xenia-canary.config.toml`
+— see below for why):
+
+| Key | Value | Fixes |
+|---|---|---|
+| `gpu` | `"vulkan"` | Required under Wine (no VKD3D path) |
+| `render_target_path_vulkan` | `"fsi"` | **Fixes psychedelic magenta/pink dither on car paint and windows** — FSI handles all pixel formats correctly in-shader; default `fbo` is documented as lower accuracy |
+| `snorm16_render_target_full_range` | `false` | Part of the same paint fix — stops -32..32 → -1..1 remap that breaks multiplicative blending on 16_16 RTs |
+| `use_fuzzy_alpha_epsilon` | `true` | Part of the same paint fix — documented as "prevent flickering on NVIDIA graphics cards" |
+| `gpu_allow_invalid_fetch_constants` | `true` | Fixes black/glitched rear-view + side mirrors |
+| `query_occlusion_sample_lower_threshold` | `-1` | Stops lights rendering through walls |
+| `apu` | `"sdl"` | Fixes choppy audio on newer Canary |
+| `apu_max_queued_frames` | `3` | Reduces audio delay (PFP-recommended) |
+| `use_dedicated_xma_thread` | `false` | Better XMA decoding results |
+| `xma_decoder` | `"new"` | Default in recent Canary |
+| `postprocess_scaling_and_sharpening` | `"fsr"` | PFP "Best Visual Quality" |
+| `postprocess_ffx_fsr_sharpness_reduction` | `0.15` | PFP value |
+| `postprocess_antialiasing` | `"fxaa"` | Recommended when FSR is on |
+| `internal_display_resolution` | `16` | 1080p internal (PFP doc) |
+| `logged_profile_slot_0_xuid` | `"<your XUID>"` | Auto-signs-in profile so saves get confirmed (games reported "can't save" without this) |
+| `apply_title_update` | `true` | Loads Title Update 8 |
+| `mount_cache` | `true` | Stops crash when starting a race |
+
+The **FSI / snorm16 / fuzzy alpha** combo is the critical car-paint fix
+confirmed under current Canary on NVIDIA. Reproduces in vanilla
+Essentials Edition too — the bug is not PFP-4-related.
+
+**Xenia Manager's two FM4 config files trap**: when Xenia Manager adds
+a game whose title already exists, it appends ` (1)`, `(2)` etc. and
+creates a distinct per-game toml per suffix. `games.json`'s
+`file_locations.config` field tells you the exact filename the active
+entry uses — always check it before editing, otherwise you edit a file
+XM never loads.
+
+**Asset layout (FM4 specifically)**: the disc-1 extract gives you the
+bulk of `Media/` but `Media/xui/` (fonts), `Media/ui/` (marketplace
+textures), and the lowercased-language `Media/stringtables/` come from
+disc 2. Without disc 2's `media/*` merged in, FM4 hangs at main-menu
+load with the log repeatedly emitting `Stub XFileSectorInformation!`.
+Extract disc 2 separately and `rsync` its `media/` into the install's
+`Media/` (renaming `UI` → `ui` and `StringTables` → `stringtables` on
+the install side first, to avoid case-duplicated dirs on Linux). The
+`content/0000000000000000/4D530910/00000002/` and TU8
+`000B0000/tu00000008_00000000` also need to be dropped into Xenia's
+content tree (can be symlinks to the staged dirs in the install).
+
 ## Community-reported fixes (from Reddit comments)
 
 - **Audio is choppy on newer Canary**: set `apu = "sdl"` and
