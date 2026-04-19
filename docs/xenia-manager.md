@@ -34,3 +34,27 @@ Windows-style environment and already owns Canary download/update logic.
 3. Install `Xenia Canary`.
 4. Point the library scanner at `Z:\mnt\...` or the `G:` drive link if
    `$DG_XENIA_GAME_DIR` exists.
+
+## Game library location
+
+`dg_xenia_game_dir` defaults to `{{ dg_rom_heavy_root }}/xbox360` — the
+`roms_heavy` tree is where large Xbox 360 titles live (including the
+`Project Forza Plus Modded` game dirs). The role symlinks that path as
+the Wine prefix's `G:` drive so Xenia Manager's library scanner can reach
+it without a long UNC path.
+
+If your Xbox 360 ROMs live elsewhere, override in
+`host_vars/localhost.yml`:
+
+```yaml
+dg_xenia_game_dir: /your/path/xbox360
+```
+
+## Why `pacman -Sy` and not `-Syu`
+
+This role installs `wine` + `winetricks` with `pacman -Sy --needed` (sync
+DB, no full upgrade). Full system upgrades live in `bootstrap_packages`
+and are not coupled to this role — otherwise an unrelated pending
+conflict (for example `sfml` rolling forward past `dolphin-emu`'s pinned
+`libsfml-network.so`) would abort `install-xenia.yml` even though wine
+itself installs cleanly.

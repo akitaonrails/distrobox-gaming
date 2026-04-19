@@ -10,4 +10,4 @@ dg_xenia_manager_release_api: https://api.github.com/repos/xenia-manager/xenia-m
 dg_xenia_manager_zip_url: ""
 dg_xenia_dotnet_url: https://aka.ms/dotnet/10.0/windowsdesktop-runtime-win-x64.exe
 dg_xenia_vcredist_url: https://aka.ms/vs/17/release/vc_redist.x64.exe
-dg_xenia_game_dir: "{{ dg_rom_root }}/xbox360"
+dg_xenia_game_dir: "{{ dg_rom_heavy_root }}/xbox360"

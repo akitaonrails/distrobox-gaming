@@ -29,9 +29,14 @@
     '
   when: _multilib_check.rc != 0
 
+# -Sy (sync DB) not -Syu (full upgrade): the latter couples this role to
+# whatever unrelated upgrade conflicts are pending in the box (e.g. a
+# dolphin-emu/sfml version mismatch blocking full upgrade), which would
+# abort install-xenia even though wine itself installs cleanly. Full
+# upgrades live in bootstrap_packages.
 - name: Install Xenia pacman packages inside box
   ansible.builtin.shell: >-
-    {{ dg_in_box }} sudo pacman -Syu --needed --noconfirm
+    {{ dg_in_box }} sudo pacman -Sy --needed --noconfirm
     {{ dg_xenia_pacman_packages | join(' ') }}
   register: _xenia_pacman
   changed_when: "'installing' in _xenia_pacman.stdout"
