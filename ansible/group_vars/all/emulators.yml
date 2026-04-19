@@ -213,7 +213,13 @@ dg_duckstation_per_game_settings:
       - { section: Display, option: AspectRatio,     value: "16:9" }
 
   # Gran Turismo 1 USA Rev 1 — SCUS-94949. Same filter upgrade and
-  # identical PGXP tradeoffs; fewer hacks than GT2 needs.
+  # identical PGXP tradeoffs as GT2; fewer hacks needed. Widescreen
+  # relies on DuckStation's built-in WidescreenHack because no
+  # community cheat pnach ships for GT1 (libretro DB, Silent's and
+  # AeroWidescreen's repos all lack a GT1 widescreen — only 60fps
+  # cheats). The built-in hack patches the projection matrix at render
+  # time (not a display-level stretch), so 3D geometry renders 16:9;
+  # HUD may show minor aliasing at high resolution scales.
   - serial: SCUS-94949
     name: "Gran Turismo"
     settings:
@@ -223,7 +229,7 @@ dg_duckstation_per_game_settings:
       - { section: GPU, option: PGXPPreserveProjFP,     value: "false" }
       - { section: GPU, option: PGXPCulling,            value: "true" }
       - { section: GPU, option: PGXPTextureCorrection,  value: "true" }
-      - { section: GPU, option: WidescreenHack,      value: "false" }
+      - { section: GPU, option: WidescreenHack,      value: "true" }    # no GT1 cheat exists — use built-in
       - { section: GPU, option: Multisamples,        value: "4" }
       - { section: GPU, option: TrueColor,           value: "true" }
       - { section: GPU, option: ScaledDithering,     value: "true" }
