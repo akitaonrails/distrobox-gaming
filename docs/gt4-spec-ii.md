@@ -31,7 +31,8 @@ bundled DB applies — but PCSX2 filename-matches pnach to the running
 CRC, and `32A1C752 ≠ 4CE521F2`. Fix: download the upstream pnach,
 rename to Spec II's CRC on deploy.
 
-Config for `SCUS-97436` (in `ansible/group_vars/all/pcsx2.yml`):
+Config for `SCUS-97436` (in `ansible/group_vars/all/pcsx2.yml`),
+deployed to `~/.config/PCSX2/gamesettings/SCUS-97436_4CE521F2.ini`:
 
 - `AspectRatio = 16:9` — **not** `Widescreen (16:9)`. PCSX2 logs
   `Unrecognized value 'Widescreen (16:9)'` and falls back to 4:3, which
@@ -43,6 +44,42 @@ Config for `SCUS-97436` (in `ansible/group_vars/all/pcsx2.yml`):
   on.
 - `MaxAnisotropy = 16`, `TextureFiltering = 2`, `AccurateBlendingUnit = Basic`
 - Texture replacement flags enabled per-game.
+
+### Deinterlace + color grading (added after live-test tuning)
+
+- `deinterlace_mode = 8` — Adaptive TFF. Spec II's baked-in 480p and
+  the Online-Public-Beta widescreen pnach's `[No-Interlacing]` code
+  patch (which forces Autoboot in 480p) together confuse PCSX2's
+  interlaced/progressive auto-detection. Symptoms before this setting:
+  subtle flicker during gameplay and clearly ghosted double-image
+  when paused. Adaptive TFF deinterlaces intelligently when needed
+  and passes progressive content through untouched. Change also
+  benefits you if you toggle the in-game 480p option.
+- `ShadeBoost = true` — enables PCSX2's built-in ShadeBoost post-
+  process shader.
+- `ShadeBoost_Saturation = 60` (+10 from default 50) — Polyphony
+  ground GT4 flatter than GT3 because GT4 targeted 480p LCDs.
+  Saturation +10 matches GT3's punchier look.
+- `ShadeBoost_Brightness = 53` (+3) — lifts shadow detail slightly
+  without blowing out highlights.
+- `ShadeBoost_Contrast = 52` (+2) — keeps shadow depth from
+  washing out with the brightness lift.
+
+### PCSX2 global AA chain (applies to all games)
+
+Already set in `dg_pcsx2_settings`:
+
+- `upscale_multiplier = 4.0` — 4× SSAA is the primary AA contributor.
+- `MaxAnisotropy = 16` / `TextureFiltering = 2` / `mipmap = 1` — full
+  texture filter chain.
+- `TriFilter = -1` (Automatic) — forced values cause PCSX2 to warn
+  and break rendering in some games.
+- `fxaa = true` — post-process FXAA catches sub-pixel aliasing that
+  the integer upscale misses (thin HUD lines, distant sprite edges).
+  ~1-2% perf cost.
+- `pcrtc_antiblur = true` — turns off PCSX2's PCRTC-emulation blur
+  (which exists to match CRT scanlines). Sharper output now that
+  we're on progressive display + 4× upscale.
 
 Patch deployment:
 

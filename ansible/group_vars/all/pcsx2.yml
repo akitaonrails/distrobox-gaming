@@ -172,11 +172,12 @@ dg_pcsx2_per_game_settings:
       # cleanly regardless of whether the current frame is interlaced.
       - { section: "EmuCore/GS", option: "deinterlace_mode", value: "8" }
       # GT4's color grading is flatter than GT3's — Polyphony targeted
-      # 480p LCD projectors for GT4. ShadeBoost bumps saturation +5 for
-      # a GT3-like punch without going cartoonish. Defaults are 50/50/50.
+      # 480p LCD projectors for GT4. ShadeBoost pushes saturation +10
+      # and contrast +2 for a GT3-like punch without going cartoonish;
+      # brightness +3 lifts the shadow detail slightly. Defaults 50/50/50.
       - { section: "EmuCore/GS", option: "ShadeBoost",              value: "true" }
       - { section: "EmuCore/GS", option: "ShadeBoost_Saturation",   value: "60" }
-      - { section: "EmuCore/GS", option: "ShadeBoost_Brightness",   value: "50" }
+      - { section: "EmuCore/GS", option: "ShadeBoost_Brightness",   value: "53" }
       - { section: "EmuCore/GS", option: "ShadeBoost_Contrast",     value: "52" }
       # Spec II has a distinct CRC (4CE521F2) so PCSX2's bundled widescreen
       # DB misses it. We ship the Online-Public-Beta widescreen pnach
