@@ -26,7 +26,7 @@ dg_pcsx2_cheats_source: "{{ dg_pcsx2_ps2_root }}/cheats"
 dg_pcsx2_extra_patches: []
 
 dg_pcsx2_texture_packs:
-  - serial: SCUS-97328              # Gran Turismo 4 (NTSC-U / USA)
+  - serial: SCUS-97328              # Gran Turismo 4 (NTSC-U / USA retail, CRC 77E61C8A)
     name: "Gran Turismo 4"
     sources:
       - path: "{{ dg_pcsx2_ps2_root }}/Gran Turismo 4 Remaster/Gran Turismo 4 HD HUD & UI Texture pack by Silentwarior112/replacements"
@@ -38,6 +38,22 @@ dg_pcsx2_texture_packs:
     patches:
       - "{{ dg_pcsx2_ps2_root }}/Gran Turismo 4 Remaster/06AD9CA0.pnach"
       - "{{ dg_pcsx2_ps2_root }}/Gran Turismo 4 Remaster/44A61C8F.pnach"
+
+  - serial: SCUS-97436              # Gran Turismo 4 Spec II (community patched, CRC 4CE521F2)
+    name: "Gran Turismo 4 Spec II"
+    # Spec II changes the ELF but keeps per-texture hashes unchanged for
+    # HUD/UI/tracks/cars — the HD HUD pack and retexture pack built for
+    # vanilla USA (SCUS-97328) apply cleanly under Spec II. PCSX2 loads
+    # replacements by serial + per-texture hash, so we link the same
+    # NAS pack dirs under the Spec II serial.
+    sources:
+      - path: "{{ dg_pcsx2_ps2_root }}/Gran Turismo 4 Remaster/Gran Turismo 4 HD HUD & UI Texture pack by Silentwarior112/replacements"
+        link_as: hd-hud-ui
+      - path: "{{ dg_pcsx2_ps2_root }}/Gran Turismo 4 Remaster/update 2.1/replacements"
+        link_as: hd-hud-ui-update-2.1
+      - path: "{{ dg_pcsx2_ps2_root }}/Gran Turismo 4 Remaster/HD HUD & U.I. blocky haze fix v2/text files jap kor usa pal shared"
+        link_as: blocky-haze-fix
+    patches: []
 
   - serial: SLUS-20967              # Enthusia Professional Racing (NTSC-U)
     name: "Enthusia Professional Racing"
@@ -55,9 +71,22 @@ dg_pcsx2_patch_urls:
   # Silent's GT4 USA patches (https://silentsblog.com/mods/gran-turismo-4/)
   # SCUS-97328 / CRC 77E61C8A — adjusted triggers, GT3-style cam, far chase cam.
   # No deinterlace patch needed: USA retail GT4 has progressive scan natively.
+  # NOTE: these apply to VANILLA GT4 only. Spec II has GT3 cam + adjusted
+  # triggers built in and a different CRC, so these are no-ops under Spec II.
   - https://raw.githubusercontent.com/CookiePLMonster/Console-Cheat-Codes/master/PS2/Gran%20Turismo%204/Adjusted%20triggers%20sensitivity/SCUS-97328_77E61C8A_triggers.pnach
   - https://raw.githubusercontent.com/CookiePLMonster/Console-Cheat-Codes/master/PS2/Gran%20Turismo%204/GT3%20style%20camera/SCUS-97328_77E61C8A_gt3cam.pnach
   - https://raw.githubusercontent.com/CookiePLMonster/Console-Cheat-Codes/master/PS2/Gran%20Turismo%204/Far%20chase%20camera/SCUS-97328_77E61C8A_farchasecam.pnach
+
+# URL + explicit dest filename. Use when the upstream pnach targets a CRC
+# that differs from ours (same base game, different build) and we need to
+# save it under our CRC so PCSX2 picks it up.
+dg_pcsx2_patch_url_renames:
+  # GT4 Spec II widescreen — upstream pnach is for CRC 32A1C752 (GT4
+  # Online Public Beta, the ISO Spec II is built on). The widescreen
+  # instructions are identical for Spec II since the ELF layout is
+  # preserved; only the CRC changed to 4CE521F2, so rename.
+  - url: https://raw.githubusercontent.com/PCSX2/pcsx2_patches/main/patches/SCUS-97436_32A1C752.pnach
+    dest_name: SCUS-97436_4CE521F2.pnach
 
 # Per-game graphics/system settings written to
 #   ~/.config/PCSX2/gamesettings/<SERIAL>.ini
@@ -66,7 +95,7 @@ dg_pcsx2_per_game_settings:
   - serial: SCUS-97328
     name: "Gran Turismo 4"
     settings:
-      - { section: "EmuCore/GS", option: "AspectRatio", value: "Widescreen (16:9)" }
+      - { section: "EmuCore/GS", option: "AspectRatio", value: "16:9" }
       - { section: "EmuCore/GS", option: "AccurateBlendingUnit", value: "Basic" }
       - { section: "EmuCore/GS", option: "MaxAnisotropy", value: "16" }
       - { section: "EmuCore/GS", option: "TextureFiltering", value: "2" }
@@ -75,10 +104,26 @@ dg_pcsx2_per_game_settings:
       - { section: "EmuCore/GS", option: "TextureReplacementsAsync", value: "true" }
       - { section: "EmuCore", option: "EnableWideScreenPatches", value: "true" }
 
+  - serial: SCUS-97436              # GT4 Spec II (CRC 4CE521F2)
+    name: "Gran Turismo 4 Spec II"
+    settings:
+      - { section: "EmuCore/GS", option: "AspectRatio", value: "16:9" }
+      - { section: "EmuCore/GS", option: "AccurateBlendingUnit", value: "Basic" }
+      - { section: "EmuCore/GS", option: "MaxAnisotropy", value: "16" }
+      - { section: "EmuCore/GS", option: "TextureFiltering", value: "2" }
+      - { section: "EmuCore/GS", option: "LoadTextureReplacements", value: "true" }
+      - { section: "EmuCore/GS", option: "PrecacheTextureReplacements", value: "false" }
+      - { section: "EmuCore/GS", option: "TextureReplacementsAsync", value: "true" }
+      # Spec II has a distinct CRC (4CE521F2) so PCSX2's bundled widescreen
+      # DB misses it. We ship the Online-Public-Beta widescreen pnach
+      # (CRC 32A1C752, same code layout) renamed to Spec II's CRC via
+      # dg_pcsx2_patch_url_renames below — keep this true so PCSX2 loads it.
+      - { section: "EmuCore", option: "EnableWideScreenPatches", value: "true" }
+
   - serial: SLUS-20967
     name: "Enthusia Professional Racing"
     settings:
-      - { section: "EmuCore/GS", option: "AspectRatio", value: "Widescreen (16:9)" }
+      - { section: "EmuCore/GS", option: "AspectRatio", value: "16:9" }
       - { section: "EmuCore/GS", option: "MaxAnisotropy", value: "16" }
       - { section: "EmuCore/GS", option: "TextureFiltering", value: "2" }
       - { section: "EmuCore/GS", option: "LoadTextureReplacements", value: "true" }

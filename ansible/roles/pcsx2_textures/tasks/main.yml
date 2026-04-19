@@ -64,6 +64,17 @@
     label: "{{ item | basename | urldecode }}"
   failed_when: false
 
+- name: "Download pnach patches with explicit rename (CRC mismatch cases)"
+  ansible.builtin.get_url:
+    url: "{{ item.url }}"
+    dest: "{{ dg_pcsx2_patches_dir }}/{{ item.dest_name }}"
+    mode: "0644"
+    timeout: 30
+  loop: "{{ dg_pcsx2_patch_url_renames | default([]) }}"
+  loop_control:
+    label: "{{ item.dest_name }}"
+  failed_when: false
+
 - name: Per-game texture pack deployment
   ansible.builtin.include_tasks: deploy_pack.yml
   loop: "{{ dg_pcsx2_texture_packs }}"
