@@ -10,13 +10,28 @@ dg_pcsx2_settings:
   # Renderer 14 = Vulkan; NVIDIA selection comes from VK_ICD_FILENAMES
   # injected by the desktop launcher, so the Adapter setting can stay Auto.
   - { section: "EmuCore/GS", option: "Renderer", value: "14" }
-  - { section: "EmuCore/GS", option: "AspectRatio", value: "Widescreen (16:9)" }
+  # AspectRatio enum — PCSX2 rejects the GUI label "Widescreen (16:9)"
+  # with "Unrecognized value" and falls back to default. Valid strings
+  # are "Auto 4:3/3:2", "4:3", "16:9", "Stretch". Default globally to
+  # "Auto 4:3/3:2" so each game renders in its native ratio; per-game
+  # overrides in dg_pcsx2_per_game_settings force 16:9 for titles that
+  # ship a widescreen patch (GT4, Spec II, Enthusia).
+  - { section: "EmuCore/GS", option: "AspectRatio", value: "Auto 4:3/3:2" }
   - { section: "EmuCore/GS", option: "FMVAspectRatioSwitch", value: "Off" }
   - { section: "EmuCore/GS", option: "upscale_multiplier", value: "4.000000" }
   - { section: "EmuCore/GS", option: "MaxAnisotropy", value: "16" }
   - { section: "EmuCore/GS", option: "TextureFiltering", value: "2" }
+  - { section: "EmuCore/GS", option: "AccurateBlendingUnit", value: "Basic" }
+  # Async replacement texture load avoids stalls when a game first hits
+  # a texture; precache off keeps startup fast (textures load on demand).
+  - { section: "EmuCore/GS", option: "LoadTextureReplacements",     value: "true" }
+  - { section: "EmuCore/GS", option: "TextureReplacementsAsync",    value: "true" }
+  - { section: "EmuCore/GS", option: "PrecacheTextureReplacements", value: "false" }
   # Apply PCSX2's built-in widescreen patches when a match exists for the game
   - { section: "EmuCore", option: "EnableWideScreenPatches", value: "true" }
+  # Enable per-game settings + cheats to actually be read from our
+  # gamesettings/<SERIAL>.ini files.
+  - { section: "EmuCore", option: "EnablePerGameSettings", value: "true" }
   # Input source: SDL gamepad backend covers Xbox One/Series, 8BitDo, etc.
   - { section: InputSources, option: SDL, value: "true" }
   - { section: InputSources, option: SDLControllerEnhancedMode, value: "true" }
@@ -48,20 +63,170 @@ dg_pcsx2_settings:
   - { section: Pad1, option: RRight, value: "SDL-0/+RightX" }
 
 dg_duckstation_ini: "{{ dg_box_home }}/.config/duckstation/settings.ini"
+# Global DuckStation defaults applied to every PS1 game. Per-game
+# overrides live in dg_duckstation_per_game_settings below.
+# Research: projectcerbera.com/gt/2/duckstation/ (2025-11-07 update),
+# wornoutwill.com "Best DuckStation Settings for PS1 Emulation"
+# (2026-03-13), pulsegeek.com texture-filtering & upscaling articles
+# (2026-03-05), DuckStation wiki.
 dg_duckstation_settings:
-  - { section: Main, option: ConfirmPowerOff, value: "false" }
-  - { section: Main, option: SaveStateOnExit, value: "true" }
-  - { section: Main, option: StartFullscreen, value: "true" }
-  - { section: BIOS, option: SearchDirectory, value: "{{ dg_bios_root }}" }
-  - { section: GPU, option: Renderer, value: Vulkan }
-  - { section: GPU, option: ResolutionScale, value: "8" }
-  - { section: GPU, option: PGXPEnable, value: "true" }
-  - { section: GPU, option: PGXPDepthBuffer, value: "true" }
-  - { section: GPU, option: PGXPPreserveProjFP, value: "true" }
-  - { section: GPU, option: PGXPVertexCache, value: "false" }
-  - { section: GPU, option: WidescreenHack, value: "true" }
-  - { section: Display, option: VSync, value: "true" }
+  - { section: Main, option: ConfirmPowerOff,   value: "false" }
+  - { section: Main, option: SaveStateOnExit,   value: "true" }
+  - { section: Main, option: StartFullscreen,   value: "true" }
+  - { section: Main, option: StartupFastBoot,   value: "true" }
+  - { section: Main, option: CreateSaveStateBackups, value: "false" }
+  - { section: BIOS, option: SearchDirectory,   value: "{{ dg_bios_root }}" }
+  - { section: BIOS, option: PatchFastBoot,     value: "true" }
+
+  # GPU — 8x (4K+) Vulkan with sharp-but-smooth filtering. Bilinear
+  # (DuckStation default) washes out PS1 car/sprite detail; JINC2 is the
+  # consensus 2025-2026 replacement that keeps edges crisp without going
+  # full pixel-art. SpriteTextureFilter mirrors it for UI/HUD.
+  - { section: GPU, option: Renderer,            value: Vulkan }
+  - { section: GPU, option: ResolutionScale,     value: "8" }
+  - { section: GPU, option: TextureFilter,       value: "JINC2" }
+  - { section: GPU, option: SpriteTextureFilter, value: "JINC2" }
+  - { section: GPU, option: Multisamples,        value: "2" }   # 2x MSAA safe across library
+  - { section: GPU, option: PerSampleShading,    value: "false" }
+  - { section: GPU, option: TrueColor,           value: "true" }   # 24-bit output
+  - { section: GPU, option: ScaledDithering,     value: "true" }   # keep dither alongside TrueColor
+  - { section: GPU, option: DisableInterlacing,  value: "true" }   # progressive output everywhere
+  - { section: GPU, option: ForceNTSCTimings,    value: "false" }
+  - { section: GPU, option: PGXPEnable,          value: "true" }
+  - { section: GPU, option: PGXPCulling,         value: "true" }
+  - { section: GPU, option: PGXPTextureCorrection, value: "true" }
+  - { section: GPU, option: PGXPDepthBuffer,     value: "true" }
+  - { section: GPU, option: PGXPPreserveProjFP,  value: "true" }
+  - { section: GPU, option: PGXPVertexCache,     value: "false" }
+  - { section: GPU, option: PGXPCPU,             value: "false" }
+  - { section: GPU, option: WidescreenHack,      value: "true" }
+  # Load the game disc image into RAM once on boot so stage loads are
+  # instant instead of hitting NFS/disk per-sector. Gran Turismo 1 and 2
+  # benefit dramatically here (garage / menu transitions). 700 MB peak
+  # per CHD, trivial on modern RAM.
+  - { section: CDROM, option: LoadImageToRAM,    value: "true" }
+  - { section: CDROM, option: ReadThread,        value: "true" }
+  - { section: CDROM, option: ReadSpeedup,       value: "4" }      # 4x CD read (no physics-sync games in our library need 1x)
+  - { section: CDROM, option: SeekSpeedup,       value: "4" }
+
+  # Display
+  - { section: Display, option: VSync,              value: "true" }
   - { section: Display, option: OptimalFramePacing, value: "true" }
+
+  # Memory cards: PerGameTitle creates a separate pair of virtual memory
+  # cards per game title, so GT1 saves don't share a card with GT2 etc.
+  # ShowMemoryCardsInMenu puts them in the right-click game menu.
+  - { section: MemoryCards, option: Card1Type, value: "PerGameTitle" }
+  - { section: MemoryCards, option: Card2Type, value: "None" }
+
+  # Texture replacement system — enable globally so the per-game dumps
+  # users create go to the right place. PreloadTextures loads them
+  # once at game boot into VRAM, much faster than on-demand.
+  - { section: TextureReplacements, option: EnableTextureReplacements, value: "true" }
+  - { section: TextureReplacements, option: PreloadTextures,           value: "true" }
+
+  # Hacks — MaxVRAMWriteSplits 1024 is required for the Gran Turismo
+  # family (DuckStation wiki). Harmless on other games.
+  - { section: Hacks, option: MaxVRAMWriteSplits, value: "1024" }
+
+# Per-game DuckStation overrides written to
+#   ~/.config/duckstation/gamesettings/<SERIAL>.ini
+# DuckStation loads these on top of the global settings.ini when the
+# running disc's serial matches the filename. Useful for per-game
+# renderer/PGXP tradeoffs that shouldn't apply globally.
+dg_duckstation_per_game_settings:
+  # Gran Turismo 2 — Simulation Disc (Silent's v1.2 patch).
+  # Research: https://projectcerbera.com/gt/2/duckstation/ (updated 2025-11-07)
+  # + https://silentsblog.com/mods/gran-turismo-2/ + DuckStation wiki
+  # texture-replacement docs. User's complaint was "too smooth" default
+  # Bilinear filter; JINC2 is the community-consensus sharp-but-smooth
+  # replacement. The GT2 m3u bundles both the Simulation and Arcade
+  # discs; writing SCUS-94455 covers Simulation (the disc the user
+  # plays most). Arcade disc SCUS-94488 gets a sibling file below.
+  - serial: SCUS-94455
+    name: "Gran Turismo 2 (Simulation)"
+    settings:
+      # Texture filter — the user's specific fix
+      - { section: GPU, option: TextureFilter,       value: "JINC2" }
+      - { section: GPU, option: SpriteTextureFilter, value: "JINC2" }
+      # GT2-specific PGXP: depth-buffer breaks GT2's skybox/road;
+      # PreserveProjFP causes gaps in road LOD. Both OFF for GT2
+      # even though the global defaults turn them on for other PS1 games.
+      - { section: GPU, option: PGXPDepthBuffer,        value: "false" }
+      - { section: GPU, option: PGXPPreserveProjFP,     value: "false" }
+      - { section: GPU, option: PGXPCulling,            value: "true" }
+      - { section: GPU, option: PGXPTextureCorrection,  value: "true" }
+      # Built-in WidescreenHack stretches HUD/menus. Silent's 16:9
+      # Widescreen 2.0 cheat patches the viewport correctly; disable
+      # the DuckStation-side hack and let the user enable the cheat
+      # per-session via the cheat manager.
+      - { section: GPU, option: WidescreenHack,      value: "false" }
+      # 4x MSAA is safe on GT2 and cleans car edges
+      - { section: GPU, option: Multisamples,        value: "4" }
+      - { section: GPU, option: PerSampleShading,    value: "false" }
+      # TrueColor + ScaledDithering ON together: Cerbera's 2025
+      # recalibration — 24-bit output but keep dithering on because
+      # GT2's sky gradients rely on it.
+      - { section: GPU, option: TrueColor,           value: "true" }
+      - { section: GPU, option: ScaledDithering,     value: "true" }
+      - { section: GPU, option: DisableInterlacing,  value: "true" }
+      # Bumps PS1 RAM from 2 MB to 8 MB. Pair with Silent's
+      # "Use 8 MB RAM for polygon buffers" cheat for full-LOD AI
+      # cars with no pop-in.
+      - { section: Console, option: EnableRAM8MB,    value: "true" }
+      # Texture-replacement system: dumps go to textures/SCUS-94455/.
+      # No community retexture pack is published for GT2 as of April
+      # 2026 — enabling this now so the user can drop hash-named PNGs
+      # later without re-deploying. MaxVRAMWriteSplits=1024 is the
+      # DuckStation wiki recommendation for Gran Turismo family games.
+      - { section: TextureReplacements, option: EnableTextureReplacements, value: "true" }
+      - { section: TextureReplacements, option: PreloadTextures,           value: "true" }
+      - { section: Hacks, option: MaxVRAMWriteSplits,                      value: "1024" }
+      # Aspect ratio — with WidescreenHack off and Silent's cheat on,
+      # this is the right final output shape.
+      - { section: Display, option: AspectRatio,     value: "16:9" }
+
+  - serial: SCUS-94488
+    name: "Gran Turismo 2 (Arcade)"
+    settings:
+      - { section: GPU, option: TextureFilter,       value: "JINC2" }
+      - { section: GPU, option: SpriteTextureFilter, value: "JINC2" }
+      - { section: GPU, option: PGXPDepthBuffer,        value: "false" }
+      - { section: GPU, option: PGXPPreserveProjFP,     value: "false" }
+      - { section: GPU, option: PGXPCulling,            value: "true" }
+      - { section: GPU, option: PGXPTextureCorrection,  value: "true" }
+      - { section: GPU, option: WidescreenHack,      value: "false" }
+      - { section: GPU, option: Multisamples,        value: "4" }
+      - { section: GPU, option: PerSampleShading,    value: "false" }
+      - { section: GPU, option: TrueColor,           value: "true" }
+      - { section: GPU, option: ScaledDithering,     value: "true" }
+      - { section: GPU, option: DisableInterlacing,  value: "true" }
+      - { section: Console, option: EnableRAM8MB,    value: "true" }
+      - { section: TextureReplacements, option: EnableTextureReplacements, value: "true" }
+      - { section: TextureReplacements, option: PreloadTextures,           value: "true" }
+      - { section: Hacks, option: MaxVRAMWriteSplits,                      value: "1024" }
+      - { section: Display, option: AspectRatio,     value: "16:9" }
+
+  # Gran Turismo 1 USA Rev 1 — SCUS-94949. Same filter upgrade and
+  # identical PGXP tradeoffs; fewer hacks than GT2 needs.
+  - serial: SCUS-94949
+    name: "Gran Turismo"
+    settings:
+      - { section: GPU, option: TextureFilter,          value: "JINC2" }
+      - { section: GPU, option: SpriteTextureFilter,    value: "JINC2" }
+      - { section: GPU, option: PGXPDepthBuffer,        value: "false" }
+      - { section: GPU, option: PGXPPreserveProjFP,     value: "false" }
+      - { section: GPU, option: PGXPCulling,            value: "true" }
+      - { section: GPU, option: PGXPTextureCorrection,  value: "true" }
+      - { section: GPU, option: WidescreenHack,      value: "false" }
+      - { section: GPU, option: Multisamples,        value: "4" }
+      - { section: GPU, option: TrueColor,           value: "true" }
+      - { section: GPU, option: ScaledDithering,     value: "true" }
+      - { section: GPU, option: DisableInterlacing,  value: "true" }
+      - { section: TextureReplacements, option: EnableTextureReplacements, value: "true" }
+      - { section: TextureReplacements, option: PreloadTextures,           value: "true" }
+      - { section: Hacks, option: MaxVRAMWriteSplits,                      value: "1024" }
+      - { section: Display, option: AspectRatio,     value: "16:9" }
 
 dg_flycast_ini: "{{ dg_box_home }}/.config/flycast/emu.cfg"
 dg_flycast_settings:

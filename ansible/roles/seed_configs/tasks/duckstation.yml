@@ -16,3 +16,22 @@
   loop: "{{ dg_duckstation_settings }}"
   loop_control:
     label: "[{{ item.section }}] {{ item.option }}"
+
+- name: Ensure DuckStation per-game settings dir exists
+  ansible.builtin.file:
+    path: "{{ dg_box_home }}/.config/duckstation/gamesettings"
+    state: directory
+    mode: "0755"
+
+- name: "Per-game DuckStation INI overrides"
+  community.general.ini_file:
+    path: "{{ dg_box_home }}/.config/duckstation/gamesettings/{{ pgs.0.serial }}.ini"
+    section: "{{ pgs.1.section }}"
+    option: "{{ pgs.1.option }}"
+    value: "{{ pgs.1.value }}"
+    create: true
+    mode: "0644"
+  loop: "{{ dg_duckstation_per_game_settings | default([]) | subelements('settings') }}"
+  loop_control:
+    loop_var: pgs
+    label: "{{ pgs.0.serial }} [{{ pgs.1.section }}] {{ pgs.1.option }}"
