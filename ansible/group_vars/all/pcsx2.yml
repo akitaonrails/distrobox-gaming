@@ -165,6 +165,19 @@ dg_pcsx2_per_game_settings:
       - { section: "EmuCore/GS", option: "LoadTextureReplacements", value: "true" }
       - { section: "EmuCore/GS", option: "PrecacheTextureReplacements", value: "false" }
       - { section: "EmuCore/GS", option: "TextureReplacementsAsync", value: "true" }
+      # Spec II's baked-in 480p + the "Autoboot in 480p" No-Interlacing
+      # pnach confuse PCSX2's interlaced/progressive auto-detection —
+      # subtle in-game flicker + ghosted double image on pause.
+      # deinterlace_mode 8 (Adaptive TFF) is the smart filter; works
+      # cleanly regardless of whether the current frame is interlaced.
+      - { section: "EmuCore/GS", option: "deinterlace_mode", value: "8" }
+      # GT4's color grading is flatter than GT3's — Polyphony targeted
+      # 480p LCD projectors for GT4. ShadeBoost bumps saturation +5 for
+      # a GT3-like punch without going cartoonish. Defaults are 50/50/50.
+      - { section: "EmuCore/GS", option: "ShadeBoost",              value: "true" }
+      - { section: "EmuCore/GS", option: "ShadeBoost_Saturation",   value: "60" }
+      - { section: "EmuCore/GS", option: "ShadeBoost_Brightness",   value: "50" }
+      - { section: "EmuCore/GS", option: "ShadeBoost_Contrast",     value: "52" }
       # Spec II has a distinct CRC (4CE521F2) so PCSX2's bundled widescreen
       # DB misses it. We ship the Online-Public-Beta widescreen pnach
       # (CRC 32A1C752, same code layout) renamed to Spec II's CRC via
