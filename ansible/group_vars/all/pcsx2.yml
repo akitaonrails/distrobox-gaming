@@ -55,8 +55,20 @@ dg_pcsx2_texture_packs:
         link_as: blocky-haze-fix
     patches: []
 
-  - serial: SCUS-97102              # Gran Turismo 3 A-spec (NTSC-U, v1.10 on user's NAS)
+  - serial: SCUS-97102              # GT3 A-spec — USA retail, CRC 85AE91B3
     name: "Gran Turismo 3 A-spec"
+    sources:
+      - path: "{{ dg_pcsx2_ps2_root }}/GT3 Retexture 1.0/replacements"
+        link_as: retexture-1.0
+    patches: []
+
+  - serial: PBPX-95503              # GT3 A-spec PS2 Bundle (v1.10, CRC 8AA991B0).
+                                    # The disc was reissued in the PS2 Bundle kit under this
+                                    # serial + CRC even in USA markets — many "(USA) (v1.10)"
+                                    # rips on the internet are actually this bundle variant, so
+                                    # PCSX2 reports PBPX-95503 at runtime. Same per-texture
+                                    # hashes as retail so the retexture pack works here too.
+    name: "Gran Turismo 3 A-spec (PS2 Bundle)"
     sources:
       - path: "{{ dg_pcsx2_ps2_root }}/GT3 Retexture 1.0/replacements"
         link_as: retexture-1.0
@@ -109,13 +121,18 @@ dg_pcsx2_patch_url_renames:
   - url: https://raw.githubusercontent.com/PCSX2/pcsx2_patches/main/patches/SCUS-97436_32A1C752.pnach
     dest_name: SCUS-97436_4CE521F2.pnach
 
-  # GT3 A-spec widescreen — PCSX2 upstream ships a pnach for CRC
-  # 85AE91B3 (USA retail). User's v1.10 ISO may have a different CRC;
-  # PCSX2 filename-matches by CRC so if yours differs, rename the
-  # deployed file to SCUS-97102_<your CRC>.pnach once — PCSX2 prints
-  # the CRC to its log on first boot.
+  # GT3 A-spec widescreen — two variants of the retail v1.10 disc exist:
+  #   SCUS-97102 / CRC 85AE91B3 — USA retail
+  #   PBPX-95503 / CRC 8AA991B0 — PS2 Bundle variant, same CRC as
+  #                               SCES-50294 (EU) v1.10; many "(USA) (v1.10)"
+  #                               rips report as PBPX-95503 at runtime
+  # PCSX2 upstream DB has the SCUS pnach with widescreen, and the
+  # PBPX/SCES pnach with only no-interlace/triggers/metric (no widescreen).
+  # Fetch AeroWidescreen's PBPX-95503 widescreen pnach to fill the gap.
   - url: https://raw.githubusercontent.com/PCSX2/pcsx2_patches/main/patches/SCUS-97102_85AE91B3.pnach
     dest_name: SCUS-97102_85AE91B3.pnach
+  - url: https://raw.githubusercontent.com/AeroWidescreen/PCSX2-Cheats/main/Gran%20Turismo%203/PBPX-95503/Widescreen%20Text/PBPX-95503_8AA991B0_widescreen.pnach
+    dest_name: PBPX-95503_8AA991B0.pnach
 
 # Per-game graphics/system settings written to
 #   ~/.config/PCSX2/gamesettings/<SERIAL>.ini
@@ -149,11 +166,9 @@ dg_pcsx2_per_game_settings:
       # dg_pcsx2_patch_url_renames below — keep this true so PCSX2 loads it.
       - { section: "EmuCore", option: "EnableWideScreenPatches", value: "true" }
 
-  - serial: SCUS-97102              # GT3 A-spec (NTSC-U). Works with v1.00 or v1.10 — PCSX2 loads
-                                    # the right widescreen pnach based on ELF CRC; if yours isn't
-                                    # 85AE91B3, rename the shipped pnach (see dg_pcsx2_patch_url_renames).
+  - serial: SCUS-97102              # GT3 A-spec — USA retail path (CRC 85AE91B3)
     name: "Gran Turismo 3 A-spec"
-    settings:
+    settings: &gt3_settings
       - { section: "EmuCore/GS", option: "AspectRatio", value: "16:9" }
       - { section: "EmuCore/GS", option: "AccurateBlendingUnit", value: "Basic" }
       - { section: "EmuCore/GS", option: "MaxAnisotropy", value: "16" }
@@ -162,6 +177,10 @@ dg_pcsx2_per_game_settings:
       - { section: "EmuCore/GS", option: "PrecacheTextureReplacements", value: "false" }
       - { section: "EmuCore/GS", option: "TextureReplacementsAsync", value: "true" }
       - { section: "EmuCore", option: "EnableWideScreenPatches", value: "true" }
+
+  - serial: PBPX-95503              # GT3 A-spec PS2 Bundle variant (CRC 8AA991B0) — same settings
+    name: "Gran Turismo 3 A-spec (PS2 Bundle)"
+    settings: *gt3_settings
 
   - serial: SLUS-20967
     name: "Enthusia Professional Racing"
