@@ -1,7 +1,36 @@
 # Machine-specific overrides.
 # Copy to localhost.yml and edit for your setup.
 #
+# UID/GID used inside the container (match your NAS / file-owner uid).
 # dg_host_uid: 1000
 # dg_host_gid: 1000
+#
+# Host data/ROM layout. Defaults assume a terachad NAS mount under
+# /mnt/terachad/Emulators/EmuDeck; point these wherever your actual
+# EmuDeck install is.
 # dg_data_root: /home/me/gaming
 # dg_emudeck_root: /media/games/EmuDeck
+#
+# Roots derived from dg_emudeck_root (override individually only if
+# your layout diverges from EmuDeck's default):
+# dg_rom_root:        "{{ dg_emudeck_root }}/roms"
+# dg_rom_heavy_root:  "{{ dg_emudeck_root }}/roms_heavy"
+# dg_rom_rare_root:   "{{ dg_emudeck_root }}/roms_rare"
+# dg_bios_root:       "{{ dg_emudeck_root }}/Emulation/bios"
+#
+# libretro cheat DB (clone of github.com/libretro/libretro-database).
+# Used by DuckStation to pull GT2 widescreen fix packs. Skip this
+# variable if you don't clone the DB — the DuckStation cheats task
+# warns and moves on if the source is missing.
+# dg_libretro_cheats_dir: /path/to/libretro-database/cht
+#
+# PCSX2 texture-pack root. Expects GT4/Enthusia asset subdirs
+# below (see docs/setup-assets.md for the exact filenames + links).
+# Skip if you don't want PCSX2 texture replacements.
+# dg_pcsx2_ps2_root: /path/to/ps2
+#
+# PS3 DLC/patch staging dir (PKG files per title-ID subdir).
+# dg_ps3_dlc_source: "{{ dg_rom_heavy_root }}/ps3-DLC"
+#
+# Switch updates staging dir (NSP files).
+# dg_switch_updates_source: "{{ dg_rom_heavy_root }}/switch_updates"

@@ -42,16 +42,35 @@
     state: directory
     mode: "0755"
 
-- name: "Copy per-game DuckStation cheat files"
-  ansible.builtin.copy:
-    src: "{{ item.source }}"
-    dest: "{{ dg_box_home }}/.config/duckstation/cheats/{{ item.serial }}.cht"
-    remote_src: true
-    mode: "0644"
+- name: "Stat per-game DuckStation cheat source files"
+  ansible.builtin.stat:
+    path: "{{ item.source }}"
   loop: "{{ dg_duckstation_cheats | default([]) }}"
   loop_control:
     label: "{{ item.serial }}"
+  register: _duckstation_cheat_sources
   when: item.source is defined
+
+- name: "Warn about missing DuckStation cheat sources"
+  ansible.builtin.debug:
+    msg: "WARNING: DuckStation cheat source missing, skipping {{ item.item.serial }}: {{ item.item.source }} (see docs/setup-assets.md)"
+  loop: "{{ _duckstation_cheat_sources.results | default([]) }}"
+  loop_control:
+    label: "{{ item.item.serial }}"
+  when:
+    - item.stat is defined
+    - not (item.stat.exists | default(false))
+
+- name: "Copy per-game DuckStation cheat files"
+  ansible.builtin.copy:
+    src: "{{ item.item.source }}"
+    dest: "{{ dg_box_home }}/.config/duckstation/cheats/{{ item.item.serial }}.cht"
+    remote_src: true
+    mode: "0644"
+  loop: "{{ _duckstation_cheat_sources.results | default([]) }}"
+  loop_control:
+    label: "{{ item.item.serial }}"
+  when: item.stat.exists | default(false)
 
 - name: "Enable the requested cheat IDs in each deployed cheat file"
   ansible.builtin.replace:
@@ -61,3 +80,4 @@
   loop: "{{ dg_duckstation_cheats | default([]) | subelements('enable_ids') }}"
   loop_control:
     label: "{{ item.0.serial }} cheat{{ item.1 }}"
+  failed_when: false   # if file missing (source wasn't there), silently skip

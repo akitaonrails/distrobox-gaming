@@ -249,11 +249,11 @@ dg_duckstation_cheats:
   # 6 Post-race screen, 7 Bonus screen (Licenses), 8 Results screen,
   # 9 Post-race screen (Extra), 10 Bonus (Trophy), 11 GT Mode screens.
   - serial: SCUS-94455
-    source: "/mnt/terachad/Emulators/index/dat/libretro-database/cht/Sony - PlayStation/Gran Turismo 2 USA (v1.2) (Duckstation).cht"
+    source: "{{ dg_libretro_cheats_dir }}/Sony - PlayStation/Gran Turismo 2 USA (v1.2) (Duckstation).cht"
     enable_ids: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
   - serial: SCUS-94488   # Arcade disc — same cheat pack applies to shared viewport
-    source: "/mnt/terachad/Emulators/index/dat/libretro-database/cht/Sony - PlayStation/Gran Turismo 2 USA (v1.2) (Duckstation).cht"
+    source: "{{ dg_libretro_cheats_dir }}/Sony - PlayStation/Gran Turismo 2 USA (v1.2) (Duckstation).cht"
     enable_ids: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
 dg_flycast_ini: "{{ dg_box_home }}/.config/flycast/emu.cfg"

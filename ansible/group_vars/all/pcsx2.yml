@@ -77,6 +77,20 @@ dg_pcsx2_patch_urls:
   - https://raw.githubusercontent.com/CookiePLMonster/Console-Cheat-Codes/master/PS2/Gran%20Turismo%204/GT3%20style%20camera/SCUS-97328_77E61C8A_gt3cam.pnach
   - https://raw.githubusercontent.com/CookiePLMonster/Console-Cheat-Codes/master/PS2/Gran%20Turismo%204/Far%20chase%20camera/SCUS-97328_77E61C8A_farchasecam.pnach
 
+# Append repo-local pnach block onto a deployed pnach. Use when upstream
+# has only widescreen/UI fixes but we want to ship rebalance cheats on
+# top (e.g. retail GT4 money cheats ported to Spec II's CRC). Each entry
+# is idempotent — re-running leaves one copy of the appended block.
+dg_pcsx2_patch_appends:
+  # GT4 Spec II: retail vanilla pnach's Max Cash variants ported as an
+  # experiment. Spec II kept Polyphony's runtime data layout (most of
+  # the Gameshark code blocks target a data address, not code), so the
+  # cheats MIGHT apply cleanly. Leave off by default — user enables via
+  # PCSX2 Game Properties → Patches → Enable Cheats per-game. Test each
+  # "Max Cash" variant one at a time; only one will typically be right.
+  - target_pnach: SCUS-97436_4CE521F2.pnach
+    local_file:   SCUS-97436_4CE521F2-gt4specii-cheats.pnach
+
 # URL + explicit dest filename. Use when the upstream pnach targets a CRC
 # that differs from ours (same base game, different build) and we need to
 # save it under our CRC so PCSX2 picks it up.

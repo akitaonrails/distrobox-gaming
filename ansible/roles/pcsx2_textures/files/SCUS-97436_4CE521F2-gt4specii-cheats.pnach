@@ -1,0 +1,33 @@
+
+// ======================================================================
+// GT4 Spec II rebalance cheats — ported from retail 77E61C8A.pnach.
+// The Spec II ELF has a different code CRC but Polyphony kept the runtime
+// DATA layout largely untouched, so the raw memory writes that target the
+// credits variable (the Max Cash cheats) are likely still valid. The
+// "Always Gold License Test" cheat at 0x203F8BA8 writes into CODE space —
+// if Spec II shifted that function, it will crash or misbehave; kept off
+// by default. Enable via PCSX2: Game Properties → Patches → Enable Cheats.
+// ======================================================================
+
+[Max Cash - gameshark]
+description=Sets credits to max (~20 billion). Enable in PCSX2 per-game "Enable Cheats" to activate.
+author=Aero_ (ported from retail 77E61C8A)
+patch=1,EE,20A31928,extended,44B14400
+patch=1,EE,20A3192C,extended,44B14400
+
+[Max Cash - madcatz]
+description=Alternative max-cash address. Enable only ONE Max Cash variant; try this if the gameshark one doesn't apply.
+author=MadCatz
+patch=1,EE,20A1FCA8,extended,B8C9425E
+patch=1,EE,20A1FCAC,extended,7A726F98
+
+[Max Cash - codejunkies]
+description=Another alternative max-cash address. Try if the others don't work.
+author=Codejunkies
+patch=1,EE,20A1FCA8,extended,44B14400
+patch=1,EE,20A1FCAC,extended,44B14400
+
+[Always Gold License Test]
+description=A valid completion time always awards gold. WARNING - code-space write; may crash if Spec II shifted the license-test routine. Enable at your own risk.
+author=Aero_
+patch=1,EE,203F8BA8,extended,241E0002 // li fp,0x02

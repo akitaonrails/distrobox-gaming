@@ -19,6 +19,14 @@ dg_rom_heavy_root: "{{ dg_emudeck_root }}/roms_heavy"
 dg_rom_rare_root: "{{ dg_emudeck_root }}/roms_rare"
 dg_bios_root: "{{ dg_emudeck_root }}/Emulation/bios"
 
+# libretro-database cht files — user-supplied, typically cloned from
+# https://github.com/libretro/libretro-database. Override in
+# host_vars/localhost.yml if your clone is elsewhere (see
+# docs/setup-assets.md). DuckStation sources its per-game widescreen
+# cheat packs from here (see dg_duckstation_cheats in emulators.yml).
+# Missing source → cheat copy task warns and moves on.
+dg_libretro_cheats_dir: /mnt/terachad/Emulators/index/dat/libretro-database/cht
+
 dg_ps4_rom_root: "{{ dg_rom_rare_root }}/ps4"
 dg_ps4_firmware_modules: "{{ dg_rom_rare_root }}/ps4-firmware/11.00_sys_modules"
 dg_shadps4_title_id: CUSA00003

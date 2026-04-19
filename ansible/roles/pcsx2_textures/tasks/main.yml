@@ -75,6 +75,21 @@
     label: "{{ item.dest_name }}"
   failed_when: false
 
+# Append local "rebalance" cheat blocks to downloaded pnach files. Useful
+# when a freshly fetched pnach (e.g. upstream PCSX2 widescreen DB) needs
+# to be supplemented with hand-curated gameplay cheats that aren't in
+# the upstream. Each entry concatenates a repo-local file onto the
+# downloaded pnach. Idempotent — the marker keeps re-runs from
+# re-appending.
+- name: "Append local gameplay cheat blocks to deployed pnach files"
+  ansible.builtin.blockinfile:
+    path: "{{ dg_pcsx2_patches_dir }}/{{ item.target_pnach }}"
+    marker: "// ANSIBLE MANAGED APPEND: {{ item.local_file }}"
+    block: "{{ lookup('ansible.builtin.file', role_path + '/files/' + item.local_file) }}"
+  loop: "{{ dg_pcsx2_patch_appends | default([]) }}"
+  loop_control:
+    label: "{{ item.target_pnach }} <- {{ item.local_file }}"
+
 - name: Per-game texture pack deployment
   ansible.builtin.include_tasks: deploy_pack.yml
   loop: "{{ dg_pcsx2_texture_packs }}"
