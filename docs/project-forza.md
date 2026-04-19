@@ -309,6 +309,89 @@ speed band (0 = 20–100 mph, 1 = 100–150, 2 = 150+):
 - `HoodCam\FOV0,1,2` — Hood
 - `BumperHighCam\FOV0,1,2` — Bumper
 
+## FM3 + PFP-3 on newer Xenia Canary — the TU/xex compatibility maze
+
+FM3 has the most constraints of the three Forza games in this repo because
+of a three-way conflict between (a) newer Xenia Canary builds, (b) Project
+Forza Plus's modded xex, and (c) the stock FM3 USA Title Update. This
+section is the authoritative reference — check it before changing anything
+FM3-related.
+
+### The four moving parts
+
+| Part | Relevant attribute | Implication |
+|---|---|---|
+| **Xenia Canary (newer builds, 2024+)** | On boot, FM3 accesses `update:\media.zip`. Xenia returns `ResolvePath(update:\media.zip) failed - device not found` if no TU is mounted → game hard-crashes with a "Disc Read Error" dialog. | A TU must be *present in content/* even if its xex patch isn't used — just so the `update:` virtual device gets mounted. |
+| **Xenia Canary Oct 2022 `50fce8b`** (PFP's recommended build) | Never touches `update:\media.zip`. No TU needed. | This is why PFP-3's readme never mentions TUs. |
+| **FM3 USA Title Update v4** (`Forza Motorsport 3 (USA) v4` from `archive.org/details/microsoft_xbox360_title-updates`) | Binary xexp delta + `media.zip` content. xexp is signed against original **non-Ultimate retail** xex RSA signature. | Applying against anything other than stock non-Ultimate retail xex corrupts the code. |
+| **PFP-3's modded `default.xex`** | Built on top of **Ultimate Collection** xex (MD5 `f0873d4e...` — verified by matching PFP's `default.xex.vanilla` against our Ultimate disc extract). | TU's xexp patch fails signature check, and applying it anyway corrupts the code. |
+
+### The dead ends we hit
+
+1. **Dropping raw TU file in `content/.../4D53084D/000B0000/tu00000004_00000000`** → silently skipped. Xenia Canary's `content_manager.cc` only scans *directories* in that path; it rejects raw STFS files. Log shows zero "title update" lines, game still errors on `update:\media.zip`.
+2. **Xenia Manager install on the dropped file** → "already exists" refusal. Delete the raw file first.
+3. **Installing TU + using Ultimate-disc retail xex (`default.xex.vanilla` MD5 `f0873d4e...`)** → signature mismatch (TU is for non-Ultimate); `allow_incompatible_title_update=true` lets it through as a warning, but applying the xexp delta corrupts Ultimate's code → crash.
+4. **Using non-Ultimate retail xex + TU** → works cleanly, but lose PFP mods.
+5. **Using PFP xex + TU with `apply_title_update=true`** → same xex code corruption as #3 because PFP's xex has Ultimate's RSA signature.
+
+### The working configuration (verified Apr 2026)
+
+All five of the following must be in place:
+
+1. **Non-Ultimate retail FM3 USA ISO, extracted.** The non-Ultimate retail xex has MD5 `d3282839d605ed8595dab7bc7850a1ca`. Ultimate Collection's is `f0873d4e3c1dfc36d77bc92e174f37dc`. **Not interchangeable.**
+   - Non-Ultimate ISO on archive.org: `microsoft_xbox360_f_part2` → `Forza Motorsport 3 (USA) (En,Ja,Fr,De,Es,It,Zh,Ko,Pl,Ru,Cs,Hu) (Disc 1) (Play Disc)`.
+   - Extract with `extract-xiso -x <iso> -d <dest-dir>` (AUR `extract-xiso-bin`, installed in the gaming distrobox).
+2. **PFP-3 Main Game Changes applied on top of retail extract.** Replace `default.xex` with PFP's, merge PFP's `Media/` over the extracted `Media/`. Keep the retail xex as `default.xex.vanilla` backup (it's the only undo path).
+3. **PFP-3 v1.2 update applied:**
+   - Overwrite `Media/Physics/PI.xml` with the update's copy.
+   - Overwrite `Media/DB/gamedb.slt` with the chosen mode's `gamedb.slt` from `Project Forza Plus 3 Update/Game Mode DBs/<Normal|Hard|Sandbox|Vanilla> Mode/gamedb.slt`.
+4. **FM3 TU installed via Xenia Manager GUI** — **Manage tab → Install Content card → Add Content → select raw STFS file (no zip)**. This extracts to `content/0000000000000000/4D53084D/000B0000/<packagename>/` + `content/0000000000000000/4D53084D/Headers/000B0000/<packagename>.header`. Xenia Canary only recognizes TUs in this directory layout, not as loose files.
+5. **`apply_title_update = false` in FM3's per-game toml** (`Emulators/Xenia Canary/config/Forza Motorsport 3.config.toml`). This is the critical trick:
+   - TU file stays in content → Xenia mounts `update:` device → `media.zip` is served → no boot crash.
+   - But Xenia **doesn't try to apply the xexp binary delta** → no code corruption on PFP's Ultimate-based xex.
+   - `allow_incompatible_title_update = true` is then irrelevant for FM3 but can stay on (it's a safety net for other games).
+
+### PFP Disc 2 and DLCs: symlink, don't copy
+
+PFP-3 ships ~9.2 GB of DLC content in `Disc 2 and DLCs/00000002/`. These need
+to land at `content/0000000000000000/4D53084D/00000002/`. Since local disk
+(`/mnt/data`) is tight (~120 GB free typically), **symlink to the NAS
+source** rather than copying:
+
+```sh
+ln -s "/mnt/terachad/Emulators/Project Forza Plus/_extracted/PFP3/Project Forza Plus 3/Disc 2 and DLCs/00000002" \
+      "/mnt/data/distrobox/gaming/tools/xenia-manager/current/Emulators/Xenia Canary/content/0000000000000000/4D53084D/00000002"
+```
+
+If you pick a non-Normal game mode for PFP v1.2, also overlay
+`Game Mode DBs/<mode>/DLC DBs/*` onto the corresponding DLC pack dirs
+before using.
+
+### Quick FM3 sanity check
+
+After launching FM3 once:
+
+```sh
+tail -40 "/mnt/data/distrobox/gaming/tools/xenia-manager/current/Emulators/Xenia Canary/xenia.log" | grep -E "media.zip|XEX patch|Loading XEX"
+```
+
+Expected output with the working config:
+- **No** `ResolvePath(update:\media.zip) failed` line.
+- **No** `XEX patch signature hash doesn't match` warning (because we're not applying the patch at all).
+- Game loads past the intro screens.
+
+If either line re-appears, the TU is missing from content (re-run Xenia Manager install) or `apply_title_update` was reset (Xenia Manager sometimes regenerates per-game toml from its defaults — check the file).
+
+### Variant: playing vanilla FM3 instead of PFP
+
+If you'd rather play stock FM3 with the TU actually applied:
+
+1. Swap `default.xex` ↔ `default.xex.vanilla` (use the non-Ultimate retail backup).
+2. Set `apply_title_update = true` in the per-game toml.
+3. Launch. TU xexp applies cleanly against retail → no signature warning, game boots with TU code active.
+
+Don't try this with Ultimate Collection's retail xex — its RSA sig won't match either.
+
 ## FM4-Fix by alexwpi (separate, optional)
 
 The Forza 4 dir also contains `FM4-Fix_byAlexwpi/` — a separate community
