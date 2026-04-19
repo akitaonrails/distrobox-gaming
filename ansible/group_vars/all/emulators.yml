@@ -119,6 +119,11 @@ dg_duckstation_settings:
   - { section: MemoryCards, option: Card1Type, value: "PerGameTitle" }
   - { section: MemoryCards, option: Card2Type, value: "None" }
 
+  # Auto-load per-game cheat files from ~/.config/duckstation/cheats/.
+  # We deploy them via dg_duckstation_cheats below; AutoLoadCheats lets
+  # DuckStation apply the enabled ones without a GUI toggle per launch.
+  - { section: Main, option: AutoLoadCheats, value: "true" }
+
   # Texture replacement system — enable globally so the per-game dumps
   # users create go to the right place. PreloadTextures loads them
   # once at game boot into VRAM, much faster than on-demand.
@@ -227,6 +232,29 @@ dg_duckstation_per_game_settings:
       - { section: TextureReplacements, option: PreloadTextures,           value: "true" }
       - { section: Hacks, option: MaxVRAMWriteSplits,                      value: "1024" }
       - { section: Display, option: AspectRatio,     value: "16:9" }
+
+# Per-game DuckStation cheat deployments. Each entry copies a .cht file
+# (libretro format) from staging, renames it to <SERIAL>.cht inside
+# DuckStation's cheats dir, and flips the given cheat IDs from
+# enable=false to enable=true so AutoLoadCheats picks them up without
+# a GUI step.
+dg_duckstation_cheats:
+  # GT2 Simulation Disc v1.2 (Silent's-patched ISO the user runs).
+  # libretro cht ships the widescreen viewport fixes + screen-specific
+  # fixes by Aero / Silent. The game renders 4:3 geometry natively;
+  # without these cheats, `AspectRatio = 16:9` just stretches the 4:3
+  # output horizontally. Cheats 0-11 are all widescreen-related:
+  # 0 Additional Widescreen Fix, 1-2 Car Selection Fix (Arcade),
+  # 3 Pre-race Fix (Arcade), 4 Race Fix, 5 Rear view mirror Fix,
+  # 6 Post-race screen, 7 Bonus screen (Licenses), 8 Results screen,
+  # 9 Post-race screen (Extra), 10 Bonus (Trophy), 11 GT Mode screens.
+  - serial: SCUS-94455
+    source: "/mnt/terachad/Emulators/index/dat/libretro-database/cht/Sony - PlayStation/Gran Turismo 2 USA (v1.2) (Duckstation).cht"
+    enable_ids: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+
+  - serial: SCUS-94488   # Arcade disc — same cheat pack applies to shared viewport
+    source: "/mnt/terachad/Emulators/index/dat/libretro-database/cht/Sony - PlayStation/Gran Turismo 2 USA (v1.2) (Duckstation).cht"
+    enable_ids: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
 dg_flycast_ini: "{{ dg_box_home }}/.config/flycast/emu.cfg"
 dg_flycast_settings:

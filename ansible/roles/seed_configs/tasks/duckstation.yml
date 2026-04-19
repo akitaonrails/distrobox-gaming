@@ -35,3 +35,29 @@
   loop_control:
     loop_var: pgs
     label: "{{ pgs.0.serial }} [{{ pgs.1.section }}] {{ pgs.1.option }}"
+
+- name: Ensure DuckStation cheats dir exists
+  ansible.builtin.file:
+    path: "{{ dg_box_home }}/.config/duckstation/cheats"
+    state: directory
+    mode: "0755"
+
+- name: "Copy per-game DuckStation cheat files"
+  ansible.builtin.copy:
+    src: "{{ item.source }}"
+    dest: "{{ dg_box_home }}/.config/duckstation/cheats/{{ item.serial }}.cht"
+    remote_src: true
+    mode: "0644"
+  loop: "{{ dg_duckstation_cheats | default([]) }}"
+  loop_control:
+    label: "{{ item.serial }}"
+  when: item.source is defined
+
+- name: "Enable the requested cheat IDs in each deployed cheat file"
+  ansible.builtin.replace:
+    path: "{{ dg_box_home }}/.config/duckstation/cheats/{{ item.0.serial }}.cht"
+    regexp: "^(cheat{{ item.1 }}_enable)\\s*=\\s*false"
+    replace: "\\1 = true"
+  loop: "{{ dg_duckstation_cheats | default([]) | subelements('enable_ids') }}"
+  loop_control:
+    label: "{{ item.0.serial }} cheat{{ item.1 }}"
