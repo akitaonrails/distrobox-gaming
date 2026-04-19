@@ -380,12 +380,16 @@ Historical notes:
 
 Focused docs:
 
-- [Driveclub shadPS4](docs/driveclub-shadps4.md)
+- **[Driveclub shadPS4](docs/driveclub-shadps4.md)** — working v1.00 install recipe via DriveClubFS, all dead ends captured (read before touching Driveclub again)
 - [Flycast Resolution](docs/flycast-resolution.md)
 - [Controller Hotkeys](docs/controller-hotkeys.md)
 - [Rebuild Runbook](docs/rebuild-runbook.md)
 - [Xenia Manager](docs/xenia-manager.md)
-- [Project Forza Plus (FM2/3/4 on Xenia)](docs/project-forza.md)
+- [Project Forza Plus (FM2/3/4/FH1 on Xenia)](docs/project-forza.md)
+- [Xbox 360 Title Updates](docs/xbox360-title-updates.md) — archive.org batch fetch + Xenia Manager install flow
+- [Xbox 360 PGR3 / PGR4](docs/xbox360-pgr.md)
+- [GT4 Spec II on PCSX2](docs/gt4-spec-ii.md)
+- [PS1 60 FPS patches (Colin McRae Rally)](docs/ps1-60fps-patches.md)
 
 ## Safety Rules
 
