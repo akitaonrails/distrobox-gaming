@@ -4,8 +4,12 @@ Generate RPCS3 per-game custom configs for installed PS3 games.
 
 Walks the PS3 ROM root, parses PARAM.SFO for each game's title ID,
 queries the RPCS3 compatibility API, and writes a custom config YAML
-to ~/.config/rpcs3/custom_configs/<TITLE_ID>_config.yml only when the
+to ~/.config/rpcs3/custom_configs/config_<TITLE_ID>.yml only when the
 game's compatibility status indicates it benefits from tuning.
+
+Filename convention: RPCS3 loads per-game configs from
+`custom_configs/config_<SERIAL>.yml` — the `config_` prefix is
+mandatory. Files named `<SERIAL>_config.yml` are silently ignored.
 
 Strategy:
   - Playable: skip (defaults work)
@@ -123,6 +127,10 @@ Video:
   Anisotropic Filter: 16
   VSync: true
   Multithreaded RSX: true
+  # Async-with-Interpreter: RPCS3 runs the shader interpreter while new
+  # shader combos compile in the background. Prevents car-preview stalls
+  # in GT6's garage/shop as each new car model trips new shader permutations.
+  Shader Mode: Async with Shader Interpreter
   Driver Wake-Up Delay: 1
   VBlank Rate: 60
   Force CPU Blit: true
@@ -338,7 +346,9 @@ def main(argv: Iterable[str]) -> int:
             counts["skipped_status"] += 1
             continue
 
-        config_path = os.path.join(dest, f"{tid}_config.yml")
+        # RPCS3 expects custom_configs/config_<SERIAL>.yml — the `config_`
+        # prefix is required; files named the other way round are ignored.
+        config_path = os.path.join(dest, f"config_{tid}.yml")
         if os.path.exists(config_path) and not force:
             print(f"  {tid}  {status:<10}  {name[:60]}  (existing — keep)")
             counts["skipped_existing"] += 1
