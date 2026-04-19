@@ -142,20 +142,34 @@ def extract_pkg(pkg_path: str, dest_base: str, dry_run: bool = False,
         f.seek(0x70)
         base_iv = f.read(16)
 
-        dest_dir = os.path.join(dest_base, content_id)
+        # Determine destination.
+        #
+        # - Game patches (filename -A<ver>-V<ver>-): extract into the base
+        #   game's TID dir (e.g. /dev_hdd0/game/BCES01893/). RPCS3 loads
+        #   base game + patches from /<TID>/; a patch at /<CONTENT_ID>/
+        #   is read as unrelated DLC and never applied. Result is the
+        #   game runs at disc version forever.
+        # - DLC / standalone: extract into the content_id dir as before.
+        #
+        # TID extraction from content_id format "EP9001-BCES01893_00-..."
+        patch_ver = patch_ver_from_filename(pkg_name)
+        tid_match = re.match(r'^[A-Z0-9]{4,}-([A-Z]{4}\d{5})(?:_|$)', content_id)
+        if patch_ver and tid_match:
+            dest_dir = os.path.join(dest_base, tid_match.group(1))
+        else:
+            dest_dir = os.path.join(dest_base, content_id)
 
         # Patch-version idempotency: if this PKG is a game patch and the
         # destination already contains an equal-or-newer PARAM.SFO VERSION,
         # skip the whole file. File-size checks alone aren't sufficient
         # because different patch versions often share file sizes.
-        patch_ver = patch_ver_from_filename(pkg_name)
         if patch_ver:
             if max_version and ver_tuple(patch_ver) > ver_tuple(max_version):
                 print(f'  SKIP {pkg_name}: version {patch_ver} exceeds --max-version {max_version}')
                 return True
             existing_ver = sfo_version(os.path.join(dest_dir, 'PARAM.SFO'))
             if existing_ver and ver_tuple(existing_ver) >= ver_tuple(patch_ver):
-                print(f'  SKIP {pkg_name}: existing {content_id} already at version {existing_ver}')
+                print(f'  SKIP {pkg_name}: existing {os.path.basename(dest_dir)} already at version {existing_ver}')
                 return True
 
         if dry_run:

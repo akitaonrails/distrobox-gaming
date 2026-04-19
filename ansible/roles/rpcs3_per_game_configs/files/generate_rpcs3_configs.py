@@ -114,8 +114,27 @@ Core:
   Accurate RSX reservation access: true
   Accurate xfloat: true
   Accurate DFMA: true
+  # LLE the firmware music library. RPCS3's HLE cellMusic is stubbed
+  # ("cellMusic TODO" in log); on race-finish GT6 polls
+  # cellMusicGetPlaybackStatus2 forever waiting for a state change the
+  # stub never produces — game appears frozen with music playing and no
+  # UI. Loading the real firmware library breaks the loop.
+  Load libraries:
+    - libsysutil_music.sprx
+    - libsysutil_music_decode.sprx
+    - libsysutil_music_export.sprx
 Video:
   Renderer: Vulkan
+  # WCB/RCB OFF is a deliberate tradeoff for GT6:
+  # - WCB would fix the rear-view mirror rendering, BUT RPCS3 force-
+  #   downscales render targets to native (720p) when WCB is on, which
+  #   crushes the 4K Resolution Scale for tracks and cars (HUD stays
+  #   sharp because it's drawn in a separate pass). Upstream-fixed on
+  #   real-hw, but no RPCS3 knob avoids the downsample. Pick: sharp 4K
+  #   scene + black mirror, OR 720p scene + working mirror.
+  # - Also dodges the v1.06+ "black reflections" regression
+  #   (issue #17453, still open Apr 2026) that returns even when WCB
+  #   technically works.
   Write Color Buffers: false
   Read Color Buffers: false
   Read Depth Buffer: false
