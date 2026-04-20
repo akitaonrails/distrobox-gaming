@@ -1,101 +1,150 @@
 # Driveclub on shadPS4
 
-Driveclub (CUSA00003) is the primary shadPS4 target in this setup. It
-**does work** — boots past all init, loads UI, goes ingame — but the path
-is non-obvious and every Driveclub-specific walkthrough on the internet
-omits at least one step. This doc captures the **exact working recipe**
-and the **traps we hit** so we don't re-chase them next session.
+Driveclub (CUSA00003) is the primary shadPS4 target in this setup. The
+current working install is **v1.28**, boots + plays + controller works,
+all DLC-accessible content unlocked, night scenes rendering correctly.
+Deep-dive investigation notes live in a separate fork doc — see
+`~/Projects/shadPS4/docs/driveclub-v128-investigation.md` for the
+phase-by-phase engineering log that produced this setup, including
+dead ends, misdiagnoses, and the local fork patches shipped.
 
-## Working configuration (verified Apr 2026)
+This doc is the **operational runbook** for reproducing the setup on the
+gaming distrobox. Keep in sync with the investigation doc when anything
+material changes.
 
-- shadPS4 **main** branch — commit `90b75ea` or later, stock AppImage from
-  the repo CI. Do NOT use the `fontlib` PR #3772 branch; main already has
-  font HLE merged (PR #2761, Nov 2025) and is closer to what community
-  YouTube / DSOGaming / KitGuru footage uses.
-- Game layout: **Driveclub v1.00 only** — original base PKG (e.g. BlaZe
-  scene release) extracted via **ShadPKG** then **unpacked via DriveClubFS**
-  so every `.ndx`/`.dat` archive becomes loose files on disk. No v1.28
-  patch content, no hybrid, no mixed eboot.
-- Per-game config at `custom_configs/CUSA00003.json` (JSON, not TOML —
-  see gotcha below). Key settings:
-  - `"neo_mode": false` (Driveclub has no Pro patch)
-  - `"readbacks_mode": 0` (full readbacks — **mandatory**, issue #3210)
-  - `"readback_linear_images_enabled": false`
-  - `"patch_shaders": true`
-  - `"copy_gpu_buffers": false`, `"direct_memory_access_enabled": false`
-  - `"vblank_frequency": 60`
-  - `"full_screen_mode": "Windowed"`, `"full_screen": true`
-  - `"window_width": 1920`, `"window_height": 1080`
-  - `"internal_screen_width": 1920`, `"internal_screen_height": 1080`
-  - `"gpu_id": 0` (pick the NVIDIA dGPU explicitly — see controller gotcha)
-- Global config `config.json` must also set `"readbacks_mode": 0` in the
-  `GPU` section (the per-game config layers on top; both coherent).
-- `Driveclub.xml` patch XML **disabled** — it targets v1.28 eboot and
-  corrupts v1.00 if applied. We rename it to `.disabled-for-v1.0`.
-- Controller: shadPS4's SDL needs hidapi hints to detect the 8BitDo
-  Ultimate 2 (and likely others). Wrapper script exports
-  `SDL_JOYSTICK_HIDAPI=1` plus platform-specific HIDAPI toggles.
-  Plug controller in BEFORE launching the Qt Launcher.
+## Corrections to earlier versions of this doc
 
-Result: Driveclub loads, intros play, menus work, races start,
-controller input works for accel/brake/steer.
+- **"DriveClubFS 1.1.0 crashes at file 12/8018" did not reproduce** on the
+  properly-staged v1.28 tree. 8018/8018 files extracted cleanly (~47 GB,
+  exit 0). The earlier failure was either a transient issue or a
+  badly-staged input. No fork patch for DriveClubFS is needed.
+- **v1.28 is now the working base**, not v1.00. Earlier guidance "v1.00
+  only because DriveClubFS can't handle v1.28" is wrong.
+- The **60 FPS patch is disabled** — not because its offsets don't match
+  v1.00, but because shadPS4 doesn't scale the game's internal fixed
+  timestep. Patched to 60 fps the game renders smoothly but the
+  simulation runs at half real-time ("slow-motion smooth playback").
+  Disabled → 30 fps at correct wall-clock speed, matches stock PS4 base.
+- The **dim daytime image** is Driveclub's own design intent (PS4
+  firmware 4.0's display-calibration pipeline doesn't exist on our side),
+  not an emulator bug. The investigation doc's Phase 2 + Phase 5 walk
+  through the tonemap/exposure/ACES/auto-exposure attempts, all rolled
+  back. The in-game brightness slider IS wired (fires
+  `sceVideoOutAdjustColor` → `pp_settings.gamma`) and gives the user
+  real control.
 
-## Install recipe
+## Working install — v1.28
 
-### 1. Extract the base PKG to the expected layout
+### Game tree
 
-```sh
-# Base v1.00 PKG lives e.g. under $DG_PS4_ROM_ROOT/Driveclub.PS4-BlaZe/blz-dc.pkg
-distrobox enter gaming -- /mnt/data/distrobox/gaming/tools/ShadPKG/build-cli/shadpkg extract \
-    /mnt/terachad/Emulators/EmuDeck/roms_rare/ps4/Driveclub.PS4-BlaZe/blz-dc.pkg \
-    /mnt/terachad/Emulators/EmuDeck/roms_rare/ps4/CUSA00003
+```
+/mnt/terachad/Emulators/EmuDeck/roms_rare/ps4/
+├── CUSA00003/                            # live: v1.28 eboot + unpacked loose files (~47 GB)
+├── CUSA00003.v100-working-backup/        # one-command rollback to v1.00 if v1.28 regresses
+├── CUSA00003-v128-test/                  # DriveClubFS input staging (re-runnable if loose tree needs regen)
+└── Driveclub.v1.28.PATCH.REPACK.PS4-GCMR.pkg
 ```
 
-This gives you `eboot.bin`, `game.ndx`, a bunch of `gameNNN.dat` (packed
-archives), `libfmod.prx`, `libfmodstudio.prx`, `sce_module/`, `sce_sys/`.
-But the actual game **assets** (audio banks, UI, cars, tracks) are
-packed inside the `.dat` files via Evolution Studios' custom archive
-format — shadPS4 does NOT read through that format.
-
-### 2. Unpack `.ndx` / `.dat` with DriveClubFS
-
-Nenkai's DriveClubFS is the only public tool that walks Evolution's
-`.ndx` index and decompresses the `gameNNN.dat` archives into named
-loose files. Requires .NET 10 SDK (Arch package `dotnet-sdk`).
+### Install / update recipe (from the investigation doc, summarized)
 
 ```sh
-cd /mnt/data/distrobox/gaming/tools
-git clone https://github.com/Nenkai/DriveClubFS
-# Source targets net9.0; we only have net8/net10. Retarget:
-sed -i 's|<TargetFramework>net9.0</TargetFramework>|<TargetFramework>net10.0</TargetFramework>|' \
-    DriveClubFS/DriveClubFS/DriveClubFS.csproj
+cd /mnt/terachad/Emulators/EmuDeck/roms_rare/ps4
 
-distrobox enter gaming -- dotnet build -c Release DriveClubFS/DriveClubFS/DriveClubFS.csproj
+# 1. Extract v1.28 PKG to staging. Cumulative patch → eboot, game.ndx,
+#    ~41 high-index .dat files, sce_module/, sce_companion_httpd/,
+#    partial sce_sys/about/. **Notably missing**: param.sfo, disc_info.dat,
+#    keystone — cumulative patches rely on base-install metadata.
+/mnt/data/distrobox/gaming/tools/ShadPKG/build-cli/shadpkg extract \
+    -i /mnt/terachad/.../Driveclub.v1.28.PATCH.REPACK.PS4-GCMR.pkg \
+    -o /mnt/terachad/.../CUSA00003-v128-test
 
-distrobox enter gaming -- dotnet \
-    /mnt/data/distrobox/gaming/tools/DriveClubFS/DriveClubFS/bin/Release/net10.0/DriveClubFS.dll \
+# 2. Symlink v1.00's low-numbered .dat files into the v1.28 staging dir
+#    so DriveClubFS sees the full set (v1.28 index references both).
+cd CUSA00003-v128-test
+for f in ../CUSA00003.v100-working-backup/game*.dat; do
+  ln -s "$f" "$(basename "$f")"
+done
+
+# 3. DriveClubFS unpack (v1.28 index = 8018 files, ~47 GB loose).
+dotnet ~/Projects/DriveClubFS/DriveClubFS/bin/Release/net10.0/DriveClubFS.dll \
     unpack-all \
-    -i "/mnt/terachad/Emulators/EmuDeck/roms_rare/ps4/CUSA00003" \
-    -o "/mnt/terachad/Emulators/EmuDeck/roms_rare/ps4/CUSA00003/extracted" \
+    -i /mnt/terachad/.../CUSA00003-v128-test \
+    -o /mnt/terachad/.../CUSA00003-v128-test-out \
     --skip-verifying-checksum
+
+# 4. Swap into place; keep v1.00 as backup.
+cd /mnt/terachad/Emulators/EmuDeck/roms_rare/ps4
+mv CUSA00003 CUSA00003.v100-working-backup
+mkdir CUSA00003
+mv CUSA00003-v128-test-out/* CUSA00003/
+rmdir CUSA00003-v128-test-out
+
+# 5. Copy v1.28 metadata on top (loose files win for content).
+cd CUSA00003-v128-test
+for f in eboot.bin game.ndx *.prx *.plt; do
+  [ -e "$f" ] && cp -a "$f" ../CUSA00003/
+done
+for d in sce_sys sce_module sce_companion_httpd; do
+  [ -d "$d" ] && cp -a "$d" ../CUSA00003/
+done
+
+# 6. CRITICAL: restore base metadata from v1.00 backup (see gotcha below).
+cd ../CUSA00003/sce_sys
+for f in param.sfo disc_info.dat keystone; do
+  [ ! -f "$f" ] && cp -a "../../CUSA00003.v100-working-backup/sce_sys/$f" .
+done
+
+# 7. Do NOT re-enable Driveclub.xml for the 60 fps patch (see below).
 ```
 
-Expected: **5343 files, ~25 GB**, including `audio/fmodstudio/masterbank.bank`
-which is what the FMOD retry loop was looking for. Then flatten the
-`extracted/` dir contents up to the game root:
+### The `sce_sys/param.sfo` gotcha
 
-```sh
-cd /mnt/terachad/Emulators/EmuDeck/roms_rare/ps4/CUSA00003
-mv extracted/* .
-rmdir extracted
+v1.28 is a **CUMULATIVE_PATCH** PKG. ShadPKG's extraction gives you
+`sce_sys/about/right.sprx` and not much else — base metadata
+(param.sfo, disc_info.dat, keystone) is **not re-shipped** because a
+real PS4 already has them from the base install.
+
+If you naively overlay v1.28's `sce_sys/` onto the new install, the
+result has `about/right.sprx` but no `param.sfo`. shadPS4 loads the
+eboot, applies patches if any, boots the game, but the game's internal
+"am I running v1.28? what content is unlocked?" checks silently fall
+back to "not yet released → download required" because there's no
+APP_VER to compare. Symptom: **all premium content locked, asking to
+download**, even though the v1.28 eboot is running.
+
+The v1.00 backup's `param.sfo` works as-is — already has `APP_VER = 01.28`
+and `VERSION = 01.00` (base VERSION stays at 01.00 forever, APP_VER
+reflects whatever patch is installed).
+
+`npbind.dat` is absent in both our v1.00 backup and the v1.28 patch
+output. Only needed for premium DLC entitlement verification; free-update
+content and base game don't require it.
+
+## shadPS4 configuration (required)
+
+### Global — `~/.local/share/shadPS4/config.json`
+
+```jsonc
+{
+  "GPU": {
+    "readbacks_mode": 0          // full readbacks — issue #3210 documented fix
+  },
+  "Vulkan": {
+    "pipeline_cache_enabled": true,   // <<< manual change — kills first-launch shader compile stalls
+    "pipeline_cache_archived": false  // fast load over small disk footprint
+  }
+}
 ```
 
-You can delete the `gameNNN.dat` + `game.ndx` files afterward to save
-~16 GB — shadPS4 reads only the loose files.
+The pipeline cache change is the Phase 1 fix from the investigation doc:
+without it every cold launch re-compiles ~864 shaders + ~590 pipelines
+and the menus animate at crawl speed on first use. Enabling persists the
+cache to disk; second launch onwards replays instantly.
 
-### 3. Per-game JSON config
+Backup of the pre-change config preserved as
+`config.json.bak-before-pipeline-cache` next to the live file.
 
-File: `$DG_BOX_HOME/.local/share/shadPS4/custom_configs/CUSA00003.json`
+### Per-game — `~/.local/share/shadPS4/custom_configs/CUSA00003.json`
 
 ```json
 {
@@ -124,19 +173,18 @@ File: `$DG_BOX_HOME/.local/share/shadPS4/custom_configs/CUSA00003.json`
 }
 ```
 
-Also delete any stale `CUSA00003.toml` from either `.config/shadPS4/custom_configs/`
-or `.local/share/shadPS4/custom_configs/` — shadPS4 main ignores TOML
-silently and will never log a complaint.
+Delete any stale `.toml` from either `.config/shadPS4/custom_configs/` or
+`.local/share/shadPS4/custom_configs/` — shadPS4 migrated to JSON silently,
+TOML files are ignored without a deprecation warning.
 
-### 4. Controller wrapper
+### Controller wrapper (required for hotplug detection)
 
-shadPS4's Qt Launcher calls `Shadps4-sdl.AppImage`; wrap it so SDL
-uses hidapi (otherwise `TryOpenSDLControllers: 0 controllers` even
-with a working 8BitDo Ultimate 2 or DualShock). In the launcher's
-version dir:
+shadPS4's SDL init reports `TryOpenSDLControllers: 0` on first run even
+with the 8BitDo Ultimate 2 / DualShock already connected. Wrap the
+AppImage to force SDL's hidapi backend:
 
 ```sh
-VERDIR=$DG_BOX_HOME/.local/share/shadPS4QtLauncher/versions/main-<date>
+VERDIR=$DG_BOX_HOME/.local/share/shadPS4QtLauncher/versions/<build-name>
 mv "$VERDIR/Shadps4-sdl.AppImage" "$VERDIR/Shadps4-sdl.real.AppImage"
 cat > "$VERDIR/Shadps4-sdl.AppImage" << 'EOF'
 #!/usr/bin/env sh
@@ -150,134 +198,159 @@ EOF
 chmod +x "$VERDIR/Shadps4-sdl.AppImage"
 ```
 
-Then point `~/.local/share/shadPS4QtLauncher/qt_ui.ini`'s
-`versionSelected=` at that wrapper path.
+Connect the controller before opening Qt Launcher. Hotplug works once
+the game is running.
 
-Plug the controller in **before** opening Qt Launcher. If it wasn't
-detected, unplug, relaunch the Qt Launcher, plug in again — hotplug
-works inside a running game.
+### Qt Launcher polling
 
-### 5. Desktop entry
+Turn off the GitHub API polling at startup — produces a scary-looking
+"Error transferring releases" dialog when rate-limited (unauthenticated
+API = 60 requests/hour):
 
-One tile: `gaming-shadps4-gui.desktop` (renders as "shadPS4 Manager (on
-gaming)"). Launches the Qt Launcher; user picks Driveclub from its game
-list. Old direct-Driveclub tiles were deleted.
+```ini
+# ~/.local/share/shadPS4QtLauncher/qt_ui.ini
+[general_settings]
+checkForUpdates=false
+checkOnStartup=false
+```
 
-## Dead ends — what did NOT work
+## 60 FPS patch — don't enable
 
-Logged so we don't repeat them.
+`Driveclub.xml` in `~/.local/share/shadPS4/patches/` ships with two 60 FPS
+patch blocks. Leave them disabled. The patches rewrite the render rate
+but **not** the game's internal fixed-timestep logic rate. On real PS4
+Pro, the engine reconciles the mismatch internally; shadPS4 doesn't.
 
-| Dead end | Why it doesn't work |
-|---|---|
-| **v1.28 patch on a v1.00 loose-file tree** | Patch eboot expects v1.28-only content files that DriveClubFS can't extract from the v1.28 patch PKG's `.dat` archives. DriveClubFS (v1.1.0 checked) crashes at file 12/8018 with `EndOfStreamException` on the merged tree. Pure v1.00 or nothing. |
-| **`Driveclub.xml` 60fps patch on v1.00 eboot** | The patch's byte offsets target v1.28 eboot. Applied to v1.00 it corrupts live code. Disable the XML (rename to `.disabled-for-v1.0`). The game runs at 30 FPS native without it; accept the tradeoff or source a v1.00-native 60fps patch. |
-| **Dropping raw STFS-style file in the content root** | Wrong emulator — that's Xenia. Doesn't apply here. |
-| **TOML per-game config** | shadPS4 main migrated to JSON in late 2025 (`emulator_settings.cpp`). TOML files are silently ignored. Always use `.json`. No deprecation warning logged. |
-| **fontlib PR #3772 branch fork** | Was a 2-3 hour rabbit hole. Fontlib's sceFont HLE was already merged to main via PR #2761 (Nov 2025). The fork was orthogonal and added config-format complexity. Use main. |
-| **Dumping PS4 system fonts from `PS4UPDATE.PUP`** | Retail PUPs are AES-128 encrypted with keys fused into PS4 Secure Boot hardware. No Linux-only decryption exists; every public `pup_decrypt` tool is a PS4 homebrew payload requiring a jailbroken console. Tried `psxhax.com` guide — same requirement. Not feasible. |
-| **Rename-substituting Adobe Source Han Sans as PS4 fonts** | Set up 18 files matching `SST-*.otf`, `SSTCC-*.OTF`, `SSTJpPro-*.otf`, `DFHEI5-SONY.ttf`, `SCEPS4Yoongd-*.otf` names. fontlib loaded them but still crashed at `0x29` — turned out font dumps weren't the blocker on main at all. |
-| **libtbb HLE / shadPS4 fork search** | 3-hour red-herring. `Returning zero to 0x80cee039d x29` stub calls looked like unresolved libtbb imports. They're harmless — every shadPS4 game sees them. Not the crash cause. |
-| **Qt Launcher "Check for Updates"** | Hits unauthenticated GitHub API, rate-limited to 60/hour. Produces a scary-looking "server replied: ..." dialog at launch that has nothing to do with running games. Disable `checkForUpdates` and `checkOnStartup` in `qt_ui.ini`. |
-| **vkBasalt chained effects (liftGammaGain + vibrance + CAS)** | On NVIDIA + Vulkan 1.4 (RTX 5090, April 2026), this chain produces a blown-out white image with noise — probably uninitialized intermediate buffer. Single-effect may work; haven't tested. |
-| **Hyprland `decoration:screen_shader` empty string** | Setting the keyword to `""` (empty) makes Hyprland try to load `""` as a file path and log "shader path not found" every frame. Must set to the literal `[[EMPTY]]` marker to truly unset. `hyprctl reload` also fixes it. |
-| **`gamescope` for SDR brightness/saturation** | gamescope's color options are HDR-focused (`--hdr-itm-enabled`, etc.). No native SDR vibrance knob. |
-| **nvidia-settings Digital Vibrance on Wayland** | X11 only. Doesn't exist on Wayland sessions. Hyprland's `screen_shader` is the Wayland-friendly equivalent but has its own pitfalls. |
-| **`apply_title_update = false` in FM3's Xenia config cross-contaminating FH2** | Different emulator (Xenia) but same class of bug. Documented in `feedback_xenia_config_flow.md`. |
+Symptom if enabled: game appears to run smoothly at 60 fps but cars
+accelerate in slow-motion, lap times don't advance at real speed. Disable
+→ 30 fps at correct wall-clock speed, matches stock PS4 base console.
 
-## Key insight about the FMOD loop
+To disable cleanly:
 
-The `/app0/audio/fmodstudio/masterbank.bank failed, file does not exist`
-retry loop that stops boot **is about Evolution's packed archive format**,
-not about FMOD, not about Fios2, not about libtbb. The .bank file literally
-doesn't exist on disk because it's inside a `gameNNN.dat` archive that
-shadPS4's VFS can't read.
+```sh
+mv ~/.local/share/shadPS4/patches/Driveclub.xml \
+   ~/.local/share/shadPS4/patches/Driveclub.xml.disabled-for-v1.0
+```
 
-**The only fix is DriveClubFS**. It's the tool community setups use
-(even when their guides don't say so). Every other diagnosis we tried
-(shadPS4 Fios2 gap, font HLE, libtbb, etc.) was a misreading of the
-same root cause.
+The filename suffix is historical — at the time we thought the issue was
+v1.00 eboot offset mismatch; it's actually the timestep mismatch and
+applies to both v1.00 and v1.28. Rename pattern kept to avoid churn.
 
-## Image looks dark/desaturated — known
+Long-term fix options (out of scope): patch the game to also scale the
+internal timestep; implement frame interpolation host-side; both are
+substantial work that isn't queued.
 
-Driveclub was tonemapped on PS4 for HDR TV output. shadPS4 outputs SDR
-by default; the dynamic range compression makes everything look dim. On
-our Wayland/Hyprland setup:
+## Night scenes — known upstream gap
 
-- nvidia-settings Digital Vibrance is not an option (X11-only)
-- vkBasalt's chained shaders broke the image on RTX 5090 / Vulkan 1.4
-- Hyprland `screen_shader` works but if you pass an empty string to
-  unset it later, Hyprland logs "shader path not found" errors every
-  frame until `hyprctl reload`
+Driveclub's forward+ lighting renders geometry into a 4x MSAA D32Sfloat
+depth target then binds that depth aspect as a 1-sample
+R32G32B32A32Sfloat sampler2D for SSAO, soft particles, and volumetric
+headlights. **shadPS4 upstream nightly has no path for this combination**
+in `TextureCache::ResolveDepthOverlap` — the fallback `else` branch
+`FreeImage`-s the cached MSAA depth and returns an uninitialised 1-sample
+color image. Downstream reads garbage.
 
-Conclusion: **accept the dim look for now**. This is what the community
-footage actually looks like; it's the state of SDR Driveclub emulation
-in 2026. Future shadPS4 releases may add a built-in HDR output or
-ShadeBoost-style post-process.
+**Symptom**: night tracks render near-pure black — HUD visible, no
+headlights, no track surface, no AI car lights. Daytime scenes look
+"only dim" because ambient+sun still lights the material pass, but
+subtle depth-dependent effects are silently broken.
 
-## Known upstream bugs (no config fix)
+**Fix shape** (`ReinterpretMsDepthAsColor` + fragment shader + wiring in
+`ResolveDepthOverlap`) is described in detail in
+`~/Projects/shadPS4/docs/driveclub-v128-investigation.md` Phase 4.
+Upstream-candidate PR shape — clean, bounded, symmetric with the existing
+`ReinterpretColorAsMsDepth` path. Until merged, run a build that carries
+the fix locally (e.g. the investigation doc's `gamma-debug` branch)
+from a Manager-visible version entry. The distrobox's default stays on
+upstream **nightly** — once upstream ships the fix, no local divergence
+is needed here.
 
-- [shadPS4 #3315](https://github.com/shadps4-emu/shadPS4/issues/3315) loading-screen hang (closed)
-- [shadPS4 #3210](https://github.com/shadps4-emu/shadPS4/issues/3210) crash during load — documents `readbacks = true` as the fix
-- [shadPS4 #3346](https://github.com/shadps4-emu/shadPS4/issues/3346) CUSA00093 GPU driver reset
-- [shadPS4 #3407](https://github.com/shadps4-emu/shadPS4/issues/3407) stuttering
-- [shadPS4 #3239](https://github.com/shadps4-emu/shadPS4/issues/3239) Intel iGPU crash
-- [shadPS4 #4276](https://github.com/shadps4-emu/shadPS4/pull/4276) Driveclub input regression fix (merged Apr 19 2026)
+## Dim image — accepted as-is
 
-Day races reportedly cleaner on AMD than NVIDIA. Our setup (RTX 5090)
-works but gets some texture dither artifacts on shiny surfaces.
+Owners tried exhaustively on `gamma-debug`: static gamma lift, static
+linear boost, per-channel ACES, luma-preserving ACES, scene-aware
+auto-exposure (peak+mean), shadow-lift curves, peak-aware clamping,
+mean-aware headroom, hysteresis adaptation. Each fixed one case by
+breaking another — menus would blow out when dark scenes got lifted, or
+dark scenes stayed dim when menus were tamed.
+
+Root diagnosis after adding `SHADPS4_PP_BYPASS=1`: **Driveclub's raw
+output is already correct.** The 5-second "dim pocket" at race start
+that triggered the whole investigation is a **game-side cinematic
+fade-in VFX**, not something post-process can fix (can't multiply
+visibility into a `vec3(0)` reveal).
+
+The final shader in `gamma-debug` branch is **standard sRGB encode +
+4×4 Bayer dither**. No exposure multiplier, no tonemap, no auto-exposure,
+no bypass flag (nothing to bypass).
+
+The **in-game brightness slider** does work — game calls
+`sceVideoOutAdjustColor`, the shader responds. Tops out before matching
+an HDR reference, but it's the honest answer.
+
+Lesson kept in the investigation doc: **when "the image looks wrong"
+is the bug, the first diagnostic should be a bypass path that shows
+raw game output.** If bypass looks right, the emulator post-process is
+mangling the signal; keep your hands off the tonemap.
+
+If you want to try display-side color correction, the gotchas we
+already hit are captured in the investigation doc's dead-end section —
+worth reading before trying vkBasalt or Hyprland `screen_shader` tricks.
 
 ## DLC landscape
 
 Driveclub shipped ~32 premium DLC packs between Oct 2014 and Mar 2016.
-`v1.28` patch already includes every free drop (Japan tracks, VR-sourced
-tracks from the Oct 2016 final update). Premium DLC NOT included:
+The v1.28 patch already includes every free drop (Japan tracks, the
+Oct 2016 VR-sourced tracks, Bike tracks). Premium DLC NOT included:
 
 | Category | Count | shadPS4 status |
 |---|---:|---|
-| Tour packs | 8 | Boot but share the same rendering artifacts as base |
+| Tour packs | 8 | Boot but share same rendering artifacts as base |
 | Car packs | 9 | Same |
 | Livery packs | ~80 | Safest — asset overlays load cleanly |
 
-Since this repo uses **v1.00 base only** (for DriveClubFS compatibility),
-none of the above is currently installed. Installing DLC PKGs onto a
-v1.00 install may or may not work — untested. The Qt Launcher's
-**File → Install .pkg** (multi-select supported) routes DLCs to
-`$DG_BOX_HOME/.local/share/shadPS4/addcont/CUSA00003/<ENTITLEMENT>/`.
+Install DLC PKGs via Qt Launcher → **File → Install .pkg** (multi-select).
+Lands at `~/.local/share/shadPS4/addcont/CUSA00003/<ENTITLEMENT>/`.
 
 ### Driveclub Bikes
 
 Standalone product: **CUSA02010** (US) / **CUSA02311** (EU). Not a DLC
-of CUSA00003. Separate install if you want it.
+of CUSA00003.
 
-## Files and paths quick reference
+## Files / paths quick reference
 
 ```
-# Game install
+# Game install (v1.28 live)
 /mnt/terachad/Emulators/EmuDeck/roms_rare/ps4/CUSA00003/
-  eboot.bin                       (v1.00, md5 02d68ebe...)
-  eboot.bin.v128                  (backup if you ever want to try patched route)
-  audio/fmodstudio/masterbank.bank (from DriveClubFS)
-  + 5342 other loose files
-  + gameNNN.dat / game.ndx        (safe to delete after extraction)
+/mnt/terachad/Emulators/EmuDeck/roms_rare/ps4/CUSA00003.v100-working-backup/
+/mnt/terachad/Emulators/EmuDeck/roms_rare/ps4/CUSA00003-v128-test/
 
 # shadPS4 configs
-~/.local/share/shadPS4/config.json                          # global
-~/.local/share/shadPS4/custom_configs/CUSA00003.json        # per-game override
+~/.local/share/shadPS4/config.json                    # pipeline_cache_enabled=true
+~/.local/share/shadPS4/config.json.bak-before-pipeline-cache
+~/.local/share/shadPS4/custom_configs/CUSA00003.json  # per-game
 ~/.local/share/shadPS4/patches/Driveclub.xml.disabled-for-v1.0
+~/.local/share/shadPS4/log/shad_log.txt
 
-# Qt Launcher version
-~/.local/share/shadPS4QtLauncher/versions/main-<date>/
-  Shadps4-sdl.AppImage            # wrapper with SDL hidapi hints
-  Shadps4-sdl.real.AppImage       # actual AppImage from CI
-~/.local/share/shadPS4QtLauncher/qt_ui.ini                  # versionSelected, checkForUpdates=false
+# Qt Launcher versions (distrobox default: whichever nightly QtLauncher auto-fetches)
+~/.local/share/shadPS4QtLauncher/versions/Pre-release/           # stock upstream nightly (DEFAULT)
+~/.local/share/shadPS4QtLauncher/versions/gamma-debug-2026-04-20/ # optional — investigation build w/ MSAA depth fix
 
 # Tools
 /mnt/data/distrobox/gaming/tools/DriveClubFS/
 /mnt/data/distrobox/gaming/tools/ShadPKG/
+
+# Fork source
+~/Projects/shadPS4                         # akitaonrails/shadPS4 (gamma-debug branch)
+~/Projects/DriveClubFS                     # akitaonrails/DriveClubFS (stewardship fork)
+~/Projects/shadPS4/docs/driveclub-v128-investigation.md   # the engineering log
 ```
 
 ## References
 
+- **`~/Projects/shadPS4/docs/driveclub-v128-investigation.md`** — the
+  detailed engineering log: every phase, misdiagnosis, dead end, and fix
+  shape. Read this if you're touching anything here.
 - [DriveClubFS by Nenkai](https://github.com/Nenkai/DriveClubFS)
 - [shadPS4 main](https://github.com/shadps4-emu/shadPS4)
 - [shadPS4 issue #3210 — Driveclub readbacks fix](https://github.com/shadps4-emu/shadPS4/issues/3210)
