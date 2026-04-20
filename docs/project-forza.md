@@ -250,7 +250,7 @@ Manager per-game toml for FM4 (NOT in the root `xenia-canary.config.toml`
 | `postprocess_antialiasing` | `"fxaa"` | Recommended when FSR is on |
 | `internal_display_resolution` | `16` | 1080p internal (PFP doc) |
 | `logged_profile_slot_0_xuid` | `"<your XUID>"` | Auto-signs-in profile so saves get confirmed (games reported "can't save" without this) |
-| `apply_title_update` | `true` | Loads Title Update 8 |
+| `apply_title_update` | **`false`** | TU8 directory still mounts the `update:` device for in-game content access, but the xex patch is NOT applied. PFP-4's `default.xex` is built on Ultimate Collection's xex (same as PFP-3 — verified by MD5 of `default.xex.vanilla`); the stock retail-targeted TU's xexp delta does not match Ultimate's RSA signature and corrupts the patched code → boot crash with sig-mismatch warning. **Same trap as FM3.** Verified Apr 2026. |
 | `mount_cache` | `true` | Stops crash when starting a race |
 
 The **FSI / snorm16 / fuzzy alpha** combo is the critical car-paint fix
@@ -484,6 +484,38 @@ doesn't exist in current Xenia Canary.
 
 Curated list of added cars:
 https://docs.google.com/spreadsheets/d/1Uqk6q3LTR2U5nWZOcK1cnkyphE0q6hk7MeRI3_l31SQ/edit?usp=sharing
+
+## FM4 + PFP-4: same TU/xex trap as FM3
+
+Same root cause as the FM3 + PFP-3 section below. Confirmed Apr 2026:
+PFP-4's modded `default.xex` was built on Ultimate Collection's xex
+base (verified via `default.xex.vanilla` MD5 matching the Ultimate disc
+extract). The stock retail-targeted FM4 TU8 — same one we ship at
+`/mnt/terachad/Emulators/Project Forza Plus/_tu_extracted/26FF1101/tu00000008_00000000`
+— has its xexp delta computed against retail (non-Ultimate) FM4. When
+applied to PFP-4's xex it triggers `XEX patch signature hash doesn't
+match base XEX signature hash, patch will likely fail!` and the patched
+code is corrupt → blank screen on boot.
+
+**Symptoms after a save wipe**: FM4 ran fine for 35+ hours of playtime
+without the TU mounted (FM4's vanilla doesn't strictly require
+`update:` like FM3 does). After a Xenia Manager "Delete save" action,
+the game's first launch re-runs initialization paths that DO require
+`update:\media.zip`, which fails without a mounted TU. **`apply_title_update = false`
+fixes this** — same fix as FM3.
+
+**Required setup for FM4**:
+1. Install TU8 via Xenia Manager → **Manage → Install Content** → pick
+   the raw `tu00000008_00000000` STFS file from the `_tu_extracted/26FF1101/`
+   directory. XM extracts it to a proper directory layout under
+   `content/.../4D530910/000B0000/<package>/`. (Raw files dropped into
+   `000B0000/` are silently skipped by Xenia Canary — see
+   `docs/xbox360-title-updates.md`.)
+2. In `Forza Motorsport 4.config.toml`, set `apply_title_update = false`.
+3. Keep `allow_incompatible_title_update = true` as a safety net.
+
+The FM4-specific GPU settings table earlier in this doc has been updated
+to reflect `apply_title_update = false` as the correct value.
 
 ## FM3 + PFP-3 on newer Xenia Canary — the TU/xex compatibility maze
 
