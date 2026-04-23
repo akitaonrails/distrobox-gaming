@@ -63,6 +63,10 @@ dg_aur_packages:
   - shadps4-bin
   - flycast-git
   - emulationstation-de
+  # ROM / patch tools (moved off the host — no desktop use case there)
+  - 3dsconv
+  - extract-xiso
+  - flips
 
 dg_xenia_pacman_packages:
   - wine

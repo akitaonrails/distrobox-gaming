@@ -10,3 +10,8 @@ vita3k-bin
 shadps4-bin
 flycast-git
 
+# ROM / patch tools
+3dsconv
+extract-xiso
+flips
+
