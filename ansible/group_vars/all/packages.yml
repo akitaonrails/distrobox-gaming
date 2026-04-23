@@ -65,7 +65,7 @@ dg_aur_packages:
   - emulationstation-de
   # ROM / patch tools (moved off the host — no desktop use case there)
   - 3dsconv
-  - extract-xiso
+  - extract-xiso-bin   # source -bin: the vanilla -source pkg fails to compile on modern gcc
   - flips
 
 dg_xenia_pacman_packages:
