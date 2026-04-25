@@ -12,3 +12,15 @@ dg_shadps4_channel: Pre-release
 dg_shadps4_managed_bin: "{{ dg_shadps4_versions_root }}/{{ dg_shadps4_channel }}/Shadps4-sdl.AppImage"
 dg_shadps4_bin: "{{ dg_box_home }}/bin/shadps4-current"
 dg_shadps4_cmd_alias: "{{ dg_box_home }}/bin/shadps4"
+
+# Per-game configs that seed_configs deploys to
+# ~/.local/share/shadPS4/custom_configs/<title_id>.json. Add a new game
+# by creating roles/seed_configs/templates/<title_id>.json.j2 and
+# appending it here.
+dg_shadps4_per_game_configs:
+  - title_id: CUSA00003
+    name: Driveclub
+  - title_id: CUSA03745
+    name: The Last Guardian
+  - title_id: CUSA03220
+    name: Gran Turismo Sport

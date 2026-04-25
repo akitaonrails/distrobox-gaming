@@ -9,25 +9,33 @@
     - "{{ dg_box_home }}/.config/shadPS4/custom_configs"
     - "{{ dg_box_home }}/.local/share/shadPS4/patches"
 
-- name: Deploy Driveclub game config (JSON format)
+- name: Deploy per-game shadPS4 configs (JSON format)
   # shadPS4 current master (post-commit 90b75ea, April 2026) migrated
   # per-game configs from TOML to JSON. The loader at
   # emulator_settings.cpp:437 hard-codes the `.json` extension — the
   # old .toml file is silently ignored. Key names also changed
   # (e.g. `isPS4Pro` -> `neo_mode`, `Fullscreen` -> `full_screen`).
+  # Add games to dg_shadps4_per_game_configs in group_vars and drop a
+  # matching <title_id>.json.j2 template alongside the existing ones.
   ansible.builtin.template:
-    src: CUSA00003.json.j2
-    dest: "{{ dg_box_home }}/.local/share/shadPS4/custom_configs/{{ dg_shadps4_title_id }}.json"
+    src: "{{ item.title_id }}.json.j2"
+    dest: "{{ dg_box_home }}/.local/share/shadPS4/custom_configs/{{ item.title_id }}.json"
     backup: true
     mode: "0644"
+  loop: "{{ dg_shadps4_per_game_configs }}"
+  loop_control:
+    label: "{{ item.name }} ({{ item.title_id }})"
 
-- name: Remove obsolete TOML per-game config (shadPS4 now ignores it)
+- name: Remove obsolete TOML per-game configs (shadPS4 now ignores them)
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: "{{ item.1 }}/{{ item.0.title_id }}.toml"
     state: absent
-  loop:
-    - "{{ dg_box_home }}/.local/share/shadPS4/custom_configs/{{ dg_shadps4_title_id }}.toml"
-    - "{{ dg_box_home }}/.config/shadPS4/custom_configs/{{ dg_shadps4_title_id }}.toml"
+  loop: "{{ dg_shadps4_per_game_configs | product([
+        dg_box_home + '/.local/share/shadPS4/custom_configs',
+        dg_box_home + '/.config/shadPS4/custom_configs',
+      ]) | list }}"
+  loop_control:
+    label: "{{ item.0.title_id }} ({{ 'local-share' if '/.local/share/' in item.1 else 'config' }})"
 
 - name: Copy Driveclub patch XML
   ansible.builtin.copy:
