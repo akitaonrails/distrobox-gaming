@@ -11,14 +11,25 @@ dg_pc_racing_winearch: win64
 dg_pc_racing_gamescope_enabled: true
 dg_pc_racing_gamescope_width: 2560
 dg_pc_racing_gamescope_height: 1440
+dg_pc_racing_target_monitor_x: 2160
+dg_pc_racing_target_monitor_y: 0
 dg_pc_racing_gamepad_device: /dev/input/js0
 dg_pc_racing_gamepad_only: "0x2dc8/0x310b"
 dg_pc_racing_sdl_hidapi: "0"
+dg_pc_racing_dinput_disabled_joysticks:
+  - ZSA Technology Labs Moonlander Mark I
+  - ZSA Technology Labs Moonlander Mark I System Control
+  - ZSA Technology Labs Moonlander Mark I Consumer Control
+  - ZSA Technology Labs Moonlander Mark I Keyboard
 dg_pc_racing_winebus_registry:
   - name: DisableHidraw
     value: 1
+  - name: DisableInput
+    value: 1
   - name: Enable SDL
     value: 1
+  - name: Map Controllers
+    value: 0
 dg_pc_racing_run_installers: false
 dg_pc_racing_copy_unpacked: true
 dg_pc_racing_export_desktop: false
@@ -74,3 +85,65 @@ dg_pc_racing_games:
         key: Borderless
         value: "0"
     notes: "Source is a pre-extracted copy of the original BIN/CUE media; the converted ISO is kept beside it."
+
+  - slug: outrun-2006
+    name: "OutRun 2006: Coast 2 Coast"
+    install_mode: installer
+    source_dir: "{{ dg_pc_racing_source_root }}/OutRun-2006-Coast-2-Coast_Win_EN-FR-DE-IT-ES_Repack"
+    installer: "OutRun 2006 - Coast 2 Coast_Repack_Setup.exe"
+    install_args:
+      - /VERYSILENT
+      - /SUPPRESSMSGBOXES
+      - /NORESTART
+      - /SP-
+      - "/DIR=G:\\outrun-2006"
+    launch_exe: "OR2006C2C.exe"
+    installed_path: "{{ dg_pc_racing_install_root }}/outrun-2006"
+    winetricks_components:
+      - vcrun2022
+      - dxvk
+    env:
+      - name: WINEDLLOVERRIDES
+        value: "dinput8=n,b;d3d9=n,b"
+    gamescope_enabled: false
+    disabled_files:
+      - d3d9.dll
+      - d3d9.ini
+    patches:
+      - name: OutRun2006Tweaks
+        url: https://github.com/emoose/OutRun2006Tweaks/releases/download/v0.6.1/OutRun2006Tweaks-0.6.1.zip
+        source: "{{ dg_pc_racing_cache_root }}/OutRun2006Tweaks-0.6.1.zip"
+        backup_exe: "OR2006C2C.exe"
+        creates: "OutRun2006Tweaks.ini"
+    ini:
+      - file: "outrun2006.ini"
+        key: "DX/RES/WIDTH"
+        value: "2560"
+        separator: " = "
+      - file: "outrun2006.ini"
+        key: "DX/RES/HEIGHT"
+        value: "1440"
+        separator: " = "
+      - file: "outrun2006.ini"
+        key: "DX/ANTIALIASING"
+        value: "0"
+        separator: " = "
+      - file: "outrun2006.ini"
+        key: "DX/WINDOWED"
+        value: "1"
+        separator: " = "
+      - file: "OutRun2006Tweaks.ini"
+        key: AutoDetectResolution
+        value: "false"
+      - file: "OutRun2006Tweaks.ini"
+        key: WindowedBorderless
+        value: "true"
+      - file: "OutRun2006Tweaks.ini"
+        key: WindowPositionX
+        value: "{{ dg_pc_racing_target_monitor_x }}"
+        separator: " = "
+      - file: "OutRun2006Tweaks.ini"
+        key: WindowPositionY
+        value: "{{ dg_pc_racing_target_monitor_y }}"
+        separator: " = "
+    notes: "Inno Setup repack installed silently to G:\\outrun-2006. OutRun2006Tweaks replaces the DRM-sensitive EXE and must load through native dinput8. The bundled SpecialK d3d9 files are backed up and disabled so prefix DXVK can provide D3D9."

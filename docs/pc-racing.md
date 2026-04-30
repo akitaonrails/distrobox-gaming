@@ -5,8 +5,15 @@ Windows PC racing games are optional and are not installed during a normal
 Wine inside the `gaming` distrobox. Lutris and UMU are intentionally removed by
 this role so the setup stays simple and reproducible.
 
-Only Colin McRae Rally 2.0 is currently managed. Add more entries to
-`dg_pc_racing_games` only after testing their install and launch path.
+Currently managed games:
+
+- Colin McRae Rally 2.0
+- OutRun 2006: Coast 2 Coast
+
+Add more entries to `dg_pc_racing_games` only after testing their install and
+launch path. Reuse the existing data fields for silent installer flags,
+downloadable ZIP patches, `winetricks` components, DLL overrides, INI edits,
+and controller quirks instead of creating one-off role logic.
 
 Game payloads default to the distrobox home:
 
@@ -26,6 +33,13 @@ already unpacked games:
 ```sh
 cd ansible
 ansible-playbook install-pc-racing.yml
+```
+
+Focused install for OutRun 2006:
+
+```sh
+cd ansible
+ansible-playbook install-outrun-2006.yml
 ```
 
 Install or refresh host menu entries separately from the host:
@@ -72,11 +86,49 @@ The launcher wraps CMR2 in `gamescope` at `2560x1440` so Wine does not choose
 the portrait monitor's `1440x2560` mode on the multi-monitor desktop.
 
 USB gamepads are exposed through the distrobox's `/dev/input` and `/dev/hidraw`
-devices. For CMR2 the launcher pins SDL to the 8BitDo controller
-(`0x2dc8/0x310b`) on `/dev/input/js0` and disables SDL HIDAPI to avoid duplicate
-keyboard/mouse/HID interfaces being treated as stuck buttons. It still preserves
-`SDL_GAMECONTROLLERCONFIG` if you set a custom mapping before launching.
-The Wine prefix also sets `winebus` to `DisableHidraw=1` and `Enable SDL=1` so
-Wine uses the SDL controller backend instead of raw HID for this game.
+devices. The launcher pins SDL to the 8BitDo controller in XInput mode
+(`0x2dc8/0x310b`) and disables SDL HIDAPI to avoid duplicate keyboard/mouse/HID
+interfaces being treated as stuck buttons. It still preserves
+`SDL_GAMECONTROLLERCONFIG` if you set a custom mapping before launching. The
+Wine prefix also sets `winebus` to `DisableHidraw=1`, `DisableInput=1`,
+`Enable SDL=1`, and `Map Controllers=0`. This keeps Wine from exposing duplicate
+raw event devices or an SDL-backed XInput virtual device, while still allowing
+the cleaner SDL controller path. OutRun 2006 otherwise sees a phantom held
+direction in menus even when Linux SDL and evdev report the 8BitDo as neutral.
+`dg_pc_racing_dinput_disabled_joysticks` disables known pseudo-joystick HID
+interfaces, such as the Moonlander keyboard's ABS-axis interfaces, through
+Wine's `Software\Wine\DirectInput\Joysticks` registry key. This prevents menus
+from scrolling as if a direction were held.
+
+If `evdev-joystick --listdevs` only shows the Moonlander keyboard and SDL sees
+zero joysticks, the 8BitDo is in a hidraw-only mode such as `2dc8:6013`. Switch
+the controller/dongle to XInput mode so Linux creates a real `/dev/input/js*`
+or event device before launching Wine games. The distrobox cannot create that
+kernel input node by itself.
 
 The game list lives in `ansible/group_vars/all/pc_racing.yml`.
+
+## OutRun 2006
+
+OutRun 2006 uses the Inno Setup repack source under
+`{{ dg_pc_racing_source_root }}/OutRun-2006-Coast-2-Coast_Win_EN-FR-DE-IT-ES_Repack`.
+The focused playbook runs the installer silently to `G:\outrun-2006`, installs
+`vcrun2022`, downloads `OutRun2006Tweaks`, backs up the original
+`OR2006C2C.exe`, and extracts the Tweaks DLL/EXE/INI into the game directory.
+
+The launcher sets `WINEDLLOVERRIDES=dinput8=n,b;d3d9=n,b` so the native Tweaks
+DLL loads under Wine and D3D9 is served by DXVK from the prefix. The repack also
+installs a local SpecialK `d3d9.dll` and `d3d9.ini`; the role backs them up with
+`.disabled-by-distrobox-gaming` suffixes and removes the active copies because
+local DLL search order would otherwise load SpecialK before DXVK. If OutRun is
+slow, verify `winetricks list-installed` includes `dxvk` and that no active
+`d3d9.dll` remains in the game directory.
+
+The role disables `gamescope` for this game and writes a fixed `2560x1440`
+borderless-window config to avoid Wine picking the portrait monitor mode or
+using an XRandR exclusive-fullscreen mode switch.
+`dg_pc_racing_target_monitor_x` and `dg_pc_racing_target_monitor_y` pin the
+borderless window to the target monitor; on the tested layout this is the ASUS
+`DP-1` monitor at `2160,0` in XRandR coordinates. Antialiasing stays disabled in
+`outrun2006.ini` until DXVK is confirmed stable with the game's multisample
+mode.

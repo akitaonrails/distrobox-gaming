@@ -35,6 +35,16 @@ overrides in `ansible/host_vars/localhost.yml.example`. Personal paths are
 acceptable only as default values in central variables or as clearly historical
 examples in archival docs.
 
+## Reuse And Wine Game Patterns
+
+Avoid duplicated Ansible logic. Before adding a new role or playbook, check
+whether an existing role can be extended with data, variables, or a small shared
+template change. For Windows games, prefer improving the reusable Wine/PC racing
+flow instead of creating one-off install logic. Capture lessons from each tested
+game, such as required `winetricks` components, DLL overrides, DXVK needs,
+controller quirks, and installer flags, as data-driven `dg_*` variables so the
+next Wine game benefits from the same path.
+
 ## Coding Style & Naming Conventions
 
 Use YAML with two-space indentation. Prefix project variables with `dg_`.

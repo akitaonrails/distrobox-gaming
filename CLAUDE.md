@@ -65,6 +65,10 @@ The `bin/dg`, `scripts/`, `lib/`, and `config/` directories contain the original
   like `dg_data_root`, `dg_box_home`, `dg_external_games_root`, and
   `dg_roms_final_root`, and document user overrides in
   `ansible/host_vars/localhost.yml.example`.
+- Avoid duplicated Ansible logic. Extend existing roles with data, variables,
+  and shared templates before creating a one-off role. For Windows games, fold
+  tested Wine lessons back into reusable `dg_*` data such as installer flags,
+  `winetricks` components, DLL overrides, DXVK needs, and controller quirks.
 - Roles use `ansible.builtin.*` fully qualified module names.
 - File operations use `backup: true` so user state is preserved.
 - Per-emulator config is split into subtask files under `seed_configs/tasks/`.

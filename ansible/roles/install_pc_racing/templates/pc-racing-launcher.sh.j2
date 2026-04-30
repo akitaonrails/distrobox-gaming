@@ -21,6 +21,9 @@ export WINEDEBUG="${WINEDEBUG:--all}"
 export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
 export SDL_JOYSTICK_HIDAPI="${SDL_JOYSTICK_HIDAPI:-{{ dg_pc_racing_sdl_hidapi }}}"
 export SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT="${SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT:-{{ dg_pc_racing_gamepad_only }}}"
+{% for env_var in item.env | default([]) -%}
+export {{ env_var.name }}="{{ '${' }}{{ env_var.name }}:-{{ env_var.value }}{{ '}' }}"
+{% endfor -%}
 {% if dg_pc_racing_gamepad_device | length > 0 -%}
 if [ -e "{{ dg_pc_racing_gamepad_device }}" ]; then
   export SDL_JOYSTICK_DEVICE="${SDL_JOYSTICK_DEVICE:-{{ dg_pc_racing_gamepad_device }}}"
@@ -28,7 +31,7 @@ fi
 {% endif -%}
 
 cd "$install_dir"
-{% if dg_pc_racing_gamescope_enabled | bool -%}
+{% if item.gamescope_enabled | default(dg_pc_racing_gamescope_enabled) | bool -%}
 if command -v gamescope >/dev/null 2>&1; then
   exec env -u PYTHONHOME -u PYTHONPATH gamescope \
     -W {{ dg_pc_racing_gamescope_width }} \
