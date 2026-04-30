@@ -34,5 +34,9 @@ dg_unleashed_recomp_extract_title_update_zip: true
 dg_unleashed_recomp_search_roots:
   - "{{ dg_rom_heavy_root }}/xbox360"
   - "{{ dg_rom_heavy_root }}/xbox360-updates"
-  - "/mnt/terachad/Emulators/ROMS_FINAL/xbox360"
-  - "/mnt/terachad/Emulators/ROMS_FINAL/xbox360-updates"
+  - "{{ dg_roms_final_root }}/xbox360"
+  - "{{ dg_roms_final_root }}/xbox360-updates"
+
+dg_unleashed_recomp_flatpak_filesystems:
+  - "{{ dg_box_home }}"
+  - "{{ dg_external_games_root }}"

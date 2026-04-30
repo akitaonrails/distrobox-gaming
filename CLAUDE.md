@@ -59,6 +59,12 @@ The `bin/dg`, `scripts/`, `lib/`, and `config/` directories contain the original
 ### Ansible roles
 
 - Variables use `dg_*` lowercase names in `group_vars/all/`.
+- New roles, templates, and active docs must not hardcode maintainer-local paths
+  such as `/mnt/data`, `/mnt/terachad`, `/run/media/akitaonrails`, or
+  `/home/akitaonrails`. Add or reuse `dg_*` variables, derive paths from roots
+  like `dg_data_root`, `dg_box_home`, `dg_external_games_root`, and
+  `dg_roms_final_root`, and document user overrides in
+  `ansible/host_vars/localhost.yml.example`.
 - Roles use `ansible.builtin.*` fully qualified module names.
 - File operations use `backup: true` so user state is preserved.
 - Per-emulator config is split into subtask files under `seed_configs/tasks/`.

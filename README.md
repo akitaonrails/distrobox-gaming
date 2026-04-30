@@ -87,10 +87,12 @@ dg_host_uid: 1026                    # NAS requires this UID
 dg_host_gid: 1026
 dg_data_root: /mnt/data
 dg_box_home: /mnt/data/distrobox/gaming
-dg_emudeck_root: /mnt/terachad/Emulators/EmuDeck
-dg_bios_root: /mnt/terachad/Emulators/EmuDeck/Emulation/bios
-dg_rom_root: /mnt/terachad/Emulators/EmuDeck/roms
-dg_rom_heavy_root: /mnt/terachad/Emulators/EmuDeck/roms_heavy
+dg_external_games_root: /mnt/terachad/Emulators
+dg_roms_final_root: "{{ dg_external_games_root }}/ROMS_FINAL"
+dg_emudeck_root: "{{ dg_external_games_root }}/EmuDeck"
+dg_bios_root: "{{ dg_emudeck_root }}/Emulation/bios"
+dg_rom_root: "{{ dg_emudeck_root }}/roms"
+dg_rom_heavy_root: "{{ dg_emudeck_root }}/roms_heavy"
 dg_ps3_dlc_source: "{{ dg_rom_heavy_root }}/ps3-DLC"
 dg_switch_updates_source: "{{ dg_rom_heavy_root }}/switch_updates"
 dg_switch_cheats_source: "{{ dg_rom_heavy_root }}/switch_cheats"
@@ -100,7 +102,7 @@ For another machine, create `ansible/host_vars/localhost.yml` and override any
 variable. Or pass overrides on the command line:
 
 ```sh
-ansible-playbook site.yml -e dg_emudeck_root=/media/games/EmuDeck
+ansible-playbook site.yml -e dg_data_root=/home/me/gaming -e dg_external_games_root=/media/games
 ```
 
 ## GPU Preference (NVIDIA vs AMD iGPU)
@@ -250,23 +252,23 @@ can run manually for advanced tasks:
 ```sh
 # List / download missing PS3 patches from PSN's public update server
 python3 $DG_BOX_HOME/scripts/check_ps3_updates.py \
-    /mnt/terachad/Emulators/EmuDeck/roms_heavy/ps3 \
-    --dlc-dir /mnt/terachad/Emulators/EmuDeck/roms_heavy/ps3-DLC --list
+    "$DG_ROM_HEAVY_ROOT/ps3" \
+    --dlc-dir "$DG_PS3_DLC_SOURCE" --list
 
 python3 $DG_BOX_HOME/scripts/check_ps3_updates.py \
-    /mnt/terachad/Emulators/EmuDeck/roms_heavy/ps3 \
-    --dlc-dir /mnt/terachad/Emulators/EmuDeck/roms_heavy/ps3-DLC \
-    --download-dir /mnt/data/distrobox/gaming/dlc-temp --download
+    "$DG_ROM_HEAVY_ROOT/ps3" \
+    --dlc-dir "$DG_PS3_DLC_SOURCE" \
+    --download-dir "$DG_BOX_HOME/dlc-temp" --download
 
 # List outdated Switch games (Nintendo's CDN needs console auth, so no download)
 python3 $DG_BOX_HOME/scripts/check_switch_updates.py \
-    /mnt/terachad/Emulators/EmuDeck/roms_heavy/switch \
-    --updates-dir /mnt/terachad/Emulators/EmuDeck/roms_heavy/switch_updates
+    "$DG_ROM_HEAVY_ROOT/switch" \
+    --updates-dir "$DG_SWITCH_UPDATES_SOURCE"
 
 # Reorganize a messy switch_updates dump into per-title-ID folders
 # (handles .nsp/.nsz/.xci/.xcz; mods and non-patch files are left alone)
 python3 $DG_BOX_HOME/scripts/reorganize_switch_nsps.py \
-    /mnt/terachad/Emulators/EmuDeck/roms_heavy/switch_updates --dry-run
+    "$DG_SWITCH_UPDATES_SOURCE" --dry-run
 ```
 
 Note on Switch updates: Nintendo's update CDN requires device-specific
@@ -356,22 +358,21 @@ with:
 ansible-playbook install-hedgemodmanager.yml
 ```
 
-The wrapper is written to `/mnt/data/distrobox/gaming/bin/hedge-mod-manager`.
+The wrapper is written to `{{ dg_box_home }}/bin/hedge-mod-manager`.
 It sees the same Steam install and external library paths as Steam inside the
 box, including the Proton prefixes under `steamapps/compatdata`.
 
 ## PC Racing Games
 
 Windows PC racing games are optional and live outside the normal rebuild path.
-They use `umu-launcher` inside the distrobox, with installed game files on the
-external Steam USB drive:
+They use system Wine inside the distrobox:
 
 ```sh
 ansible-playbook install-pc-racing.yml
 ```
 
-The install root is `/run/media/akitaonrails/STEAM/lutris/games`; per-game
-prefixes stay under `/mnt/data/distrobox/gaming/wineprefixes/pc-racing`.
+The install root is `{{ dg_pc_racing_install_root }}`; per-game prefixes stay
+under `{{ dg_pc_racing_prefix_root }}`.
 Installer GUIs are only launched when explicitly requested with
 `-e dg_pc_racing_run_installers=true`.
 
@@ -385,8 +386,8 @@ ansible-playbook install-sonic-p06.yml
 ```
 
 The source is the already extracted Silver Release under
-`/mnt/terachad/Emulators/ROMS_FINAL/PC/Project 06 - Silver Release (Patch v1.45)`.
-The managed copy lives at `/mnt/data/distrobox/gaming/Games/sonic-p06`.
+`{{ dg_sonic_p06_source_dir }}`. The managed copy lives at
+`{{ dg_sonic_p06_install_root }}`.
 
 ## Project Structure
 

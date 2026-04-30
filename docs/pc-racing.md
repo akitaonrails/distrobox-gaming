@@ -11,13 +11,13 @@ Only Colin McRae Rally 2.0 is currently managed. Add more entries to
 Game payloads default to the distrobox home:
 
 ```text
-/mnt/data/distrobox/gaming/Games/pc-racing/<game-slug>
+{{ dg_pc_racing_install_root }}/<game-slug>
 ```
 
 Per-game Wine prefixes are separate:
 
 ```text
-/mnt/data/distrobox/gaming/wineprefixes/pc-racing/<game-slug>
+{{ dg_pc_racing_prefix_root }}/<game-slug>
 ```
 
 Prepare packages, prefixes, wrappers, rendered desktop entries, and copy
@@ -41,7 +41,7 @@ Run installer helpers manually from inside the box when a game still needs a
 GUI installer:
 
 ```sh
-distrobox-enter -n gaming -- /mnt/data/distrobox/gaming/bin/install-colin-mcrae-rally-2005
+distrobox-enter -n gaming -- "{{ dg_box_home }}/bin/install-colin-mcrae-rally-2005"
 ```
 
 To let Ansible launch installer helpers for games whose launcher executable is
@@ -59,7 +59,7 @@ from that prefix directory instead.
 Colin McRae Rally 2.0 uses SilentPatch from:
 
 ```text
-/mnt/data/distrobox/gaming/cache/pc-racing/silentpatch_cmr2.zip
+{{ dg_pc_racing_cache_root }}/silentpatch_cmr2.zip
 ```
 
 The role configures `SPCMR2.ini` with `Region=AMERICA` for the US media found

@@ -5,11 +5,13 @@
 # dg_host_uid: 1000
 # dg_host_gid: 1000
 #
-# Host data/ROM layout. Defaults assume a terachad NAS mount under
-# /mnt/terachad/Emulators/EmuDeck; point these wherever your actual
-# EmuDeck install is.
+# Host data/ROM layout. Defaults assume this maintainer's local mounts;
+# point these at your own writable storage and game/BIOS library.
 # dg_data_root: /home/me/gaming
-# dg_emudeck_root: /media/games/EmuDeck
+# dg_external_games_root: /media/games
+# dg_emudeck_root: "{{ dg_external_games_root }}/EmuDeck"
+# dg_roms_final_root: "{{ dg_external_games_root }}/ROMS_FINAL"
+# dg_external_usb_games_root: /run/media/me/STEAM
 #
 # Roots derived from dg_emudeck_root (override individually only if
 # your layout diverges from EmuDeck's default):

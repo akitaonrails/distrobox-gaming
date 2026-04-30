@@ -8,7 +8,7 @@
 #
 # .pnach patch files symlink into ~/.config/PCSX2/patches/<basename>.
 
-dg_pcsx2_ps2_root: /mnt/terachad/Emulators/ps2
+dg_pcsx2_ps2_root: "{{ dg_external_games_root }}/ps2"
 dg_pcsx2_textures_root: "{{ dg_box_home }}/.config/PCSX2/textures"
 dg_pcsx2_patches_dir: "{{ dg_box_home }}/.config/PCSX2/patches"
 dg_pcsx2_cheats_dir: "{{ dg_box_home }}/.config/PCSX2/cheats"

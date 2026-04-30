@@ -1,6 +1,6 @@
 # Optional Sonic Project '06 setup.
 
-dg_sonic_p06_source_dir: "/mnt/terachad/Emulators/ROMS_FINAL/PC/Project 06 - Silver Release (Patch v1.45)/Sonic the Hedgehog (P-06)"
+dg_sonic_p06_source_dir: "{{ dg_roms_final_root }}/PC/Project 06 - Silver Release (Patch v1.45)/Sonic the Hedgehog (P-06)"
 dg_sonic_p06_install_root: "{{ dg_box_home }}/Games/sonic-p06"
 dg_sonic_p06_prefix: "{{ dg_box_home }}/wineprefixes/sonic-p06"
 dg_sonic_p06_tools_root: "{{ dg_box_home }}/tools/sonic-p06"

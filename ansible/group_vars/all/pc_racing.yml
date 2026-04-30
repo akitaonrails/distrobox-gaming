@@ -1,7 +1,7 @@
 # Optional Windows PC racing games managed with system Wine inside the distrobox.
 
-dg_pc_racing_source_root: /mnt/terachad/Emulators/ROMS_FINAL/PC
-dg_pc_racing_usb_root: /run/media/akitaonrails/STEAM
+dg_pc_racing_source_root: "{{ dg_roms_final_root }}/PC"
+dg_pc_racing_usb_root: "{{ dg_external_usb_games_root }}"
 dg_pc_racing_install_root: "{{ dg_box_home }}/Games/pc-racing"
 dg_pc_racing_prefix_root: "{{ dg_box_home }}/wineprefixes/pc-racing"
 dg_pc_racing_media_root: "{{ dg_box_home }}/tools/pc-racing/media"

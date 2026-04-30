@@ -13,7 +13,13 @@ dg_box_root: "{{ dg_data_root }}/distrobox/gaming"
 dg_box_home: "{{ dg_box_root }}"
 dg_steam_root: "{{ dg_data_root }}/steam"
 
-dg_emudeck_root: /mnt/terachad/Emulators/EmuDeck
+# Root for user-owned ROMs, BIOS, extracted installers, and large assets.
+# Override this first when porting the playbooks to another machine.
+dg_external_games_root: /mnt/terachad/Emulators
+dg_roms_final_root: "{{ dg_external_games_root }}/ROMS_FINAL"
+dg_external_usb_games_root: ""
+
+dg_emudeck_root: "{{ dg_external_games_root }}/EmuDeck"
 dg_rom_root: "{{ dg_emudeck_root }}/roms"
 dg_rom_heavy_root: "{{ dg_emudeck_root }}/roms_heavy"
 dg_rom_rare_root: "{{ dg_emudeck_root }}/roms_rare"
@@ -25,7 +31,7 @@ dg_bios_root: "{{ dg_emudeck_root }}/Emulation/bios"
 # docs/setup-assets.md). DuckStation sources its per-game widescreen
 # cheat packs from here (see dg_duckstation_cheats in emulators.yml).
 # Missing source → cheat copy task warns and moves on.
-dg_libretro_cheats_dir: /mnt/terachad/Emulators/index/dat/libretro-database/cht
+dg_libretro_cheats_dir: "{{ dg_external_games_root }}/index/dat/libretro-database/cht"
 
 dg_ps4_rom_root: "{{ dg_rom_rare_root }}/ps4"
 dg_ps4_firmware_modules: "{{ dg_rom_rare_root }}/ps4-firmware/11.00_sys_modules"

@@ -40,12 +40,12 @@ ansible-playbook install-sonic-p06.yml
 
 The role:
 
-- validates the extracted source at `/mnt/terachad/Emulators/ROMS_FINAL/PC/Project 06 - Silver Release (Patch v1.45)/Sonic the Hedgehog (P-06)`
+- validates the extracted source at `{{ dg_sonic_p06_source_dir }}`
 - installs system Wine, Winetricks, DXVK support, core fonts, and GStreamer
   runtime packages inside the distrobox
-- copies the extracted game to `/mnt/data/distrobox/gaming/Games/sonic-p06`
-- creates a dedicated Wine prefix at `/mnt/data/distrobox/gaming/wineprefixes/sonic-p06`
-- writes `/mnt/data/distrobox/gaming/bin/sonic-p06`
+- copies the extracted game to `{{ dg_sonic_p06_install_root }}`
+- creates a dedicated Wine prefix at `{{ dg_sonic_p06_prefix }}`
+- writes `{{ dg_sonic_p06_bin }}`
 - renders a host launcher entry
 
 Refresh the host menu after install:

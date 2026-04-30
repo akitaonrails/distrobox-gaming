@@ -18,19 +18,19 @@ The role:
 - adds the Flathub user remote for Flatpak runtime resolution
 - downloads the latest upstream `UnleashedRecomp-Flatpak.zip`
 - installs the contained `.flatpak` bundle as the distrobox user
-- writes the launcher wrapper to `/mnt/data/distrobox/gaming/bin/unleashed-recomp`
+- writes the launcher wrapper to `{{ dg_unleashed_recomp_bin }}`
 - searches the expected Xbox 360 NAS paths for Sonic Unleashed ISO/raw files and `TU_19KA20I*`
 - extracts a detected ISO to the managed source directory when raw files are not already available
 - extracts a detected title-update ZIP and stages the raw `TU_19KA20I*` file
 - stages detected Sonic Unleashed DLC packages as symlinks under `dlc-files`
-- links detected/provided sources under `/mnt/data/distrobox/gaming/tools/unleashed-recomp/sources/`
+- links detected/provided sources under `{{ dg_unleashed_recomp_sources_dir }}`
 - renders a host desktop entry; the host installer only exports it when the
   launcher wrapper exists inside the box
 
 Launch it with:
 
 ```sh
-distrobox-enter -n gaming -- /mnt/data/distrobox/gaming/bin/unleashed-recomp
+distrobox-enter -n gaming -- "{{ dg_unleashed_recomp_bin }}"
 ```
 
 To add or refresh the host menu entry:
@@ -42,19 +42,17 @@ scripts/install-host-launchers.sh
 When the installer asks for files, use:
 
 ```text
-/mnt/data/distrobox/gaming/tools/unleashed-recomp/sources/game-source
-/mnt/data/distrobox/gaming/tools/unleashed-recomp/sources/title-update
-/mnt/data/distrobox/gaming/tools/unleashed-recomp/sources/dlc-files
+{{ dg_unleashed_recomp_sources_dir }}/game-source
+{{ dg_unleashed_recomp_sources_dir }}/title-update
+{{ dg_unleashed_recomp_sources_dir }}/dlc-files
 ```
 
-Current NAS check: the Xbox 360 ISO exists at
-`/mnt/terachad/Emulators/ROMS_FINAL/xbox360/Sonic Unleashed (USA) (En,Ja,Fr,De,Es,It).iso`.
-The role extracts it to `game-files` under the managed source directory.
-The matching title update ZIP was matched as `Sonic Unleashed (Europe) (v2).zip`
-and is extracted to `title-update-files` under the managed source directory.
-The DLC directory is mapped from
-`/mnt/terachad/Emulators/ROMS_FINAL/xbox360/Sonic Unleashed DLC`; the role
-stages the six Adventure Pack package files as symlinks in `dlc-files`.
+The default search roots are `{{ dg_rom_heavy_root }}/xbox360`,
+`{{ dg_rom_heavy_root }}/xbox360-updates`, `{{ dg_roms_final_root }}/xbox360`,
+and `{{ dg_roms_final_root }}/xbox360-updates`. The role can detect a Sonic
+Unleashed ISO, raw `default.xex` dump, title update, title-update ZIP, and DLC
+directory from those roots. Detected files are staged under the managed source
+directory.
 Upstream requires Xbox 360 US/EU game data and a title update, and JP is
 unsupported.
 

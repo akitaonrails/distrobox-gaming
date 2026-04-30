@@ -12,11 +12,10 @@ until you add the asset. Nothing hard-fails.
 
 ## How paths are resolved
 
-The defaults in `ansible/group_vars/all/main.yml` point at a
-terachad-NAS layout (our machine). To remap for yours, copy
-`ansible/host_vars/localhost.yml.example` to `localhost.yml` and set
-the root variables. Each variable below lists the *default* path; its
-override knob is the first-level `dg_*` root it derives from.
+The defaults in `ansible/group_vars/all/main.yml` point at this maintainer's
+local layout. To remap for yours, copy `ansible/host_vars/localhost.yml.example`
+to `localhost.yml` and set the root variables. Each variable below lists the
+override knob it derives from.
 
 ```sh
 cp ansible/host_vars/localhost.yml.example ansible/host_vars/localhost.yml
@@ -39,7 +38,7 @@ You source and copy ROMs into these trees yourself.
 
 ## PCSX2 texture packs — GT4 & friends
 
-**Variable:** `dg_pcsx2_ps2_root` (default `/mnt/terachad/Emulators/ps2`).
+**Variable:** `dg_pcsx2_ps2_root` (default `{{ dg_external_games_root }}/ps2`).
 
 The `pcsx2_textures` role symlinks from this root into PCSX2's
 per-game texture replacements dir. Expected subdir layout:
@@ -79,8 +78,8 @@ usage details.
 
 ## DuckStation widescreen cheats for GT2
 
-**Variable:** `dg_libretro_cheats_dir` (default derives from the
-terachad mount). The DuckStation `seed_configs` task copies one
+**Variable:** `dg_libretro_cheats_dir` (default derives from
+`{{ dg_external_games_root }}`). The DuckStation `seed_configs` task copies one
 `.cht` file per game out of this tree.
 
 Required file: `$dg_libretro_cheats_dir/Sony - PlayStation/Gran Turismo 2 USA (v1.2) (Duckstation).cht`

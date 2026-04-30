@@ -164,10 +164,11 @@
     'Changes complete' in _unleashed_flatpak_install.stdout
   when: dg_unleashed_recomp_force_reinstall | bool or _unleashed_flatpak_info.rc != 0
 
-- name: Allow Unleashed Recompiled to see NAS and box paths
+- name: Allow Unleashed Recompiled to see configured game paths
   ansible.builtin.shell: >-
     {{ dg_in_box }} dbus-run-session -- flatpak --user override {{ dg_unleashed_recomp_app_id }}
-    --filesystem=/mnt --filesystem=/mnt/terachad --filesystem={{ dg_box_home }}
+    --filesystem={{ item | quote }}
+  loop: "{{ dg_unleashed_recomp_flatpak_filesystems }}"
   changed_when: false
 
 - name: Detect extracted Xbox 360 Sonic Unleashed game source

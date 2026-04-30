@@ -16,18 +16,18 @@ release, publishes `Source/HedgeModManager.UI` for `linux-x64`, and writes this
 stable launcher:
 
 ```text
-/mnt/data/distrobox/gaming/bin/hedge-mod-manager
+{{ dg_box_home }}/bin/hedge-mod-manager
 ```
 
 Launch it from the host with:
 
 ```sh
-distrobox-enter -n gaming -- /mnt/data/distrobox/gaming/bin/hedge-mod-manager
+distrobox-enter -n gaming -- "{{ dg_box_home }}/bin/hedge-mod-manager"
 ```
 
 HMM detects Steam by reading `~/.local/share/Steam/steamapps/libraryfolders.vdf`
-inside the box. In this setup that points at the external Steam library under
-`/run/media/akitaonrails/STEAM`, where the supported Sonic titles live.
+inside the box. If your Sonic games live on an external Steam library, make
+sure that library is visible inside the distrobox and recorded by Steam.
 
 Supported installed targets in this setup are Sonic Frontiers, Sonic Origins,
 and SONIC X SHADOW GENERATIONS. Sonic Superstars, Mania, CD, Adventure DX, and
