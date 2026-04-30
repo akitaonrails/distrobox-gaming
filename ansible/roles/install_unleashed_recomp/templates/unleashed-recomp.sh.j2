@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+set -eu
+
+if ! command -v flatpak >/dev/null 2>&1; then
+  printf '%s\n' "ERROR: flatpak is not installed inside {{ dg_box_name }}" >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-unleashed-recomp.yml" >&2
+  exit 1
+fi
+
+if ! flatpak --user info "{{ dg_unleashed_recomp_app_id }}" >/dev/null 2>&1; then
+  printf '%s\n' "ERROR: Unleashed Recompiled Flatpak is not installed for this box user" >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-unleashed-recomp.yml" >&2
+  exit 1
+fi
+
+if [ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ] && command -v dbus-run-session >/dev/null 2>&1; then
+  exec dbus-run-session -- {{ dg_gpu_env }} flatpak run --user "{{ dg_unleashed_recomp_app_id }}" "$@"
+fi
+
+exec {{ dg_gpu_env }} flatpak run --user "{{ dg_unleashed_recomp_app_id }}" "$@"

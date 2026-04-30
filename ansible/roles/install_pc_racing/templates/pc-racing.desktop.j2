@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name={{ item.name }} (PC on {{ dg_box_name }})
+Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_box_home }}/bin/{{ item.slug }}
+Terminal=false
+Type=Application
+Icon=wine
+Comment=Windows PC racing game via system Wine
+Categories=Game;
+StartupWMClass={{ item.launch_exe | default(item.slug) }};

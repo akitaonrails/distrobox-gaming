@@ -14,15 +14,6 @@
     - gaming-shadps4-gui.desktop
     - gaming-flycast.desktop
 
-- name: Symlink core desktop entries to host applications dir
-  ansible.builtin.file:
-    src: "{{ dg_desktop_render_dir }}/{{ item }}"
-    dest: "{{ dg_host_applications_dir }}/{{ item }}"
-    state: link
-  loop:
-    - gaming-shadps4-gui.desktop
-    - gaming-flycast.desktop
-
 - name: Render generic emulator launcher desktop entries
   ansible.builtin.template:
     src: emulator-launcher.desktop.j2
@@ -33,34 +24,17 @@
     loop_var: launcher
     label: "{{ launcher.name }}"
 
-- name: Symlink generic emulator launchers to host applications dir
-  ansible.builtin.file:
-    src: "{{ dg_desktop_render_dir }}/{{ launcher.name }}.desktop"
-    dest: "{{ dg_host_applications_dir }}/{{ launcher.name }}.desktop"
-    state: link
-  loop: "{{ dg_emulator_launchers }}"
-  loop_control:
-    loop_var: launcher
-    label: "{{ launcher.name }}"
-
-- name: Check if Xenia Manager launcher exists
-  ansible.builtin.stat:
-    path: "{{ dg_xenia_manager_bin }}"
-  register: _xenia_bin
-
 - name: Render Xenia Manager desktop entry
   ansible.builtin.template:
     src: gaming-xenia-manager.desktop.j2
     dest: "{{ dg_desktop_render_dir }}/gaming-xenia-manager.desktop"
     mode: "0644"
-  when: _xenia_bin.stat.exists | default(false)
 
-- name: Symlink Xenia Manager desktop entry
-  ansible.builtin.file:
-    src: "{{ dg_desktop_render_dir }}/gaming-xenia-manager.desktop"
-    dest: "{{ dg_host_applications_dir }}/gaming-xenia-manager.desktop"
-    state: link
-  when: _xenia_bin.stat.exists | default(false)
+- name: Render Unleashed Recompiled desktop entry
+  ansible.builtin.template:
+    src: gaming-unleashed-recomp.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-unleashed-recomp.desktop"
+    mode: "0644"
 
 - name: Check if desktop-file-validate is available
   ansible.builtin.command: "which desktop-file-validate"
@@ -68,16 +42,18 @@
   changed_when: false
   failed_when: false
 
+- name: Find rendered desktop files
+  ansible.builtin.find:
+    paths: "{{ dg_desktop_render_dir }}"
+    patterns: "*.desktop"
+    file_type: file
+  register: _rendered_desktop_files
+
 - name: Validate desktop files
-  ansible.builtin.command: "desktop-file-validate {{ dg_desktop_render_dir }}/{{ item }}"
-  loop:
-    - gaming-shadps4-gui.desktop
-    - gaming-flycast.desktop
+  ansible.builtin.command: "desktop-file-validate {{ item.path }}"
+  loop: "{{ _rendered_desktop_files.files }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
   changed_when: false
   failed_when: false
   when: _dfv_check.rc == 0
-
-- name: Restart Walker app launcher if running
-  ansible.builtin.command: "pkill -f '/usr/bin/walker --gapplication-service'"
-  changed_when: false
-  failed_when: false

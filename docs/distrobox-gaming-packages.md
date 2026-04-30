@@ -151,7 +151,7 @@ RPCS3's `config.yml` has version-specific key names and structure. If you pre-st
 
 **Pattern:** Delete any pre-staged config, run RPCS3 once (headless or GUI) to generate fresh defaults, then apply targeted edits to specific keys (Resolution Scale, Anisotropic Filter, VSync, etc.).
 
-### distrobox-export --app name matching
+### Historical distrobox-export --app name matching
 
 `distrobox-export --app <name>` greps for `<name>` inside the `Exec=` and `Name=` lines of desktop files in `/usr/share/applications/`. It does **NOT** match against the `.desktop` filename.
 
@@ -161,11 +161,13 @@ RPCS3's `config.yml` has version-specific key names and structure. If you pre-st
 | `--app duckstation-qt` | `--app org.duckstation.DuckStation` |
 | `--app mgba-qt` | `--app io.mgba.mGBA` |
 
-Always use the **binary name** or the human-readable **display name**.
+This repo no longer uses `distrobox-export` for managed launchers; Ansible
+renders `.desktop` files into `config/desktop/rendered/` and the host-side
+`scripts/install-host-launchers.sh` installs them.
 
 ### eden.desktop — SPDX comment bug
 
-`eden.desktop` ships with SPDX license comments before the `[Desktop Entry]` section. This confuses `distrobox-export`'s parser, producing a garbage 20-byte file named `gaming-eden` (no `.desktop` extension). Must write the eden desktop file manually on the host.
+`eden.desktop` ships with SPDX license comments before the `[Desktop Entry]` section. This confuses `distrobox-export`'s parser, producing a garbage 20-byte file named `gaming-eden` (no `.desktop` extension). The managed launcher renderer avoids that parser entirely.
 
 ---
 

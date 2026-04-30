@@ -1,0 +1,7 @@
+---
+- name: Prepare or install Windows PC racing games
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_pc_racing

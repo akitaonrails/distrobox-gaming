@@ -1,0 +1,46 @@
+#!/usr/bin/env sh
+set -eu
+
+prefix="{{ dg_pc_racing_prefix_root }}/{{ item.slug }}"
+install_dir="{{ item.installed_path | default(dg_pc_racing_install_root ~ "/" ~ item.slug) }}"
+exe="$install_dir/{{ item.launch_exe | default('') }}"
+
+if [ ! -f "$exe" ]; then
+  printf '%s\n' "ERROR: {{ item.name }} executable is missing: $exe" >&2
+  printf '%s\n' "Run: {{ dg_box_home }}/bin/install-{{ item.slug }}" >&2
+  {% if item.notes is defined -%}
+  printf '%s\n' "NOTE: {{ item.notes }}" >&2
+  {% endif -%}
+  exit 1
+fi
+
+export PATH="{{ dg_pc_racing_wine_path }}"
+export WINEPREFIX="$prefix"
+export WINEARCH="{{ dg_pc_racing_winearch }}"
+export WINEDEBUG="${WINEDEBUG:--all}"
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+export SDL_JOYSTICK_HIDAPI="${SDL_JOYSTICK_HIDAPI:-{{ dg_pc_racing_sdl_hidapi }}}"
+export SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT="${SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT:-{{ dg_pc_racing_gamepad_only }}}"
+{% if dg_pc_racing_gamepad_device | length > 0 -%}
+if [ -e "{{ dg_pc_racing_gamepad_device }}" ]; then
+  export SDL_JOYSTICK_DEVICE="${SDL_JOYSTICK_DEVICE:-{{ dg_pc_racing_gamepad_device }}}"
+fi
+{% endif -%}
+
+cd "$install_dir"
+{% if dg_pc_racing_gamescope_enabled | bool -%}
+if command -v gamescope >/dev/null 2>&1; then
+  exec env -u PYTHONHOME -u PYTHONPATH gamescope \
+    -W {{ dg_pc_racing_gamescope_width }} \
+    -H {{ dg_pc_racing_gamescope_height }} \
+    -w {{ dg_pc_racing_gamescope_width }} \
+    -h {{ dg_pc_racing_gamescope_height }} \
+    -f -- env -u PYTHONHOME -u PYTHONPATH \
+      SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS="$SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS" \
+      SDL_JOYSTICK_HIDAPI="$SDL_JOYSTICK_HIDAPI" \
+      SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT="$SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT" \
+      SDL_JOYSTICK_DEVICE="${SDL_JOYSTICK_DEVICE:-}" \
+      wine "$exe" "$@"
+fi
+{% endif -%}
+exec env -u PYTHONHOME -u PYTHONPATH wine "$exe" "$@"

@@ -1,0 +1,95 @@
+---
+- name: Create Hedge Mod Manager directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_hmm_cache_dir }}"
+    - "{{ dg_hmm_source_root | dirname }}"
+    - "{{ dg_hmm_releases_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Install Hedge Mod Manager build dependencies inside box
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sudo pacman -S --needed --noconfirm
+    {{ dg_hmm_pacman_packages | join(' ') }}
+  register: _hmm_pacman
+  changed_when: "'installing' in _hmm_pacman.stdout"
+
+- name: Download Hedge Mod Manager source release
+  ansible.builtin.get_url:
+    url: "{{ dg_hmm_source_url }}"
+    dest: "{{ dg_hmm_cache_dir }}/{{ dg_hmm_release_tag }}.tar.gz"
+    mode: "0644"
+
+- name: Extract Hedge Mod Manager source release
+  ansible.builtin.unarchive:
+    src: "{{ dg_hmm_cache_dir }}/{{ dg_hmm_release_tag }}.tar.gz"
+    dest: "{{ dg_hmm_source_root | dirname }}"
+    remote_src: true
+    creates: "{{ dg_hmm_project }}"
+
+- name: Check if Hedge Mod Manager release is already published
+  ansible.builtin.stat:
+    path: "{{ dg_hmm_release_dir }}/HedgeModManager.UI.dll"
+  register: _hmm_published
+
+- name: Publish Hedge Mod Manager Linux build inside box
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} env
+    DOTNET_CLI_HOME="{{ dg_box_home }}/.dotnet"
+    DOTNET_CLI_TELEMETRY_OPTOUT=1
+    dotnet publish "{{ dg_hmm_project }}"
+    --configuration Release
+    --runtime linux-x64
+    --self-contained false
+    --output "{{ dg_hmm_release_dir }}"
+  when: not _hmm_published.stat.exists
+
+- name: Link current Hedge Mod Manager release
+  ansible.builtin.file:
+    src: "{{ dg_hmm_release_dir }}"
+    dest: "{{ dg_hmm_current }}"
+    state: link
+    force: true
+
+- name: Deploy Hedge Mod Manager launcher wrapper
+  ansible.builtin.template:
+    src: hedge-mod-manager.sh.j2
+    dest: "{{ dg_hmm_bin }}"
+    mode: "0755"
+
+- name: Verify Steam library metadata is visible to Hedge Mod Manager
+  ansible.builtin.stat:
+    path: "{{ dg_box_home }}/.local/share/Steam/steamapps/libraryfolders.vdf"
+  register: _hmm_steam_libraryfolders
+
+- name: Warn if Steam library metadata is missing
+  ansible.builtin.debug:
+    msg: "WARNING: Steam libraryfolders.vdf is missing; launch Steam in the box before using Hedge Mod Manager."
+  when: not _hmm_steam_libraryfolders.stat.exists
+
+- name: Detect supported Sonic games visible through Steam libraries
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      steam="$HOME/.local/share/Steam"
+      vdf="$steam/steamapps/libraryfolders.vdf"
+      [ -f "$vdf" ] || exit 0
+      paths="$steam
+      $(awk -F\" '\''/"path"/ { print $4 }'\'' "$vdf")"
+      for id in {{ dg_hmm_supported_steam_appids | join(' ') }}; do
+        for path in $paths; do
+          if [ -f "$path/steamapps/appmanifest_${id}.acf" ]; then
+            printf "%s\n" "$id"
+            break
+          fi
+        done
+      done
+    '
+  register: _hmm_visible_games
+  changed_when: false
+
+- name: Report supported Sonic games visible to Hedge Mod Manager
+  ansible.builtin.debug:
+    msg: "Supported HMM Steam app IDs visible: {{ _hmm_visible_games.stdout_lines | default([]) | join(', ') | default('none', true) }}"

@@ -84,8 +84,8 @@ container shares the host's PipeWire socket but needs pipewire-pulse
 to bridge PulseAudio clients to it. Without audio sync, emulators
 like Flycast also lose frame timing and run at uncapped speed.
 
-Then export Steam to the host launcher:
-  distrobox-export --app steam
+Host launcher export is handled later by the managed renderer and
+`scripts/install-host-launchers.sh`; do not use `distrobox-export`.
 
 Also create /etc/profile.d/gaming-wayland.sh with these env vars:
   QT_QPA_PLATFORM="wayland;xcb"
@@ -372,26 +372,22 @@ Env vars are already in /etc/profile.d/gaming-wayland.sh from Phase 3.
 
 ## Phase 10: Desktop exports + Hyprland monitor pinning
 
-### Prompt 10 — Export all emulators to host launcher
+### Prompt 10 — Render and install host launchers
 
 ```
-Export all emulators from the distrobox gaming container to the host launcher.
+Render all managed `.desktop` launchers with Ansible and install them from the
+host. Do not use `distrobox-export`; it has parser edge cases and cannot model
+optional launchers cleanly.
 
-IMPORTANT: distrobox-export --app matches on Exec=/Name= content inside
-.desktop files, NOT on the filename. Pass the BINARY NAME, not the reverse-DNS
-desktop file basename. Example: use "retroarch" not "com.libretro.RetroArch".
+  cd ansible
+  ansible-playbook site.yml --tags desktop
+  cd ..
+  scripts/install-host-launchers.sh
 
-Working export loop:
-  for app in retroarch dolphin-emu PPSSPPQt mgba-qt mame scummvm desmume \
-             pcsx2 eden rpcs3 duckstation-qt flycast azahar es-de \
-             mupen64plus cemu xemu vita3k supermodel shadps4; do
-      distrobox-export --app "$app"
-  done
-
-EDEN BUG: eden.desktop has SPDX comments before [Desktop Entry] which breaks
-distrobox-export's parser. Write the eden desktop file manually at
-~/.local/share/applications/gaming-eden.desktop with
-Exec=/usr/bin/distrobox-enter -n gaming -- /usr/bin/eden %F
+The host installer validates every rendered desktop file, checks whether each
+target executable exists inside the `gaming` distrobox, installs available
+launchers into ~/.local/share/applications, and removes stale installed entries
+for optional apps that are no longer present.
 
 Then add a Hyprland windowrule to pin all emulator windows to the gaming
 monitor (HDMI-A-2 = Asus VG32V). Append to ~/.config/hypr/looknfeel.conf:

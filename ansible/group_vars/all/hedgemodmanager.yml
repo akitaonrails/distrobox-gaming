@@ -1,0 +1,25 @@
+# Hedge Mod Manager 8 native Linux build.
+
+dg_hmm_release_tag: 8.0.0-beta4
+dg_hmm_source_url: "https://github.com/hedge-dev/HedgeModManager/archive/refs/tags/{{ dg_hmm_release_tag }}.tar.gz"
+dg_hmm_root: "{{ dg_box_home }}/tools/hedge-mod-manager"
+dg_hmm_cache_dir: "{{ dg_hmm_root }}/downloads"
+dg_hmm_source_root: "{{ dg_hmm_root }}/sources/HedgeModManager-{{ dg_hmm_release_tag }}"
+dg_hmm_releases_dir: "{{ dg_hmm_root }}/releases"
+dg_hmm_release_dir: "{{ dg_hmm_releases_dir }}/{{ dg_hmm_release_tag }}"
+dg_hmm_current: "{{ dg_hmm_root }}/current"
+dg_hmm_bin: "{{ dg_box_home }}/bin/hedge-mod-manager"
+dg_hmm_project: "{{ dg_hmm_source_root }}/Source/HedgeModManager.UI/HedgeModManager.UI.csproj"
+dg_hmm_executable: "{{ dg_hmm_current }}/HedgeModManager.UI"
+dg_hmm_dll: "{{ dg_hmm_current }}/HedgeModManager.UI.dll"
+
+dg_hmm_pacman_packages:
+  - dotnet-sdk
+
+# HMM 8 supports these Steam app IDs and this setup currently has several
+# installed on the external Steam library. Superstars/Mania/CD/Adventure are
+# intentionally not listed because HMM does not support them.
+dg_hmm_supported_steam_appids:
+  - "1237320"  # Sonic Frontiers
+  - "1794960"  # Sonic Origins
+  - "2513280"  # SONIC X SHADOW GENERATIONS / Shadow Generations

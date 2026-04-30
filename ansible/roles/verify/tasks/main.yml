@@ -112,8 +112,7 @@
     - "{{ dg_shadps4_qtlauncher_bin }}"
     - "{{ dg_shadps4_qtlauncher_root }}/current/AppRun"
     - "{{ dg_shadps4_managed_bin }}"
-    - "{{ dg_box_home }}/.local/share/shadPS4/custom_configs/{{ dg_shadps4_title_id }}.toml"
-    - "{{ dg_box_home }}/.config/shadPS4/custom_configs/{{ dg_shadps4_title_id }}.toml"
+    - "{{ dg_box_home }}/.local/share/shadPS4/custom_configs/{{ dg_shadps4_title_id }}.json"
     - "{{ dg_shadps4_patch_xml }}"
     - "{{ dg_shadps4_game_dir }}"
     - "{{ dg_shadps4_game_boot }}"
@@ -127,18 +126,6 @@
   loop: "{{ _file_checks.results }}"
   loop_control:
     label: "{{ item.item }}"
-
-# Desktop entry verification
-
-- name: Check host desktop entry
-  ansible.builtin.stat:
-    path: "{{ dg_host_applications_dir }}/gaming-shadps4.desktop"
-  register: _desktop_entry
-
-- name: Warn if host desktop entry missing
-  ansible.builtin.debug:
-    msg: "WARNING: Host shadPS4 desktop entry missing"
-  when: not _desktop_entry.stat.exists
 
 # Xenia Manager verification (optional)
 
@@ -180,6 +167,53 @@
       ansible.builtin.debug:
         msg: "WARNING: wine not found in box — run install-xenia.yml to install"
       when: _wine_check.rc != 0
+
+# Hedge Mod Manager verification (optional)
+
+- name: Check if Hedge Mod Manager is installed
+  ansible.builtin.stat:
+    path: "{{ dg_hmm_bin }}"
+  register: _hmm_installed
+
+- name: Verify Hedge Mod Manager components
+  when: _hmm_installed.stat.exists
+  block:
+    - name: Stat Hedge Mod Manager published executable
+      ansible.builtin.stat:
+        path: "{{ dg_hmm_executable }}"
+      register: _hmm_executable
+
+    - name: Stat Hedge Mod Manager published DLL
+      ansible.builtin.stat:
+        path: "{{ dg_hmm_dll }}"
+      register: _hmm_dll
+
+    - name: Assert Hedge Mod Manager publish output exists
+      ansible.builtin.assert:
+        that:
+          - _hmm_executable.stat.exists or _hmm_dll.stat.exists
+        fail_msg: "Hedge Mod Manager publish output missing under {{ dg_hmm_current }}"
+
+    - name: Check dotnet available in box
+      ansible.builtin.shell: "{{ dg_in_box }} sh -lc 'command -v dotnet'"
+      register: _dotnet_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert dotnet available in box
+      ansible.builtin.assert:
+        that: _dotnet_check.rc == 0
+        fail_msg: "dotnet not found in box; run install-hedgemodmanager.yml"
+
+    - name: Check Steam library metadata for Hedge Mod Manager
+      ansible.builtin.stat:
+        path: "{{ dg_box_home }}/.local/share/Steam/steamapps/libraryfolders.vdf"
+      register: _hmm_steam_vdf
+
+    - name: Warn if Steam metadata is missing for Hedge Mod Manager
+      ansible.builtin.debug:
+        msg: "WARNING: Steam library metadata missing; HMM game detection will not work until Steam initializes."
+      when: not _hmm_steam_vdf.stat.exists
 
 # GPU preference verification
 

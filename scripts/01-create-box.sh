@@ -17,8 +17,7 @@ else
     --image "$DG_IMAGE" \
     --home "$DG_BOX_HOME" \
     --volume "$DG_EMUDECK_ROOT:$DG_EMUDECK_ROOT:rw" \
-    --volume "$DG_BOX_ROOT:$DG_BOX_ROOT:rw" \
-    --volume "$DG_HOST_APPLICATIONS_DIR:$DG_HOST_APPLICATIONS_DIR:rw"
+    --volume "$DG_BOX_ROOT:$DG_BOX_ROOT:rw"
 fi
 
 box_uid="$(in_box id -u)"
@@ -26,4 +25,3 @@ box_gid="$(in_box id -g)"
 [ "$box_uid" = "$DG_HOST_UID" ] || die "Box UID $box_uid does not match host UID $DG_HOST_UID"
 [ "$box_gid" = "$DG_HOST_GID" ] || die "Box GID $box_gid does not match host GID $DG_HOST_GID"
 log "Distrobox UID/GID verified: $box_uid:$box_gid"
-

@@ -1,0 +1,481 @@
+---
+- name: Create Unleashed Recompiled directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_unleashed_recomp_cache_dir }}"
+    - "{{ dg_unleashed_recomp_releases_dir }}"
+    - "{{ dg_unleashed_recomp_sources_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Check for unmanaged distrobox Flatpak host shim
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      if [ -e /usr/bin/flatpak ] && ! pacman -Qo /usr/bin/flatpak >/dev/null 2>&1; then
+        echo unmanaged
+      fi
+    '
+  register: _unleashed_flatpak_unmanaged
+  changed_when: false
+
+- name: Move unmanaged Flatpak shim out of pacman's way
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sudo mv -f /usr/bin/flatpak
+    /usr/bin/flatpak.unmanaged-before-pacman
+  when: _unleashed_flatpak_unmanaged.stdout | trim == "unmanaged"
+
+- name: Install Unleashed Recompiled Flatpak dependencies inside box
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sudo pacman -S --needed --noconfirm
+    {{ dg_unleashed_recomp_pacman_packages | join(' ') }}
+  register: _unleashed_pacman
+  changed_when: "'installing' in _unleashed_pacman.stdout"
+
+- name: Fix D-Bus launch helper permissions inside box
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sudo sh -lc
+    'chgrp dbus /usr/lib/dbus-daemon-launch-helper &&
+    chmod 4750 /usr/lib/dbus-daemon-launch-helper'
+  changed_when: false
+
+- name: Ensure system D-Bus is available inside box for Flatpak
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sudo sh -lc '
+      mkdir -p /run/dbus
+      if [ -S /run/dbus/system_bus_socket ] &&
+         dbus-send --system --dest=org.freedesktop.DBus --type=method_call / org.freedesktop.DBus.ListNames >/dev/null 2>&1; then
+        exit 0
+      fi
+      rm -f /run/dbus/system_bus_socket
+      dbus-daemon --system --fork
+      echo started
+    '
+  register: _unleashed_system_dbus
+  changed_when: "'started' in _unleashed_system_dbus.stdout"
+
+- name: Add Flathub user remote inside box
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} dbus-run-session -- flatpak --user remote-add --if-not-exists flathub
+    https://dl.flathub.org/repo/flathub.flatpakrepo
+  register: _unleashed_flathub
+  changed_when: "'Added' in _unleashed_flathub.stdout or 'Adding' in _unleashed_flathub.stdout"
+
+- name: Fetch Unleashed Recompiled release info
+  ansible.builtin.uri:
+    url: "{{ dg_unleashed_recomp_release_api }}"
+    return_content: true
+    headers:
+      Accept: application/vnd.github.v3+json
+  register: _unleashed_release
+  when: dg_unleashed_recomp_flatpak_zip_url | length == 0
+
+- name: Select Unleashed Recompiled Flatpak release asset
+  ansible.builtin.set_fact:
+    _unleashed_flatpak_assets: >-
+      {{
+        _unleashed_release.json.assets
+        | selectattr('name', 'equalto', 'UnleashedRecomp-Flatpak.zip')
+        | list
+      }}
+  when: dg_unleashed_recomp_flatpak_zip_url | length == 0
+
+- name: Assert Unleashed Recompiled Flatpak release asset exists
+  ansible.builtin.assert:
+    that: _unleashed_flatpak_assets | length > 0
+    fail_msg: "No Flatpak ZIP asset found in {{ dg_unleashed_recomp_release_api }}"
+  when: dg_unleashed_recomp_flatpak_zip_url | length == 0
+
+- name: Extract Unleashed Recompiled Flatpak asset from GitHub
+  ansible.builtin.set_fact:
+    _unleashed_tag: "{{ dg_unleashed_recomp_release_tag | default('', true) or _unleashed_release.json.tag_name }}"
+    _unleashed_zip_url: "{{ _unleashed_flatpak_assets[0].browser_download_url }}"
+  when: dg_unleashed_recomp_flatpak_zip_url | length == 0
+
+- name: Use manually specified Unleashed Recompiled Flatpak URL
+  ansible.builtin.set_fact:
+    _unleashed_tag: "{{ dg_unleashed_recomp_release_tag | default('manual', true) }}"
+    _unleashed_zip_url: "{{ dg_unleashed_recomp_flatpak_zip_url }}"
+  when: dg_unleashed_recomp_flatpak_zip_url | length > 0
+
+- name: Download Unleashed Recompiled Flatpak ZIP
+  ansible.builtin.get_url:
+    url: "{{ _unleashed_zip_url }}"
+    dest: "{{ dg_unleashed_recomp_cache_dir }}/{{ _unleashed_tag }}-flatpak.zip"
+    mode: "0644"
+
+- name: Create Unleashed Recompiled release extraction directory
+  ansible.builtin.file:
+    path: "{{ dg_unleashed_recomp_releases_dir }}/{{ _unleashed_tag }}"
+    state: directory
+    mode: "0755"
+
+- name: Extract Unleashed Recompiled Flatpak ZIP
+  ansible.builtin.unarchive:
+    src: "{{ dg_unleashed_recomp_cache_dir }}/{{ _unleashed_tag }}-flatpak.zip"
+    dest: "{{ dg_unleashed_recomp_releases_dir }}/{{ _unleashed_tag }}"
+    remote_src: true
+    creates: "{{ dg_unleashed_recomp_releases_dir }}/{{ _unleashed_tag }}/.extracted"
+
+- name: Mark Unleashed Recompiled release as extracted
+  ansible.builtin.file:
+    path: "{{ dg_unleashed_recomp_releases_dir }}/{{ _unleashed_tag }}/.extracted"
+    state: touch
+    mode: "0644"
+  changed_when: false
+
+- name: Find Unleashed Recompiled Flatpak bundle
+  ansible.builtin.find:
+    paths: "{{ dg_unleashed_recomp_releases_dir }}/{{ _unleashed_tag }}"
+    patterns: "*.flatpak"
+    recurse: true
+  register: _unleashed_flatpak_files
+
+- name: Assert Unleashed Recompiled Flatpak bundle found
+  ansible.builtin.assert:
+    that: _unleashed_flatpak_files.files | length > 0
+    fail_msg: "No .flatpak bundle found after extracting {{ _unleashed_zip_url }}"
+
+- name: Check if Unleashed Recompiled Flatpak is already installed
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} dbus-run-session -- flatpak --user info
+    {{ dg_unleashed_recomp_app_id }}
+  register: _unleashed_flatpak_info
+  changed_when: false
+  failed_when: false
+
+- name: Remove existing Unleashed Recompiled app for forced reinstall
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} dbus-run-session -- flatpak --user uninstall
+    -y --noninteractive {{ dg_unleashed_recomp_app_id }}
+  when:
+    - dg_unleashed_recomp_force_reinstall | bool
+    - _unleashed_flatpak_info.rc == 0
+
+- name: Install Unleashed Recompiled Flatpak inside box
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} dbus-run-session -- flatpak --user install -y --noninteractive
+    "{{ _unleashed_flatpak_files.files[0].path }}"
+  register: _unleashed_flatpak_install
+  changed_when: >-
+    'Installing' in _unleashed_flatpak_install.stdout or
+    'Updating' in _unleashed_flatpak_install.stdout or
+    'Changes complete' in _unleashed_flatpak_install.stdout
+  when: dg_unleashed_recomp_force_reinstall | bool or _unleashed_flatpak_info.rc != 0
+
+- name: Allow Unleashed Recompiled to see NAS and box paths
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} dbus-run-session -- flatpak --user override {{ dg_unleashed_recomp_app_id }}
+    --filesystem=/mnt --filesystem=/mnt/terachad --filesystem={{ dg_box_home }}
+  changed_when: false
+
+- name: Detect extracted Xbox 360 Sonic Unleashed game source
+  ansible.builtin.shell: |
+    set -eu
+    for root in {{ dg_unleashed_recomp_search_roots | map('quote') | join(' ') }}; do
+      [ -d "$root" ] || continue
+      found="$(find "$root" -maxdepth 5 -type f -iname default.xex -not -path '*/@eaDir/*' -print -quit)"
+      [ -n "$found" ] || continue
+      dir="$(dirname "$found")"
+      case "$(printf "%s" "$dir" | tr "[:upper:]" "[:lower:]")" in
+        *sonic*unleashed*|*53450812*) printf "%s\n" "$dir"; break ;;
+      esac
+    done | head -n 1
+  register: _unleashed_detected_game_source
+  changed_when: false
+  when: dg_unleashed_recomp_game_source | length == 0
+
+- name: Detect Xbox 360 Sonic Unleashed ISO source
+  ansible.builtin.shell: |
+    set -eu
+    for root in {{ dg_unleashed_recomp_search_roots | map('quote') | join(' ') }}; do
+      [ -d "$root" ] || continue
+      find "$root" -maxdepth 4 -type f \( \
+        -iname '*sonic*unleashed*.iso' -o \
+        -iname '*unleashed*sonic*.iso' -o \
+        -iname '*53450812*.iso' \
+      \) -not -path '*/@eaDir/*' -print -quit
+    done | head -n 1
+  register: _unleashed_detected_iso_source
+  changed_when: false
+  when: dg_unleashed_recomp_iso_source | length == 0
+
+- name: Detect Sonic Unleashed title update
+  ansible.builtin.shell: |
+    set -eu
+    for root in {{ dg_unleashed_recomp_search_roots | map('quote') | join(' ') }}; do
+      [ -d "$root" ] || continue
+      find "$root" -maxdepth 5 \( \
+        -iname 'TU_19KA20I*' -o \
+        -iname '*title*update*sonic*unleashed*' \
+      \) -not -path '*/@eaDir/*' -print -quit
+    done | head -n 1
+  register: _unleashed_detected_title_update
+  changed_when: false
+  when: dg_unleashed_recomp_title_update_source | length == 0
+
+- name: Detect Sonic Unleashed title update ZIP
+  ansible.builtin.shell: |
+    set -eu
+    for root in {{ dg_unleashed_recomp_search_roots | map('quote') | join(' ') }}; do
+      [ -d "$root" ] || continue
+      find "$root" -maxdepth 5 -type f \( \
+        -iname '*sonic*unleashed*.zip' -o \
+        -iname '*unleashed*sonic*.zip' \
+      \) -not -path '*/@eaDir/*' -print -quit
+    done | head -n 1
+  register: _unleashed_detected_title_update_zip
+  changed_when: false
+  when: dg_unleashed_recomp_title_update_zip_source | length == 0
+
+- name: Detect Sonic Unleashed DLC source directory
+  ansible.builtin.shell: |
+    set -eu
+    for root in {{ dg_unleashed_recomp_search_roots | map('quote') | join(' ') }}; do
+      [ -d "$root" ] || continue
+      find "$root" -maxdepth 3 -type d \
+        -iname '*sonic*unleashed*dlc*' \
+        -not -path '*/@eaDir/*' -print -quit
+    done | head -n 1
+  register: _unleashed_detected_dlc_source
+  changed_when: false
+  when: dg_unleashed_recomp_dlc_source | length == 0
+
+- name: Resolve Unleashed Recompiled candidate source paths
+  ansible.builtin.set_fact:
+    _unleashed_raw_game_source: >-
+      {{ dg_unleashed_recomp_game_source
+        if dg_unleashed_recomp_game_source | length > 0
+        else (_unleashed_detected_game_source.stdout | default('') | trim) }}
+    _unleashed_iso_source: >-
+      {{ dg_unleashed_recomp_iso_source
+        if dg_unleashed_recomp_iso_source | length > 0
+        else (_unleashed_detected_iso_source.stdout | default('') | trim) }}
+    _unleashed_title_update_source: >-
+      {{ dg_unleashed_recomp_title_update_source
+        if dg_unleashed_recomp_title_update_source | length > 0
+        else (_unleashed_detected_title_update.stdout | default('') | trim) }}
+    _unleashed_title_update_zip_source: >-
+      {{ dg_unleashed_recomp_title_update_zip_source
+        if dg_unleashed_recomp_title_update_zip_source | length > 0
+        else (_unleashed_detected_title_update_zip.stdout | default('') | trim) }}
+    _unleashed_dlc_source: >-
+      {{ dg_unleashed_recomp_dlc_source
+        if dg_unleashed_recomp_dlc_source | length > 0
+        else (_unleashed_detected_dlc_source.stdout | default('') | trim) }}
+
+- name: Check if extracted Sonic Unleashed files already exist
+  ansible.builtin.stat:
+    path: "{{ dg_unleashed_recomp_extracted_game_dir }}/default.xex"
+  register: _unleashed_extracted_default_xex
+
+- name: Check if extract-xiso is available inside box
+  ansible.builtin.shell: "{{ dg_in_box }} sh -lc 'command -v extract-xiso'"
+  register: _unleashed_extract_xiso
+  changed_when: false
+  failed_when: false
+  when:
+    - dg_unleashed_recomp_extract_iso | bool
+    - _unleashed_raw_game_source | length == 0
+    - _unleashed_iso_source | length > 0
+    - not _unleashed_extracted_default_xex.stat.exists
+
+- name: Assert extract-xiso is available for ISO extraction
+  ansible.builtin.assert:
+    that: _unleashed_extract_xiso.rc == 0
+    fail_msg: "extract-xiso is required to extract {{ _unleashed_iso_source }}. Run the normal bootstrap first; it installs extract-xiso-bin from AUR."
+  when:
+    - dg_unleashed_recomp_extract_iso | bool
+    - _unleashed_raw_game_source | length == 0
+    - _unleashed_iso_source | length > 0
+    - not _unleashed_extracted_default_xex.stat.exists
+
+- name: Create extracted Sonic Unleashed game directory
+  ansible.builtin.file:
+    path: "{{ dg_unleashed_recomp_extracted_game_dir }}"
+    state: directory
+    mode: "0755"
+  when:
+    - dg_unleashed_recomp_extract_iso | bool
+    - _unleashed_raw_game_source | length == 0
+    - _unleashed_iso_source | length > 0
+
+- name: Extract Sonic Unleashed ISO for Unleashed Recompiled installer
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} extract-xiso -q
+    -d "{{ dg_unleashed_recomp_extracted_game_dir }}"
+    "{{ _unleashed_iso_source }}"
+  when:
+    - dg_unleashed_recomp_extract_iso | bool
+    - _unleashed_raw_game_source | length == 0
+    - _unleashed_iso_source | length > 0
+    - not _unleashed_extracted_default_xex.stat.exists
+
+- name: Re-check extracted Sonic Unleashed files
+  ansible.builtin.stat:
+    path: "{{ dg_unleashed_recomp_extracted_game_dir }}/default.xex"
+  register: _unleashed_extracted_default_xex_after
+
+- name: Resolve Unleashed Recompiled game source path
+  ansible.builtin.set_fact:
+    _unleashed_game_source: >-
+      {{
+        _unleashed_raw_game_source
+        if _unleashed_raw_game_source | length > 0
+        else (
+          dg_unleashed_recomp_extracted_game_dir
+          if _unleashed_extracted_default_xex_after.stat.exists
+          else _unleashed_iso_source
+        )
+      }}
+
+- name: Check if extracted Sonic Unleashed title update already exists
+  ansible.builtin.find:
+    paths: "{{ dg_unleashed_recomp_extracted_title_update_dir }}"
+    patterns: "TU_19KA20I*"
+    file_type: file
+    recurse: true
+  register: _unleashed_extracted_title_update_files
+
+- name: Create extracted Sonic Unleashed title update directory
+  ansible.builtin.file:
+    path: "{{ dg_unleashed_recomp_extracted_title_update_dir }}"
+    state: directory
+    mode: "0755"
+  when:
+    - dg_unleashed_recomp_extract_title_update_zip | bool
+    - _unleashed_title_update_source | length == 0
+    - _unleashed_title_update_zip_source | length > 0
+
+- name: Extract Sonic Unleashed title update ZIP
+  ansible.builtin.unarchive:
+    src: "{{ _unleashed_title_update_zip_source }}"
+    dest: "{{ dg_unleashed_recomp_extracted_title_update_dir }}"
+    remote_src: true
+    creates: "{{ dg_unleashed_recomp_extracted_title_update_dir }}/77A0CF1B/TU_19KA20I_000000C000000.00000000000G3"
+  when:
+    - dg_unleashed_recomp_extract_title_update_zip | bool
+    - _unleashed_title_update_source | length == 0
+    - _unleashed_title_update_zip_source | length > 0
+    - _unleashed_extracted_title_update_files.files | length == 0
+
+- name: Re-check extracted Sonic Unleashed title update
+  ansible.builtin.find:
+    paths: "{{ dg_unleashed_recomp_extracted_title_update_dir }}"
+    patterns: "TU_19KA20I*"
+    file_type: file
+    recurse: true
+  register: _unleashed_extracted_title_update_files_after
+
+- name: Resolve Unleashed Recompiled title update source path
+  ansible.builtin.set_fact:
+    _unleashed_title_update_source: >-
+      {{
+        _unleashed_title_update_source
+        if _unleashed_title_update_source | length > 0
+        else (
+          _unleashed_extracted_title_update_files_after.files[0].path
+          if _unleashed_extracted_title_update_files_after.files | length > 0
+          else ''
+        )
+      }}
+
+- name: Find Sonic Unleashed DLC package files
+  ansible.builtin.shell: |
+    set -eu
+    if [ -z "{{ _unleashed_dlc_source }}" ]; then
+      exit 0
+    fi
+    find "{{ _unleashed_dlc_source }}" -type f \
+      -path '*/53450812/00000002/*' \
+      -not -iname 'TU_*' \
+      -not -path '*/@eaDir/*' | sort
+  register: _unleashed_dlc_package_files
+  changed_when: false
+
+- name: Create Sonic Unleashed DLC staging directory
+  ansible.builtin.file:
+    path: "{{ dg_unleashed_recomp_dlc_files_dir }}"
+    state: directory
+    mode: "0755"
+  when: _unleashed_dlc_package_files.stdout_lines | length > 0
+
+- name: Link Sonic Unleashed DLC packages into stable staging directory
+  ansible.builtin.file:
+    src: "{{ item }}"
+    dest: "{{ dg_unleashed_recomp_dlc_files_dir }}/{{ item | basename }}"
+    state: link
+    force: true
+  loop: "{{ _unleashed_dlc_package_files.stdout_lines }}"
+  when: _unleashed_dlc_package_files.stdout_lines | length > 0
+
+- name: Link detected/provided Sonic Unleashed DLC source
+  ansible.builtin.file:
+    src: "{{ dg_unleashed_recomp_dlc_files_dir }}"
+    dest: "{{ dg_unleashed_recomp_sources_dir }}/dlc-source"
+    state: link
+    force: true
+  when: _unleashed_dlc_package_files.stdout_lines | length > 0
+
+- name: Link detected/provided Sonic Unleashed game source
+  ansible.builtin.file:
+    src: "{{ _unleashed_game_source }}"
+    dest: "{{ dg_unleashed_recomp_sources_dir }}/game-source"
+    state: link
+    force: true
+  when: _unleashed_game_source | length > 0
+
+- name: Link detected/provided Sonic Unleashed title update
+  ansible.builtin.file:
+    src: "{{ _unleashed_title_update_source }}"
+    dest: "{{ dg_unleashed_recomp_sources_dir }}/title-update"
+    state: link
+    force: true
+  when: _unleashed_title_update_source | length > 0
+
+- name: Write Unleashed Recompiled source notes
+  ansible.builtin.copy:
+    dest: "{{ dg_unleashed_recomp_sources_dir }}/README.txt"
+    mode: "0644"
+    content: |
+      Unleashed Recompiled source staging
+      ===================================
+
+      game-source -> {{ _unleashed_game_source | default('not found', true) }}
+      iso-source -> {{ _unleashed_iso_source | default('not found', true) }}
+      title-update -> {{ _unleashed_title_update_source | default('not found', true) }}
+      title-update-zip -> {{ _unleashed_title_update_zip_source | default('not found', true) }}
+      dlc-source -> {{ _unleashed_dlc_source | default('not found', true) }}
+      dlc-files -> {{ dg_unleashed_recomp_dlc_files_dir if _unleashed_dlc_package_files.stdout_lines | length > 0 else 'not found' }}
+      dlc-count -> {{ _unleashed_dlc_package_files.stdout_lines | length }}
+
+      If either link is missing, place the Xbox 360 Sonic Unleashed dump/title
+      update in one of dg_unleashed_recomp_search_roots or override:
+
+        dg_unleashed_recomp_game_source
+        dg_unleashed_recomp_iso_source
+        dg_unleashed_recomp_title_update_source
+        dg_unleashed_recomp_title_update_zip_source
+        dg_unleashed_recomp_dlc_source
+
+      The upstream installer still performs the final import and integrity
+      checks from these sources.
+
+- name: Deploy Unleashed Recompiled launcher wrapper
+  ansible.builtin.template:
+    src: unleashed-recomp.sh.j2
+    dest: "{{ dg_unleashed_recomp_bin }}"
+    mode: "0755"
+
+- name: Report Unleashed Recompiled source status
+  ansible.builtin.debug:
+    msg:
+      - "Unleashed Recompiled Flatpak app: {{ dg_unleashed_recomp_app_id }}"
+      - "Launcher: {{ dg_unleashed_recomp_bin }}"
+      - "Game source: {{ _unleashed_game_source | default('not found', true) }}"
+      - "ISO source: {{ _unleashed_iso_source | default('not found', true) }}"
+      - "Title update: {{ _unleashed_title_update_source | default('not found', true) }}"
+      - "DLC source: {{ _unleashed_dlc_source | default('not found', true) }}"
+      - "DLC package count: {{ _unleashed_dlc_package_files.stdout_lines | length }}"
+      - "If sources are missing, the GUI installer can launch but cannot complete the game import."

@@ -3,9 +3,10 @@
 Ansible playbooks for an Arch-based distrobox named `gaming`. Sets up ES-DE,
 standalone emulators (shadPS4, Dolphin, PCSX2, DuckStation, Flycast, xemu,
 RPCS3, PPSSPP, Eden, Cemu, Vita3K), RetroArch cores, host-side Walker desktop
-launchers, DLC/patch batch installers for PS3 and Switch, per-game RPCS3
-optimization configs, optional Wine-managed Xenia Manager for Xbox 360, and
-a minimal zsh + starship shell inside the box.
+launcher rendering/install scripts, DLC/patch batch installers for PS3 and Switch, per-game RPCS3
+optimization configs, optional Wine-managed Xenia Manager for Xbox 360,
+Hedge Mod Manager for Sonic mods, optional native Unleashed Recompiled for
+Sonic Unleashed, and a minimal zsh + starship shell inside the box.
 
 ## Quick Start
 
@@ -35,6 +36,9 @@ ansible-playbook backup.yml             # backup before destructive testing
 ansible-playbook restore.yml            # restore from backup
 ansible-playbook refresh-shadps4.yml    # update shadPS4 builds
 ansible-playbook install-xenia.yml      # install/update Xenia Manager (optional)
+ansible-playbook install-hedgemodmanager.yml  # install/update Hedge Mod Manager
+ansible-playbook install-pc-racing.yml  # prepare/install optional Windows PC racing games
+ansible-playbook install-unleashed-recomp.yml  # install/update Unleashed Recompiled
 ```
 
 Tags allow running subsets:
@@ -44,6 +48,7 @@ ansible-playbook site.yml --tags check           # host path and UID/GID validat
 ansible-playbook site.yml --tags create          # create the distrobox
 ansible-playbook site.yml --tags bootstrap       # install pacman + AUR packages
 ansible-playbook site.yml --tags shadps4         # install/update shadPS4
+ansible-playbook site.yml --tags hedgemodmanager # install/update Hedge Mod Manager
 ansible-playbook site.yml --tags configure       # configs, desktop entries, ES-DE
 ansible-playbook site.yml --tags scripts         # deploy box helper scripts
 ansible-playbook site.yml --tags shell           # deploy zsh + starship
@@ -65,6 +70,8 @@ ansible-playbook site.yml --tags cheats          # link Switch cheats to Eden
 ansible-playbook site.yml --tags rpcs3_configs   # per-game RPCS3 tuning
 ansible-playbook site.yml --tags retroarch       # download RA cores + assets
 ansible-playbook site.yml --tags pcsx2_textures  # PCSX2 HD texture packs + per-game settings + .pnach patches
+ansible-playbook site.yml --tags pc_racing       # prepare Windows PC racing games via UMU/Proton
+ansible-playbook site.yml --tags unleashed_recomp # install native Unleashed Recompiled Flatpak
 ```
 
 ## Path Configuration
@@ -216,7 +223,18 @@ dg_host_gid: 1000
   Each Exec line is wrapped with the NVIDIA-preference env vars.
 - Entries cover: ES-DE, Dolphin, DuckStation, PCSX2, PPSSPP, RPCS3, xemu,
   Eden, Cemu, Vita3K, shadPS4 (Driveclub + No Patch + GUI), Flycast,
-  Xenia Manager (when installed).
+  Xenia Manager and Unleashed Recompiled when their wrappers exist.
+- Ansible renders entries into `config/desktop/rendered/`; it does not write
+  into the host applications directory from inside the distrobox. Install or
+  refresh host menu entries from the host with:
+
+```sh
+scripts/install-host-launchers.sh
+```
+
+The script validates every rendered `.desktop` file, skips optional apps that
+are not installed in the box, removes stale installed entries for missing
+optional apps, and restarts Walker if it is running.
 
 ### Optional
 
@@ -322,9 +340,38 @@ Xbox 360 support uses Xenia Manager inside a dedicated Wine prefix.
 - Install `wine` and `winetricks`
 - Create the Wine prefix with .NET and VC++ runtimes
 - Download the latest Xenia Manager release
-- Write the launcher wrapper and desktop entry
+- Write the launcher wrapper and render its desktop entry
 
 After that, launch Xenia Manager and use its `Manage` page to install Canary.
+
+## Hedge Mod Manager
+
+Sonic mod support uses Hedge Mod Manager 8 built natively inside the distrobox,
+not host Flatpak. The default `site.yml` run installs it; rerun only that role
+with:
+
+```sh
+ansible-playbook install-hedgemodmanager.yml
+```
+
+The wrapper is written to `/mnt/data/distrobox/gaming/bin/hedge-mod-manager`.
+It sees the same Steam install and external library paths as Steam inside the
+box, including the Proton prefixes under `steamapps/compatdata`.
+
+## PC Racing Games
+
+Windows PC racing games are optional and live outside the normal rebuild path.
+They use `umu-launcher` inside the distrobox, with installed game files on the
+external Steam USB drive:
+
+```sh
+ansible-playbook install-pc-racing.yml
+```
+
+The install root is `/run/media/akitaonrails/STEAM/lutris/games`; per-game
+prefixes stay under `/mnt/data/distrobox/gaming/wineprefixes/pc-racing`.
+Installer GUIs are only launched when explicitly requested with
+`-e dg_pc_racing_run_installers=true`.
 
 ## Project Structure
 
@@ -335,15 +382,21 @@ ansible/                            # Ansible playbooks and roles (primary)
   backup.yml / restore.yml          # backup and restore
   refresh-shadps4.yml               # standalone shadPS4 update
   install-xenia.yml                 # standalone Xenia Manager install
+  install-hedgemodmanager.yml       # standalone Hedge Mod Manager install
+  install-pc-racing.yml             # optional Windows PC racing setup
+  install-unleashed-recomp.yml      # optional Unleashed Recompiled install
   group_vars/all/                   # all dg_* variable defaults
     main.yml                        # paths, UID/GID, box identity
     packages.yml                    # pacman + AUR package lists
     emulators.yml                   # per-emulator INI settings
     esde.yml                        # ES-DE system definitions
-    launchers.yml                   # host desktop launchers
+    launchers.yml                   # rendered host desktop launcher definitions
     gpu.yml                         # NVIDIA preference config
     shadps4.yml                     # shadPS4 release / path config
     xenia.yml                       # Xenia Manager config
+    hedgemodmanager.yml             # Hedge Mod Manager source-build config
+    pc_racing.yml                   # Windows PC racing source/install metadata
+    unleashed_recomp.yml            # Unleashed Recompiled source staging config
     pcsx2.yml                       # PCSX2 texture packs and per-game overrides
   host_vars/localhost.yml.example   # machine-specific overrides template
   roles/                            # one role per setup phase
@@ -358,12 +411,15 @@ ansible/                            # Ansible playbooks and roles (primary)
     rpcs3_per_game_configs/         # per-title RPCS3 tuning from API
     retroarch_extras/               # 21 buildbot cores + 8 asset packs
     pcsx2_textures/                 # PCSX2 HD textures + per-game settings + .pnach patches
-    desktop_apps/                   # .desktop entry rendering and symlinks
+    desktop_apps/                   # .desktop entry rendering
     configure_esde/                 # ES-DE custom systems XML
     shell_config/                   # minimal zsh + starship
     verify/                         # post-setup assertions
     refresh_shadps4/                # shadPS4 GitHub release management
     install_xenia/                  # Wine prefix and Xenia Manager
+    install_hedgemodmanager/        # native HMM 8 source build
+    install_pc_racing/              # UMU/Proton wrappers for Windows racing games
+    install_unleashed_recomp/       # native Unleashed Recompiled Flatpak install
 bin/                                # legacy shell CLI (reference)
 scripts/                            # legacy numbered scripts (reference)
 lib/                                # legacy shell helpers (reference)
@@ -385,6 +441,8 @@ Focused docs:
 - [Controller Hotkeys](docs/controller-hotkeys.md)
 - [Rebuild Runbook](docs/rebuild-runbook.md)
 - [Xenia Manager](docs/xenia-manager.md)
+- [Hedge Mod Manager](docs/hedge-mod-manager.md)
+- [PC Racing Games](docs/pc-racing.md)
 - [Project Forza Plus (FM2/3/4/FH1 on Xenia)](docs/project-forza.md)
 - [Xbox 360 Title Updates](docs/xbox360-title-updates.md) — archive.org batch fetch + Xenia Manager install flow
 - [Xbox 360 PGR3 / PGR4](docs/xbox360-pgr.md)

@@ -1,0 +1,38 @@
+# Unleashed Recompiled native Linux Flatpak.
+
+dg_unleashed_recomp_app_id: io.github.hedge_dev.unleashedrecomp
+dg_unleashed_recomp_release_api: https://api.github.com/repos/hedge-dev/UnleashedRecomp/releases/latest
+dg_unleashed_recomp_release_tag: ""
+dg_unleashed_recomp_flatpak_zip_url: ""
+dg_unleashed_recomp_force_reinstall: false
+
+dg_unleashed_recomp_root: "{{ dg_box_home }}/tools/unleashed-recomp"
+dg_unleashed_recomp_cache_dir: "{{ dg_unleashed_recomp_root }}/downloads"
+dg_unleashed_recomp_releases_dir: "{{ dg_unleashed_recomp_root }}/releases"
+dg_unleashed_recomp_sources_dir: "{{ dg_unleashed_recomp_root }}/sources"
+dg_unleashed_recomp_extracted_game_dir: "{{ dg_unleashed_recomp_sources_dir }}/game-files"
+dg_unleashed_recomp_extracted_title_update_dir: "{{ dg_unleashed_recomp_sources_dir }}/title-update-files"
+dg_unleashed_recomp_dlc_files_dir: "{{ dg_unleashed_recomp_sources_dir }}/dlc-files"
+dg_unleashed_recomp_bin: "{{ dg_box_home }}/bin/unleashed-recomp"
+
+dg_unleashed_recomp_pacman_packages:
+  - dbus
+  - flatpak
+  - xdg-desktop-portal
+  - xdg-desktop-portal-gtk
+
+# Leave empty for auto-detection. The installer still owns the final import
+# because upstream validates user-provided game data interactively.
+dg_unleashed_recomp_game_source: ""
+dg_unleashed_recomp_iso_source: ""
+dg_unleashed_recomp_title_update_source: ""
+dg_unleashed_recomp_title_update_zip_source: ""
+dg_unleashed_recomp_dlc_source: ""
+dg_unleashed_recomp_extract_iso: true
+dg_unleashed_recomp_extract_title_update_zip: true
+
+dg_unleashed_recomp_search_roots:
+  - "{{ dg_rom_heavy_root }}/xbox360"
+  - "{{ dg_rom_heavy_root }}/xbox360-updates"
+  - "/mnt/terachad/Emulators/ROMS_FINAL/xbox360"
+  - "/mnt/terachad/Emulators/ROMS_FINAL/xbox360-updates"

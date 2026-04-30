@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+set -eu
+
+app="{{ dg_hmm_executable }}"
+dll="{{ dg_hmm_dll }}"
+
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+
+if [ -x "$app" ]; then
+  exec "$app" "$@"
+fi
+
+if [ -f "$dll" ]; then
+  exec dotnet "$dll" "$@"
+fi
+
+printf '%s\n' "ERROR: Hedge Mod Manager is not installed at {{ dg_hmm_current }}" >&2
+printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-hedgemodmanager.yml" >&2
+exit 1

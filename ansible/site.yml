@@ -8,6 +8,7 @@
     - { role: create_box,                tags: [create] }
     - { role: bootstrap_packages,        tags: [bootstrap] }
     - { role: refresh_shadps4,           tags: [shadps4] }
+    - { role: install_hedgemodmanager,   tags: [hedgemodmanager] }
     - { role: link_storage,              tags: [configure, storage] }
     - { role: seed_configs,              tags: [configure, configs, reset_configs] }
     - { role: scripts_in_box,            tags: [configure, scripts] }
@@ -19,6 +20,8 @@
     - { role: rpcs3_per_game_configs,    tags: [rpcs3_configs, never] }
     - { role: retroarch_extras,          tags: [retroarch, never] }
     - { role: pcsx2_textures,            tags: [pcsx2_textures, never] }
+    - { role: install_pc_racing,         tags: [pc_racing, never] }
+    - { role: install_unleashed_recomp,  tags: [unleashed_recomp, never] }
     - { role: desktop_apps,              tags: [configure, desktop, reset_configs] }
     - { role: configure_esde,            tags: [configure, esde, reset_configs] }
     - { role: shell_config,              tags: [configure, shell, reset_configs] }

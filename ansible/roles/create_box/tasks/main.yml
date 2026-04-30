@@ -22,7 +22,6 @@
     _distrobox_volumes: >-
       --volume {{ dg_emudeck_root }}:{{ dg_emudeck_root }}:ro,rprivate
       --volume {{ dg_steam_root }}:{{ dg_steam_root }}:rw
-      --volume {{ dg_host_applications_dir }}:{{ dg_host_applications_dir }}:rw
       {{ '--volume ' + dg_box_root + ':' + dg_box_root + ':rw'
          if dg_box_root != dg_box_home else '' }}
 

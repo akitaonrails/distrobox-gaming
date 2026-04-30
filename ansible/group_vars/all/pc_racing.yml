@@ -1,0 +1,76 @@
+# Optional Windows PC racing games managed with system Wine inside the distrobox.
+
+dg_pc_racing_source_root: /mnt/terachad/Emulators/ROMS_FINAL/PC
+dg_pc_racing_usb_root: /run/media/akitaonrails/STEAM
+dg_pc_racing_install_root: "{{ dg_box_home }}/Games/pc-racing"
+dg_pc_racing_prefix_root: "{{ dg_box_home }}/wineprefixes/pc-racing"
+dg_pc_racing_media_root: "{{ dg_box_home }}/tools/pc-racing/media"
+dg_pc_racing_cache_root: "{{ dg_box_home }}/cache/pc-racing"
+dg_pc_racing_wine_path: /usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+dg_pc_racing_winearch: win64
+dg_pc_racing_gamescope_enabled: true
+dg_pc_racing_gamescope_width: 2560
+dg_pc_racing_gamescope_height: 1440
+dg_pc_racing_gamepad_device: /dev/input/js0
+dg_pc_racing_gamepad_only: "0x2dc8/0x310b"
+dg_pc_racing_sdl_hidapi: "0"
+dg_pc_racing_winebus_registry:
+  - name: DisableHidraw
+    value: 1
+  - name: Enable SDL
+    value: 1
+dg_pc_racing_run_installers: false
+dg_pc_racing_copy_unpacked: true
+dg_pc_racing_export_desktop: false
+dg_pc_racing_selected_slugs: []
+dg_pc_racing_cleanup_legacy: true
+
+dg_pc_racing_legacy_packages:
+  - lutris
+  - umu-launcher
+
+dg_pc_racing_legacy_paths:
+  - "{{ dg_box_home }}/.cache/lutris"
+  - "{{ dg_box_home }}/.cache/umu"
+  - "{{ dg_box_home }}/.cache/umu-protonfixes"
+  - "{{ dg_box_home }}/.config/lutris"
+  - "{{ dg_box_home }}/.local/share/lutris"
+  - "{{ dg_box_home }}/.local/share/umu"
+  - "{{ dg_box_home }}/cache/pc-racing/lutris-runners"
+
+dg_pc_racing_packages:
+  - wine
+  - winetricks
+  - wine-mono
+  - wine-gecko
+  - sdl2
+  - gamescope
+  - joyutils
+  - p7zip
+  - rsync
+
+dg_pc_racing_games:
+  - slug: colin-mcrae-rally-2
+    name: "Colin McRae Rally 2.0"
+    install_mode: installer
+    source_dir: "{{ dg_pc_racing_source_root }}/Colin-McRae-Rally-2-0_Win_EN-FR-ES_US_CD_Extracted"
+    installer: Setup.exe
+    install_args: []
+    launch_exe: "CMR2.exe"
+    installed_path: "{{ dg_pc_racing_prefix_root }}/colin-mcrae-rally-2/drive_c/Program Files (x86)/Codemasters/Colin McRae Rally 2"
+    patches:
+      - name: silentpatch
+        source: "{{ dg_pc_racing_cache_root }}/silentpatch_cmr2.zip"
+        backup_exe: "CMR2.exe"
+        creates: "SPCMR2.dll"
+    ini:
+      - file: "SPCMR2.ini"
+        key: Region
+        value: AMERICA
+      - file: "SPCMR2.ini"
+        key: Window
+        value: "0"
+      - file: "SPCMR2.ini"
+        key: Borderless
+        value: "0"
+    notes: "Source is a pre-extracted copy of the original BIN/CUE media; the converted ISO is kept beside it."

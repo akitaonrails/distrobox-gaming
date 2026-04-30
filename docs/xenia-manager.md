@@ -21,7 +21,13 @@ What the playbook does:
 - extracts it into `$DG_XENIA_MANAGER_RELEASES_DIR`
 - points `$DG_XENIA_MANAGER_CURRENT` at the active release
 - writes the stable launcher wrapper to `$DG_XENIA_MANAGER_BIN`
-- renders the desktop entry and symlinks it to the host
+- renders the desktop entry under `config/desktop/rendered/`
+
+Install or refresh the host menu entry from the host after the playbook:
+
+```sh
+scripts/install-host-launchers.sh
+```
 
 The manager and the Canary builds it downloads stay in the same prefix. That
 is the cleanest maintenance model on Linux because Xenia Manager expects a

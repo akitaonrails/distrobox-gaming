@@ -37,7 +37,13 @@ Use this when recreating the gaming distrobox from scratch.
    ansible-playbook install-xenia.yml
    ```
 
-6. If something goes wrong, restore from backup:
+6. Refresh Hedge Mod Manager only, if needed:
+
+   ```sh
+   ansible-playbook install-hedgemodmanager.yml
+   ```
+
+7. If something goes wrong, restore from backup:
 
    ```sh
    ansible-playbook restore.yml
@@ -50,9 +56,14 @@ ansible-playbook site.yml --tags check       # validate host paths and UID/GID
 ansible-playbook site.yml --tags create      # create the distrobox
 ansible-playbook site.yml --tags bootstrap   # install packages
 ansible-playbook site.yml --tags shadps4     # install/update shadPS4
+ansible-playbook site.yml --tags hedgemodmanager # install/update Hedge Mod Manager
+ansible-playbook site.yml --tags pc_racing   # optional Windows PC racing setup
 ansible-playbook site.yml --tags configure   # apply configs, desktop entries, ES-DE
 ansible-playbook site.yml --tags verify      # post-setup assertions
 ```
+
+`configure` renders desktop entries only. Run `scripts/install-host-launchers.sh`
+from the repository root on the host to install or refresh Walker menu entries.
 
 ### Resetting configs without rebuilding
 

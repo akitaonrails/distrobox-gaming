@@ -1,0 +1,8 @@
+---
+- name: Install or update Unleashed Recompiled
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_unleashed_recomp
+    - { role: verify, tags: [verify] }

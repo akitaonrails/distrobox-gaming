@@ -1,0 +1,54 @@
+#!/usr/bin/env sh
+set -eu
+
+prefix="{{ dg_pc_racing_prefix_root }}/{{ item.slug }}"
+install_dir="{{ item.installed_path | default(dg_pc_racing_install_root ~ "/" ~ item.slug) }}"
+source_dir="{{ item.source_dir }}"
+installer="$source_dir/{{ item.installer | default('') }}"
+media_dir="{{ dg_pc_racing_media_root }}/{{ item.slug }}"
+
+export PATH="{{ dg_pc_racing_wine_path }}"
+export WINEPREFIX="$prefix"
+export WINEARCH="{{ dg_pc_racing_winearch }}"
+export WINEDEBUG=-all
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+export SDL_JOYSTICK_HIDAPI="${SDL_JOYSTICK_HIDAPI:-1}"
+
+mkdir -p "$prefix" "$install_dir"
+env -u PYTHONHOME -u PYTHONPATH wineboot -u
+env -u PYTHONHOME -u PYTHONPATH wineserver -w
+mkdir -p "$prefix/dosdevices"
+ln -sfn "{{ dg_pc_racing_install_root }}" "$prefix/dosdevices/g:"
+
+{% if item.install_mode == 'copy' -%}
+rsync -a --ignore-existing "$source_dir/" "$install_dir/"
+printf '%s\n' "Copied {{ item.name }} to $install_dir"
+{% elif item.install_mode == 'installer' -%}
+if [ ! -f "$installer" ]; then
+  printf '%s\n' "ERROR: installer missing: $installer" >&2
+  exit 1
+fi
+cd "$source_dir"
+printf '%s\n' "Target install directory inside Wine: G:\\{{ item.slug }}"
+exec env -u PYTHONHOME -u PYTHONPATH wine "$installer" {{ item.install_args | default([]) | map('quote') | join(' ') }}
+{% elif item.install_mode == 'iso' -%}
+if [ ! -f "$installer" ]; then
+  printf '%s\n' "ERROR: ISO missing: $installer" >&2
+  exit 1
+fi
+mkdir -p "$media_dir"
+if [ ! -f "$media_dir/{{ item.media_setup | default('setup.exe') }}" ]; then
+  7z x -y -o"$media_dir" "$installer"
+fi
+printf '%s\n' "Target install directory inside Wine: G:\\{{ item.slug }}"
+cd "$media_dir"
+exec env -u PYTHONHOME -u PYTHONPATH wine "$media_dir/{{ item.media_setup | default('setup.exe') }}" {{ item.install_args | default([]) | map('quote') | join(' ') }}
+{% elif item.install_mode == 'cue' -%}
+printf '%s\n' "{{ item.name }} uses BIN/CUE media and is prepared but not automatically installed." >&2
+printf '%s\n' "Media: $installer" >&2
+printf '%s\n' "Install root: $install_dir" >&2
+exit 2
+{% else -%}
+printf '%s\n' "ERROR: unsupported install_mode={{ item.install_mode }}" >&2
+exit 1
+{% endif -%}

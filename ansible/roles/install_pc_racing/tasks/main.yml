@@ -1,0 +1,304 @@
+---
+- name: Select PC racing games for this run
+  ansible.builtin.set_fact:
+    _dg_pc_racing_games_selected: >-
+      {{ dg_pc_racing_games
+         if (dg_pc_racing_selected_slugs | length == 0)
+         else (dg_pc_racing_games | selectattr('slug', 'in', dg_pc_racing_selected_slugs) | list) }}
+
+- name: Build PC racing Wine environment
+  ansible.builtin.set_fact:
+    _dg_pc_racing_wine_env: >-
+      env -u PYTHONHOME -u PYTHONPATH
+      PATH="{{ dg_pc_racing_wine_path }}"
+      WINEARCH="{{ dg_pc_racing_winearch }}"
+
+- name: Assert selected PC racing game slugs exist
+  ansible.builtin.assert:
+    that: _dg_pc_racing_games_selected | length == dg_pc_racing_selected_slugs | length
+    fail_msg: "Unknown PC racing slug in dg_pc_racing_selected_slugs={{ dg_pc_racing_selected_slugs }}"
+  when: dg_pc_racing_selected_slugs | length > 0
+
+- name: Remove legacy Lutris and UMU packages inside box
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      changed=0
+      for pkg in {{ dg_pc_racing_legacy_packages | join(' ') }}; do
+        if pacman -Q "$pkg" >/dev/null 2>&1; then
+          sudo pacman -Rns --noconfirm "$pkg"
+          changed=1
+        fi
+      done
+      [ "$changed" = 1 ] && printf "%s\n" "removed-legacy-packages" || true
+    '
+  register: _pc_racing_legacy_packages
+  changed_when: "'removed-legacy-packages' in _pc_racing_legacy_packages.stdout"
+  when: dg_pc_racing_cleanup_legacy | bool
+
+- name: Remove legacy Lutris and UMU user data inside box
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: "{{ dg_pc_racing_legacy_paths }}"
+  when: dg_pc_racing_cleanup_legacy | bool
+
+- name: Create PC racing root directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_pc_racing_prefix_root }}"
+    - "{{ dg_pc_racing_media_root }}"
+    - "{{ dg_pc_racing_cache_root }}"
+    - "{{ dg_box_home }}/bin"
+    - "{{ dg_desktop_render_dir }}"
+
+- name: Create PC racing install root inside box
+  ansible.builtin.shell: "{{ dg_in_box }} mkdir -p '{{ dg_pc_racing_install_root }}'"
+  changed_when: false
+
+- name: Install PC racing Wine packages inside box
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sudo pacman -Sy --needed --noconfirm
+    {{ dg_pc_racing_packages | join(' ') }}
+  register: _pc_racing_pacman
+  changed_when: "'installing' in _pc_racing_pacman.stdout"
+
+- name: Validate PC racing source directories
+  ansible.builtin.stat:
+    path: "{{ item.source_dir }}"
+  loop: "{{ _dg_pc_racing_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: _pc_racing_sources
+
+- name: Assert PC racing source directories exist
+  ansible.builtin.assert:
+    that: item.stat.exists and item.stat.isdir
+    fail_msg: "Missing PC racing source directory: {{ item.item.source_dir }}"
+  loop: "{{ _pc_racing_sources.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+
+- name: Create per-game install directories
+  ansible.builtin.shell: "{{ dg_in_box }} mkdir -p '{{ dg_pc_racing_install_root }}/{{ item.slug }}'"
+  changed_when: false
+  loop: "{{ _dg_pc_racing_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Create per-game prefix directories
+  ansible.builtin.file:
+    path: "{{ dg_pc_racing_prefix_root }}/{{ item.slug }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ _dg_pc_racing_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Check PC racing prefix initialization
+  ansible.builtin.stat:
+    path: "{{ dg_pc_racing_prefix_root }}/{{ item.slug }}/system.reg"
+  loop: "{{ _dg_pc_racing_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: _pc_racing_prefixes
+
+- name: Initialize PC racing Wine prefixes
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} {{ _dg_pc_racing_wine_env }}
+    WINEPREFIX="{{ dg_pc_racing_prefix_root }}/{{ item.item.slug }}"
+    WINEDEBUG=-all
+    wineboot -u
+  loop: "{{ _pc_racing_prefixes.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when: not item.stat.exists
+
+- name: Link install root as G drive in each prefix
+  ansible.builtin.file:
+    src: "{{ dg_pc_racing_install_root }}"
+    dest: "{{ dg_pc_racing_prefix_root }}/{{ item.slug }}/dosdevices/g:"
+    state: link
+    force: true
+    follow: false
+  loop: "{{ _dg_pc_racing_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Configure PC racing Wine controller backend
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      export WINEPREFIX="{{ dg_pc_racing_prefix_root }}/{{ item.0.slug }}"
+      export WINEARCH="{{ dg_pc_racing_winearch }}"
+      export WINEDEBUG=-all
+      export PATH="{{ dg_pc_racing_wine_path }}"
+      key="HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\winebus"
+      name="{{ item.1.name }}"
+      value="{{ item.1.value }}"
+
+      if env -u PYTHONHOME -u PYTHONPATH wine reg query "$key" /v "$name" 2>/dev/null | grep -Eq "REG_DWORD[[:space:]]+0x0*${value}"; then
+        exit 0
+      fi
+
+      env -u PYTHONHOME -u PYTHONPATH wine reg add "$key" /v "$name" /t REG_DWORD /d "$value" /f
+      printf "%s\n" "configured-winebus {{ item.0.name }} $name=$value"
+    '
+  register: _pc_racing_winebus
+  changed_when: "'configured-winebus' in _pc_racing_winebus.stdout"
+  loop: "{{ _dg_pc_racing_games_selected | product(dg_pc_racing_winebus_registry) | list }}"
+  loop_control:
+    label: "{{ item.0.name }} / {{ item.1.name }}"
+
+- name: Copy unpacked PC racing games to install root
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} rsync -a --ignore-existing --info=NAME
+    '{{ item.source_dir }}/'
+    '{{ dg_pc_racing_install_root }}/{{ item.slug }}/'
+  register: _pc_racing_copy
+  changed_when: _pc_racing_copy.stdout | length > 0
+  loop: "{{ _dg_pc_racing_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - dg_pc_racing_copy_unpacked | bool
+    - item.install_mode == 'copy'
+
+- name: Deploy PC racing launcher wrappers
+  ansible.builtin.template:
+    src: pc-racing-launcher.sh.j2
+    dest: "{{ dg_box_home }}/bin/{{ item.slug }}"
+    mode: "0755"
+  loop: "{{ _dg_pc_racing_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Deploy PC racing installer helpers
+  ansible.builtin.template:
+    src: pc-racing-installer.sh.j2
+    dest: "{{ dg_box_home }}/bin/install-{{ item.slug }}"
+    mode: "0755"
+  loop: "{{ _dg_pc_racing_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Render PC racing desktop entries
+  ansible.builtin.template:
+    src: pc-racing.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/pc-{{ item.slug }}.desktop"
+    mode: "0644"
+  loop: "{{ _dg_pc_racing_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: dg_pc_racing_export_desktop | bool
+
+- name: Report PC racing desktop entries are rendered only
+  ansible.builtin.debug:
+    msg: "PC racing desktop entries are rendered only. Run scripts/install-host-launchers.sh on the host to install them."
+  loop: "{{ _dg_pc_racing_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - dg_pc_racing_export_desktop | bool
+    - not ansible_check_mode
+
+- name: Check PC racing launch executable state
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} test -f
+    '{{ item.installed_path | default(dg_pc_racing_install_root ~ "/" ~ item.slug) }}/{{ item.launch_exe | default('') }}'
+  loop: "{{ _dg_pc_racing_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: _pc_racing_launch_exes
+  changed_when: false
+  failed_when: false
+  when: item.launch_exe is defined
+
+- name: Run PC racing installers when explicitly enabled
+  ansible.builtin.shell: "{{ dg_in_box }} {{ dg_box_home }}/bin/install-{{ item.item.slug }}"
+  loop: "{{ _pc_racing_launch_exes.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when:
+    - dg_pc_racing_run_installers | bool
+    - item.item.install_mode in ['installer', 'iso']
+    - item.rc != 0
+
+- name: Apply PC racing game zip patches
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      game_dir="{{ item.0.installed_path | default(dg_pc_racing_install_root ~ "/" ~ item.0.slug) }}"
+      patch_src="{{ item.1.source }}"
+      creates="$game_dir/{{ item.1.creates | default('') }}"
+
+      if [ ! -d "$game_dir" ]; then
+        printf "%s\n" "ERROR: game directory missing: $game_dir" >&2
+        exit 1
+      fi
+      if [ ! -f "$patch_src" ]; then
+        printf "%s\n" "ERROR: patch archive missing: $patch_src" >&2
+        exit 1
+      fi
+      if [ -n "{{ item.1.creates | default('') }}" ] && [ -f "$creates" ]; then
+        exit 0
+      fi
+
+      if [ -n "{{ item.1.backup_exe | default('') }}" ] &&
+         [ -f "$game_dir/{{ item.1.backup_exe | default('') }}" ] &&
+         [ ! -f "$game_dir/{{ item.1.backup_exe | default('') }}.original" ]; then
+        cp "$game_dir/{{ item.1.backup_exe | default('') }}" "$game_dir/{{ item.1.backup_exe | default('') }}.original"
+      fi
+
+      7z x -y -o"$game_dir" "$patch_src" >/dev/null
+      printf "%s\n" "patched {{ item.0.name }} with {{ item.1.name }}"
+    '
+  register: _pc_racing_patches
+  changed_when: "'patched ' in _pc_racing_patches.stdout"
+  loop: "{{ _dg_pc_racing_games_selected | subelements('patches', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }} / {{ item.1.name }}"
+
+- name: Configure PC racing game INI values
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      game_dir="{{ item.0.installed_path | default(dg_pc_racing_install_root ~ "/" ~ item.0.slug) }}"
+      ini="$game_dir/{{ item.1.file }}"
+      key="{{ item.1.key }}"
+      value="{{ item.1.value }}"
+
+      if [ ! -d "$game_dir" ]; then
+        printf "%s\n" "ERROR: game directory missing: $game_dir" >&2
+        exit 1
+      fi
+      touch "$ini"
+      if grep -Eq "^${key}=" "$ini"; then
+        current="$(grep -E "^${key}=" "$ini" | tail -n 1 | cut -d= -f2-)"
+        if [ "$current" = "$value" ]; then
+          exit 0
+        fi
+        sed -i "s|^${key}=.*|${key}=${value}|" "$ini"
+      else
+        printf "%s=%s\n" "$key" "$value" >> "$ini"
+      fi
+      printf "%s\n" "configured {{ item.0.name }} {{ item.1.file }} {{ item.1.key }}"
+    '
+  register: _pc_racing_ini
+  changed_when: "'configured ' in _pc_racing_ini.stdout"
+  loop: "{{ _dg_pc_racing_games_selected | subelements('ini', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }} / {{ item.1.file }} {{ item.1.key }}"
+
+- name: Report PC racing setup commands
+  ansible.builtin.debug:
+    msg: >-
+      Prepared {{ item.name }}. Install helper:
+      {{ dg_box_home }}/bin/install-{{ item.slug }}. Launcher:
+      {{ dg_box_home }}/bin/{{ item.slug }}.
+  loop: "{{ _dg_pc_racing_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"

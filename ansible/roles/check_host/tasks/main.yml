@@ -31,10 +31,14 @@
     state: absent
 
 - name: Check host desktop entry directory
-  ansible.builtin.file:
+  ansible.builtin.stat:
     path: "{{ dg_host_applications_dir }}"
-    state: directory
-    mode: "0755"
+  register: _host_applications_dir
+
+- name: Warn if host desktop entry directory is missing
+  ansible.builtin.debug:
+    msg: "WARNING: host desktop directory missing; run scripts/install-host-launchers.sh from the host to create it if needed: {{ dg_host_applications_dir }}"
+  when: not _host_applications_dir.stat.exists
 
 - name: Stat required readable directories
   ansible.builtin.stat:

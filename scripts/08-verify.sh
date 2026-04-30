@@ -61,7 +61,6 @@ log "Verifying generated files"
 [ -d "$DG_SHADPS4_GAME_DIR" ] || die "shadPS4 game dir missing"
 [ -f "$DG_SHADPS4_GAME_BOOT" ] || die "shadPS4 boot file missing"
 [ -f "$DG_BOX_HOME/ES-DE/custom_systems/es_systems.xml" ] || die "ES-DE custom systems XML missing"
-[ -f "$DG_HOST_APPLICATIONS_DIR/gaming-shadps4.desktop" ] || warn "Host shadPS4 desktop entry missing"
 
 if [ -x "$DG_XENIA_MANAGER_BIN" ] || [ -e "$DG_XENIA_MANAGER_CURRENT" ] || [ -d "$DG_XENIA_PREFIX" ]; then
   log "Verifying Xenia Manager prefix"

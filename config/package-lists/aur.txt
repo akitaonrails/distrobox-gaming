@@ -12,6 +12,6 @@ flycast-git
 
 # ROM / patch tools
 3dsconv
-extract-xiso
+extract-xiso-bin
 flips
 

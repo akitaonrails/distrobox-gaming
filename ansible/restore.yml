@@ -67,7 +67,6 @@
         --home {{ dg_box_home }}
         --volume {{ dg_emudeck_root }}:{{ dg_emudeck_root }}:rw
         --volume {{ dg_box_root }}:{{ dg_box_root }}:rw
-        --volume {{ dg_host_applications_dir }}:{{ dg_host_applications_dir }}:rw
 
     - name: Report restore complete
       ansible.builtin.debug:
