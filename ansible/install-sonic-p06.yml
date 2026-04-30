@@ -1,0 +1,8 @@
+---
+- name: Install or update Sonic Project '06
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_sonic_p06
+    - { role: verify, tags: [verify] }

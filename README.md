@@ -38,6 +38,7 @@ ansible-playbook refresh-shadps4.yml    # update shadPS4 builds
 ansible-playbook install-xenia.yml      # install/update Xenia Manager (optional)
 ansible-playbook install-hedgemodmanager.yml  # install/update Hedge Mod Manager
 ansible-playbook install-pc-racing.yml  # prepare/install optional Windows PC racing games
+ansible-playbook install-sonic-p06.yml  # install/update Sonic Project '06
 ansible-playbook install-unleashed-recomp.yml  # install/update Unleashed Recompiled
 ```
 
@@ -70,7 +71,8 @@ ansible-playbook site.yml --tags cheats          # link Switch cheats to Eden
 ansible-playbook site.yml --tags rpcs3_configs   # per-game RPCS3 tuning
 ansible-playbook site.yml --tags retroarch       # download RA cores + assets
 ansible-playbook site.yml --tags pcsx2_textures  # PCSX2 HD texture packs + per-game settings + .pnach patches
-ansible-playbook site.yml --tags pc_racing       # prepare Windows PC racing games via UMU/Proton
+ansible-playbook site.yml --tags pc_racing       # prepare tested Windows PC racing games via Wine
+ansible-playbook site.yml --tags sonic_p06       # install Sonic Project '06 via system Wine
 ansible-playbook site.yml --tags unleashed_recomp # install native Unleashed Recompiled Flatpak
 ```
 
@@ -223,7 +225,7 @@ dg_host_gid: 1000
   Each Exec line is wrapped with the NVIDIA-preference env vars.
 - Entries cover: ES-DE, Dolphin, DuckStation, PCSX2, PPSSPP, RPCS3, xemu,
   Eden, Cemu, Vita3K, shadPS4 (Driveclub + No Patch + GUI), Flycast,
-  Xenia Manager and Unleashed Recompiled when their wrappers exist.
+  Xenia Manager, Sonic P-06, and Unleashed Recompiled when their wrappers exist.
 - Ansible renders entries into `config/desktop/rendered/`; it does not write
   into the host applications directory from inside the distrobox. Install or
   refresh host menu entries from the host with:
@@ -373,6 +375,19 @@ prefixes stay under `/mnt/data/distrobox/gaming/wineprefixes/pc-racing`.
 Installer GUIs are only launched when explicitly requested with
 `-e dg_pc_racing_run_installers=true`.
 
+## Sonic Project '06
+
+Sonic P-06 is an optional Windows Unity fangame install managed outside Steam
+with system Wine, DXVK, core fonts, GStreamer codecs, and a dedicated prefix:
+
+```sh
+ansible-playbook install-sonic-p06.yml
+```
+
+The source is the already extracted Silver Release under
+`/mnt/terachad/Emulators/ROMS_FINAL/PC/Project 06 - Silver Release (Patch v1.45)`.
+The managed copy lives at `/mnt/data/distrobox/gaming/Games/sonic-p06`.
+
 ## Project Structure
 
 ```
@@ -384,6 +399,7 @@ ansible/                            # Ansible playbooks and roles (primary)
   install-xenia.yml                 # standalone Xenia Manager install
   install-hedgemodmanager.yml       # standalone Hedge Mod Manager install
   install-pc-racing.yml             # optional Windows PC racing setup
+  install-sonic-p06.yml             # optional Sonic Project '06 setup
   install-unleashed-recomp.yml      # optional Unleashed Recompiled install
   group_vars/all/                   # all dg_* variable defaults
     main.yml                        # paths, UID/GID, box identity
@@ -396,6 +412,7 @@ ansible/                            # Ansible playbooks and roles (primary)
     xenia.yml                       # Xenia Manager config
     hedgemodmanager.yml             # Hedge Mod Manager source-build config
     pc_racing.yml                   # Windows PC racing source/install metadata
+    sonic_p06.yml                   # Sonic Project '06 Wine config
     unleashed_recomp.yml            # Unleashed Recompiled source staging config
     pcsx2.yml                       # PCSX2 texture packs and per-game overrides
   host_vars/localhost.yml.example   # machine-specific overrides template
@@ -418,7 +435,8 @@ ansible/                            # Ansible playbooks and roles (primary)
     refresh_shadps4/                # shadPS4 GitHub release management
     install_xenia/                  # Wine prefix and Xenia Manager
     install_hedgemodmanager/        # native HMM 8 source build
-    install_pc_racing/              # UMU/Proton wrappers for Windows racing games
+    install_pc_racing/              # Wine wrappers for tested Windows racing games
+    install_sonic_p06/              # Wine wrapper for Sonic Project '06
     install_unleashed_recomp/       # native Unleashed Recompiled Flatpak install
 bin/                                # legacy shell CLI (reference)
 scripts/                            # legacy numbered scripts (reference)
@@ -443,6 +461,7 @@ Focused docs:
 - [Xenia Manager](docs/xenia-manager.md)
 - [Hedge Mod Manager](docs/hedge-mod-manager.md)
 - [PC Racing Games](docs/pc-racing.md)
+- [Sonic Project '06](docs/sonic-p06.md)
 - [Project Forza Plus (FM2/3/4/FH1 on Xenia)](docs/project-forza.md)
 - [Xbox 360 Title Updates](docs/xbox360-title-updates.md) — archive.org batch fetch + Xenia Manager install flow
 - [Xbox 360 PGR3 / PGR4](docs/xbox360-pgr.md)

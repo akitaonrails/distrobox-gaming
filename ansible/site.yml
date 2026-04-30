@@ -21,6 +21,7 @@
     - { role: retroarch_extras,          tags: [retroarch, never] }
     - { role: pcsx2_textures,            tags: [pcsx2_textures, never] }
     - { role: install_pc_racing,         tags: [pc_racing, never] }
+    - { role: install_sonic_p06,         tags: [sonic_p06, never] }
     - { role: install_unleashed_recomp,  tags: [unleashed_recomp, never] }
     - { role: desktop_apps,              tags: [configure, desktop, reset_configs] }
     - { role: configure_esde,            tags: [configure, esde, reset_configs] }

@@ -36,6 +36,12 @@
     dest: "{{ dg_desktop_render_dir }}/gaming-unleashed-recomp.desktop"
     mode: "0644"
 
+- name: Render Sonic P-06 desktop entry
+  ansible.builtin.template:
+    src: gaming-sonic-p06.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-sonic-p06.desktop"
+    mode: "0644"
+
 - name: Check if desktop-file-validate is available
   ansible.builtin.command: "which desktop-file-validate"
   register: _dfv_check

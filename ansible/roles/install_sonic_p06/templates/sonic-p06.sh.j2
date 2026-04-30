@@ -1,0 +1,42 @@
+#!/usr/bin/env sh
+set -eu
+
+prefix="{{ dg_sonic_p06_prefix }}"
+install_dir="{{ dg_sonic_p06_install_root }}"
+wine_bin="{{ dg_sonic_p06_wine_bin }}"
+exe="$install_dir/{{ dg_sonic_p06_exe }}"
+
+if [ ! -x "$wine_bin" ]; then
+  printf '%s\n' "ERROR: Wine runtime is missing: $wine_bin" >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-sonic-p06.yml" >&2
+  exit 1
+fi
+
+if [ ! -f "$exe" ]; then
+  printf '%s\n' "ERROR: Sonic P-06 executable is missing: $exe" >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-sonic-p06.yml" >&2
+  exit 1
+fi
+
+export WINEPREFIX="$prefix"
+export WINEARCH="{{ dg_sonic_p06_winearch }}"
+export WINEDEBUG="${WINEDEBUG:--all}"
+export WINEESYNC="${WINEESYNC:-{{ dg_sonic_p06_wine_esync }}}"
+export WINEFSYNC="${WINEFSYNC:-{{ dg_sonic_p06_wine_fsync }}}"
+export DXVK_LOG_LEVEL="${DXVK_LOG_LEVEL:-none}"
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+cd "$install_dir"
+
+{% if dg_sonic_p06_gamescope_enabled | bool -%}
+if command -v gamescope >/dev/null 2>&1; then
+  exec env -u PYTHONHOME -u PYTHONPATH gamescope \
+    -W {{ dg_sonic_p06_gamescope_width }} \
+    -H {{ dg_sonic_p06_gamescope_height }} \
+    -w {{ dg_sonic_p06_gamescope_width }} \
+    -h {{ dg_sonic_p06_gamescope_height }} \
+    -f -- "$wine_bin" "$exe" "$@"
+fi
+{% endif -%}
+
+exec env -u PYTHONHOME -u PYTHONPATH "$wine_bin" "$exe" "$@"

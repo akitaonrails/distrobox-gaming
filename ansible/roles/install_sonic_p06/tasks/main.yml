@@ -1,0 +1,111 @@
+---
+- name: Validate Sonic P-06 source directory
+  ansible.builtin.stat:
+    path: "{{ dg_sonic_p06_source_dir }}"
+  register: _sonic_p06_source
+
+- name: Assert Sonic P-06 source directory exists
+  ansible.builtin.assert:
+    that:
+      - _sonic_p06_source.stat.exists
+      - _sonic_p06_source.stat.isdir
+    fail_msg: "Missing Sonic P-06 source directory: {{ dg_sonic_p06_source_dir }}"
+
+- name: Validate Sonic P-06 executable in source
+  ansible.builtin.stat:
+    path: "{{ dg_sonic_p06_source_dir }}/{{ dg_sonic_p06_exe }}"
+  register: _sonic_p06_source_exe
+
+- name: Assert Sonic P-06 executable exists in source
+  ansible.builtin.assert:
+    that: _sonic_p06_source_exe.stat.exists
+    fail_msg: "Missing Sonic P-06 executable: {{ dg_sonic_p06_source_dir }}/{{ dg_sonic_p06_exe }}"
+
+- name: Create Sonic P-06 directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_sonic_p06_cache_dir }}"
+    - "{{ dg_sonic_p06_prefix }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Create Sonic P-06 install root inside box
+  ansible.builtin.shell: "{{ dg_in_box }} mkdir -p '{{ dg_sonic_p06_install_root }}'"
+  changed_when: false
+
+- name: Install Sonic P-06 runtime packages inside box
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sudo pacman -Sy --needed --noconfirm
+    {{ dg_sonic_p06_packages | join(' ') }}
+  register: _sonic_p06_pacman
+  changed_when: "'installing' in _sonic_p06_pacman.stdout"
+
+- name: Copy Sonic P-06 game files
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} rsync -a --no-perms --no-owner --no-group
+    --omit-dir-times --itemize-changes
+    '{{ dg_sonic_p06_source_dir }}/'
+    '{{ dg_sonic_p06_install_root }}/'
+  register: _sonic_p06_copy
+  changed_when: _sonic_p06_copy.stdout | length > 0
+
+- name: Check Sonic P-06 prefix initialization
+  ansible.builtin.stat:
+    path: "{{ dg_sonic_p06_prefix }}/system.reg"
+  register: _sonic_p06_prefix
+
+- name: Initialize Sonic P-06 Wine prefix
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      export WINEPREFIX="{{ dg_sonic_p06_prefix }}"
+      export WINEARCH="{{ dg_sonic_p06_winearch }}"
+      export WINEDEBUG=-all
+      export WINEDLLOVERRIDES=winemenubuilder.exe=d
+      export WINEESYNC="{{ dg_sonic_p06_wine_esync }}"
+      export WINEFSYNC="{{ dg_sonic_p06_wine_fsync }}"
+      timeout 60 env -u PYTHONHOME -u PYTHONPATH "{{ dg_sonic_p06_wineboot_bin }}" -u
+      timeout 60 env -u PYTHONHOME -u PYTHONPATH "{{ dg_sonic_p06_wineserver_bin }}" -w
+    '
+  when: not _sonic_p06_prefix.stat.exists
+
+- name: Check Sonic P-06 winetricks component markers
+  ansible.builtin.stat:
+    path: "{{ dg_sonic_p06_prefix }}/.dg-winetricks-{{ item }}"
+  loop: "{{ dg_sonic_p06_winetricks_components }}"
+  register: _sonic_p06_winetricks_markers
+
+- name: Install Sonic P-06 winetricks components
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      export WINEPREFIX="{{ dg_sonic_p06_prefix }}"
+      export WINEARCH="{{ dg_sonic_p06_winearch }}"
+      export WINEDEBUG=-all
+      export WINEDLLOVERRIDES=winemenubuilder.exe=d
+      export WINEESYNC="{{ dg_sonic_p06_wine_esync }}"
+      export WINEFSYNC="{{ dg_sonic_p06_wine_fsync }}"
+      timeout 300 env -u PYTHONHOME -u PYTHONPATH winetricks -q "{{ item.item }}"
+      printf "%s\n" "{{ item.item }}" > "{{ dg_sonic_p06_prefix }}/.dg-winetricks-{{ item.item }}"
+    '
+  loop: "{{ _sonic_p06_winetricks_markers.results }}"
+  when: not item.stat.exists
+
+- name: Deploy Sonic P-06 launcher wrapper
+  ansible.builtin.template:
+    src: sonic-p06.sh.j2
+    dest: "{{ dg_sonic_p06_bin }}"
+    mode: "0755"
+
+- name: Refresh desktop launchers
+  ansible.builtin.include_role:
+    name: desktop_apps
+
+- name: Report Sonic P-06 setup
+  ansible.builtin.debug:
+    msg: >-
+      Sonic P-06 prepared at {{ dg_sonic_p06_install_root }}.
+      Launcher: {{ dg_sonic_p06_bin }}.
+      Run scripts/install-host-launchers.sh on the host to refresh the menu entry.

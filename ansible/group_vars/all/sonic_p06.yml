@@ -1,0 +1,37 @@
+# Optional Sonic Project '06 setup.
+
+dg_sonic_p06_source_dir: "/mnt/terachad/Emulators/ROMS_FINAL/PC/Project 06 - Silver Release (Patch v1.45)/Sonic the Hedgehog (P-06)"
+dg_sonic_p06_install_root: "{{ dg_box_home }}/Games/sonic-p06"
+dg_sonic_p06_prefix: "{{ dg_box_home }}/wineprefixes/sonic-p06"
+dg_sonic_p06_tools_root: "{{ dg_box_home }}/tools/sonic-p06"
+dg_sonic_p06_cache_dir: "{{ dg_box_home }}/cache/sonic-p06"
+dg_sonic_p06_bin: "{{ dg_box_home }}/bin/sonic-p06"
+dg_sonic_p06_exe: "Sonic the Hedgehog.exe"
+dg_sonic_p06_winearch: win64
+dg_sonic_p06_wine_bin: /usr/bin/wine
+dg_sonic_p06_wineboot_bin: /usr/bin/wineboot
+dg_sonic_p06_wineserver_bin: /usr/bin/wineserver
+dg_sonic_p06_gamescope_enabled: false
+dg_sonic_p06_gamescope_width: 2560
+dg_sonic_p06_gamescope_height: 1440
+dg_sonic_p06_wine_esync: "0"
+dg_sonic_p06_wine_fsync: "0"
+dg_sonic_p06_winetricks_components:
+  - dxvk2071
+  - corefonts
+dg_sonic_p06_packages:
+  - cabextract
+  - gst-libav
+  - gst-plugins-bad
+  - gst-plugins-base
+  - gst-plugins-good
+  - gst-plugins-ugly
+  - lib32-sdl2
+  - lib32-vulkan-icd-loader
+  - rsync
+  - sdl2
+  - vulkan-icd-loader
+  - wine
+  - wine-gecko
+  - wine-mono
+  - winetricks
