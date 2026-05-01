@@ -425,6 +425,78 @@
     - item.item.install_mode in ['installer', 'iso']
     - item.rc != 0
 
+- name: Download PC racing Xidi archives
+  ansible.builtin.get_url:
+    url: "{{ item.xidi.url }}"
+    dest: "{{ item.xidi.source }}"
+    mode: "0644"
+  loop: "{{ _dg_pc_racing_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - item.xidi is defined
+    - item.xidi.url is defined
+
+- name: Apply PC racing Xidi wrappers
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      game_dir="{{ item.installed_path | default(dg_pc_racing_install_root ~ "/" ~ item.slug) }}"
+      archive="{{ item.xidi.source }}"
+      archive_root="{{ item.xidi.archive_root }}"
+      architecture="{{ item.xidi.architecture | default('Win32') }}"
+      marker="$game_dir/.dg-xidi-{{ item.xidi.archive_root }}-{{ item.xidi.architecture | default('Win32') }}"
+
+      if [ ! -d "$game_dir" ]; then
+        printf "%s\n" "ERROR: game directory missing: $game_dir" >&2
+        exit 1
+      fi
+      if [ ! -f "$archive" ]; then
+        printf "%s\n" "ERROR: Xidi archive missing: $archive" >&2
+        exit 1
+      fi
+      if [ -f "$marker" ]; then
+        exit 0
+      fi
+
+      {% if item.xidi.preserve_as_proxy is defined %}
+      proxy_source="$game_dir/{{ item.xidi.preserve_as_proxy.source }}"
+      proxy_dest="$game_dir/{{ item.xidi.preserve_as_proxy.dest }}"
+      if [ -f "$proxy_source" ] && [ ! -f "$proxy_dest" ]; then
+        cp "$proxy_source" "$proxy_dest"
+      fi
+      {% endif %}
+
+      {% for wrapper in item.xidi.wrappers %}
+      if [ -f "$game_dir/{{ wrapper }}" ] &&
+         [ ! -f "$game_dir/{{ wrapper }}.pre-xidi" ]; then
+        cp "$game_dir/{{ wrapper }}" "$game_dir/{{ wrapper }}.pre-xidi"
+      fi
+      7z e -y -o"$game_dir" "$archive" "$archive_root/$architecture/{{ wrapper }}" >/dev/null
+      {% endfor %}
+
+      printf "%s\n" "{{ item.xidi.archive_root }} {{ item.xidi.architecture | default('Win32') }}" > "$marker"
+      printf "%s\n" "installed-xidi {{ item.name }}"
+    '
+  register: _pc_racing_xidi
+  changed_when: "'installed-xidi' in _pc_racing_xidi.stdout"
+  loop: "{{ _dg_pc_racing_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: item.xidi is defined
+
+- name: Write PC racing Xidi configuration
+  ansible.builtin.copy:
+    dest: "{{ item.installed_path | default(dg_pc_racing_install_root ~ '/' ~ item.slug) }}/Xidi.ini"
+    content: "{{ item.xidi.config }}"
+    mode: "0644"
+  loop: "{{ _dg_pc_racing_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - item.xidi is defined
+    - item.xidi.config is defined
+
 - name: Cache PC racing local zip patches
   ansible.builtin.shell: |
     {{ dg_in_box }} sh -lc '

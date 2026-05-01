@@ -7,6 +7,9 @@ dg_pc_racing_prefix_root: "{{ dg_box_home }}/wineprefixes/pc-racing"
 dg_pc_racing_media_root: "{{ dg_box_home }}/tools/pc-racing/media"
 dg_pc_racing_cache_root: "{{ dg_box_home }}/cache/pc-racing"
 dg_pc_racing_directx_jun2010_redist: "{{ dg_pc_racing_source_root }}/Project 06 - Silver Release (Patch v1.45)/Sonic the Hedgehog (P-06)/Redist/directx_Jun2010_redist.exe"
+dg_pc_racing_xidi_version: v4.3.1
+dg_pc_racing_xidi_url: "https://github.com/samuelgr/Xidi/releases/download/{{ dg_pc_racing_xidi_version }}/Xidi-{{ dg_pc_racing_xidi_version }}.zip"
+dg_pc_racing_xidi_archive: "{{ dg_pc_racing_cache_root }}/Xidi-{{ dg_pc_racing_xidi_version }}.zip"
 dg_pc_racing_wine_path: /usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 dg_pc_racing_winearch: win64
 dg_pc_racing_gamescope_enabled: true
@@ -100,11 +103,65 @@ dg_pc_racing_games:
       - "/DIR=G:\\colin-mcrae-rally-3"
     launch_exe: "Rally_3PC.exe"
     installed_path: "{{ dg_pc_racing_install_root }}/colin-mcrae-rally-3"
-    gamescope_enabled: false
+    winebus_registry:
+      - name: Map Controllers
+        value: 1
+    gamescope_enabled: true
+    gamescope_game_width: "{{ dg_pc_racing_gamescope_width }}"
+    gamescope_game_height: "{{ dg_pc_racing_gamescope_height }}"
+    gamescope_output_width: "{{ dg_pc_racing_gamescope_width }}"
+    gamescope_output_height: "{{ dg_pc_racing_gamescope_height }}"
     env:
       - name: WINEDLLOVERRIDES
-        value: "dinput8,d3d9=n,b"
-    notes: "Magipack Inno Setup repack installed silently to G:\\colin-mcrae-rally-3. The repack notes state patch 1.1, SilentPatch v2.1, language pack, HD UI, and dgVoodoo D3D9 support are already included; native dinput8 is required for the bundled ASI loader."
+        value: "dinput8,dsound,d3d9=n,b"
+    xidi:
+      source: "{{ dg_pc_racing_xidi_archive }}"
+      url: "{{ dg_pc_racing_xidi_url }}"
+      archive_root: "Xidi-{{ dg_pc_racing_xidi_version }}"
+      architecture: Win32
+      wrappers:
+        - dinput8.dll
+      preserve_as_proxy:
+        source: dinput8.dll
+        dest: dsound.dll
+      config: |
+        [Mapper]
+        Type = CMR3Gamepad
+
+        [CustomMapper:CMR3Gamepad]
+        Template = StandardGamepad
+        StickLeftX = Axis(X)
+        StickLeftY = Null
+        TriggerRT = Axis(Y, -)
+        TriggerLT = Axis(Y, +)
+        DpadUp = Keyboard(UpArrow)
+        DpadDown = Keyboard(DownArrow)
+        DpadLeft = Keyboard(LeftArrow)
+        DpadRight = Keyboard(RightArrow)
+        ButtonStart = Keyboard(Enter)
+        ButtonBack = Keyboard(Esc)
+
+        [Properties]
+        UseBuiltInProperties = yes
+        DeadzonePercentStickLeft = 5
+        DeadzonePercentStickRight = 5
+        DeadzonePercentTriggerLT = 0
+        DeadzonePercentTriggerRT = 0
+        SaturationPercentStickLeft = 100
+        SaturationPercentStickRight = 100
+        SaturationPercentTriggerLT = 100
+        SaturationPercentTriggerRT = 100
+
+        [Log]
+        Enabled = no
+        Level = 1
+
+        [Import]
+        dinput8.dll = C:\Windows\system32\dinput8.dll
+
+        [Workarounds]
+        ActiveVirtualControllerMask = 0x01
+    notes: "Magipack Inno Setup repack installed silently to G:\\colin-mcrae-rally-3. The repack notes state patch 1.1, SilentPatch v2.1, language pack, HD UI, and dgVoodoo D3D9 support are already included. Gamescope pins output to the configured 1440p monitor. Xidi provides a local DirectInput compatibility layer: RT/LT are mapped to the virtual left-stick Y axis because CMR3 binds accelerator/brake there, and physical left-stick Y is ignored to avoid accidental throttle. The bundled Ultimate ASI Loader is preserved as dsound.dll for SilentPatch."
 
   - slug: outrun-2006
     name: "OutRun 2006: Coast 2 Coast"

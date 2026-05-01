@@ -18,6 +18,61 @@ launch path. Reuse the existing data fields for silent installer flags,
 downloadable ZIP patches, `winetricks` components, DLL overrides, INI edits,
 and controller quirks instead of creating one-off role logic.
 
+Every new Wine game must explicitly choose a display and controller baseline
+before the first launcher test. If the game can fullscreen or query monitor
+modes directly, set `gamescope_enabled: true` and use the shared
+`dg_pc_racing_gamescope_width`/`dg_pc_racing_gamescope_height` values so Wine
+does not select the portrait monitor.
+
+## Controller Policy
+
+USB gamepads are exposed through the distrobox's `/dev/input` and `/dev/hidraw`
+devices. The launcher pins SDL to the 8BitDo controller in XInput mode
+(`0x2dc8/0x310b`) and disables SDL HIDAPI to avoid duplicate keyboard, mouse,
+and HID interfaces being treated as stuck buttons. It still preserves
+`SDL_GAMECONTROLLERCONFIG` if you set a custom mapping before launching. The
+Wine prefix also sets `winebus` to `DisableHidraw=1`, `DisableInput=1`,
+`Enable SDL=1`, and `Map Controllers=0` by default. This keeps Wine from
+exposing duplicate raw event devices or an SDL-backed XInput virtual device
+unless a game explicitly needs one.
+
+`dg_pc_racing_dinput_disabled_joysticks` disables known pseudo-joystick HID
+interfaces, such as the Moonlander keyboard's ABS-axis interfaces, through
+Wine's `Software\Wine\DirectInput\Joysticks` registry key. This prevents menus
+from scrolling as if a direction were held.
+
+For controllers, first identify whether the game is a legacy DirectInput title
+or a newer XInput-aware title. Old DirectInput racing games often misread
+modern Xbox-style trigger axes: Linux and Wine expose released triggers at the
+minimum axis value, while Windows DirectInput compatibility often presents a
+different legacy view. The symptom is a phantom held direction, brake, or
+accelerator. Do not stack random `Map Controllers` toggles for these games.
+Use the role's `xidi` support when a legacy game needs a per-game DirectInput
+virtual controller or trigger remapping.
+
+Current per-game controller handling:
+
+- Colin McRae Rally 2.0 uses the global `Map Controllers=0` baseline and the
+  global duplicate-device filters. Do not enable Wine's controller mapping
+  unless retesting shows the game cannot see the pad.
+- Colin McRae Rally 3 uses `Map Controllers=1` plus a local Xidi virtual
+  controller. RT/LT are mapped to the virtual axis CMR3 binds as throttle and
+  brake, while physical left-stick Y is ignored.
+- OutRun 2006 uses the global `Map Controllers=0` baseline and native
+  `OutRun2006Tweaks` `dinput8.dll`; Xidi is not enabled because it would
+  conflict with the Tweaks loader.
+- Sega Rally Revo uses `Map Controllers=1`, because this game needs Wine's
+  SDL-backed XInput device to see the 8BitDo controller.
+- Sega Rally 2 stays on the restored DirectInput/Saturn-pad baseline with
+  `Map Controllers=0`. The Xidi trigger-keyboard experiment is explicitly
+  removed by Ansible because it caused repeated menu input.
+
+If `evdev-joystick --listdevs` only shows the Moonlander keyboard and SDL sees
+zero joysticks, the 8BitDo is in a hidraw-only mode such as `2dc8:6013`. Switch
+the controller/dongle to XInput mode so Linux creates a real `/dev/input/js*`
+or event device before launching Wine games. The distrobox cannot create that
+kernel input node by itself.
+
 Game payloads default to the distrobox home:
 
 ```text
@@ -119,36 +174,27 @@ drive and launches `Rally_3PC.exe`.
 
 The repack notes state that patch 1.1, SilentPatch v2.1, the language pack, HD
 UI assets, and dgVoodoo D3D9 support are already included. The installed game
-ships `dinput8.dll` and `SilentPatchCMR3.asi`; the wrapper therefore sets
-`WINEDLLOVERRIDES=dinput8,d3d9=n,b` so Wine loads the bundled ASI loader and
-the bundled D3D9 compatibility layer when present. Do not replace these with a
-separate patch unless the tested launcher regresses.
+ships `dinput8.dll` as Ultimate ASI Loader for `SilentPatchCMR3.asi`. The role
+preserves that loader as `dsound.dll`, installs Xidi's 32-bit `dinput8.dll`,
+and writes a CMR3-specific `Xidi.ini`. The wrapper sets
+`WINEDLLOVERRIDES=dinput8,dsound,d3d9=n,b` so Xidi handles DirectInput while
+SilentPatch still loads through the DSOUND proxy.
 
 The silent installer may still leave a final `Setup` window open after files
 are copied. Press Enter to close it if Ansible appears to wait after install.
 Once `Rally_3PC.exe` exists, rerunning the focused playbook skips the installer
 and only refreshes managed wrapper/desktop files.
 
-USB gamepads are exposed through the distrobox's `/dev/input` and `/dev/hidraw`
-devices. The launcher pins SDL to the 8BitDo controller in XInput mode
-(`0x2dc8/0x310b`) and disables SDL HIDAPI to avoid duplicate keyboard/mouse/HID
-interfaces being treated as stuck buttons. It still preserves
-`SDL_GAMECONTROLLERCONFIG` if you set a custom mapping before launching. The
-Wine prefix also sets `winebus` to `DisableHidraw=1`, `DisableInput=1`,
-`Enable SDL=1`, and `Map Controllers=0`. This keeps Wine from exposing duplicate
-raw event devices or an SDL-backed XInput virtual device, while still allowing
-the cleaner SDL controller path. OutRun 2006 otherwise sees a phantom held
-direction in menus even when Linux SDL and evdev report the 8BitDo as neutral.
-`dg_pc_racing_dinput_disabled_joysticks` disables known pseudo-joystick HID
-interfaces, such as the Moonlander keyboard's ABS-axis interfaces, through
-Wine's `Software\Wine\DirectInput\Joysticks` registry key. This prevents menus
-from scrolling as if a direction were held.
-
-If `evdev-joystick --listdevs` only shows the Moonlander keyboard and SDL sees
-zero joysticks, the 8BitDo is in a hidraw-only mode such as `2dc8:6013`. Switch
-the controller/dongle to XInput mode so Linux creates a real `/dev/input/js*`
-or event device before launching Wine games. The distrobox cannot create that
-kernel input node by itself.
+The launcher wraps the game in `gamescope` at the configured 2560x1440 output
+to avoid the same portrait-monitor mode selection seen in other Wine games.
+Colin 3 also overrides Wine's `Map Controllers` to `1` so Wine exposes the
+SDL-backed XInput device that Xidi consumes. Raw Wine DirectInput trigger axes
+caused the accelerator to behave as permanently pressed; Xidi is the intended
+compatibility layer for this class of games.
+In CMR3's controller setup, the game binds accelerator/brake to the virtual
+left-stick Y axis. The managed Xidi mapper therefore sends physical RT to
+virtual left-stick up, physical LT to virtual left-stick down, and ignores
+physical left-stick Y so steering cannot accidentally apply throttle or brake.
 
 The game list lives in `ansible/group_vars/all/pc_racing.yml`.
 

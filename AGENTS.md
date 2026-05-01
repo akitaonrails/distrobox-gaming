@@ -45,6 +45,15 @@ game, such as required `winetricks` components, DLL overrides, DXVK needs,
 controller quirks, and installer flags, as data-driven `dg_*` variables so the
 next Wine game benefits from the same path.
 
+For each new Wine game, preconfigure the known display and controller baseline
+before launch testing. Use gamescope with the shared 1440p `dg_pc_racing_*`
+settings when a game can pick monitor modes directly, and explicitly choose the
+per-game `Map Controllers` value instead of relying on trial-and-error after the
+user tests. For legacy DirectInput games, prefer the role's Xidi support and a
+per-game virtual controller mapping over ad hoc registry toggles when modern
+controller triggers show up as permanently pressed axes. Document each game's
+controller policy in `docs/pc-racing.md`.
+
 ## Coding Style & Naming Conventions
 
 Use YAML with two-space indentation. Prefix project variables with `dg_`.
