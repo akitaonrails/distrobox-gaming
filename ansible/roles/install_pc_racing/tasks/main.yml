@@ -152,6 +152,32 @@
   loop: "{{ _dg_pc_racing_games_selected | product(dg_pc_racing_winebus_registry) | list }}"
   loop_control:
     label: "{{ item.0.name }} / {{ item.1.name }}"
+  when: item.1.name not in (item.0.winebus_registry | default([]) | map(attribute='name') | list)
+
+- name: Configure per-game PC racing Wine controller backend overrides
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      export WINEPREFIX="{{ dg_pc_racing_prefix_root }}/{{ item.0.slug }}"
+      export WINEARCH="{{ dg_pc_racing_winearch }}"
+      export WINEDEBUG=-all
+      export PATH="{{ dg_pc_racing_wine_path }}"
+      key="HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\winebus"
+      name="{{ item.1.name }}"
+      value="{{ item.1.value }}"
+
+      if env -u PYTHONHOME -u PYTHONPATH wine reg query "$key" /v "$name" 2>/dev/null | grep -Eq "REG_DWORD[[:space:]]+0x0*${value}"; then
+        exit 0
+      fi
+
+      env -u PYTHONHOME -u PYTHONPATH wine reg add "$key" /v "$name" /t REG_DWORD /d "$value" /f
+      printf "%s\n" "configured-winebus-override {{ item.0.name }} $name=$value"
+    '
+  register: _pc_racing_winebus_overrides
+  changed_when: "'configured-winebus-override' in _pc_racing_winebus_overrides.stdout"
+  loop: "{{ _dg_pc_racing_games_selected | subelements('winebus_registry', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }} / {{ item.1.name }}"
 
 - name: Disable known bad DirectInput pseudo-joysticks
   ansible.builtin.shell: |
@@ -234,9 +260,53 @@
     label: "{{ item.item.0.name }} / {{ item.item.1 }}"
   when: not item.stat.exists
 
+- name: Check PC racing DirectX redist markers
+  ansible.builtin.stat:
+    path: "{{ dg_pc_racing_prefix_root }}/{{ item.0.slug }}/.dg-directx-redist-{{ item.1.name }}"
+  register: _pc_racing_directx_redist_markers
+  loop: "{{ _dg_pc_racing_games_selected | subelements('directx_redists', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }} / {{ item.1.name }}"
+
+- name: Install PC racing DirectX redists
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      source="{{ item.item.1.source }}"
+      extract_dir="{{ dg_pc_racing_cache_root }}/{{ item.item.0.slug }}-{{ item.item.1.name }}"
+      marker="{{ dg_pc_racing_prefix_root }}/{{ item.item.0.slug }}/.dg-directx-redist-{{ item.item.1.name }}"
+
+      if [ ! -f "$source" ]; then
+        printf "%s\n" "ERROR: DirectX redist missing: $source" >&2
+        exit 1
+      fi
+
+      mkdir -p "$extract_dir"
+      if [ ! -f "$extract_dir/DXSETUP.exe" ]; then
+        7z x -y -o"$extract_dir" "$source" >/dev/null
+      fi
+
+      cd "$extract_dir"
+      WINEPREFIX="{{ dg_pc_racing_prefix_root }}/{{ item.item.0.slug }}" \
+      WINEARCH="{{ dg_pc_racing_winearch }}" \
+      WINEDEBUG=-all \
+      PATH="{{ dg_pc_racing_wine_path }}" \
+      timeout 300 env -u PYTHONHOME -u PYTHONPATH wine DXSETUP.exe /silent
+      printf "%s\n" "{{ item.item.1.name }}" > "$marker"
+    '
+  register: _pc_racing_directx_redists
+  changed_when: _pc_racing_directx_redists.rc == 0
+  loop: "{{ _pc_racing_directx_redist_markers.results | default([]) }}"
+  loop_control:
+    label: "{{ item.item.0.name }} / {{ item.item.1.name }}"
+  when: not item.stat.exists
+
 - name: Copy unpacked PC racing games to install root
   ansible.builtin.shell: >-
     {{ dg_in_box }} rsync -a --ignore-existing --info=NAME
+    {% for disabled_file in item.disabled_files | default([]) %}
+    --exclude '{{ disabled_file }}'
+    {% endfor %}
     '{{ item.source_dir }}/'
     '{{ dg_pc_racing_install_root }}/{{ item.slug }}/'
   register: _pc_racing_copy
@@ -262,7 +332,36 @@
     dest: "{{ dg_pc_racing_prefix_root }}/{{ item.0.slug }}/drive_c/users/{{ ansible_facts.user_id }}/Documents/{{ item.1.path }}"
     content: "{{ item.1.content }}"
     mode: "0644"
+    force: "{{ item.1.force | default(true) }}"
   loop: "{{ _dg_pc_racing_games_selected | subelements('documents_config_files', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }} / {{ item.1.path }}"
+
+- name: Create PC racing game prefix directories
+  ansible.builtin.file:
+    path: "{{ dg_pc_racing_prefix_root }}/{{ item.0.slug }}/{{ item.1 }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ _dg_pc_racing_games_selected | subelements('prefix_directories', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }} / {{ item.1 }}"
+
+- name: Create PC racing game prefix file parent directories
+  ansible.builtin.file:
+    path: "{{ dg_pc_racing_prefix_root }}/{{ item.0.slug }}/{{ item.1.path | dirname }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ _dg_pc_racing_games_selected | subelements('prefix_files', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }} / {{ item.1.path | dirname }}"
+
+- name: Seed PC racing game prefix files
+  ansible.builtin.copy:
+    dest: "{{ dg_pc_racing_prefix_root }}/{{ item.0.slug }}/{{ item.1.path }}"
+    content: "{{ item.1.content | default('') }}"
+    mode: "{{ item.1.mode | default('0644') }}"
+    force: "{{ item.1.force | default(false) }}"
+  loop: "{{ _dg_pc_racing_games_selected | subelements('prefix_files', skip_missing=True) }}"
   loop_control:
     label: "{{ item.0.name }} / {{ item.1.path }}"
 

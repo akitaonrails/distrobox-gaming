@@ -6,6 +6,7 @@ dg_pc_racing_install_root: "{{ dg_box_home }}/Games/pc-racing"
 dg_pc_racing_prefix_root: "{{ dg_box_home }}/wineprefixes/pc-racing"
 dg_pc_racing_media_root: "{{ dg_box_home }}/tools/pc-racing/media"
 dg_pc_racing_cache_root: "{{ dg_box_home }}/cache/pc-racing"
+dg_pc_racing_directx_jun2010_redist: "{{ dg_pc_racing_source_root }}/Project 06 - Silver Release (Patch v1.45)/Sonic the Hedgehog (P-06)/Redist/directx_Jun2010_redist.exe"
 dg_pc_racing_wine_path: /usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 dg_pc_racing_winearch: win64
 dg_pc_racing_gamescope_enabled: true
@@ -154,10 +155,19 @@ dg_pc_racing_games:
     source_dir: "{{ dg_pc_racing_source_root }}/SEGA-Rally-Revo_Win_EN-FR-DE-ES-IT-PL_Full-Rip/Sega Rally"
     launch_exe: "SEGA Rally.exe"
     installed_path: "{{ dg_pc_racing_install_root }}/sega-rally-revo"
+    disabled_files:
+      - "Bootup/video/Rally/SEGA_Logo720p.wmv"
+      - "Bootup/video/Rally/SRS_Logo_1.wmv"
     winetricks_components:
       - directplay
       - d3dx9
       - dxvk
+    directx_redists:
+      - name: directx-jun2010
+        source: "{{ dg_pc_racing_directx_jun2010_redist }}"
+    winebus_registry:
+      - name: Map Controllers
+        value: 1
     registry_values:
       - key: "HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Sega\\SEGA Rally"
         name: installdir
@@ -170,6 +180,7 @@ dg_pc_racing_games:
         value: English
     documents_config_files:
       - path: "SEGA Rally/Saved Games/config.ini"
+        force: false
         content: |
           [Audio]
           DriverGUID=00000000-0000-0000-0000-000000000000
@@ -206,4 +217,12 @@ dg_pc_racing_games:
           ShaderVersion=3
           RunWindowed=0
           RefreshRate=60
+    prefix_directories:
+      - "drive_c/users/Public/Documents/SEGA Rally/Shared Data/Ghosts"
+      - "drive_c/users/Public/Documents/SEGA Rally/Shared Data/Rank Table"
+    prefix_files:
+      - path: "drive_c/users/{{ ansible_facts.user_id }}/Documents/SEGA Rally/Saved Games/SEGA Rally.dat"
+        force: false
+      - path: "drive_c/users/Public/Documents/SEGA Rally/Shared Data/Rank Table/SR_RANKTABLES.DAT"
+        force: false
     notes: "Full-rip payload copied directly from ROMS_FINAL. Registry values replace the shipped SEGA Rally.reg, and config.ini is seeded directly because the .NET launcher UI is unreliable under Wine."

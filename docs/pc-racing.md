@@ -153,7 +153,36 @@ values for `installdir`, `sku`, and `language`.
 The .NET launcher can create `config.ini`, but its UI is unreliable under Wine.
 The role therefore seeds
 `Documents\SEGA Rally\Saved Games\config.ini` directly with a 2560x1440,
-high-quality, 60 Hz configuration. The game uses Direct3D 9, so the focused
-playbook installs `directplay`, `d3dx9`, and `dxvk` into the per-game prefix.
-The launcher runs `SEGA Rally.exe`; keep `SEGA Rally_SSE1.exe` only as a fallback
-for older CPUs.
+high-quality, 60 Hz configuration. The game ignores `RunWindowed=1` in this
+Wine setup and still requests an exclusive fullscreen mode, which crashes
+outside containment with an XRandR `RRSetCrtcConfig` error. The launcher runs
+the game through `gamescope` at a fixed 2560x1440 to keep it on the ASUS
+monitor and avoid the portrait display mode.
+
+The startup videos are disabled by backing up and removing the two WMV files
+under `Bootup/video/Rally`. Wine's Quartz/GStreamer path spends a long time on
+those files and makes startup look stuck even though DXVK has initialized.
+The role also creates the expected `Saved Games` and Public Documents
+`Shared Data` layout, including initial `SEGA Rally.dat` and
+`SR_RANKTABLES.DAT` files without overwriting later real saves. Without that
+layout, the game can reach the main menu and then crash with an access
+violation.
+
+The game uses Direct3D 9, so the focused playbook installs `directplay`,
+`d3dx9`, `dxvk`, and the offline June 2010 DirectX runtime into the per-game
+prefix. The full-rip only ships `dxwebsetup.exe`; the role uses
+`dg_pc_racing_directx_jun2010_redist` instead. In the tested setup, installing
+that offline DirectX runtime stopped the repeatable main-menu access violation.
+
+Ansible seeds `config.ini` only when it is missing, then leaves it alone so the
+game or launcher can preserve controller GUIDs. Sega Rally needs the 8BitDo in
+XInput mode (`2dc8:310b`) with a real `/dev/input/js*` device. If the controller
+is in `2dc8:6013` mode, Linux exposes only hidraw and Wine cannot present it as
+a usable joystick to this game. Sega Rally also overrides `Map Controllers=1`
+for its prefix so Wine can expose the SDL-backed XInput controller; the global
+PC racing default stays `Map Controllers=0` for games that get duplicate or
+stuck inputs.
+
+The launcher runs `SEGA Rally.exe`; keep `SEGA Rally_SSE1.exe` only as a
+fallback for older CPUs. In testing, `SEGA Rally_SSE1.exe` crashed on the same
+main-menu path before the offline DirectX runtime was installed.
