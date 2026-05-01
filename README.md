@@ -39,6 +39,7 @@ ansible-playbook install-xenia.yml      # install/update Xenia Manager (optional
 ansible-playbook install-hedgemodmanager.yml  # install/update Hedge Mod Manager
 ansible-playbook install-pc-racing.yml  # prepare/install optional Windows PC racing games
 ansible-playbook install-outrun-2006.yml  # install/update OutRun 2006
+ansible-playbook install-sega-rally-revo.yml  # install/update Sega Rally Revo
 ansible-playbook install-sonic-p06.yml  # install/update Sonic Project '06
 ansible-playbook install-unleashed-recomp.yml  # install/update Unleashed Recompiled
 ```
@@ -402,6 +403,7 @@ ansible/                            # Ansible playbooks and roles (primary)
   install-hedgemodmanager.yml       # standalone Hedge Mod Manager install
   install-pc-racing.yml             # optional Windows PC racing setup
   install-outrun-2006.yml           # focused OutRun 2006 install
+  install-sega-rally-revo.yml       # focused Sega Rally Revo install
   install-sonic-p06.yml             # optional Sonic Project '06 setup
   install-unleashed-recomp.yml      # optional Unleashed Recompiled install
   group_vars/all/                   # all dg_* variable defaults

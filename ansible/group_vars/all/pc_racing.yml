@@ -147,3 +147,63 @@ dg_pc_racing_games:
         value: "{{ dg_pc_racing_target_monitor_y }}"
         separator: " = "
     notes: "Inno Setup repack installed silently to G:\\outrun-2006. OutRun2006Tweaks replaces the DRM-sensitive EXE and must load through native dinput8. The bundled SpecialK d3d9 files are backed up and disabled so prefix DXVK can provide D3D9."
+
+  - slug: sega-rally-revo
+    name: "Sega Rally Revo"
+    install_mode: copy
+    source_dir: "{{ dg_pc_racing_source_root }}/SEGA-Rally-Revo_Win_EN-FR-DE-ES-IT-PL_Full-Rip/Sega Rally"
+    launch_exe: "SEGA Rally.exe"
+    installed_path: "{{ dg_pc_racing_install_root }}/sega-rally-revo"
+    winetricks_components:
+      - directplay
+      - d3dx9
+      - dxvk
+    registry_values:
+      - key: "HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Sega\\SEGA Rally"
+        name: installdir
+        value: "G:\\sega-rally-revo"
+      - key: "HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Sega\\SEGA Rally"
+        name: sku
+        value: Europe
+      - key: "HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Sega\\SEGA Rally"
+        name: language
+        value: English
+    documents_config_files:
+      - path: "SEGA Rally/Saved Games/config.ini"
+        content: |
+          [Audio]
+          DriverGUID=00000000-0000-0000-0000-000000000000
+          Quality=3
+          SoftwareEmulation=0
+
+          [GameController]
+          GUID=
+          Mapping=000100010000000100000000-0000-0000-0000-0000000000000000000E000F001200130014000200030017001800010000
+
+          [Graphics]
+          AdapterOrdinal=0
+          RenderDevice=Hardware
+          AdapterFormat=X8R8G8B8
+          HorizontalResolution=2560
+          VerticalResolution=1440
+          ResolutionFilter=1
+          BackBufferFormat=A8R8G8B8
+          DepthStencilFormat=D24S8
+          AntiAliasingLevel=0
+          MultisampleType=0
+          MultisampleQuality=0
+          GraphicQuality=3
+          ShadowQuality=2
+          ReflectionQuality=2
+          TrackQuality=3
+          TextureQuality=2
+          ShaderQuality=1
+          DrawDistanceQuality=2
+          ParticleQuality=2
+          RearViewMirrorQuality=2
+          MudQuality=1
+          VSync=1
+          ShaderVersion=3
+          RunWindowed=0
+          RefreshRate=60
+    notes: "Full-rip payload copied directly from ROMS_FINAL. Registry values replace the shipped SEGA Rally.reg, and config.ini is seeded directly because the .NET launcher UI is unreliable under Wine."

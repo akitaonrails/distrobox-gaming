@@ -9,6 +9,7 @@ Currently managed games:
 
 - Colin McRae Rally 2.0
 - OutRun 2006: Coast 2 Coast
+- Sega Rally Revo
 
 Add more entries to `dg_pc_racing_games` only after testing their install and
 launch path. Reuse the existing data fields for silent installer flags,
@@ -40,6 +41,13 @@ Focused install for OutRun 2006:
 ```sh
 cd ansible
 ansible-playbook install-outrun-2006.yml
+```
+
+Focused install for Sega Rally Revo:
+
+```sh
+cd ansible
+ansible-playbook install-sega-rally-revo.yml
 ```
 
 Install or refresh host menu entries separately from the host:
@@ -132,3 +140,20 @@ borderless window to the target monitor; on the tested layout this is the ASUS
 `DP-1` monitor at `2160,0` in XRandR coordinates. Antialiasing stays disabled in
 `outrun2006.ini` until DXVK is confirmed stable with the game's multisample
 mode.
+
+## Sega Rally Revo
+
+Sega Rally Revo uses the full-rip payload under
+`{{ dg_pc_racing_source_root }}/SEGA-Rally-Revo_Win_EN-FR-DE-ES-IT-PL_Full-Rip/Sega Rally`.
+It is copied directly to `{{ dg_pc_racing_install_root }}/sega-rally-revo`
+instead of running an installer. The role replaces the shipped `SEGA Rally.reg`
+by writing the required `HKLM\SOFTWARE\WOW6432Node\Sega\SEGA Rally` registry
+values for `installdir`, `sku`, and `language`.
+
+The .NET launcher can create `config.ini`, but its UI is unreliable under Wine.
+The role therefore seeds
+`Documents\SEGA Rally\Saved Games\config.ini` directly with a 2560x1440,
+high-quality, 60 Hz configuration. The game uses Direct3D 9, so the focused
+playbook installs `directplay`, `d3dx9`, and `dxvk` into the per-game prefix.
+The launcher runs `SEGA Rally.exe`; keep `SEGA Rally_SSE1.exe` only as a fallback
+for older CPUs.

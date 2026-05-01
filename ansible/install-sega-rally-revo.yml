@@ -1,0 +1,12 @@
+---
+- name: Install or update Sega Rally Revo
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  vars:
+    dg_pc_racing_selected_slugs:
+      - sega-rally-revo
+    dg_pc_racing_export_desktop: true
+  roles:
+    - install_pc_racing
+    - { role: verify, tags: [verify] }

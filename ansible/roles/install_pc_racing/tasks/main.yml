@@ -178,6 +178,36 @@
     label: "{{ item.0.name }} / {{ item.1 }}"
   when: dg_pc_racing_dinput_disabled_joysticks | length > 0
 
+- name: Configure PC racing game registry values
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      export WINEPREFIX="{{ dg_pc_racing_prefix_root }}/{{ item.0.slug }}"
+      export WINEARCH="{{ dg_pc_racing_winearch }}"
+      export WINEDEBUG=-all
+      export PATH="{{ dg_pc_racing_wine_path }}"
+      key="{{ item.1.key }}"
+      name="{{ item.1.name }}"
+      type="{{ item.1.type | default('REG_SZ') }}"
+      value="{{ item.1.value }}"
+
+      if [ "$type" = "REG_DWORD" ]; then
+        if env -u PYTHONHOME -u PYTHONPATH wine reg query "$key" /v "$name" 2>/dev/null | grep -Eq "REG_DWORD[[:space:]]+0x0*${value}"; then
+          exit 0
+        fi
+      elif env -u PYTHONHOME -u PYTHONPATH wine reg query "$key" /v "$name" 2>/dev/null | grep -F "$value" >/dev/null; then
+        exit 0
+      fi
+
+      env -u PYTHONHOME -u PYTHONPATH wine reg add "$key" /v "$name" /t "$type" /d "$value" /f
+      printf "%s\n" "configured-registry {{ item.0.name }} $key $name=$value"
+    '
+  register: _pc_racing_registry_values
+  changed_when: "'configured-registry' in _pc_racing_registry_values.stdout"
+  loop: "{{ _dg_pc_racing_games_selected | subelements('registry_values', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }} / {{ item.1.name }}"
+
 - name: Check PC racing winetricks component markers
   ansible.builtin.stat:
     path: "{{ dg_pc_racing_prefix_root }}/{{ item.0.slug }}/.dg-winetricks-{{ item.1 }}"
@@ -217,6 +247,24 @@
   when:
     - dg_pc_racing_copy_unpacked | bool
     - item.install_mode == 'copy'
+
+- name: Create PC racing game documents config directories
+  ansible.builtin.file:
+    path: "{{ dg_pc_racing_prefix_root }}/{{ item.0.slug }}/drive_c/users/{{ ansible_facts.user_id }}/Documents/{{ item.1.path | dirname }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ _dg_pc_racing_games_selected | subelements('documents_config_files', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }} / {{ item.1.path | dirname }}"
+
+- name: Write PC racing game documents config files
+  ansible.builtin.copy:
+    dest: "{{ dg_pc_racing_prefix_root }}/{{ item.0.slug }}/drive_c/users/{{ ansible_facts.user_id }}/Documents/{{ item.1.path }}"
+    content: "{{ item.1.content }}"
+    mode: "0644"
+  loop: "{{ _dg_pc_racing_games_selected | subelements('documents_config_files', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }} / {{ item.1.path }}"
 
 - name: Deploy PC racing launcher wrappers
   ansible.builtin.template:
