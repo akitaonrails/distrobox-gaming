@@ -425,6 +425,39 @@
     - item.item.install_mode in ['installer', 'iso']
     - item.rc != 0
 
+- name: Cache PC racing local zip patches
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      game_dir="{{ item.0.installed_path | default(dg_pc_racing_install_root ~ "/" ~ item.0.slug) }}"
+      patch_src="{{ item.1.source }}"
+      pattern="{{ item.1.cache_from_pattern }}"
+
+      if [ -f "$patch_src" ]; then
+        exit 0
+      fi
+      if [ ! -d "$game_dir" ]; then
+        printf "%s\n" "ERROR: game directory missing: $game_dir" >&2
+        exit 1
+      fi
+
+      found="$(find "$game_dir" -path "$game_dir/$pattern" -type f -print -quit)"
+      if [ -z "$found" ]; then
+        printf "%s\n" "ERROR: local patch missing under $game_dir matching $pattern" >&2
+        exit 1
+      fi
+
+      mkdir -p "$(dirname "$patch_src")"
+      cp "$found" "$patch_src"
+      printf "%s\n" "cached-local-patch {{ item.0.name }} {{ item.1.name }}"
+    '
+  register: _pc_racing_local_patches
+  changed_when: "'cached-local-patch' in _pc_racing_local_patches.stdout"
+  loop: "{{ _dg_pc_racing_games_selected | subelements('patches', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }} / {{ item.1.name }}"
+  when: item.1.cache_from_pattern is defined
+
 - name: Download PC racing game zip patches
   ansible.builtin.get_url:
     url: "{{ item.1.url }}"
@@ -461,7 +494,18 @@
         cp "$game_dir/{{ item.1.backup_exe | default('') }}" "$game_dir/{{ item.1.backup_exe | default('') }}.original"
       fi
 
-      7z x -y -o"$game_dir" "$patch_src" >/dev/null
+      {% for backup_file in item.1.backup_files | default([]) %}
+      if [ -f "$game_dir/{{ backup_file }}" ] &&
+         [ ! -f "$game_dir/{{ backup_file }}.original" ]; then
+        cp "$game_dir/{{ backup_file }}" "$game_dir/{{ backup_file }}.original"
+      fi
+      {% endfor %}
+
+      if [ "{{ item.1.extract_flat | default(false) }}" = "True" ]; then
+        7z e -y -o"$game_dir" "$patch_src" >/dev/null
+      else
+        7z x -y -o"$game_dir" "$patch_src" >/dev/null
+      fi
       printf "%s\n" "patched {{ item.0.name }} with {{ item.1.name }}"
     '
   register: _pc_racing_patches
@@ -469,6 +513,19 @@
   loop: "{{ _dg_pc_racing_games_selected | subelements('patches', skip_missing=True) }}"
   loop_control:
     label: "{{ item.0.name }} / {{ item.1.name }}"
+
+- name: Configure PC racing game managed text blocks
+  ansible.builtin.blockinfile:
+    path: "{{ item.0.installed_path | default(dg_pc_racing_install_root ~ '/' ~ item.0.slug) }}/{{ item.1.file }}"
+    marker: "{{ item.1.marker | default('# {mark} distrobox-gaming ' ~ item.1.name) }}"
+    insertafter: "{{ item.1.insertafter | default(omit) }}"
+    create: "{{ item.1.create | default(false) }}"
+    state: "{{ item.1.state | default('present') }}"
+    mode: "{{ item.1.mode | default('0644') }}"
+    block: "{{ item.1.block }}"
+  loop: "{{ _dg_pc_racing_games_selected | subelements('config_blocks', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }} / {{ item.1.file }} {{ item.1.name }}"
 
 - name: Disable PC racing local files that conflict with Wine runtime
   ansible.builtin.shell: |

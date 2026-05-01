@@ -9,6 +9,7 @@ Currently managed games:
 
 - Colin McRae Rally 2.0
 - OutRun 2006: Coast 2 Coast
+- Sega Rally 2: 25th Anniversary Edition
 - Sega Rally Revo
 
 Add more entries to `dg_pc_racing_games` only after testing their install and
@@ -48,6 +49,13 @@ Focused install for Sega Rally Revo:
 ```sh
 cd ansible
 ansible-playbook install-sega-rally-revo.yml
+```
+
+Focused install for Sega Rally 2:
+
+```sh
+cd ansible
+ansible-playbook install-sega-rally-2.yml
 ```
 
 Install or refresh host menu entries separately from the host:
@@ -186,3 +194,43 @@ stuck inputs.
 The launcher runs `SEGA Rally.exe`; keep `SEGA Rally_SSE1.exe` only as a
 fallback for older CPUs. In testing, `SEGA Rally_SSE1.exe` crashed on the same
 main-menu path before the offline DirectX runtime was installed.
+
+## Sega Rally 2
+
+Sega Rally 2 uses the OldNewPixel 25th Anniversary Inno Setup package under
+`{{ dg_pc_racing_source_root }}/Sega-Rally-2-Championship_Win_EN-ES_25th-Anniversary-Edition-by-OldNewPixel`.
+The focused playbook installs it silently to `G:\sega-rally-2` and launches
+`SEGA RALLY 2.exe`.
+
+The package ships its own compatibility stack: dgVoodoo files
+(`DDraw.dll`, `D3DImm.dll`), ReShade (`dxgi.dll`), Xidi (`dinput.dll`), and
+`_inmm.dll` music support. The launcher sets
+`WINEDLLOVERRIDES=ddraw,d3dimm,dxgi,dinput=n,b` so Wine prefers those bundled
+DLLs. The game still renders internally at 800x600; the wrapper runs gamescope
+with an 800x600 internal size and the configured 2560x1440 output using
+`-S fit`, which preserves the 4:3 aspect ratio with pillarboxing.
+
+The focused playbook also applies the bundled "If XInput gamepad doesn't work"
+troubleshooting ZIP from the installed game directory. This adds `dinput8.dll`
+beside the game executable and backs up the original `dinput.dll` as
+`dinput.dll.original` before replacement. The launcher still forces only
+`dinput=n,b`; forcing native `dinput8` and enabling Wine's `Map Controllers=1`
+made the menu repeat an up input and later caused the controller to disappear
+from the game. Keep Sega Rally 2 on the restored DirectInput/Saturn-pad
+baseline: `Map Controllers=0`, `nDeviceType=07000000`, and `InputSettings=7`.
+
+Controller status is partially working. Steering, menu buttons, and the pad
+itself are detected on the restored baseline, but accelerator input remains
+unresolved in Wine. Do not re-enable the XInput/Xidi trigger-keyboard fallback
+without retesting for repeated menu input. The launcher keeps an absent managed
+block for that experiment so Ansible removes any stale `TriggerRT=Keyboard(X)`
+and `TriggerLT=Keyboard(C)` lines from `Xidi.ini`.
+
+During manual testing, the game kept running and music continued even when the
+gamescope window lost focus or disappeared behind the desktop. Test from the
+host launcher rather than from an active terminal so tmux or assistant output
+does not steal focus while the game is switching modes.
+The bundled manual documents `Alt+F4` as the clean application quit shortcut;
+use that instead of Hyprland force-close, which can leave the game or
+`_inmmserv.exe` alive. The generated wrapper still supervises gamescope and
+runs `wineserver -k` for this prefix when gamescope exits.

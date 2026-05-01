@@ -226,3 +226,52 @@ dg_pc_racing_games:
       - path: "drive_c/users/Public/Documents/SEGA Rally/Shared Data/Rank Table/SR_RANKTABLES.DAT"
         force: false
     notes: "Full-rip payload copied directly from ROMS_FINAL. Registry values replace the shipped SEGA Rally.reg, and config.ini is seeded directly because the .NET launcher UI is unreliable under Wine."
+
+  - slug: sega-rally-2
+    name: "Sega Rally 2: 25th Anniversary Edition"
+    install_mode: installer
+    source_dir: "{{ dg_pc_racing_source_root }}/Sega-Rally-2-Championship_Win_EN-ES_25th-Anniversary-Edition-by-OldNewPixel"
+    installer: "Sega Rally 2 25th Anniversary.exe"
+    install_args:
+      - /VERYSILENT
+      - /SUPPRESSMSGBOXES
+      - /NORESTART
+      - /SP-
+      - "/DIR=G:\\sega-rally-2"
+    launch_exe: "SEGA RALLY 2.exe"
+    installed_path: "{{ dg_pc_racing_install_root }}/sega-rally-2"
+    winebus_registry:
+      - name: Map Controllers
+        value: 0
+    registry_values:
+      - key: "HKEY_LOCAL_MACHINE\\Software\\Wow6432Node\\Sega\\SEGA RALLY 2\\ControlPanel\\Profiles\\0"
+        name: nDeviceType
+        type: REG_BINARY
+        value: "07000000"
+      - key: "HKEY_LOCAL_MACHINE\\Software\\Wow6432Node\\Sega\\SEGA RALLY 2\\InputSettings"
+        name: "0"
+        value: "7"
+    gamescope_game_width: 800
+    gamescope_game_height: 600
+    gamescope_output_width: "{{ dg_pc_racing_gamescope_width }}"
+    gamescope_output_height: "{{ dg_pc_racing_gamescope_height }}"
+    gamescope_scaler: fit
+    gamescope_filter: linear
+    env:
+      - name: WINEDLLOVERRIDES
+        value: "ddraw,d3dimm,dxgi,dinput=n,b"
+    patches:
+      - name: Xidi XInput fallback
+        source: "{{ dg_pc_racing_cache_root }}/sega-rally-2-xinput-fallback.zip"
+        cache_from_pattern: "Troubleshooting/If XInput gamepad doesn*work.zip"
+        creates: "dinput8.dll"
+        extract_flat: true
+        backup_files:
+          - dinput.dll
+    config_blocks:
+      - name: xidi-trigger-keyboard-fallback
+        file: Xidi.ini
+        marker: "; {mark} distrobox-gaming xidi trigger keyboard fallback"
+        state: absent
+        block: ""
+    notes: "OldNewPixel Inno Setup package installed silently to G:\\sega-rally-2. The game renders internally at 800x600, so gamescope scales it to the configured 1440p output while preserving 4:3 aspect ratio."

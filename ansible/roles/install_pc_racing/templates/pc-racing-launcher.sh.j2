@@ -33,17 +33,45 @@ fi
 cd "$install_dir"
 {% if item.gamescope_enabled | default(dg_pc_racing_gamescope_enabled) | bool -%}
 if command -v gamescope >/dev/null 2>&1; then
-  exec env -u PYTHONHOME -u PYTHONPATH gamescope \
-    -W {{ dg_pc_racing_gamescope_width }} \
-    -H {{ dg_pc_racing_gamescope_height }} \
-    -w {{ dg_pc_racing_gamescope_width }} \
-    -h {{ dg_pc_racing_gamescope_height }} \
-    -f -- env -u PYTHONHOME -u PYTHONPATH \
+  cleanup() {
+    if [ -n "${gamescope_pid:-}" ]; then
+      kill "$gamescope_pid" 2>/dev/null || true
+    fi
+    env -u PYTHONHOME -u PYTHONPATH wineserver -k >/dev/null 2>&1 || true
+  }
+
+  trap cleanup EXIT HUP INT TERM
+
+  env -u PYTHONHOME -u PYTHONPATH gamescope \
+    -W {{ item.gamescope_output_width | default(dg_pc_racing_gamescope_width) }} \
+    -H {{ item.gamescope_output_height | default(dg_pc_racing_gamescope_height) }} \
+    -w {{ item.gamescope_game_width | default(item.gamescope_output_width | default(dg_pc_racing_gamescope_width)) }} \
+    -h {{ item.gamescope_game_height | default(item.gamescope_output_height | default(dg_pc_racing_gamescope_height)) }} \
+    {% if item.gamescope_scaler is defined -%}
+    -S {{ item.gamescope_scaler }} \
+    {% endif -%}
+    {% if item.gamescope_filter is defined -%}
+    -F {{ item.gamescope_filter }} \
+    {% endif -%}
+    {% if item.gamescope_fullscreen | default(true) | bool -%}
+    -f \
+    {% elif item.gamescope_borderless | default(false) | bool -%}
+    -b \
+    {% endif -%}
+    -- env -u PYTHONHOME -u PYTHONPATH \
       SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS="$SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS" \
       SDL_JOYSTICK_HIDAPI="$SDL_JOYSTICK_HIDAPI" \
       SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT="$SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT" \
       SDL_JOYSTICK_DEVICE="${SDL_JOYSTICK_DEVICE:-}" \
-      wine "$exe" "$@"
+      wine "$exe" "$@" &
+  gamescope_pid=$!
+  set +e
+  wait "$gamescope_pid"
+  status=$?
+  set -e
+  trap - EXIT HUP INT TERM
+  cleanup
+  exit "$status"
 fi
 {% endif -%}
 exec env -u PYTHONHOME -u PYTHONPATH wine "$exe" "$@"
