@@ -87,6 +87,25 @@ dg_pc_racing_games:
         value: "0"
     notes: "Source is a pre-extracted copy of the original BIN/CUE media; the converted ISO is kept beside it."
 
+  - slug: colin-mcrae-rally-3
+    name: "Colin McRae Rally 3"
+    install_mode: installer
+    source_dir: "{{ dg_pc_racing_source_root }}/Colin-McRae-Rally-3_Win_EN-FR-DE-IT-ES-PL-CS_Repack"
+    installer: "Colin McRae Rally 3_Repack_v4_Setup.exe"
+    install_args:
+      - /VERYSILENT
+      - /SUPPRESSMSGBOXES
+      - /NORESTART
+      - /SP-
+      - "/DIR=G:\\colin-mcrae-rally-3"
+    launch_exe: "Rally_3PC.exe"
+    installed_path: "{{ dg_pc_racing_install_root }}/colin-mcrae-rally-3"
+    gamescope_enabled: false
+    env:
+      - name: WINEDLLOVERRIDES
+        value: "dinput8,d3d9=n,b"
+    notes: "Magipack Inno Setup repack installed silently to G:\\colin-mcrae-rally-3. The repack notes state patch 1.1, SilentPatch v2.1, language pack, HD UI, and dgVoodoo D3D9 support are already included; native dinput8 is required for the bundled ASI loader."
+
   - slug: outrun-2006
     name: "OutRun 2006: Coast 2 Coast"
     install_mode: installer

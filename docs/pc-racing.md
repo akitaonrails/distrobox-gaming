@@ -8,6 +8,7 @@ this role so the setup stays simple and reproducible.
 Currently managed games:
 
 - Colin McRae Rally 2.0
+- Colin McRae Rally 3
 - OutRun 2006: Coast 2 Coast
 - Sega Rally 2: 25th Anniversary Edition
 - Sega Rally Revo
@@ -42,6 +43,13 @@ Focused install for OutRun 2006:
 ```sh
 cd ansible
 ansible-playbook install-outrun-2006.yml
+```
+
+Focused install for Colin McRae Rally 3:
+
+```sh
+cd ansible
+ansible-playbook install-colin-mcrae-rally-3.yml
 ```
 
 Focused install for Sega Rally Revo:
@@ -100,6 +108,26 @@ crashes in this Wine setup.
 
 The launcher wraps CMR2 in `gamescope` at `2560x1440` so Wine does not choose
 the portrait monitor's `1440x2560` mode on the multi-monitor desktop.
+
+## Colin McRae Rally 3
+
+Colin McRae Rally 3 uses the Magipack Inno Setup repack under
+`{{ dg_pc_racing_source_root }}/Colin-McRae-Rally-3_Win_EN-FR-DE-IT-ES-PL-CS_Repack`.
+The focused playbook runs the installer silently to
+`{{ dg_pc_racing_install_root }}/colin-mcrae-rally-3` through the prefix `G:`
+drive and launches `Rally_3PC.exe`.
+
+The repack notes state that patch 1.1, SilentPatch v2.1, the language pack, HD
+UI assets, and dgVoodoo D3D9 support are already included. The installed game
+ships `dinput8.dll` and `SilentPatchCMR3.asi`; the wrapper therefore sets
+`WINEDLLOVERRIDES=dinput8,d3d9=n,b` so Wine loads the bundled ASI loader and
+the bundled D3D9 compatibility layer when present. Do not replace these with a
+separate patch unless the tested launcher regresses.
+
+The silent installer may still leave a final `Setup` window open after files
+are copied. Press Enter to close it if Ansible appears to wait after install.
+Once `Rally_3PC.exe` exists, rerunning the focused playbook skips the installer
+and only refreshes managed wrapper/desktop files.
 
 USB gamepads are exposed through the distrobox's `/dev/input` and `/dev/hidraw`
 devices. The launcher pins SDL to the 8BitDo controller in XInput mode

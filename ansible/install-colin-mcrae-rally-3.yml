@@ -1,0 +1,13 @@
+---
+- name: Install or update Colin McRae Rally 3
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  vars:
+    dg_pc_racing_selected_slugs:
+      - colin-mcrae-rally-3
+    dg_pc_racing_run_installers: true
+    dg_pc_racing_export_desktop: true
+  roles:
+    - install_pc_racing
+    - { role: verify, tags: [verify] }
