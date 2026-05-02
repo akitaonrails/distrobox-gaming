@@ -4,6 +4,6 @@ Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_box_home }}/bin/{{ i
 Terminal=false
 Type=Application
 Icon=wine
-Comment=Windows PC racing game via system Wine
+Comment=Windows PC racing game via Wine in {{ dg_box_name }}
 Categories=Game;
 StartupWMClass={{ item.launch_exe | default(item.slug) }};

@@ -52,6 +52,7 @@
     - "{{ dg_pc_racing_prefix_root }}"
     - "{{ dg_pc_racing_media_root }}"
     - "{{ dg_pc_racing_cache_root }}"
+    - "{{ dg_pc_racing_wine_runner_root }}"
     - "{{ dg_box_home }}/bin"
     - "{{ dg_desktop_render_dir }}"
 
@@ -65,6 +66,29 @@
     {{ dg_pc_racing_packages | join(' ') }}
   register: _pc_racing_pacman
   changed_when: "'installing' in _pc_racing_pacman.stdout"
+
+- name: Download PC racing Wine runners
+  ansible.builtin.get_url:
+    url: "{{ item.wine_runner.url }}"
+    dest: "{{ item.wine_runner.source }}"
+    mode: "0644"
+  loop: "{{ _dg_pc_racing_games_selected }}"
+  loop_control:
+    label: "{{ item.name }} / {{ item.wine_runner.name | default('wine-runner') }}"
+  when:
+    - item.wine_runner is defined
+    - item.wine_runner.url is defined
+
+- name: Extract PC racing Wine runners
+  ansible.builtin.unarchive:
+    src: "{{ item.wine_runner.source }}"
+    dest: "{{ dg_pc_racing_wine_runner_root }}"
+    remote_src: true
+    creates: "{{ item.wine_runner.creates }}"
+  loop: "{{ _dg_pc_racing_games_selected }}"
+  loop_control:
+    label: "{{ item.name }} / {{ item.wine_runner.name | default('wine-runner') }}"
+  when: item.wine_runner is defined
 
 - name: Validate PC racing source directories
   ansible.builtin.stat:
@@ -91,7 +115,7 @@
 
 - name: Create per-game prefix directories
   ansible.builtin.file:
-    path: "{{ dg_pc_racing_prefix_root }}/{{ item.slug }}"
+    path: "{{ item.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.slug) }}"
     state: directory
     mode: "0755"
   loop: "{{ _dg_pc_racing_games_selected }}"
@@ -100,18 +124,39 @@
 
 - name: Check PC racing prefix initialization
   ansible.builtin.stat:
-    path: "{{ dg_pc_racing_prefix_root }}/{{ item.slug }}/system.reg"
+    path: "{{ item.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.slug) }}/system.reg"
   loop: "{{ _dg_pc_racing_games_selected }}"
   loop_control:
     label: "{{ item.name }}"
   register: _pc_racing_prefixes
 
 - name: Initialize PC racing Wine prefixes
-  ansible.builtin.shell: >-
-    {{ dg_in_box }} {{ _dg_pc_racing_wine_env }}
-    WINEPREFIX="{{ dg_pc_racing_prefix_root }}/{{ item.item.slug }}"
-    WINEDEBUG=-all
-    wineboot -u
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      prefix="{{ item.item.prefix_path | default(dg_pc_racing_prefix_root ~ "/" ~ item.item.slug) }}"
+      wineboot_command="{{ item.item.wineboot_command | default(item.item.wineboot_binary | default('wineboot')) }}"
+      timeout_seconds="{{ item.item.wineboot_timeout | default(300) }}"
+      accept_initialized_timeout="{{ item.item.wineboot_accept_timeout_if_initialized | default(false) | bool | ternary('1', '0') }}"
+
+      export PATH="{{ item.item.wine_path | default(dg_pc_racing_wine_path) }}"
+      export WINEARCH="{{ item.item.winearch | default(dg_pc_racing_winearch) }}"
+      export WINEPREFIX="$prefix"
+      export WINEDEBUG=-all
+
+      set +e
+      timeout "$timeout_seconds" sh -lc "$wineboot_command -u"
+      rc=$?
+      set -e
+
+      if [ "$rc" -eq 124 ] && [ "$accept_initialized_timeout" = "1" ] && [ -f "$prefix/system.reg" ]; then
+        wineserver -k >/dev/null 2>&1 || true
+        printf "%s\n" "wineboot-timeout-accepted {{ item.item.name }}"
+        exit 0
+      fi
+
+      exit "$rc"
+    '
   loop: "{{ _pc_racing_prefixes.results }}"
   loop_control:
     label: "{{ item.item.name }}"
@@ -120,7 +165,7 @@
 - name: Link install root as G drive in each prefix
   ansible.builtin.file:
     src: "{{ dg_pc_racing_install_root }}"
-    dest: "{{ dg_pc_racing_prefix_root }}/{{ item.slug }}/dosdevices/g:"
+    dest: "{{ item.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.slug) }}/dosdevices/g:"
     state: link
     force: true
     follow: false
@@ -132,19 +177,20 @@
   ansible.builtin.shell: |
     {{ dg_in_box }} sh -lc '
       set -eu
-      export WINEPREFIX="{{ dg_pc_racing_prefix_root }}/{{ item.0.slug }}"
-      export WINEARCH="{{ dg_pc_racing_winearch }}"
+      export WINEPREFIX="{{ item.0.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.0.slug) }}"
+      export WINEARCH="{{ item.0.winearch | default(dg_pc_racing_winearch) }}"
       export WINEDEBUG=-all
-      export PATH="{{ dg_pc_racing_wine_path }}"
+      export PATH="{{ item.0.wine_path | default(dg_pc_racing_wine_path) }}"
+      wine_bin="{{ item.0.wine_binary | default('wine') }}"
       key="HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\winebus"
       name="{{ item.1.name }}"
       value="{{ item.1.value }}"
 
-      if env -u PYTHONHOME -u PYTHONPATH wine reg query "$key" /v "$name" 2>/dev/null | grep -Eq "REG_DWORD[[:space:]]+0x0*${value}"; then
+      if env -u PYTHONHOME -u PYTHONPATH "$wine_bin" reg query "$key" /v "$name" 2>/dev/null | grep -Eq "REG_DWORD[[:space:]]+0x0*${value}"; then
         exit 0
       fi
 
-      env -u PYTHONHOME -u PYTHONPATH wine reg add "$key" /v "$name" /t REG_DWORD /d "$value" /f
+      env -u PYTHONHOME -u PYTHONPATH "$wine_bin" reg add "$key" /v "$name" /t REG_DWORD /d "$value" /f
       printf "%s\n" "configured-winebus {{ item.0.name }} $name=$value"
     '
   register: _pc_racing_winebus
@@ -158,19 +204,20 @@
   ansible.builtin.shell: |
     {{ dg_in_box }} sh -lc '
       set -eu
-      export WINEPREFIX="{{ dg_pc_racing_prefix_root }}/{{ item.0.slug }}"
-      export WINEARCH="{{ dg_pc_racing_winearch }}"
+      export WINEPREFIX="{{ item.0.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.0.slug) }}"
+      export WINEARCH="{{ item.0.winearch | default(dg_pc_racing_winearch) }}"
       export WINEDEBUG=-all
-      export PATH="{{ dg_pc_racing_wine_path }}"
+      export PATH="{{ item.0.wine_path | default(dg_pc_racing_wine_path) }}"
+      wine_bin="{{ item.0.wine_binary | default('wine') }}"
       key="HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\winebus"
       name="{{ item.1.name }}"
       value="{{ item.1.value }}"
 
-      if env -u PYTHONHOME -u PYTHONPATH wine reg query "$key" /v "$name" 2>/dev/null | grep -Eq "REG_DWORD[[:space:]]+0x0*${value}"; then
+      if env -u PYTHONHOME -u PYTHONPATH "$wine_bin" reg query "$key" /v "$name" 2>/dev/null | grep -Eq "REG_DWORD[[:space:]]+0x0*${value}"; then
         exit 0
       fi
 
-      env -u PYTHONHOME -u PYTHONPATH wine reg add "$key" /v "$name" /t REG_DWORD /d "$value" /f
+      env -u PYTHONHOME -u PYTHONPATH "$wine_bin" reg add "$key" /v "$name" /t REG_DWORD /d "$value" /f
       printf "%s\n" "configured-winebus-override {{ item.0.name }} $name=$value"
     '
   register: _pc_racing_winebus_overrides
@@ -183,18 +230,19 @@
   ansible.builtin.shell: |
     {{ dg_in_box }} sh -lc '
       set -eu
-      export WINEPREFIX="{{ dg_pc_racing_prefix_root }}/{{ item.0.slug }}"
-      export WINEARCH="{{ dg_pc_racing_winearch }}"
+      export WINEPREFIX="{{ item.0.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.0.slug) }}"
+      export WINEARCH="{{ item.0.winearch | default(dg_pc_racing_winearch) }}"
       export WINEDEBUG=-all
-      export PATH="{{ dg_pc_racing_wine_path }}"
+      export PATH="{{ item.0.wine_path | default(dg_pc_racing_wine_path) }}"
+      wine_bin="{{ item.0.wine_binary | default('wine') }}"
       key="HKEY_CURRENT_USER\Software\Wine\DirectInput\Joysticks"
       name="{{ item.1 }}"
 
-      if env -u PYTHONHOME -u PYTHONPATH wine reg query "$key" /v "$name" 2>/dev/null | grep -Eq "REG_SZ[[:space:]]+disabled"; then
+      if env -u PYTHONHOME -u PYTHONPATH "$wine_bin" reg query "$key" /v "$name" 2>/dev/null | grep -Eq "REG_SZ[[:space:]]+disabled"; then
         exit 0
       fi
 
-      env -u PYTHONHOME -u PYTHONPATH wine reg add "$key" /v "$name" /t REG_SZ /d disabled /f
+      env -u PYTHONHOME -u PYTHONPATH "$wine_bin" reg add "$key" /v "$name" /t REG_SZ /d disabled /f
       printf "%s\n" "disabled-dinput-joystick {{ item.0.name }} $name"
     '
   register: _pc_racing_dinput_disabled_joysticks
@@ -208,24 +256,30 @@
   ansible.builtin.shell: |
     {{ dg_in_box }} sh -lc '
       set -eu
-      export WINEPREFIX="{{ dg_pc_racing_prefix_root }}/{{ item.0.slug }}"
-      export WINEARCH="{{ dg_pc_racing_winearch }}"
+      export WINEPREFIX="{{ item.0.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.0.slug) }}"
+      export WINEARCH="{{ item.0.winearch | default(dg_pc_racing_winearch) }}"
       export WINEDEBUG=-all
-      export PATH="{{ dg_pc_racing_wine_path }}"
+      export PATH="{{ item.0.wine_path | default(dg_pc_racing_wine_path) }}"
+      wine_bin="{{ item.0.wine_binary | default('wine') }}"
       key="{{ item.1.key }}"
       name="{{ item.1.name }}"
       type="{{ item.1.type | default('REG_SZ') }}"
       value="{{ item.1.value }}"
 
       if [ "$type" = "REG_DWORD" ]; then
-        if env -u PYTHONHOME -u PYTHONPATH wine reg query "$key" /v "$name" 2>/dev/null | grep -Eq "REG_DWORD[[:space:]]+0x0*${value}"; then
+        case "$value" in
+          0x*|0X*) desired_hex="${value#0x}"; desired_hex="${desired_hex#0X}" ;;
+          *) desired_hex="$(printf "%x" "$value")" ;;
+        esac
+
+        if env -u PYTHONHOME -u PYTHONPATH "$wine_bin" reg query "$key" /v "$name" 2>/dev/null | grep -Eiq "REG_DWORD[[:space:]]+0x0*${desired_hex}[[:space:]]*$"; then
           exit 0
         fi
-      elif env -u PYTHONHOME -u PYTHONPATH wine reg query "$key" /v "$name" 2>/dev/null | grep -F "$value" >/dev/null; then
+      elif env -u PYTHONHOME -u PYTHONPATH "$wine_bin" reg query "$key" /v "$name" 2>/dev/null | grep -F "$value" >/dev/null; then
         exit 0
       fi
 
-      env -u PYTHONHOME -u PYTHONPATH wine reg add "$key" /v "$name" /t "$type" /d "$value" /f
+      env -u PYTHONHOME -u PYTHONPATH "$wine_bin" reg add "$key" /v "$name" /t "$type" /d "$value" /f
       printf "%s\n" "configured-registry {{ item.0.name }} $key $name=$value"
     '
   register: _pc_racing_registry_values
@@ -234,9 +288,41 @@
   loop_control:
     label: "{{ item.0.name }} / {{ item.1.name }}"
 
+- name: Remove PC racing game registry keys
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      export WINEPREFIX="{{ item.0.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.0.slug) }}"
+      export WINEARCH="{{ item.0.winearch | default(dg_pc_racing_winearch) }}"
+      export WINEDEBUG=-all
+      export PATH="{{ item.0.wine_path | default(dg_pc_racing_wine_path) }}"
+      wine_bin="{{ item.0.wine_binary | default('wine') }}"
+      key="{{ item.1 }}"
+
+      if ! env -u PYTHONHOME -u PYTHONPATH "$wine_bin" reg query "$key" >/dev/null 2>&1; then
+        exit 0
+      fi
+
+      env -u PYTHONHOME -u PYTHONPATH "$wine_bin" reg delete "$key" /f
+      printf "%s\n" "removed-registry-key {{ item.0.name }} $key"
+    '
+  register: _pc_racing_registry_absent_keys
+  changed_when: "'removed-registry-key' in _pc_racing_registry_absent_keys.stdout"
+  loop: "{{ _dg_pc_racing_games_selected | subelements('registry_absent_keys', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }} / {{ item.1 }}"
+
+- name: Remove PC racing game prefix files
+  ansible.builtin.file:
+    path: "{{ item.0.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.0.slug) }}/{{ item.1 }}"
+    state: absent
+  loop: "{{ _dg_pc_racing_games_selected | subelements('prefix_absent_files', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }} / {{ item.1 }}"
+
 - name: Check PC racing winetricks component markers
   ansible.builtin.stat:
-    path: "{{ dg_pc_racing_prefix_root }}/{{ item.0.slug }}/.dg-winetricks-{{ item.1 }}"
+    path: "{{ item.0.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.0.slug) }}/.dg-winetricks-{{ item.1 }}"
   register: _pc_racing_winetricks_markers
   loop: "{{ _dg_pc_racing_games_selected | subelements('winetricks_components', skip_missing=True) }}"
   loop_control:
@@ -246,12 +332,13 @@
   ansible.builtin.shell: |
     {{ dg_in_box }} sh -lc '
       set -eu
-      export WINEPREFIX="{{ dg_pc_racing_prefix_root }}/{{ item.item.0.slug }}"
-      export WINEARCH="{{ dg_pc_racing_winearch }}"
+      export WINEPREFIX="{{ item.item.0.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.item.0.slug) }}"
+      export WINEARCH="{{ item.item.0.winearch | default(dg_pc_racing_winearch) }}"
       export WINEDEBUG=-all
-      export PATH="{{ dg_pc_racing_wine_path }}"
+      export PATH="{{ item.item.0.wine_path | default(dg_pc_racing_wine_path) }}"
+      export WINE="{{ item.item.0.wine_binary | default('wine') }}"
       timeout 300 env -u PYTHONHOME -u PYTHONPATH winetricks -q "{{ item.item.1 }}"
-      printf "%s\n" "{{ item.item.1 }}" > "{{ dg_pc_racing_prefix_root }}/{{ item.item.0.slug }}/.dg-winetricks-{{ item.item.1 }}"
+      printf "%s\n" "{{ item.item.1 }}" > "{{ item.item.0.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.item.0.slug) }}/.dg-winetricks-{{ item.item.1 }}"
     '
   register: _pc_racing_winetricks
   changed_when: "'Executing ' in _pc_racing_winetricks.stdout or _pc_racing_winetricks.rc == 0"
@@ -262,7 +349,7 @@
 
 - name: Check PC racing DirectX redist markers
   ansible.builtin.stat:
-    path: "{{ dg_pc_racing_prefix_root }}/{{ item.0.slug }}/.dg-directx-redist-{{ item.1.name }}"
+    path: "{{ item.0.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.0.slug) }}/.dg-directx-redist-{{ item.1.name }}"
   register: _pc_racing_directx_redist_markers
   loop: "{{ _dg_pc_racing_games_selected | subelements('directx_redists', skip_missing=True) }}"
   loop_control:
@@ -274,7 +361,7 @@
       set -eu
       source="{{ item.item.1.source }}"
       extract_dir="{{ dg_pc_racing_cache_root }}/{{ item.item.0.slug }}-{{ item.item.1.name }}"
-      marker="{{ dg_pc_racing_prefix_root }}/{{ item.item.0.slug }}/.dg-directx-redist-{{ item.item.1.name }}"
+      marker="{{ item.item.0.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.item.0.slug) }}/.dg-directx-redist-{{ item.item.1.name }}"
 
       if [ ! -f "$source" ]; then
         printf "%s\n" "ERROR: DirectX redist missing: $source" >&2
@@ -287,11 +374,11 @@
       fi
 
       cd "$extract_dir"
-      WINEPREFIX="{{ dg_pc_racing_prefix_root }}/{{ item.item.0.slug }}" \
-      WINEARCH="{{ dg_pc_racing_winearch }}" \
+      WINEPREFIX="{{ item.item.0.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.item.0.slug) }}" \
+      WINEARCH="{{ item.item.0.winearch | default(dg_pc_racing_winearch) }}" \
       WINEDEBUG=-all \
-      PATH="{{ dg_pc_racing_wine_path }}" \
-      timeout 300 env -u PYTHONHOME -u PYTHONPATH wine DXSETUP.exe /silent
+      PATH="{{ item.item.0.wine_path | default(dg_pc_racing_wine_path) }}" \
+      timeout 300 env -u PYTHONHOME -u PYTHONPATH "{{ item.item.0.wine_binary | default('wine') }}" DXSETUP.exe /silent
       printf "%s\n" "{{ item.item.1.name }}" > "$marker"
     '
   register: _pc_racing_directx_redists
@@ -318,9 +405,58 @@
     - dg_pc_racing_copy_unpacked | bool
     - item.install_mode == 'copy'
 
+- name: Extract PC racing Inno Setup packages
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      installer="{{ item.source_dir }}/{{ item.installer | default('') }}"
+      game_dir="{{ item.installed_path | default(dg_pc_racing_install_root ~ "/" ~ item.slug) }}"
+      launch_exe="{{ item.launch_exe | default('') }}"
+      extract_root="{{ item.innoextract_root | default('app') }}"
+      marker="$game_dir/.dg-innoextract-{{ item.installer | default('setup.exe') }}"
+
+      if [ -n "$launch_exe" ] && [ -f "$game_dir/$launch_exe" ] && [ -f "$marker" ]; then
+        exit 0
+      fi
+      if [ ! -f "$installer" ]; then
+        printf "%s\n" "ERROR: Inno installer missing: $installer" >&2
+        exit 1
+      fi
+      if ! command -v innoextract >/dev/null 2>&1; then
+        printf "%s\n" "ERROR: innoextract is required for {{ item.name }}" >&2
+        exit 1
+      fi
+
+      mkdir -p "$game_dir" "{{ dg_pc_racing_cache_root }}"
+      tmp="$(mktemp -d "{{ dg_pc_racing_cache_root }}/{{ item.slug }}.inno.XXXXXX")"
+      trap '\''rm -rf "$tmp"'\'' EXIT HUP INT TERM
+
+      innoextract --silent --output-dir "$tmp" "$installer"
+      if [ -d "$tmp/$extract_root" ]; then
+        rsync -a --ignore-existing "$tmp/$extract_root/" "$game_dir/"
+      else
+        rsync -a --ignore-existing "$tmp/" "$game_dir/"
+      fi
+
+      if [ -n "$launch_exe" ] && [ ! -f "$game_dir/$launch_exe" ]; then
+        printf "%s\n" "ERROR: launch executable missing after Inno extract: $game_dir/$launch_exe" >&2
+        find "$game_dir" -maxdepth 3 -type f -iname "*.exe" -print >&2
+        exit 1
+      fi
+
+      printf "%s\n" "{{ item.name }} {{ item.installer | default('') }}" > "$marker"
+      printf "%s\n" "inno-extracted {{ item.name }}"
+    '
+  register: _pc_racing_innoextract
+  changed_when: "'inno-extracted ' in _pc_racing_innoextract.stdout"
+  loop: "{{ _dg_pc_racing_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: item.install_mode == 'innoextract'
+
 - name: Create PC racing game documents config directories
   ansible.builtin.file:
-    path: "{{ dg_pc_racing_prefix_root }}/{{ item.0.slug }}/drive_c/users/{{ ansible_facts.user_id }}/Documents/{{ item.1.path | dirname }}"
+    path: "{{ item.0.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.0.slug) }}/drive_c/users/{{ ansible_facts.user_id }}/Documents/{{ item.1.path | dirname }}"
     state: directory
     mode: "0755"
   loop: "{{ _dg_pc_racing_games_selected | subelements('documents_config_files', skip_missing=True) }}"
@@ -329,7 +465,7 @@
 
 - name: Write PC racing game documents config files
   ansible.builtin.copy:
-    dest: "{{ dg_pc_racing_prefix_root }}/{{ item.0.slug }}/drive_c/users/{{ ansible_facts.user_id }}/Documents/{{ item.1.path }}"
+    dest: "{{ item.0.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.0.slug) }}/drive_c/users/{{ ansible_facts.user_id }}/Documents/{{ item.1.path }}"
     content: "{{ item.1.content }}"
     mode: "0644"
     force: "{{ item.1.force | default(true) }}"
@@ -339,7 +475,7 @@
 
 - name: Create PC racing game prefix directories
   ansible.builtin.file:
-    path: "{{ dg_pc_racing_prefix_root }}/{{ item.0.slug }}/{{ item.1 }}"
+    path: "{{ item.0.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.0.slug) }}/{{ item.1 }}"
     state: directory
     mode: "0755"
   loop: "{{ _dg_pc_racing_games_selected | subelements('prefix_directories', skip_missing=True) }}"
@@ -348,7 +484,7 @@
 
 - name: Create PC racing game prefix file parent directories
   ansible.builtin.file:
-    path: "{{ dg_pc_racing_prefix_root }}/{{ item.0.slug }}/{{ item.1.path | dirname }}"
+    path: "{{ item.0.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.0.slug) }}/{{ item.1.path | dirname }}"
     state: directory
     mode: "0755"
   loop: "{{ _dg_pc_racing_games_selected | subelements('prefix_files', skip_missing=True) }}"
@@ -357,7 +493,7 @@
 
 - name: Seed PC racing game prefix files
   ansible.builtin.copy:
-    dest: "{{ dg_pc_racing_prefix_root }}/{{ item.0.slug }}/{{ item.1.path }}"
+    dest: "{{ item.0.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.0.slug) }}/{{ item.1.path }}"
     content: "{{ item.1.content | default('') }}"
     mode: "{{ item.1.mode | default('0644') }}"
     force: "{{ item.1.force | default(false) }}"
@@ -578,6 +714,18 @@
       else
         7z x -y -o"$game_dir" "$patch_src" >/dev/null
       fi
+
+      {% for move in item.1.post_extract_moves | default([]) %}
+      if [ -f "$game_dir/{{ move.source }}" ]; then
+        mv -f "$game_dir/{{ move.source }}" "$game_dir/{{ move.dest }}"
+      fi
+      {% endfor %}
+
+      if [ -n "{{ item.1.creates | default('') }}" ] &&
+         [ ! -f "$creates" ]; then
+        printf "%s\n" "{{ item.1.name }}" > "$creates"
+      fi
+
       printf "%s\n" "patched {{ item.0.name }} with {{ item.1.name }}"
     '
   register: _pc_racing_patches

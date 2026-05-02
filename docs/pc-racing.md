@@ -9,6 +9,8 @@ Currently managed games:
 
 - Colin McRae Rally 2.0
 - Colin McRae Rally 3
+- Colin McRae Rally 04
+- Colin McRae Rally 2005
 - OutRun 2006: Coast 2 Coast
 - Sega Rally 2: 25th Anniversary Edition
 - Sega Rally Revo
@@ -17,6 +19,8 @@ Add more entries to `dg_pc_racing_games` only after testing their install and
 launch path. Reuse the existing data fields for silent installer flags,
 downloadable ZIP patches, `winetricks` components, DLL overrides, INI edits,
 and controller quirks instead of creating one-off role logic.
+For GOG/Inno Setup packages, prefer `install_mode: innoextract` when the Wine
+installer is fragile or does not need to write registry state.
 
 Every new Wine game must explicitly choose a display and controller baseline
 before the first launcher test. If the game can fullscreen or query monitor
@@ -58,6 +62,12 @@ Current per-game controller handling:
 - Colin McRae Rally 3 uses `Map Controllers=1` plus a local Xidi virtual
   controller. RT/LT are mapped to the virtual axis CMR3 binds as throttle and
   brake, while physical left-stick Y is ignored.
+- Colin McRae Rally 04 starts with the same CMR3-style Xidi baseline because it
+  is a nearby legacy DirectInput title and should not retest the raw-trigger
+  axis path first.
+- Colin McRae Rally 2005 is marked not playable. Keep it on the conservative
+  `Map Controllers=0` baseline until the launch crash is solved and controller
+  behavior can be tested.
 - OutRun 2006 uses the global `Map Controllers=0` baseline and native
   `OutRun2006Tweaks` `dinput8.dll`; Xidi is not enabled because it would
   conflict with the Tweaks loader.
@@ -105,6 +115,20 @@ Focused install for Colin McRae Rally 3:
 ```sh
 cd ansible
 ansible-playbook install-colin-mcrae-rally-3.yml
+```
+
+Focused install for Colin McRae Rally 04:
+
+```sh
+cd ansible
+ansible-playbook install-colin-mcrae-rally-04.yml
+```
+
+Focused install for Colin McRae Rally 2005:
+
+```sh
+cd ansible
+ansible-playbook install-colin-mcrae-rally-2005.yml
 ```
 
 Focused install for Sega Rally Revo:
@@ -195,6 +219,59 @@ In CMR3's controller setup, the game binds accelerator/brake to the virtual
 left-stick Y axis. The managed Xidi mapper therefore sends physical RT to
 virtual left-stick up, physical LT to virtual left-stick down, and ignores
 physical left-stick Y so steering cannot accidentally apply throttle or brake.
+
+## Colin McRae Rally 04
+
+Colin McRae Rally 04 uses the Magipack Inno Setup repack under
+`{{ dg_pc_racing_source_root }}/Colin-McRae-Rally-04_Win_EN-FR-DE-ES-IT_Repack`.
+The focused playbook runs the installer silently to
+`{{ dg_pc_racing_install_root }}/colin-mcrae-rally-04` through the prefix `G:`
+drive and launches `cmr4.exe`.
+
+Public Wine notes are mixed by edition: old PlayOnLinux scripts warn that
+original copy-protected retail media does not run, while CrossOver reports a
+DRM-free/budget edition running well with DXVK. This repo uses the local repack
+source and does not attempt to support protected retail media.
+
+Current status: playable. The game registry is forced to `1920x1440`, and
+gamescope uses the same 4:3 nested resolution inside the configured
+`2560x1440` monitor with `fit` scaling and NIS filtering. This avoids the
+earlier horizontal stretch from `2560x1440` internal output and the black
+screen seen when the nested display was reduced to `640x480`. The image is not
+perfectly centered on the monitor, but it is usable.
+
+Controller status: analog driving works. Xidi is configured as a
+keyboard-emulation layer for CMR04 because selecting the Xidi joystick in-game
+allowed menu navigation but did not reliably bind in-race actions. The mapper
+sends d-pad and left stick to arrow keys, RT to accelerate, LT to brake,
+A/Start to confirm, B/Back to cancel, X to Space, and Y to C.
+
+## Colin McRae Rally 2005
+
+Colin McRae Rally 2005 uses the GOG/Inno Setup DRM-free package under
+`{{ dg_pc_racing_source_root }}/Colin-McRae-Rally-2005_Win_EN-FR-DE-IT-ES_DRM-Free`.
+The focused playbook extracts it with `innoextract` to
+`{{ dg_pc_racing_install_root }}/colin-mcrae-rally-2005` and launches
+`cmr5.exe`. This avoids the Wine-hosted installer path, which crashed before
+copying files during testing.
+
+The entry preconfigures gamescope at the shared 2560x1440 output before the
+first launch test so Wine does not select the portrait monitor. It uses system
+Wine, DXVK D3D9, an isolated Wine desktop, `NOVIDEOMEMORYCHECK`, and `NOVIDEO`.
+Wine-GE 8.26 was rejected for this game: pure win32 prefixes fail to create
+GUI windows in the distrobox, while its WoW64 prefix cannot run 32-bit
+executables because the 32-bit subsystem is incomplete.
+
+Current status: CMR2005 is not playable. It remains in Ansible only as a
+documented failed experiment so future work does not repeat the same tests.
+System Wine reaches the game executable in Windows XP mode and then crashes
+consistently at `cmr5+0x1da27` (`0x0041DA27`, null read from
+`ECX+0x10`). Disassembly places the crash in a text/font measurement path, and
+the expected `.pcf` font metadata and `.dds` font textures are present. Tested
+non-fixes include DXVK versus WineD3D, Windows XP/SP3 registry settings, 64 MB
+video memory, `NOVIDEOMEMORYCHECK`, `NOVIDEO`, `SAFEMODE`, restored
+`MathPIII.dll`, and `.dds` to `.xxx` aliases. Keep this entry experimental
+until a proven official patch or installer-registry fix changes the crash.
 
 The game list lives in `ansible/group_vars/all/pc_racing.yml`.
 

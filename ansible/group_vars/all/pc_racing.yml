@@ -1,4 +1,4 @@
-# Optional Windows PC racing games managed with system Wine inside the distrobox.
+# Optional Windows PC racing games managed with Wine inside the distrobox.
 
 dg_pc_racing_source_root: "{{ dg_roms_final_root }}/PC"
 dg_pc_racing_usb_root: "{{ dg_external_usb_games_root }}"
@@ -6,6 +6,7 @@ dg_pc_racing_install_root: "{{ dg_box_home }}/Games/pc-racing"
 dg_pc_racing_prefix_root: "{{ dg_box_home }}/wineprefixes/pc-racing"
 dg_pc_racing_media_root: "{{ dg_box_home }}/tools/pc-racing/media"
 dg_pc_racing_cache_root: "{{ dg_box_home }}/cache/pc-racing"
+dg_pc_racing_wine_runner_root: "{{ dg_box_home }}/tools/wine-runners"
 dg_pc_racing_directx_jun2010_redist: "{{ dg_pc_racing_source_root }}/Project 06 - Silver Release (Patch v1.45)/Sonic the Hedgehog (P-06)/Redist/directx_Jun2010_redist.exe"
 dg_pc_racing_xidi_version: v4.3.1
 dg_pc_racing_xidi_url: "https://github.com/samuelgr/Xidi/releases/download/{{ dg_pc_racing_xidi_version }}/Xidi-{{ dg_pc_racing_xidi_version }}.zip"
@@ -62,6 +63,7 @@ dg_pc_racing_packages:
   - gamescope
   - joyutils
   - p7zip
+  - innoextract
   - rsync
 
 dg_pc_racing_games:
@@ -162,6 +164,163 @@ dg_pc_racing_games:
         [Workarounds]
         ActiveVirtualControllerMask = 0x01
     notes: "Magipack Inno Setup repack installed silently to G:\\colin-mcrae-rally-3. The repack notes state patch 1.1, SilentPatch v2.1, language pack, HD UI, and dgVoodoo D3D9 support are already included. Gamescope pins output to the configured 1440p monitor. Xidi provides a local DirectInput compatibility layer: RT/LT are mapped to the virtual left-stick Y axis because CMR3 binds accelerator/brake there, and physical left-stick Y is ignored to avoid accidental throttle. The bundled Ultimate ASI Loader is preserved as dsound.dll for SilentPatch."
+
+  - slug: colin-mcrae-rally-04
+    name: "Colin McRae Rally 04"
+    playable_status: playable
+    install_mode: installer
+    source_dir: "{{ dg_pc_racing_source_root }}/Colin-McRae-Rally-04_Win_EN-FR-DE-ES-IT_Repack"
+    installer: "Colin McRae Rally 04_Repack_Setup.exe"
+    install_args:
+      - /VERYSILENT
+      - /SUPPRESSMSGBOXES
+      - /NORESTART
+      - /SP-
+      - "/DIR=G:\\colin-mcrae-rally-04"
+    launch_exe: "cmr4.exe"
+    installed_path: "{{ dg_pc_racing_install_root }}/colin-mcrae-rally-04"
+    winebus_registry:
+      - name: Map Controllers
+        value: 1
+    winetricks_components:
+      - dxvk
+    gamescope_enabled: true
+    gamescope_game_width: 1920
+    gamescope_game_height: 1440
+    gamescope_output_width: "{{ dg_pc_racing_gamescope_width }}"
+    gamescope_output_height: "{{ dg_pc_racing_gamescope_height }}"
+    gamescope_scaler: fit
+    gamescope_filter: nis
+    registry_values:
+      - key: "HKEY_LOCAL_MACHINE\\Software\\Wow6432Node\\Codemasters\\Colin McRae Rally 04"
+        name: Width
+        type: REG_DWORD
+        value: "1920"
+      - key: "HKEY_LOCAL_MACHINE\\Software\\Wow6432Node\\Codemasters\\Colin McRae Rally 04"
+        name: Height
+        type: REG_DWORD
+        value: "1440"
+    env:
+      - name: WINEDLLOVERRIDES
+        value: "dinput8,dsound,d3d8,d3d9=n,b"
+    xidi:
+      source: "{{ dg_pc_racing_xidi_archive }}"
+      url: "{{ dg_pc_racing_xidi_url }}"
+      archive_root: "Xidi-{{ dg_pc_racing_xidi_version }}"
+      architecture: Win32
+      wrappers:
+        - dinput8.dll
+      preserve_as_proxy:
+        source: dinput8.dll
+        dest: dsound.dll
+      config: |
+        [Mapper]
+        Type = CMR04Gamepad
+
+        [CustomMapper:CMR04Gamepad]
+        Template = StandardGamepad
+        StickLeftX = Split( Keyboard(RightArrow), Keyboard(LeftArrow) )
+        StickLeftY = Split( Keyboard(DownArrow), Keyboard(UpArrow) )
+        TriggerRT = Keyboard(UpArrow)
+        TriggerLT = Keyboard(DownArrow)
+        DpadUp = Keyboard(UpArrow)
+        DpadDown = Keyboard(DownArrow)
+        DpadLeft = Keyboard(LeftArrow)
+        DpadRight = Keyboard(RightArrow)
+        ButtonA = Keyboard(Enter)
+        ButtonB = Keyboard(Esc)
+        ButtonX = Keyboard(Space)
+        ButtonY = Keyboard(C)
+        ButtonStart = Keyboard(Enter)
+        ButtonBack = Keyboard(Esc)
+
+        [Properties]
+        UseBuiltInProperties = yes
+        DeadzonePercentStickLeft = 5
+        DeadzonePercentStickRight = 5
+        DeadzonePercentTriggerLT = 0
+        DeadzonePercentTriggerRT = 0
+        SaturationPercentStickLeft = 100
+        SaturationPercentStickRight = 100
+        SaturationPercentTriggerLT = 100
+        SaturationPercentTriggerRT = 100
+
+        [Log]
+        Enabled = no
+        Level = 1
+
+        [Import]
+        dinput8.dll = C:\Windows\system32\dinput8.dll
+
+        [Workarounds]
+        ActiveVirtualControllerMask = 0x01
+    notes: "PLAYABLE. Magipack Inno Setup repack installed silently to G:\\colin-mcrae-rally-04. CrossOver reports the DRM-free/budget edition running well with DXVK, while old PlayOnLinux notes warn that the original protected retail media does not run under Wine. The game registry is forced to 1920x1440 and gamescope exposes the same 4:3 nested display inside the configured 2560x1440 monitor to preserve aspect ratio without stretching horizontally. This is playable and analog controls work, but the 4:3 image is not perfectly centered on the monitor. Xidi is configured as a keyboard-emulation layer: d-pad and left stick emit arrows, RT accelerates, LT brakes, A/Start confirm, B/Back cancel, X maps to Space, and Y maps to C."
+
+  - slug: colin-mcrae-rally-2005
+    name: "Colin McRae Rally 2005"
+    playable_status: not_playable
+    install_mode: innoextract
+    source_dir: "{{ dg_pc_racing_source_root }}/Colin-McRae-Rally-2005_Win_EN-FR-DE-IT-ES_DRM-Free"
+    installer: "setup_colin2005.exe"
+    innoextract_root: app
+    launch_exe: "cmr5.exe"
+    installed_path: "{{ dg_pc_racing_install_root }}/colin-mcrae-rally-2005"
+    prefix_path: "{{ dg_pc_racing_prefix_root }}/colin-mcrae-rally-2005-system"
+    winearch: win64
+    winebus_registry:
+      - name: Map Controllers
+        value: 0
+    registry_values:
+      - key: "HKEY_CURRENT_USER\\Software\\Wine"
+        name: Version
+        value: winxp
+      - key: "HKEY_CURRENT_USER\\Software\\Wine\\AppDefaults\\cmr5.exe"
+        name: Version
+        value: winxp
+      - key: "HKEY_CURRENT_USER\\Software\\Wine\\Direct3D"
+        name: VideoMemorySize
+        value: "64"
+      - key: "HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Windows"
+        name: CSDVersion
+        type: REG_DWORD
+        value: "768"
+      - key: "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion"
+        name: CSDVersion
+        value: "Service Pack 3"
+    registry_absent_keys:
+      - "HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\sfsync02"
+      - "HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\sfhlp02"
+      - "HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\sfdrv01"
+    prefix_absent_files:
+      - "drive_c/windows/system32/drivers/sfsync02.sys"
+      - "drive_c/windows/system32/drivers/sfhlp02.sys"
+      - "drive_c/windows/system32/drivers/sfdrv01.sys"
+    winetricks_components:
+      - d3dx9
+      - dxvk
+    disabled_files:
+      - dinput8.dll
+      - Xidi.ini
+      - protect.dll
+      - protect.exe
+      - protect.x64
+      - .dg-patch-win64-patch
+    gamescope_enabled: true
+    gamescope_game_width: "{{ dg_pc_racing_gamescope_width }}"
+    gamescope_game_height: "{{ dg_pc_racing_gamescope_height }}"
+    gamescope_output_width: "{{ dg_pc_racing_gamescope_width }}"
+    gamescope_output_height: "{{ dg_pc_racing_gamescope_height }}"
+    wine_desktop:
+      name: CMR2005
+      width: "{{ dg_pc_racing_gamescope_width }}"
+      height: "{{ dg_pc_racing_gamescope_height }}"
+    launch_args:
+      - NOVIDEOMEMORYCHECK
+      - NOVIDEO
+    env:
+      - name: WINEDLLOVERRIDES
+        value: "dinput8=b;d3d9,dxgi=n,b"
+    notes: "NOT PLAYABLE. GOG/Inno Setup DRM-free package extracted with innoextract because the Wine-hosted installer crashes before copying files. The launcher uses the original DRM-free executable with system Wine, DXVK D3D9, a fixed 2560x1440 Wine desktop, plus NOVIDEOMEMORYCHECK and NOVIDEO to avoid fragile legacy startup paths. Wine-GE 8.26 was tested and is not usable for this 32-bit title in the distrobox: pure win32 prefixes cannot load a window driver, and WoW64 prefixes lack a working 32-bit subsystem. The game reaches the executable in Windows XP mode but crashes consistently at cmr5+0x1da27 / 0x0041DA27 in a text/font measurement path. Xidi and stale Win64 patch/StarForce protection files are disabled."
 
   - slug: outrun-2006
     name: "OutRun 2006: Coast 2 Coast"

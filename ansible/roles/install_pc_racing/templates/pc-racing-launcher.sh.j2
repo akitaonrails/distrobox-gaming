@@ -1,9 +1,10 @@
 #!/usr/bin/env sh
 set -eu
 
-prefix="{{ dg_pc_racing_prefix_root }}/{{ item.slug }}"
+prefix="{{ item.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.slug) }}"
 install_dir="{{ item.installed_path | default(dg_pc_racing_install_root ~ "/" ~ item.slug) }}"
 exe="$install_dir/{{ item.launch_exe | default('') }}"
+wine_bin="{{ item.wine_binary | default('wine') }}"
 
 if [ ! -f "$exe" ]; then
   printf '%s\n' "ERROR: {{ item.name }} executable is missing: $exe" >&2
@@ -14,9 +15,9 @@ if [ ! -f "$exe" ]; then
   exit 1
 fi
 
-export PATH="{{ dg_pc_racing_wine_path }}"
+export PATH="{{ item.wine_path | default(dg_pc_racing_wine_path) }}"
 export WINEPREFIX="$prefix"
-export WINEARCH="{{ dg_pc_racing_winearch }}"
+export WINEARCH="{{ item.winearch | default(dg_pc_racing_winearch) }}"
 export WINEDEBUG="${WINEDEBUG:--all}"
 export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
 export SDL_JOYSTICK_HIDAPI="${SDL_JOYSTICK_HIDAPI:-{{ dg_pc_racing_sdl_hidapi }}}"
@@ -31,6 +32,9 @@ fi
 {% endif -%}
 
 cd "$install_dir"
+{% if item.launch_args is defined and (item.launch_args | length > 0) -%}
+set -- {% for launch_arg in item.launch_args %}"{{ launch_arg }}" {% endfor %}"$@"
+{% endif -%}
 {% if item.gamescope_enabled | default(dg_pc_racing_gamescope_enabled) | bool -%}
 if command -v gamescope >/dev/null 2>&1; then
   cleanup() {
@@ -63,7 +67,10 @@ if command -v gamescope >/dev/null 2>&1; then
       SDL_JOYSTICK_HIDAPI="$SDL_JOYSTICK_HIDAPI" \
       SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT="$SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT" \
       SDL_JOYSTICK_DEVICE="${SDL_JOYSTICK_DEVICE:-}" \
-      wine "$exe" "$@" &
+      "$wine_bin" {% if item.wine_desktop is defined -%}
+        explorer "/desktop={{ item.wine_desktop.name | default(item.slug) }},{{ item.wine_desktop.width | default(item.gamescope_game_width | default(dg_pc_racing_gamescope_width)) }}x{{ item.wine_desktop.height | default(item.gamescope_game_height | default(dg_pc_racing_gamescope_height)) }}" \
+      {% endif -%}
+        "$exe" "$@" &
   gamescope_pid=$!
   set +e
   wait "$gamescope_pid"
@@ -74,4 +81,7 @@ if command -v gamescope >/dev/null 2>&1; then
   exit "$status"
 fi
 {% endif -%}
-exec env -u PYTHONHOME -u PYTHONPATH wine "$exe" "$@"
+exec env -u PYTHONHOME -u PYTHONPATH "$wine_bin" {% if item.wine_desktop is defined -%}
+  explorer "/desktop={{ item.wine_desktop.name | default(item.slug) }},{{ item.wine_desktop.width | default(item.gamescope_game_width | default(dg_pc_racing_gamescope_width)) }}x{{ item.wine_desktop.height | default(item.gamescope_game_height | default(dg_pc_racing_gamescope_height)) }}" \
+{% endif -%}
+  "$exe" "$@"

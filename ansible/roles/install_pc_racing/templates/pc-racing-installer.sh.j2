@@ -1,18 +1,20 @@
 #!/usr/bin/env sh
 set -eu
 
-prefix="{{ dg_pc_racing_prefix_root }}/{{ item.slug }}"
+prefix="{{ item.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.slug) }}"
 install_dir="{{ item.installed_path | default(dg_pc_racing_install_root ~ "/" ~ item.slug) }}"
 source_dir="{{ item.source_dir }}"
 installer="$source_dir/{{ item.installer | default('') }}"
 media_dir="{{ dg_pc_racing_media_root }}/{{ item.slug }}"
+wine_bin="{{ item.wine_binary | default('wine') }}"
 
-export PATH="{{ dg_pc_racing_wine_path }}"
+export PATH="{{ item.wine_path | default(dg_pc_racing_wine_path) }}"
 export WINEPREFIX="$prefix"
-export WINEARCH="{{ dg_pc_racing_winearch }}"
+export WINEARCH="{{ item.winearch | default(dg_pc_racing_winearch) }}"
 export WINEDEBUG=-all
 export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
-export SDL_JOYSTICK_HIDAPI="${SDL_JOYSTICK_HIDAPI:-1}"
+export SDL_JOYSTICK_HIDAPI="${SDL_JOYSTICK_HIDAPI:-{{ dg_pc_racing_sdl_hidapi }}}"
+export SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT="${SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT:-{{ dg_pc_racing_gamepad_only }}}"
 
 mkdir -p "$prefix" "$install_dir"
 env -u PYTHONHOME -u PYTHONPATH wineboot -u
@@ -30,7 +32,25 @@ if [ ! -f "$installer" ]; then
 fi
 cd "$source_dir"
 printf '%s\n' "Target install directory inside Wine: G:\\{{ item.slug }}"
-exec env -u PYTHONHOME -u PYTHONPATH wine "$installer" {{ item.install_args | default([]) | map('quote') | join(' ') }}
+exec env -u PYTHONHOME -u PYTHONPATH "$wine_bin" "$installer" {{ item.install_args | default([]) | map('quote') | join(' ') }}
+{% elif item.install_mode == 'innoextract' -%}
+if [ ! -f "$installer" ]; then
+  printf '%s\n' "ERROR: Inno installer missing: $installer" >&2
+  exit 1
+fi
+if ! command -v innoextract >/dev/null 2>&1; then
+  printf '%s\n' "ERROR: innoextract is required for {{ item.name }}" >&2
+  exit 1
+fi
+tmp="$(mktemp -d "{{ dg_pc_racing_cache_root }}/{{ item.slug }}.inno.XXXXXX")"
+trap 'rm -rf "$tmp"' EXIT HUP INT TERM
+innoextract --silent --output-dir "$tmp" "$installer"
+if [ -d "$tmp/{{ item.innoextract_root | default('app') }}" ]; then
+  rsync -a --ignore-existing "$tmp/{{ item.innoextract_root | default('app') }}/" "$install_dir/"
+else
+  rsync -a --ignore-existing "$tmp/" "$install_dir/"
+fi
+printf '%s\n' "Extracted {{ item.name }} to $install_dir"
 {% elif item.install_mode == 'iso' -%}
 if [ ! -f "$installer" ]; then
   printf '%s\n' "ERROR: ISO missing: $installer" >&2
@@ -42,7 +62,7 @@ if [ ! -f "$media_dir/{{ item.media_setup | default('setup.exe') }}" ]; then
 fi
 printf '%s\n' "Target install directory inside Wine: G:\\{{ item.slug }}"
 cd "$media_dir"
-exec env -u PYTHONHOME -u PYTHONPATH wine "$media_dir/{{ item.media_setup | default('setup.exe') }}" {{ item.install_args | default([]) | map('quote') | join(' ') }}
+exec env -u PYTHONHOME -u PYTHONPATH "$wine_bin" "$media_dir/{{ item.media_setup | default('setup.exe') }}" {{ item.install_args | default([]) | map('quote') | join(' ') }}
 {% elif item.install_mode == 'cue' -%}
 printf '%s\n' "{{ item.name }} uses BIN/CUE media and is prepared but not automatically installed." >&2
 printf '%s\n' "Media: $installer" >&2
