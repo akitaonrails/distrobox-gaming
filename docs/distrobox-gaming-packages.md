@@ -61,6 +61,53 @@ To find the version: `nvidia-smi --query-gpu=driver_version --format=csv,noheade
 
 Check `pacman -Q lib32-nvidia-utils` — on some images it installs successfully (the file conflict is 64-bit only). If it's missing, build a second dummy for `lib32-nvidia-utils-dummy` with the same pattern.
 
+### Steam Runtime 32-bit NVIDIA workaround
+
+`distrobox --nvidia` can also bind host NVIDIA files over `/usr/lib32`. On this
+setup, `/usr/lib32/libGLX_nvidia.so.0` appeared as an ELF 64-bit library, which
+made 32-bit Proton/DXVK titles fail with:
+
+```text
+DxvkInstance::createInstance: Failed to create Vulkan instance
+```
+
+The `bootstrap_packages` role keeps the dependency-safe dummy package above,
+but also extracts the matching archived `lib32-nvidia-utils` package into:
+
+```text
+{{ dg_nvidia_lib32_extract_dir }}/usr/lib32
+```
+
+Desktop launchers then pass this path to Steam through
+`PRESSURE_VESSEL_APP_LD_LIBRARY_PATH`, not `LD_LIBRARY_PATH`. This distinction
+matters: setting `LD_LIBRARY_PATH` before Steam Runtime starts can break
+pressure-vessel's own helper programs, while `PRESSURE_VESSEL_APP_LD_LIBRARY_PATH`
+is applied to the game process inside the runtime.
+
+If a 32-bit Proton game starts, compiles shaders, and immediately exits, check:
+
+```sh
+file /usr/lib32/libGLX_nvidia.so.0
+grep -i 'DxvkInstance::createInstance' ~/steam-<appid>.log
+```
+
+The extracted package version must match the host driver reported by
+`nvidia-smi --query-gpu=driver_version --format=csv,noheader`.
+
+### Sonic Adventure DX notes
+
+Sonic Adventure DX is a 32-bit D3D9 Steam game. It needs the 32-bit NVIDIA
+workaround above and should run in windowed mode under Wine/Proton. If the game
+crashes after DXVK creates the NVIDIA device, inspect
+`Sonic Adventure DX/system_config.xml` and set:
+
+```xml
+<custom_gfx_options AA="0" v_sync="1" fxaa="1" windowed="1" />
+```
+
+The official Steam configure launcher may also require the legacy SEGA uninstall
+registry key before it saves configuration.
+
 ---
 
 ## Flatpak findings

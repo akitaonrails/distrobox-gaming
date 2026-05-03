@@ -7,10 +7,27 @@
 dg_nvidia_enabled: true
 dg_nvidia_icd: /usr/share/vulkan/icd.d/nvidia_icd.json
 
+# Distrobox --nvidia can bind host 64-bit NVIDIA libraries over /usr/lib32.
+# Keep a matching extracted lib32-nvidia-utils package in user-owned storage
+# and expose it to Steam's pressure-vessel app runtime only.
+dg_nvidia_lib32_workaround_enabled: "{{ dg_nvidia_enabled }}"
+dg_nvidia_lib32_root: "{{ dg_box_home }}/.local/share/dg-nvidia-lib32"
+dg_nvidia_lib32_cache_dir: "{{ dg_nvidia_lib32_root }}/cache"
+dg_nvidia_lib32_extract_dir: "{{ dg_nvidia_lib32_root }}/extract"
+dg_nvidia_lib32_lib_dir: "{{ dg_nvidia_lib32_extract_dir }}/usr/lib32"
+dg_nvidia_lib32_archive_base_url: "https://archive.archlinux.org/packages/l/lib32-nvidia-utils"
+dg_nvidia_pressure_vessel_app_ld_library_path: "{{ dg_nvidia_lib32_lib_dir }}:/run/host/usr/lib"
+
 # Environment variables injected into desktop entries and ES-DE commands
 # when NVIDIA is preferred. These operate at the Vulkan loader level so
 # all Vulkan apps only see the NVIDIA GPU.
-dg_gpu_env: "{{ 'env VK_ICD_FILENAMES=' + dg_nvidia_icd + ' __GLX_VENDOR_LIBRARY_NAME=nvidia' if dg_nvidia_enabled else '' }}"
+dg_gpu_env: >-
+  {{
+    'env PRESSURE_VESSEL_APP_LD_LIBRARY_PATH=' + dg_nvidia_pressure_vessel_app_ld_library_path +
+    ' VK_ICD_FILENAMES=' + dg_nvidia_icd +
+    ' __GLX_VENDOR_LIBRARY_NAME=nvidia'
+    if dg_nvidia_enabled else ''
+  }}
 
 # shadPS4-specific GPU device index. Set to the NVIDIA device index
 # once the box has both GPUs visible. Use -1 for auto-select.

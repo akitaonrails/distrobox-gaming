@@ -130,6 +130,64 @@
         '
       changed_when: true
 
+    - name: Check extracted 32-bit NVIDIA userspace libraries
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          test -f "{{ dg_nvidia_lib32_extract_dir }}/.dg-version" &&
+          grep -qx "{{ _nvidia_ver.stdout | trim }}" "{{ dg_nvidia_lib32_extract_dir }}/.dg-version" &&
+          file "{{ dg_nvidia_lib32_lib_dir }}/libGLX_nvidia.so.{{ _nvidia_ver.stdout | trim }}" |
+            grep -q "ELF 32-bit"
+        '
+      register: _nvidia_lib32_extract_check
+      changed_when: false
+      failed_when: false
+      when:
+        - dg_nvidia_lib32_workaround_enabled | bool
+        - _nvidia_ver.rc == 0
+        - _nvidia_ver.stdout | trim | length > 0
+
+    - name: Ensure tools for NVIDIA lib32 extraction are installed
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} sudo pacman -S --needed --noconfirm
+        curl file zstd
+      register: _nvidia_lib32_tools
+      changed_when: "'installing' in _nvidia_lib32_tools.stdout"
+      when:
+        - dg_nvidia_lib32_workaround_enabled | bool
+        - _nvidia_ver.rc == 0
+        - _nvidia_ver.stdout | trim | length > 0
+        - _nvidia_lib32_extract_check.rc | default(1) != 0
+
+    - name: Extract matching lib32-nvidia-utils for Steam Runtime 32-bit Proton
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -e
+          ver="{{ _nvidia_ver.stdout | trim }}"
+          pkg="lib32-nvidia-utils-${ver}-1-x86_64.pkg.tar.zst"
+          cache="{{ dg_nvidia_lib32_cache_dir }}"
+          extract="{{ dg_nvidia_lib32_extract_dir }}"
+          mkdir -p "$cache" "$extract"
+          if [ ! -f "$cache/$pkg" ]; then
+            curl -fL -o "$cache/$pkg" "{{ dg_nvidia_lib32_archive_base_url }}/$pkg"
+          fi
+          rm -rf "$extract.tmp"
+          mkdir -p "$extract.tmp"
+          tar -xf "$cache/$pkg" -C "$extract.tmp"
+          if ! file "$extract.tmp/usr/lib32/libGLX_nvidia.so.${ver}" | grep -q "ELF 32-bit"; then
+            printf "%s\n" "ERROR: extracted libGLX_nvidia.so.${ver} is not 32-bit" >&2
+            exit 1
+          fi
+          printf "%s\n" "$ver" > "$extract.tmp/.dg-version"
+          rm -rf "$extract"
+          mv "$extract.tmp" "$extract"
+        '
+      changed_when: true
+      when:
+        - dg_nvidia_lib32_workaround_enabled | bool
+        - _nvidia_ver.rc == 0
+        - _nvidia_ver.stdout | trim | length > 0
+        - _nvidia_lib32_extract_check.rc | default(1) != 0
+
 - name: Full system upgrade
   ansible.builtin.shell: "{{ dg_in_box }} sudo pacman -Syu --noconfirm"
   register: _upgrade

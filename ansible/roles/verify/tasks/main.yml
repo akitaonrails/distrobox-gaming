@@ -245,6 +245,26 @@
     msg: "{{ 'NVIDIA GPU visible: ' + _nvidia_vulkan.stdout_lines[0] if _nvidia_vulkan.stdout_lines | default([]) | length > 0 else 'WARNING: NVIDIA GPU not detected in Vulkan' }}"
   when: dg_nvidia_enabled and (_nvidia_icd.stat.exists | default(false))
 
+- name: Verify extracted 32-bit NVIDIA libraries for Steam Runtime
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sh -lc
+    'file "{{ dg_nvidia_lib32_lib_dir }}"/libGLX_nvidia.so.* 2>/dev/null |
+    grep -q "ELF 32-bit"'
+  register: _nvidia_lib32_verify
+  changed_when: false
+  failed_when: false
+  when: dg_nvidia_lib32_workaround_enabled | bool
+
+- name: Report Steam Runtime 32-bit NVIDIA status
+  ansible.builtin.debug:
+    msg: >-
+      {{
+        'Steam Runtime 32-bit NVIDIA libs ready at ' + dg_nvidia_lib32_lib_dir
+        if _nvidia_lib32_verify.rc | default(1) == 0
+        else 'WARNING: Steam Runtime 32-bit NVIDIA libs missing or not i386; run ansible-playbook site.yml --tags bootstrap'
+      }}
+  when: dg_nvidia_lib32_workaround_enabled | bool
+
 # Root-owned file check
 
 - name: Find root-owned files in config directories

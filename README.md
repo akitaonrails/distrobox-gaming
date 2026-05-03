@@ -115,6 +115,12 @@ ES-DE command. The distrobox is also created with `--nvidia` so NVIDIA drivers
 are bind-mounted into the container. Controlled by `dg_nvidia_enabled: true`
 in `group_vars/all/gpu.yml`. Set to `false` to disable.
 
+For Steam/Proton, the launcher also exports
+`PRESSURE_VESSEL_APP_LD_LIBRARY_PATH` to an Ansible-managed extraction of the
+matching `lib32-nvidia-utils` package. This avoids a `distrobox --nvidia`
+edge case where host 64-bit NVIDIA libraries can appear under `/usr/lib32`,
+breaking 32-bit DXVK games such as Sonic Adventure DX.
+
 ## Resetting Configs
 
 If you screw up your emulator configs (ES-DE, DuckStation, PCSX2, etc.) and
