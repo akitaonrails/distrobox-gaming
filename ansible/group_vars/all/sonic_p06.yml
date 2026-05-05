@@ -12,8 +12,8 @@ dg_sonic_p06_wine_bin: /usr/bin/wine
 dg_sonic_p06_wineboot_bin: /usr/bin/wineboot
 dg_sonic_p06_wineserver_bin: /usr/bin/wineserver
 dg_sonic_p06_gamescope_enabled: false
-dg_sonic_p06_gamescope_width: 2560
-dg_sonic_p06_gamescope_height: 1440
+dg_sonic_p06_gamescope_width: 3840
+dg_sonic_p06_gamescope_height: 2160
 dg_sonic_p06_wine_esync: "0"
 dg_sonic_p06_wine_fsync: "0"
 dg_sonic_p06_winetricks_components:

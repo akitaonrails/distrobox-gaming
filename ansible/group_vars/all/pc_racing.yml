@@ -14,10 +14,12 @@ dg_pc_racing_xidi_archive: "{{ dg_pc_racing_cache_root }}/Xidi-{{ dg_pc_racing_x
 dg_pc_racing_wine_path: /usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 dg_pc_racing_winearch: win64
 dg_pc_racing_gamescope_enabled: true
-dg_pc_racing_gamescope_width: 2560
-dg_pc_racing_gamescope_height: 1440
-dg_pc_racing_target_monitor_x: 2160
-dg_pc_racing_target_monitor_y: 0
+dg_pc_racing_gamescope_width: 3840
+dg_pc_racing_gamescope_height: 2160
+# Top-left logical position of the gaming monitor (Samsung Odyssey G8,
+# DP-1) in the Hyprland layout from ~/.config/hypr/monitors.conf.
+dg_pc_racing_target_monitor_x: 4000
+dg_pc_racing_target_monitor_y: 619
 dg_pc_racing_gamepad_device: /dev/input/js0
 dg_pc_racing_gamepad_only: "0x2dc8/0x310b"
 dg_pc_racing_sdl_hidapi: "0"
@@ -163,7 +165,7 @@ dg_pc_racing_games:
 
         [Workarounds]
         ActiveVirtualControllerMask = 0x01
-    notes: "Magipack Inno Setup repack installed silently to G:\\colin-mcrae-rally-3. The repack notes state patch 1.1, SilentPatch v2.1, language pack, HD UI, and dgVoodoo D3D9 support are already included. Gamescope pins output to the configured 1440p monitor. Xidi provides a local DirectInput compatibility layer: RT/LT are mapped to the virtual left-stick Y axis because CMR3 binds accelerator/brake there, and physical left-stick Y is ignored to avoid accidental throttle. The bundled Ultimate ASI Loader is preserved as dsound.dll for SilentPatch."
+    notes: "Magipack Inno Setup repack installed silently to G:\\colin-mcrae-rally-3. The repack notes state patch 1.1, SilentPatch v2.1, language pack, HD UI, and dgVoodoo D3D9 support are already included. Gamescope pins output to the configured 4K monitor. Xidi provides a local DirectInput compatibility layer: RT/LT are mapped to the virtual left-stick Y axis because CMR3 binds accelerator/brake there, and physical left-stick Y is ignored to avoid accidental throttle. The bundled Ultimate ASI Loader is preserved as dsound.dll for SilentPatch."
 
   - slug: colin-mcrae-rally-04
     name: "Colin McRae Rally 04"
@@ -185,8 +187,8 @@ dg_pc_racing_games:
     winetricks_components:
       - dxvk
     gamescope_enabled: true
-    gamescope_game_width: 1920
-    gamescope_game_height: 1440
+    gamescope_game_width: 2880
+    gamescope_game_height: 2160
     gamescope_output_width: "{{ dg_pc_racing_gamescope_width }}"
     gamescope_output_height: "{{ dg_pc_racing_gamescope_height }}"
     gamescope_scaler: fit
@@ -195,11 +197,11 @@ dg_pc_racing_games:
       - key: "HKEY_LOCAL_MACHINE\\Software\\Wow6432Node\\Codemasters\\Colin McRae Rally 04"
         name: Width
         type: REG_DWORD
-        value: "1920"
+        value: "2880"
       - key: "HKEY_LOCAL_MACHINE\\Software\\Wow6432Node\\Codemasters\\Colin McRae Rally 04"
         name: Height
         type: REG_DWORD
-        value: "1440"
+        value: "2160"
     env:
       - name: WINEDLLOVERRIDES
         value: "dinput8,dsound,d3d8,d3d9=n,b"
@@ -254,7 +256,7 @@ dg_pc_racing_games:
 
         [Workarounds]
         ActiveVirtualControllerMask = 0x01
-    notes: "PLAYABLE. Magipack Inno Setup repack installed silently to G:\\colin-mcrae-rally-04. CrossOver reports the DRM-free/budget edition running well with DXVK, while old PlayOnLinux notes warn that the original protected retail media does not run under Wine. The game registry is forced to 1920x1440 and gamescope exposes the same 4:3 nested display inside the configured 2560x1440 monitor to preserve aspect ratio without stretching horizontally. This is playable and analog controls work, but the 4:3 image is not perfectly centered on the monitor. Xidi is configured as a keyboard-emulation layer: d-pad and left stick emit arrows, RT accelerates, LT brakes, A/Start confirm, B/Back cancel, X maps to Space, and Y maps to C."
+    notes: "PLAYABLE. Magipack Inno Setup repack installed silently to G:\\colin-mcrae-rally-04. CrossOver reports the DRM-free/budget edition running well with DXVK, while old PlayOnLinux notes warn that the original protected retail media does not run under Wine. The game registry is forced to 2880x2160 and gamescope exposes the same 4:3 nested display inside the configured 3840x2160 monitor to preserve aspect ratio without stretching horizontally. The 4:3 image is not perfectly centered on the monitor. Xidi is configured as a keyboard-emulation layer: d-pad and left stick emit arrows, RT accelerates, LT brakes, A/Start confirm, B/Back cancel, X maps to Space, and Y maps to C. If the 2004-era engine refuses to render at 2880x2160, fall back to 1920x1440 in both gamescope_game_* and the registry; gamescope will still scale the 4:3 nested display onto the 4K monitor."
 
   - slug: colin-mcrae-rally-2005
     name: "Colin McRae Rally 2005"
@@ -320,7 +322,7 @@ dg_pc_racing_games:
     env:
       - name: WINEDLLOVERRIDES
         value: "dinput8=b;d3d9,dxgi=n,b"
-    notes: "NOT PLAYABLE. GOG/Inno Setup DRM-free package extracted with innoextract because the Wine-hosted installer crashes before copying files. The launcher uses the original DRM-free executable with system Wine, DXVK D3D9, a fixed 2560x1440 Wine desktop, plus NOVIDEOMEMORYCHECK and NOVIDEO to avoid fragile legacy startup paths. Wine-GE 8.26 was tested and is not usable for this 32-bit title in the distrobox: pure win32 prefixes cannot load a window driver, and WoW64 prefixes lack a working 32-bit subsystem. The game reaches the executable in Windows XP mode but crashes consistently at cmr5+0x1da27 / 0x0041DA27 in a text/font measurement path. Xidi and stale Win64 patch/StarForce protection files are disabled."
+    notes: "NOT PLAYABLE. GOG/Inno Setup DRM-free package extracted with innoextract because the Wine-hosted installer crashes before copying files. The launcher uses the original DRM-free executable with system Wine, DXVK D3D9, a fixed 3840x2160 Wine desktop, plus NOVIDEOMEMORYCHECK and NOVIDEO to avoid fragile legacy startup paths. Wine-GE 8.26 was tested and is not usable for this 32-bit title in the distrobox: pure win32 prefixes cannot load a window driver, and WoW64 prefixes lack a working 32-bit subsystem. The game reaches the executable in Windows XP mode but crashes consistently at cmr5+0x1da27 / 0x0041DA27 in a text/font measurement path. Xidi and stale Win64 patch/StarForce protection files are disabled."
 
   - slug: outrun-2006
     name: "OutRun 2006: Coast 2 Coast"
@@ -354,11 +356,11 @@ dg_pc_racing_games:
     ini:
       - file: "outrun2006.ini"
         key: "DX/RES/WIDTH"
-        value: "2560"
+        value: "3840"
         separator: " = "
       - file: "outrun2006.ini"
         key: "DX/RES/HEIGHT"
-        value: "1440"
+        value: "2160"
         separator: " = "
       - file: "outrun2006.ini"
         key: "DX/ANTIALIASING"
@@ -430,8 +432,8 @@ dg_pc_racing_games:
           AdapterOrdinal=0
           RenderDevice=Hardware
           AdapterFormat=X8R8G8B8
-          HorizontalResolution=2560
-          VerticalResolution=1440
+          HorizontalResolution=3840
+          VerticalResolution=2160
           ResolutionFilter=1
           BackBufferFormat=A8R8G8B8
           DepthStencilFormat=D24S8
@@ -509,4 +511,4 @@ dg_pc_racing_games:
         marker: "; {mark} distrobox-gaming xidi trigger keyboard fallback"
         state: absent
         block: ""
-    notes: "OldNewPixel Inno Setup package installed silently to G:\\sega-rally-2. The game renders internally at 800x600, so gamescope scales it to the configured 1440p output while preserving 4:3 aspect ratio."
+    notes: "OldNewPixel Inno Setup package installed silently to G:\\sega-rally-2. The game renders internally at 800x600, so gamescope scales it to the configured 4K output while preserving 4:3 aspect ratio."

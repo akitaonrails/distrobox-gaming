@@ -185,8 +185,8 @@ in `CountrySpecific/USA`, and uses fullscreen mode (`Window=0`,
 behind the intro frame in windowed modes. dgVoodoo is not installed because it
 crashes in this Wine setup.
 
-The launcher wraps CMR2 in `gamescope` at `2560x1440` so Wine does not choose
-the portrait monitor's `1440x2560` mode on the multi-monitor desktop.
+The launcher wraps CMR2 in `gamescope` at `3840x2160` so Wine does not choose
+the portrait monitor's `2160x3840` mode on the multi-monitor desktop.
 
 ## Colin McRae Rally 3
 
@@ -209,7 +209,7 @@ are copied. Press Enter to close it if Ansible appears to wait after install.
 Once `Rally_3PC.exe` exists, rerunning the focused playbook skips the installer
 and only refreshes managed wrapper/desktop files.
 
-The launcher wraps the game in `gamescope` at the configured 2560x1440 output
+The launcher wraps the game in `gamescope` at the configured 3840x2160 output
 to avoid the same portrait-monitor mode selection seen in other Wine games.
 Colin 3 also overrides Wine's `Map Controllers` to `1` so Wine exposes the
 SDL-backed XInput device that Xidi consumes. Raw Wine DirectInput trigger axes
@@ -233,12 +233,15 @@ original copy-protected retail media does not run, while CrossOver reports a
 DRM-free/budget edition running well with DXVK. This repo uses the local repack
 source and does not attempt to support protected retail media.
 
-Current status: playable. The game registry is forced to `1920x1440`, and
-gamescope uses the same 4:3 nested resolution inside the configured
-`2560x1440` monitor with `fit` scaling and NIS filtering. This avoids the
-earlier horizontal stretch from `2560x1440` internal output and the black
-screen seen when the nested display was reduced to `640x480`. The image is not
-perfectly centered on the monitor, but it is usable.
+Current status: playable. The game registry is forced to `2880x2160` (4:3
+within 4K), and gamescope uses the same 4:3 nested resolution inside the
+configured `3840x2160` monitor with `fit` scaling and NIS filtering. This
+avoids the horizontal stretch from a 16:9 internal output and the black
+screen seen when the nested display was reduced to `640x480`. If the
+2004-era engine refuses to render at `2880x2160`, fall back to `1920x1440`
+in `pc_racing.yml` (both `gamescope_game_*` and the registry values);
+gamescope still scales the 4:3 nested display onto the 4K monitor. The
+image is not perfectly centered on the monitor, but it is usable.
 
 Controller status: analog driving works. Xidi is configured as a
 keyboard-emulation layer for CMR04 because selecting the Xidi joystick in-game
@@ -255,7 +258,7 @@ The focused playbook extracts it with `innoextract` to
 `cmr5.exe`. This avoids the Wine-hosted installer path, which crashed before
 copying files during testing.
 
-The entry preconfigures gamescope at the shared 2560x1440 output before the
+The entry preconfigures gamescope at the shared 3840x2160 output before the
 first launch test so Wine does not select the portrait monitor. It uses system
 Wine, DXVK D3D9, an isolated Wine desktop, `NOVIDEOMEMORYCHECK`, and `NOVIDEO`.
 Wine-GE 8.26 was rejected for this game: pure win32 prefixes fail to create
@@ -291,12 +294,13 @@ local DLL search order would otherwise load SpecialK before DXVK. If OutRun is
 slow, verify `winetricks list-installed` includes `dxvk` and that no active
 `d3d9.dll` remains in the game directory.
 
-The role disables `gamescope` for this game and writes a fixed `2560x1440`
+The role disables `gamescope` for this game and writes a fixed `3840x2160`
 borderless-window config to avoid Wine picking the portrait monitor mode or
 using an XRandR exclusive-fullscreen mode switch.
 `dg_pc_racing_target_monitor_x` and `dg_pc_racing_target_monitor_y` pin the
-borderless window to the target monitor; on the tested layout this is the ASUS
-`DP-1` monitor at `2160,0` in XRandR coordinates. Antialiasing stays disabled in
+borderless window to the target monitor; on the tested layout this is the
+Samsung Odyssey G8 (`DP-1`) monitor at logical `4000,619` in the Hyprland
+layout from `~/.config/hypr/monitors.conf`. Antialiasing stays disabled in
 `outrun2006.ini` until DXVK is confirmed stable with the game's multisample
 mode.
 
@@ -311,12 +315,12 @@ values for `installdir`, `sku`, and `language`.
 
 The .NET launcher can create `config.ini`, but its UI is unreliable under Wine.
 The role therefore seeds
-`Documents\SEGA Rally\Saved Games\config.ini` directly with a 2560x1440,
+`Documents\SEGA Rally\Saved Games\config.ini` directly with a 3840x2160,
 high-quality, 60 Hz configuration. The game ignores `RunWindowed=1` in this
 Wine setup and still requests an exclusive fullscreen mode, which crashes
 outside containment with an XRandR `RRSetCrtcConfig` error. The launcher runs
-the game through `gamescope` at a fixed 2560x1440 to keep it on the ASUS
-monitor and avoid the portrait display mode.
+the game through `gamescope` at a fixed 3840x2160 to keep it on the Samsung
+Odyssey G8 monitor and avoid the portrait display mode.
 
 The startup videos are disabled by backing up and removing the two WMV files
 under `Bootup/video/Rally`. Wine's Quartz/GStreamer path spends a long time on
@@ -358,7 +362,7 @@ The package ships its own compatibility stack: dgVoodoo files
 `_inmm.dll` music support. The launcher sets
 `WINEDLLOVERRIDES=ddraw,d3dimm,dxgi,dinput=n,b` so Wine prefers those bundled
 DLLs. The game still renders internally at 800x600; the wrapper runs gamescope
-with an 800x600 internal size and the configured 2560x1440 output using
+with an 800x600 internal size and the configured 3840x2160 output using
 `-S fit`, which preserves the 4:3 aspect ratio with pillarboxing.
 
 The focused playbook also applies the bundled "If XInput gamepad doesn't work"
