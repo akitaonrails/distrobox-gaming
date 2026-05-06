@@ -5,3 +5,14 @@
     dest: "{{ dg_box_home }}/bin/flycast-hires"
     mode: "0755"
     backup: true
+
+- name: Install xenia-canary-launch wrapper
+  # ES-DE bridge that resolves a ROM path to its per-game config via
+  # Xenia Manager's games.json before invoking xenia_canary.exe inside
+  # the dg_xenia_prefix wineprefix. Defaults inside the script use $HOME
+  # to derive paths so it follows dg_box_home automatically.
+  ansible.builtin.copy:
+    src: wrappers/xenia-canary-launch
+    dest: "{{ dg_box_home }}/bin/xenia-canary-launch"
+    mode: "0755"
+    backup: true

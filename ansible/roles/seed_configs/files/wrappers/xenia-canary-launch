@@ -1,0 +1,93 @@
+#!/usr/bin/env sh
+# xenia-canary-launch — ES-DE bridge to Xenia Canary with per-game configs.
+#
+# Reads the ROM path passed in $1, looks up the matching per-game
+# .config.toml in Xenia Manager's Config/games.json (where the user has
+# already wired every Project-Forza-Plus / FM3 / FM4 / etc. tweak), and
+# runs xenia_canary.exe inside the gaming wineprefix with that config.
+#
+# Falls back to no-config launch with a warning if no match is found,
+# so unmapped ROMs still play, just without per-game tuning.
+#
+# Path defaults follow dg_box_home / dg_xenia_* from the Ansible group
+# vars; override at runtime via DG_XENIA_RELEASE_DIR or DG_XENIA_PREFIX
+# without editing this file.
+set -eu
+
+ROM="${1:-}"
+[ -n "$ROM" ] || {
+  echo "usage: $(basename "$0") <rom-path>" >&2
+  exit 2
+}
+[ -e "$ROM" ] || {
+  echo "rom not found: $ROM" >&2
+  exit 2
+}
+
+: "${DG_XENIA_RELEASE_DIR:=${HOME}/tools/xenia-manager/current}"
+: "${DG_XENIA_PREFIX:=${HOME}/wineprefixes/xenia-manager}"
+
+GAMES_JSON="${DG_XENIA_RELEASE_DIR}/Config/games.json"
+XENIA_EXE="${DG_XENIA_RELEASE_DIR}/Emulators/Xenia Canary/xenia_canary.exe"
+
+[ -f "$GAMES_JSON" ] || {
+  echo "[xenia-launch] games.json not found at: $GAMES_JSON" >&2
+  exit 3
+}
+[ -f "$XENIA_EXE" ] || {
+  echo "[xenia-launch] xenia_canary.exe not found at: $XENIA_EXE" >&2
+  exit 3
+}
+
+# Look up the per-game config from games.json by matching the ROM's
+# Wine Z:\ path against file_locations.game (case-insensitive — Windows
+# is case-insensitive). Print the relative config path if matched.
+config_rel=$(python3 - "$ROM" "$GAMES_JSON" <<'PY' || true
+import json, os, sys
+rom_linux, games_json = sys.argv[1], sys.argv[2]
+abs_linux = os.path.abspath(rom_linux)
+rom_wine = "Z:" + abs_linux.replace("/", "\\")
+try:
+    data = json.load(open(games_json))
+except Exception as exc:
+    print(f"games.json parse error: {exc}", file=sys.stderr)
+    sys.exit(1)
+entries = data if isinstance(data, list) else list(data.values())
+for entry in entries:
+    g = (entry.get("file_locations") or {}).get("game") or ""
+    if g.lower() == rom_wine.lower():
+        c = (entry.get("file_locations") or {}).get("config") or ""
+        if c:
+            print(c)
+            sys.exit(0)
+sys.exit(1)
+PY
+)
+
+config_arg=""
+if [ -n "${config_rel:-}" ]; then
+  # config_rel is a Windows-style path relative to the release root, e.g.
+  # "Emulators\Xenia Canary\config\Banjo Kazooie N and B.config.toml".
+  # Convert backslashes to slashes for Linux access, then verify on disk.
+  config_unix="${DG_XENIA_RELEASE_DIR}/$(printf '%s' "$config_rel" | tr '\\' '/')"
+  if [ -f "$config_unix" ]; then
+    # Pass the Wine Z:\ form to xenia_canary.exe.
+    config_arg="Z:$(printf '%s' "$config_unix" | tr '/' '\\')"
+    echo "[xenia-launch] using per-game config: $config_unix" >&2
+  else
+    echo "[xenia-launch] WARN: games.json points at missing config: $config_unix" >&2
+  fi
+else
+  echo "[xenia-launch] WARN: no per-game config matched for $ROM, using Xenia Canary defaults" >&2
+fi
+
+# Wine Z:\ form of the ROM (mirrors how Xenia Manager records it).
+rom_wine_arg="Z:$(printf '%s' "$(realpath "$ROM")" | tr '/' '\\')"
+
+export WINEPREFIX="$DG_XENIA_PREFIX"
+
+if [ -n "$config_arg" ]; then
+  exec wine "$XENIA_EXE" --config "$config_arg" "$rom_wine_arg"
+else
+  exec wine "$XENIA_EXE" "$rom_wine_arg"
+fi

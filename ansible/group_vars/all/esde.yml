@@ -92,6 +92,25 @@ dg_esde_systems:
     platform: xbox
     theme: xbox
 
+  - name: xbox360
+    fullname: Microsoft Xbox 360
+    # Absolute path so ES-DE doesn't depend on whichever ROMPATH root is
+    # active. xbox360 ROMs live under dg_rom_heavy_root (a separate tree
+    # from the smaller-system ROMs).
+    path: "{{ dg_xenia_game_dir }}"
+    extension: ".iso .ISO .xex .XEX"
+    commands:
+      # Wrapper resolves %ROM% to its per-game .config.toml via Xenia
+      # Manager's games.json, then runs xenia_canary.exe in the
+      # dg_xenia_prefix wineprefix. Falls back to default config with a
+      # stderr warning if the ROM is unmapped (e.g. XBLA folder hashes
+      # whose tracked path in games.json doesn't match an .iso/.xex
+      # filename ES-DE scanned).
+      - label: "Xenia Canary (per-game config)"
+        cmd: "{{ dg_box_home }}/bin/xenia-canary-launch %ROM%"
+    platform: xbox360
+    theme: xbox360
+
   - name: model3
     fullname: Sega Model 3
     path: "%ROMPATH%/model3"
