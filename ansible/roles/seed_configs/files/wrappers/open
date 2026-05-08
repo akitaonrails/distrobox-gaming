@@ -1,0 +1,41 @@
+#!/usr/bin/env sh
+# macOS-style `open` shim for inside the gaming distrobox.
+#
+# Apps ported from macOS (Cheat Engine's Patreon OAuth flow,
+# some Electron things) shell out to `open <url>` to launch the
+# user's browser. Linux uses xdg-open instead, but inside this
+# distrobox xdg-open is symlinked to distrobox-host-exec which
+# tries to use Flatpak's HostCommand portal — and we don't have
+# Flatpak's portal running on the Hyprland host.
+#
+# We bypass that and call org.freedesktop.portal.OpenURI directly
+# on the host's session bus (mounted at /run/host/run/user/$UID/bus
+# by distrobox). xdg-desktop-portal-hyprland implements OpenURI, so
+# the URL lands in the host's default browser without any Flatpak
+# or host-spawn machinery.
+set -eu
+
+[ "$#" -ge 1 ] || { echo "usage: $(basename "$0") <url-or-path>" >&2; exit 2; }
+
+target="$1"
+
+# If the arg is a local path, turn it into a file:// URL.
+case "$target" in
+  *://*) ;;
+  /*)    target="file://$target" ;;
+  *)
+    if [ -e "$target" ]; then
+      target="file://$(realpath "$target")"
+    fi
+    ;;
+esac
+
+# Aim at the host's session DBus, regardless of how we were spawned.
+DBUS_SESSION_BUS_ADDRESS="unix:path=/run/host/run/user/$(id -ru)/bus"
+export DBUS_SESSION_BUS_ADDRESS
+
+exec busctl --user call \
+  org.freedesktop.portal.Desktop \
+  /org/freedesktop/portal/desktop \
+  org.freedesktop.portal.OpenURI \
+  OpenURI ssa{sv} "" "$target" 0

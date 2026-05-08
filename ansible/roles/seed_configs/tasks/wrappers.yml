@@ -16,3 +16,24 @@
     dest: "{{ dg_box_home }}/bin/xenia-canary-launch"
     mode: "0755"
     backup: true
+
+- name: Install macOS-style `open` shim
+  # Cheat Engine's Patreon OAuth flow shells out to `open <url>` (and
+  # so do some Electron-based apps). The distrobox ships an
+  # /usr/local/bin/xdg-open symlinked to distrobox-host-exec, which
+  # routes through Flatpak's HostCommand portal — this Hyprland host
+  # doesn't run that portal so the chain dead-ends. The shim bypasses
+  # everything and calls org.freedesktop.portal.OpenURI on the host
+  # session bus (mounted via /run/host) directly, which
+  # xdg-desktop-portal-hyprland services natively. URLs land in the
+  # host's default browser without any Flatpak or host-spawn deps.
+  #
+  # Lives in $HOME/bin so the box's interactive zsh PATH (which
+  # prepends ~/bin) finds it. Apps that shell out non-interactively
+  # also pick it up because their parent shell is the interactive one
+  # that launched them.
+  ansible.builtin.copy:
+    src: wrappers/open
+    dest: "{{ dg_box_home }}/bin/open"
+    mode: "0755"
+    backup: true
