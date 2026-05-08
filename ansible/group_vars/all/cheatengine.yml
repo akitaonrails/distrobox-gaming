@@ -4,39 +4,32 @@
 # multiplayer or anti-cheat-protected titles (VAC / EAC / BattlEye) —
 # attaching CE will trigger bans regardless of host OS.
 #
-# Distribution: the Cheat Engine team ships a Windows Inno Setup
-# installer from https://www.cheatengine.org/downloads.php. There is a
-# native Linux build (7.6.6 as of early 2025) but it is not packaged
-# cleanly on Arch / AUR. The Windows installer through innoextract is
-# the most stable path on this box and preserves identical behaviour
-# to Windows CE; native Linux CE can be revisited later if a clean AUR
-# / upstream tarball appears.
+# Distribution: native Linux Cheat Engine 7.6.6 (release 4 as of
+# May 2026), shipped as a portable zip from cheatengine.org. No Wine,
+# no innoextract, no Proton-prefix gymnastics; CE attaches to Wine
+# processes via ptrace just like any other Linux process.
 #
-# Drop the installer at dg_cheatengine_installer (rename if needed),
-# then run:
+# Drop CheatEngineLinux766-4.zip at dg_cheatengine_linux_zip and run:
 #   ansible-playbook install-cheatengine.yml
+#
+# The zip is downloaded from https://www.cheatengine.org/downloads.php
 
-dg_cheatengine_version: "7.6"
+# Logical version of the Linux build (e.g. "7.6.6") and the release
+# suffix the upstream zip name uses (CheatEngineLinux766-N.zip). Keep
+# these as the only knobs the user touches when bumping versions.
+dg_cheatengine_linux_version: "7.6.6"
+dg_cheatengine_linux_release: "4"
+dg_cheatengine_linux_version_flat: "{{ dg_cheatengine_linux_version | replace('.', '') }}"
+dg_cheatengine_linux_archive_name: "CheatEngineLinux{{ dg_cheatengine_linux_version_flat }}-{{ dg_cheatengine_linux_release }}"
 
 dg_cheatengine_source_dir: "{{ dg_pc_racing_source_root }}/CheatEngine"
-dg_cheatengine_installer: "{{ dg_cheatengine_source_dir }}/CheatEngine{{ dg_cheatengine_version }}.exe"
+dg_cheatengine_linux_zip: "{{ dg_cheatengine_source_dir }}/{{ dg_cheatengine_linux_archive_name }}.zip"
 
-# Innoextract drops CE under <install_root>/app/ (Inno's default
-# section). The wrapper points at tools/cheat-engine/app/Cheat Engine.exe
-# directly so we don't need a post-extraction rename step.
+# Extraction yields <install_root>/<archive_name>/cheatengine-x86_64.
+# The wrapper cd's into the archive dir before exec because CE expects
+# its sibling .so libraries to be discoverable via relative path.
 dg_cheatengine_install_root: "{{ dg_box_home }}/tools/cheat-engine"
-dg_cheatengine_exe: "{{ dg_cheatengine_install_root }}/app/Cheat Engine.exe"
-
-# Standalone wineprefix for "no-target" launches. When using
-# --steam <appid> the wrapper hits the game's compatdata prefix via
-# protontricks-launch instead.
-dg_cheatengine_prefix: "{{ dg_box_home }}/wineprefixes/cheat-engine"
+dg_cheatengine_dir: "{{ dg_cheatengine_install_root }}/{{ dg_cheatengine_linux_archive_name }}"
+dg_cheatengine_exe: "{{ dg_cheatengine_dir }}/cheatengine-x86_64"
 
 dg_cheatengine_wrapper_bin: "{{ dg_box_home }}/bin/cheat-engine"
-
-# protontricks-launch is the canonical way to attach a stray .exe to
-# a Steam Proton game's compatdata prefix with the right Proton
-# runtime + library paths. innoextract already lives in
-# dg_pc_racing_packages.
-dg_cheatengine_aur_packages:
-  - protontricks

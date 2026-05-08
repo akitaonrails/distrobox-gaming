@@ -1,20 +1,16 @@
 # Cheat Engine on the gaming distrobox
 
-Single-player cheats / trainers via Cheat Engine, wired to attach into
-Steam Proton compatdata prefixes (and to non-Steam Wine prefixes for
-the PC racing games).
+Single-player cheats / trainers via **native Linux** Cheat Engine 7.6.6,
+attached to Steam Proton or Wine processes via standard ptrace.
 
-WeMod isn't covered here. Its Wine compatibility is title-by-title
-flaky and it phones home through Wine's network stack on launch, which
-breaks on enough games that maintaining it isn't worth it. CE through
-Proton covers everything WeMod does and a lot more — including the
-ability to load community cheat tables (`.CT` files) from FearLess
-Revolution and similar.
+WeMod isn't covered here — its Wine compatibility is title-by-title
+flaky and it phones home through Wine on launch. CE through native
+Linux ptrace covers everything WeMod does and more, including loading
+community cheat tables (`.CT` files) from FearLess Revolution.
 
-PINCE (the Linux-native Cheat-Engine-equivalent) is intentionally
-**not** installed. It would only matter for native-Linux Steam games
-that don't run through Wine, and CE's scanner already attaches to
-those just as well via ptrace.
+PINCE (the older Linux-native CE-equivalent) is intentionally **not**
+installed. Native CE 7.6.6 covers the same ground with the actual
+Cheat Engine UI and `.CT` table format.
 
 ## Online / anti-cheat warning
 
@@ -30,94 +26,93 @@ This setup is for offline campaigns and single-player experiences only.
 
 ## Install
 
-The CE Windows installer (Inno Setup) is the supported path. The
-native Linux build at 7.6.6 exists but isn't cleanly packaged on Arch
-yet — drop in once a clean AUR / upstream tarball appears.
-
-1. Download `CheatEngine{{ version }}.exe` from
-   <https://www.cheatengine.org/downloads.php>
-   (defaults assume 7.6 — bump `dg_cheatengine_version` in
-   `ansible/group_vars/all/cheatengine.yml` for newer releases).
-2. Drop the installer at:
-   `{{ dg_pc_racing_source_root }}/CheatEngine/CheatEngine7.6.exe`
-   (`dg_cheatengine_installer`).
-3. Run the focused playbook from `ansible/`:
+1. Download `CheatEngineLinux766-4.zip` (or whichever `dg_cheatengine_linux_*`
+   version is current in `ansible/group_vars/all/cheatengine.yml`) from
+   <https://www.cheatengine.org/downloads.php>.
+2. Drop it at `dg_cheatengine_linux_zip` (defaults to
+   `<dg_pc_racing_source_root>/CheatEngine/CheatEngineLinux766-4.zip`).
+3. From `ansible/`:
    ```sh
    ansible-playbook install-cheatengine.yml
    ```
-4. The role:
-   - installs `protontricks` inside the box (AUR) for Steam compatdata
-     prefix discovery;
-   - extracts the Inno Setup installer with `innoextract` (already in
-     the PC racing package list) to
-     `{{ dg_box_home }}/tools/cheat-engine/app/`;
-   - drops a `cheat-engine` wrapper at `{{ dg_box_home }}/bin/`.
+4. The role unzips the archive to `tools/cheat-engine/CheatEngineLinux766-4/`
+   and drops a `cheat-engine` wrapper at `bin/`. Idempotent re-runs.
 
-The installer drop, version variable, and wrapper path all follow
-`dg_*` variables — no hardcoded user paths. If you renamed the
-installer to a non-default name, override
-`dg_cheatengine_installer` in `host_vars/localhost.yml` instead of
-editing the role.
+We don't auto-download — cheatengine.org's URL pattern shifts between
+releases, so the role fails-fast with a download pointer if the zip
+isn't staged.
+
+## ptrace_scope (one-time host setup)
+
+Arch's default `kernel.yama.ptrace_scope=1` blocks CE from attaching
+to processes outside its own shell tree (i.e. anything launched from
+Steam). Pick one:
+
+- **Persistent (recommended)** — drop a sysctl file:
+  ```sh
+  echo 'kernel.yama.ptrace_scope = 0' | sudo tee /etc/sysctl.d/99-ptrace.conf
+  sudo sysctl --system
+  ```
+- **One-shot per session**:
+  ```sh
+  sudo sysctl kernel.yama.ptrace_scope=0
+  ```
+- **Per-binary capability** (more surgical):
+  ```sh
+  sudo setcap cap_sys_ptrace=eip ~/tools/cheat-engine/CheatEngineLinux766-4/cheatengine-x86_64
+  ```
+
+Reverse with `kernel.yama.ptrace_scope=1` when you're done if you
+care about the security posture.
+
+The wrapper detects a non-zero `ptrace_scope` and prints these hints
+on launch.
 
 ## Usage
 
-The wrapper has three modes. All three launch the same `Cheat Engine.exe`
-binary; what changes is the **Wine prefix it attaches to**, which
-determines which game processes CE can ptrace.
-
-### Steam Proton games
-
-```sh
-cheat-engine --steam <appid>
-```
-
-Uses `protontricks-launch` to launch CE inside the game's
-`compatdata/<appid>/pfx` with the same Proton version Steam picked,
-including the Steam Linux Runtime container if applicable. CE then
-sees the game's wine processes when you click the computer icon.
-
-To find the appid, either:
-
-```sh
-cheat-engine --list-steam       # protontricks --list, prints appid + name
-```
-
-or look it up on Steam (right-click game → Properties → URL or App ID).
-
-### Non-Steam Wine games
-
-```sh
-cheat-engine --prefix /path/to/wineprefix
-```
-
-For the PC racing entries (CMR04, OutRun, etc.) the prefix root is
-`{{ dg_pc_racing_prefix_root }}/<game-slug>` per `pc_racing.yml`.
-
-### Standalone (no game target)
+The wrapper has no flags — native CE doesn't need prefix/Steam-appid
+targeting because Wine processes are visible to Linux ptrace as
+regular processes:
 
 ```sh
 cheat-engine
 ```
 
-Runs CE in `{{ dg_cheatengine_prefix }}` — useful for browsing the UI,
-testing CE itself, or working with `.CT` tables disconnected from any
-running game.
+CE opens. Click the **computer icon** (top-left) → **Process List**.
+You'll see all running processes including Wine ones. Pick the game's
+`.exe` (e.g. `Spider-Man.exe` for Marvel's Spider-Man Remastered) and
+attach. Open a `.CT` table or scan addresses from there.
+
+`DG_CHEATENGINE_DIR` overrides the default path if you've installed
+into a non-standard location.
+
+## Workflow with Spider-Man Remastered (worked example)
+
+1. Launch Marvel's Spider-Man Remastered from Steam, reach a save.
+2. From a separate terminal: `cheat-engine`
+3. CE → computer icon → pick `Spider-Man.exe` from the process list.
+4. Load a `.CT`: search FearLess Revolution for the current Spider-Man
+   Remastered table (community-maintained, AOB-scanned addresses so
+   it survives most game patches).
+5. Tick the cheat checkboxes — they activate immediately.
+
+Same shape works for any Steam Proton single-player title.
 
 ## Caveats
 
-- **Trainer .exes** (FLiNG, FearLessRevolution, CheatHappens) follow
-  the same pattern: `protontricks-launch --appid <id> /path/to/Trainer.exe`.
-  No CE needed. The wrapper here is CE-specific; if you end up running
-  trainers regularly, generalising the wrapper to take an arbitrary
-  `.exe` is a small change.
-- **Cross-prefix attachment doesn't work.** If CE is launched in
-  prefix A, it cannot see processes in prefix B even though they're
-  all real Linux processes — Wine's process table is per-prefix.
-  Always match the target game's prefix.
-- **Address randomisation:** modern games use ASLR. Saved `.CT` tables
-  with hardcoded addresses won't survive game restarts; use AOB
-  (array-of-bytes) scans or pointer scans instead. This is a CE skill
-  issue, not a Linux issue.
-- **Some games' anti-tamper layers (Denuvo, Arxan, VMProtect)** make
-  scanning slow and pointer paths unstable. CE still works, just
-  expect more pointer maintenance per patch.
+- **Trainer .exes** (FLiNG / FearLessRevolution / CheatHappens
+  standalones) are designed for Windows CE attaching to Windows
+  processes. Native Linux CE doesn't run them directly. If you need
+  one of those instead of a `.CT`, fall back to the older
+  protontricks-based pattern: `protontricks-launch --appid <id>
+  /path/to/Trainer.exe` to launch the trainer in the same compatdata
+  prefix as the game. The `protontricks` package was previously
+  installed by this role; you can reinstall it manually with
+  `yay -S --needed protontricks` if needed.
+- **Address randomisation** — modern games use ASLR. Saved `.CT`
+  tables with hardcoded addresses won't survive game restarts; use
+  AOB (array-of-bytes) scans or pointer scans instead. CE skill
+  issue, not Linux issue.
+- **Anti-tamper layers (Denuvo, Arxan, VMProtect)** make scanning
+  slow and pointer paths unstable. CE still works; expect more
+  pointer maintenance per game patch.
