@@ -1,0 +1,8 @@
+---
+- name: Install Cheat Engine for Steam Proton / Wine games
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_cheatengine
+    - { role: verify, tags: [verify] }

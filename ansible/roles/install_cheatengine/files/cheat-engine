@@ -1,0 +1,103 @@
+#!/usr/bin/env sh
+# cheat-engine — launch Cheat Engine attached to a target Wine prefix.
+#
+# Usage:
+#   cheat-engine --steam <appid>     # attach to a Steam Proton game's compatdata prefix
+#   cheat-engine --prefix <path>     # attach to a non-Steam Wine prefix
+#   cheat-engine --list-steam        # protontricks --list (find appids)
+#   cheat-engine                     # standalone, in dg_cheatengine_prefix
+#
+# CE attaches via ptrace to processes inside the same Wine prefix, so
+# the prefix MUST match the target game's. Steam Proton's runtime env
+# is non-trivial; --steam delegates to protontricks-launch which sets
+# the right Proton version and library paths.
+#
+# Defaults follow $HOME so the script is portable across the
+# distrobox-gaming layout (dg_box_home == $HOME inside the box).
+# Override the CE binary location with DG_CHEATENGINE_EXE.
+#
+# DO NOT USE against VAC / EAC / BattlEye / multiplayer titles. Those
+# anti-cheat systems will ban regardless of host OS.
+set -eu
+
+CE_EXE_DEFAULT="${HOME}/tools/cheat-engine/app/Cheat Engine.exe"
+DEFAULT_PREFIX="${HOME}/wineprefixes/cheat-engine"
+
+CE_EXE="${DG_CHEATENGINE_EXE:-$CE_EXE_DEFAULT}"
+mode="default"
+target=""
+
+usage() {
+  cat <<EOF
+Usage:
+  $(basename "$0") --steam <appid>    # attach to Steam Proton game's prefix
+  $(basename "$0") --prefix <path>    # attach to non-Steam Wine prefix
+  $(basename "$0") --list-steam       # list installed Steam appids via protontricks
+  $(basename "$0")                    # standalone mode (default prefix)
+EOF
+}
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --steam)
+      [ "$#" -ge 2 ] || { echo "--steam needs an appid" >&2; exit 2; }
+      mode=steam
+      target="$2"
+      shift 2
+      ;;
+    --prefix)
+      [ "$#" -ge 2 ] || { echo "--prefix needs a path" >&2; exit 2; }
+      mode=prefix
+      target="$2"
+      shift 2
+      ;;
+    --list-steam)
+      command -v protontricks >/dev/null 2>&1 || {
+        echo "protontricks not installed" >&2
+        exit 4
+      }
+      exec protontricks --list
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "unknown flag: $1" >&2
+      usage
+      exit 2
+      ;;
+  esac
+done
+
+[ -f "$CE_EXE" ] || {
+  echo "Cheat Engine.exe not found at: $CE_EXE" >&2
+  echo "Run install-cheatengine.yml or set DG_CHEATENGINE_EXE." >&2
+  exit 3
+}
+
+case "$mode" in
+  steam)
+    command -v protontricks-launch >/dev/null 2>&1 || {
+      echo "protontricks-launch not found (install protontricks)" >&2
+      exit 4
+    }
+    echo "[cheat-engine] attaching to Steam appid $target via protontricks" >&2
+    exec protontricks-launch --appid "$target" "$CE_EXE"
+    ;;
+  prefix)
+    [ -d "$target" ] || {
+      echo "wine prefix not found: $target" >&2
+      exit 3
+    }
+    echo "[cheat-engine] attaching to wine prefix: $target" >&2
+    export WINEPREFIX="$target"
+    exec wine "$CE_EXE"
+    ;;
+  default)
+    echo "[cheat-engine] standalone mode (prefix: $DEFAULT_PREFIX)" >&2
+    [ -d "$DEFAULT_PREFIX" ] || mkdir -p "$DEFAULT_PREFIX"
+    export WINEPREFIX="$DEFAULT_PREFIX"
+    exec wine "$CE_EXE"
+    ;;
+esac
