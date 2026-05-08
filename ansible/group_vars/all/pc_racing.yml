@@ -92,7 +92,50 @@ dg_pc_racing_games:
       - file: "SPCMR2.ini"
         key: Borderless
         value: "0"
-    notes: "Source is a pre-extracted copy of the original BIN/CUE media; the converted ISO is kept beside it."
+    winebus_registry:
+      - name: Map Controllers
+        value: 1
+    env:
+      - name: WINEDLLOVERRIDES
+        value: "dinput=n,b"
+    xidi:
+      # CMR2 is DirectInput 7-era (no DX8) so the wrapper is dinput.dll,
+      # not dinput8.dll like CMR3/CMR04. Without Xidi the in-game
+      # controller options page lists the 8BitDo but greys most rows
+      # out — modern controllers don't pass the partial DI7 device-type
+      # checks the game does. StandardGamepad template gives CMR2 a
+      # full virtual DI joystick and re-enables the options.
+      source: "{{ dg_pc_racing_xidi_archive }}"
+      url: "{{ dg_pc_racing_xidi_url }}"
+      archive_root: "Xidi-{{ dg_pc_racing_xidi_version }}"
+      architecture: Win32
+      wrappers:
+        - dinput.dll
+      config: |
+        [Mapper]
+        Type = StandardGamepad
+
+        [Properties]
+        UseBuiltInProperties = yes
+        DeadzonePercentStickLeft = 5
+        DeadzonePercentStickRight = 5
+        DeadzonePercentTriggerLT = 0
+        DeadzonePercentTriggerRT = 0
+        SaturationPercentStickLeft = 100
+        SaturationPercentStickRight = 100
+        SaturationPercentTriggerLT = 100
+        SaturationPercentTriggerRT = 100
+
+        [Log]
+        Enabled = no
+        Level = 1
+
+        [Import]
+        dinput.dll = C:\Windows\system32\dinput.dll
+
+        [Workarounds]
+        ActiveVirtualControllerMask = 0x01
+    notes: "Source is a pre-extracted copy of the original BIN/CUE media; the converted ISO is kept beside it. Xidi is required for the controller options page to ungrey: CMR2's DirectInput 7 controller-class detection rejects modern gamepads' partial subtype reports, so Xidi presents a virtual StandardGamepad as the visible DI device and the menu re-enables analog binding rows."
 
   - slug: colin-mcrae-rally-3
     name: "Colin McRae Rally 3"
