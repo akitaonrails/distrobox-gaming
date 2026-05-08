@@ -1,6 +1,12 @@
 # Gaming box shell — managed by Ansible.
 # Run: ansible-playbook reset-configs.yml --tags shell to restore.
 
+# PATH — prepend the box's ~/bin so interactive shells pick up the
+# wrappers Ansible deploys there (cheat-engine, flycast-hires,
+# xenia-canary-launch, etc.). Distrobox enter -- <cmd> doesn't load
+# .zshrc, so for non-interactive direct invocation use the full path.
+export PATH="$HOME/bin:$PATH"
+
 # History
 HISTFILE=~/.zsh_history
 HISTSIZE=5000
