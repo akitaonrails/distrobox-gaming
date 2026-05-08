@@ -70,21 +70,68 @@ on launch.
 
 ## Usage
 
-The wrapper has no flags — native CE doesn't need prefix/Steam-appid
-targeting because Wine processes are visible to Linux ptrace as
-regular processes:
+Three modes:
+
+```sh
+cheat-engine                           # native Linux CE
+cheat-engine --proton <appid>          # Windows CE inside a Steam game's Proton prefix
+cheat-engine --proton-install <appid>  # one-time: install Windows CE into that prefix
+```
+
+### Native mode (default — try this first)
 
 ```sh
 cheat-engine
 ```
 
 CE opens. Click the **computer icon** (top-left) → **Process List**.
-You'll see all running processes including Wine ones. Pick the game's
-`.exe` (e.g. `Spider-Man.exe` for Marvel's Spider-Man Remastered) and
-attach. Open a `.CT` table or scan addresses from there.
+All running processes appear including Wine ones. Pick the game's
+`.exe` (e.g. `Spider-Man.exe`), attach, then **File → Open** a `.CT`.
 
-`DG_CHEATENGINE_DIR` overrides the default path if you've installed
-into a non-standard location.
+Native CE attaches via ptrace, which works on any Linux process —
+Wine processes count. Most cheat tables that use AOB-scan-only
+addressing work cleanly here.
+
+### Proton-prefix mode (when native CE isn't enough)
+
+Some cheat tables (notably FearLess Revolution tables for AAA Insomniac
+ports like Spider-Man Remastered) do **PE module symbol enumeration**
+in their activation scripts — `going to wait for all symbols loaded
+because of $process` followed by `TMemScan` aborting. Native Linux CE
+can't fully resolve PE symbols in a Wine process; Windows CE running
+inside the same Wine prefix as the game can.
+
+One-time install per game (Steam must have launched the game at least
+once so its compatdata prefix exists):
+
+```sh
+cheat-engine --proton-install 1817070   # Spider-Man Remastered
+```
+
+An Inno Setup wizard pops up; click through Next/Install/Finish. CE
+lands at `<prefix>/drive_c/Program Files/Cheat Engine/Cheat Engine.exe`
+inside that game's prefix. Repeat per game that needs Windows CE.
+
+Then to launch:
+
+```sh
+cheat-engine --proton 1817070
+```
+
+protontricks-launch fires Wine in the game's exact Proton prefix; CE
+sees the game as a same-prefix Windows process with full module table,
+and `.CT` activations work normally.
+
+### Overrides
+
+- `DG_CHEATENGINE_DIR` — native CE install location (default
+  `~/tools/cheat-engine/CheatEngineLinux766-4`)
+- `DG_CHEATENGINE_PROTON_REL` — relative path to `Cheat Engine.exe`
+  inside a Proton prefix (default
+  `drive_c/Program Files/Cheat Engine/Cheat Engine.exe`)
+- `DG_CHEATENGINE_WIN_INSTALLER` — Windows CE installer source for
+  `--proton-install` (default
+  `<dg_pc_racing_source_root>/CheatEngine/CheatEngine76.exe`)
 
 ## Workflow with Spider-Man Remastered (worked example)
 

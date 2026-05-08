@@ -1,30 +1,152 @@
 #!/usr/bin/env sh
-# cheat-engine — launch native Linux Cheat Engine.
+# cheat-engine — launcher for Cheat Engine attached to Linux or
+# Steam-Proton processes.
 #
-# Native CE attaches via ptrace; Wine processes (Steam Proton games,
-# CMR04 / OutRun / etc. via the pc_racing prefixes) are regular Linux
-# processes from the kernel POV, so CE sees them in its process picker.
-# No protontricks, no Wine prefix targeting required.
+# Modes:
+#   cheat-engine                          # native Linux CE (default)
+#   cheat-engine --proton <appid>         # Windows CE inside a Steam game's
+#                                         # Proton compatdata prefix
+#   cheat-engine --proton-install <appid> # one-time: run the Windows CE
+#                                         # Inno installer inside that prefix
 #
-# DO NOT USE against VAC / EAC / BattlEye / multiplayer titles. Those
-# anti-cheat systems will ban regardless of host OS.
+# Why two modes:
+# - Native Linux CE attaches to any Linux process via ptrace (Wine
+#   processes count). It's enough for most cheat tables that use
+#   AOB-scan-only addressing — no per-prefix install needed.
+# - Some FLR-style tables do PE module symbol enumeration in their
+#   activation scripts ("waiting for symbols because of $process").
+#   That gap is real for native CE on Wine processes; Windows CE
+#   inside the same Wine prefix sees the target as a normal Windows
+#   process and the table activates cleanly.
 #
-# ptrace_scope: Arch defaults to kernel.yama.ptrace_scope=1 (only
-# attach to descendants of the same shell). To attach to a Steam game
-# you launched separately, you'll need either:
-#   - One-time per session: sudo sysctl kernel.yama.ptrace_scope=0
-#   - Persistent: drop a /etc/sysctl.d/99-ptrace.conf with
-#       kernel.yama.ptrace_scope = 0
-#   - Or per-binary capability:
-#       sudo setcap cap_sys_ptrace=eip <DG_CHEATENGINE_EXE>
-# This wrapper detects ptrace_scope and prints a hint if non-zero;
-# CE itself will silently fail to attach otherwise.
+# DO NOT USE against VAC / EAC / BattlEye / multiplayer titles.
 set -eu
 
+# ───────────────────────── native-Linux CE config ─────────────────────────
 CE_DIR_DEFAULT="${HOME}/tools/cheat-engine/CheatEngineLinux766-4"
 CE_DIR="${DG_CHEATENGINE_DIR:-$CE_DIR_DEFAULT}"
 CE_EXE="$CE_DIR/cheatengine-x86_64"
 
+# ─────────────────────── Windows-in-prefix CE config ──────────────────────
+# Path inside any Steam compatdata prefix where the Inno installer drops
+# Cheat Engine. Override at the prefix level if you customize the Inno
+# install path during setup.
+CE_PROTON_REL="${DG_CHEATENGINE_PROTON_REL:-drive_c/Program Files/Cheat Engine/Cheat Engine.exe}"
+
+# Windows installer source — used by --proton-install. Defaults match
+# the dg_cheatengine_* layout in ansible/group_vars/all/cheatengine.yml.
+CE_WIN_INSTALLER_DEFAULT="/mnt/terachad/Emulators/ROMS_FINAL/PC/CheatEngine/CheatEngine76.exe"
+CE_WIN_INSTALLER="${DG_CHEATENGINE_WIN_INSTALLER:-$CE_WIN_INSTALLER_DEFAULT}"
+
+usage() {
+  cat <<EOF
+Usage:
+  $(basename "$0")                          # native Linux CE
+  $(basename "$0") --proton <appid>         # Windows CE inside Steam game's Proton prefix
+  $(basename "$0") --proton-install <appid> # one-time install of Windows CE into that prefix
+EOF
+}
+
+# Walk Steam libraryfolders.vdf for all configured library roots and
+# return the first compatdata/<appid>/pfx that exists, or empty string.
+find_proton_prefix() {
+  appid="$1"
+  vdf="$HOME/.local/share/Steam/config/libraryfolders.vdf"
+  [ -f "$vdf" ] || return 0
+  # Extract every "path"  "..."  value, then probe each.
+  awk '/"path"/ { match($0, /"path"[[:space:]]+"([^"]+)"/, a); print a[1] }' "$vdf" 2>/dev/null \
+    | while IFS= read -r lib; do
+        [ -n "$lib" ] || continue
+        cand="$lib/steamapps/compatdata/$appid/pfx"
+        if [ -d "$cand" ]; then
+          printf '%s\n' "$cand"
+          break
+        fi
+      done
+}
+
+# ─────────────────────────── argument parsing ─────────────────────────────
+mode="native"
+appid=""
+
+case "${1:-}" in
+  --proton)
+    [ "$#" -ge 2 ] || { echo "--proton needs an appid" >&2; usage >&2; exit 2; }
+    mode="proton"
+    appid="$2"
+    ;;
+  --proton-install)
+    [ "$#" -ge 2 ] || { echo "--proton-install needs an appid" >&2; usage >&2; exit 2; }
+    mode="proton-install"
+    appid="$2"
+    ;;
+  -h|--help)
+    usage
+    exit 0
+    ;;
+  "")
+    mode="native"
+    ;;
+  *)
+    echo "unknown flag: $1" >&2
+    usage >&2
+    exit 2
+    ;;
+esac
+
+# ─────────────────────── proton modes (need protontricks) ─────────────────
+if [ "$mode" != "native" ]; then
+  command -v protontricks-launch >/dev/null 2>&1 || {
+    echo "protontricks-launch not found inside the gaming distrobox." >&2
+    echo "Install: distrobox enter gaming -- yay -S --noconfirm protontricks" >&2
+    exit 4
+  }
+
+  prefix=$(find_proton_prefix "$appid")
+  [ -n "$prefix" ] || {
+    echo "no Steam Proton compatdata prefix found for appid $appid" >&2
+    echo "Confirm the game has been launched from Steam at least once." >&2
+    exit 3
+  }
+
+  case "$mode" in
+    proton)
+      ce_exe="$prefix/$CE_PROTON_REL"
+      [ -f "$ce_exe" ] || {
+        cat >&2 <<EOF
+Windows Cheat Engine isn't installed in this prefix yet:
+  $ce_exe
+
+One-time install:
+  $(basename "$0") --proton-install $appid
+
+(or run the Inno installer manually:
+  cd ~
+  protontricks-launch --appid $appid "$CE_WIN_INSTALLER"
+  # click through the wizard)
+EOF
+        exit 3
+      }
+      echo "[cheat-engine] launching Windows CE inside Steam appid $appid prefix" >&2
+      cd "$HOME"  # safe cwd inside bwrap
+      exec protontricks-launch --appid "$appid" "$ce_exe"
+      ;;
+    proton-install)
+      [ -f "$CE_WIN_INSTALLER" ] || {
+        echo "Windows CE installer not found at: $CE_WIN_INSTALLER" >&2
+        echo "Override DG_CHEATENGINE_WIN_INSTALLER or stage it via the" >&2
+        echo "dg_cheatengine_* layout (see docs/cheats-and-trainers.md)." >&2
+        exit 3
+      }
+      echo "[cheat-engine] starting Windows CE installer inside appid $appid prefix" >&2
+      echo "(an Inno Setup wizard will pop up; click Next/Install through it)" >&2
+      cd "$HOME"
+      exec protontricks-launch --appid "$appid" "$CE_WIN_INSTALLER"
+      ;;
+  esac
+fi
+
+# ─────────────────────────── native Linux CE ──────────────────────────────
 [ -x "$CE_EXE" ] || {
   echo "Cheat Engine binary not found / not executable at: $CE_EXE" >&2
   echo "Run install-cheatengine.yml or set DG_CHEATENGINE_DIR." >&2
@@ -37,16 +159,11 @@ if [ -r /proc/sys/kernel/yama/ptrace_scope ]; then
   if [ "$scope" != "0" ]; then
     cat >&2 <<EOF
 [cheat-engine] kernel.yama.ptrace_scope=$scope (default on Arch is 1).
-  CE may fail to attach to processes outside this terminal's tree
-  (e.g. games launched from Steam). To allow attaches:
-    one-shot:    sudo sysctl kernel.yama.ptrace_scope=0
-    persistent:  echo 'kernel.yama.ptrace_scope = 0' | sudo tee /etc/sysctl.d/99-ptrace.conf
-  Revert with kernel.yama.ptrace_scope=1.
+  CE may fail to attach to processes outside this terminal's tree.
+  See docs/cheats-and-trainers.md for the sysctl drop-in.
 EOF
   fi
 fi
 
-# CE looks for its sibling shared libraries via relative path, so the
-# working directory has to be the archive root.
 cd "$CE_DIR"
 exec ./cheatengine-x86_64 "$@"
