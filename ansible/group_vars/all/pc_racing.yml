@@ -113,7 +113,20 @@ dg_pc_racing_games:
         - dinput.dll
       config: |
         [Mapper]
-        Type = StandardGamepad
+        Type = CMR2Gamepad
+
+        [CustomMapper:CMR2Gamepad]
+        Template = StandardGamepad
+        StickLeftX = Axis(X)
+        StickLeftY = Null
+        TriggerRT = Axis(Y, -)
+        TriggerLT = Axis(Y, +)
+        DpadUp = Keyboard(UpArrow)
+        DpadDown = Keyboard(DownArrow)
+        DpadLeft = Keyboard(LeftArrow)
+        DpadRight = Keyboard(RightArrow)
+        ButtonStart = Keyboard(Enter)
+        ButtonBack = Keyboard(Esc)
 
         [Properties]
         UseBuiltInProperties = yes
@@ -135,7 +148,7 @@ dg_pc_racing_games:
 
         [Workarounds]
         ActiveVirtualControllerMask = 0x01
-    notes: "Source is a pre-extracted copy of the original BIN/CUE media; the converted ISO is kept beside it. Xidi is required for the controller options page to ungrey: CMR2's DirectInput 7 controller-class detection rejects modern gamepads' partial subtype reports, so Xidi presents a virtual StandardGamepad as the visible DI device and the menu re-enables analog binding rows."
+    notes: "Source is a pre-extracted copy of the original BIN/CUE media; the converted ISO is kept beside it. Xidi is required for the controller options page to ungrey: CMR2's DirectInput 7 controller-class detection rejects modern gamepads' partial subtype reports, so Xidi presents a virtual StandardGamepad-derived DI device and the menu re-enables analog binding rows. CMR2 only binds throttle/brake to the virtual left-stick Y axis (no native trigger axes in DI7), so the mapper sends physical RT to Y- (throttle) and physical LT to Y+ (brake) and silences physical left-stick Y to avoid accidental throttle on steering."
 
   - slug: colin-mcrae-rally-3
     name: "Colin McRae Rally 3"
