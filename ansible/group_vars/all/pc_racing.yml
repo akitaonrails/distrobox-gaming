@@ -92,12 +92,30 @@ dg_pc_racing_games:
       - file: "SPCMR2.ini"
         key: Borderless
         value: "0"
+      # SilentPatch widescreen — render at 1440p natively. Smaller
+      # framebuffer than 4K cuts wined3d's D3D7 → GL translation
+      # overhead (single-threaded, CPU-bound on a 2000-era engine
+      # path) so frame rate climbs back up. Gamescope upscales the
+      # 1440p output to the G8's native 4K.
+      - file: "SPCMR2.ini"
+        key: Width
+        value: "2560"
+      - file: "SPCMR2.ini"
+        key: Height
+        value: "1440"
     winebus_registry:
       - name: Map Controllers
         value: 1
     env:
       - name: WINEDLLOVERRIDES
         value: "dinput=n,b"
+    gamescope_enabled: true
+    gamescope_game_width: 2560
+    gamescope_game_height: 1440
+    gamescope_output_width: "{{ dg_pc_racing_gamescope_width }}"
+    gamescope_output_height: "{{ dg_pc_racing_gamescope_height }}"
+    gamescope_scaler: fit
+    gamescope_filter: nis
     xidi:
       # CMR2 is DirectInput 7-era (no DX8) so the wrapper is dinput.dll,
       # not dinput8.dll like CMR3/CMR04. Without Xidi the in-game
