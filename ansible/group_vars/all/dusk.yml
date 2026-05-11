@@ -37,6 +37,7 @@ dg_dusk_wrapper_bin: "{{ dg_box_home }}/bin/dusk"
 dg_dusk_iso_search_paths:
   - "{{ dg_rom_heavy_root }}/gc"
   - "{{ dg_roms_final_root }}/gc"
+  - "{{ dg_roms_final_root }}/gamecube"
 
 # File name pattern — case-insensitive Twilight Princess across all
 # common GC disc image formats. Most users will have .rvz (Dolphin's
