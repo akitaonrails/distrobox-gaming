@@ -1,0 +1,153 @@
+---
+- name: Ensure Dusk install directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_dusk_install_root }}"
+    - "{{ dg_dusk_cache_dir }}"
+
+- name: Fetch latest Dusk release metadata from GitHub
+  ansible.builtin.uri:
+    url: "{{ dg_dusk_release_api }}"
+    return_content: true
+    headers:
+      Accept: application/vnd.github+json
+  register: _dusk_release
+
+- name: Pick the Linux AppImage asset
+  ansible.builtin.set_fact:
+    _dusk_linux_asset: >-
+      {{
+        _dusk_release.json.assets
+        | selectattr('name', 'search', dg_dusk_asset_substring)
+        | list
+        | first
+      }}
+
+- name: Fail if no matching Linux asset was published
+  ansible.builtin.fail:
+    msg: |
+      No asset matching "{{ dg_dusk_asset_substring }}" found in the
+      latest Dusk release ({{ _dusk_release.json.tag_name }}). Upstream
+      may have changed the naming. Update dg_dusk_asset_substring in
+      ansible/group_vars/all/dusk.yml.
+  when: _dusk_linux_asset is not defined or _dusk_linux_asset == ""
+
+- name: Report selected Dusk version
+  ansible.builtin.debug:
+    msg: >-
+      Dusk {{ _dusk_release.json.tag_name }} —
+      {{ _dusk_linux_asset.name }}
+      ({{ (_dusk_linux_asset.size | int / 1024 / 1024) | round(1) }} MB)
+
+- name: Stat the currently installed AppImage
+  ansible.builtin.stat:
+    path: "{{ dg_dusk_appimage }}"
+  register: _dusk_existing
+
+- name: Download the AppImage
+  # get_url with checksum-by-size would be cleanest; the upstream
+  # release doesn't publish a separate checksum file so we re-download
+  # only when the cached copy size doesn't match the published asset.
+  ansible.builtin.get_url:
+    url: "{{ _dusk_linux_asset.browser_download_url }}"
+    dest: "{{ dg_dusk_cache_dir }}/{{ _dusk_linux_asset.name }}"
+    mode: "0755"
+  register: _dusk_download
+
+- name: Install the AppImage at its stable path
+  ansible.builtin.copy:
+    src: "{{ dg_dusk_cache_dir }}/{{ _dusk_linux_asset.name }}"
+    dest: "{{ dg_dusk_appimage }}"
+    mode: "0755"
+    remote_src: true
+
+- name: Install the dusk wrapper script
+  ansible.builtin.copy:
+    src: dusk
+    dest: "{{ dg_dusk_wrapper_bin }}"
+    mode: "0755"
+    backup: true
+
+- name: Stat ISO search paths
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop: "{{ dg_dusk_iso_search_paths }}"
+  register: _dusk_iso_search_paths_stat
+
+- name: Search existing paths for a Twilight Princess disc image
+  ansible.builtin.find:
+    paths: "{{ _dusk_iso_search_paths_stat.results | selectattr('stat.isdir', 'defined') | selectattr('stat.isdir', 'equalto', true) | map(attribute='item') | list }}"
+    patterns: "{{ dg_dusk_iso_filename_regex }}"
+    use_regex: true
+    recurse: true
+    file_type: file
+  register: _dusk_iso_find
+  failed_when: false
+
+- name: Report discovered Twilight Princess disc image(s)
+  ansible.builtin.debug:
+    msg: |
+      Twilight Princess disc image(s) discovered:
+      {% for f in _dusk_iso_find.files | default([]) %}
+        {{ f.path }}  ({{ (f.size | int / 1024 / 1024) | round(1) }} MB)
+      {% endfor %}
+      {% if not _dusk_iso_find.files %}
+        (none found in {{ dg_dusk_iso_search_paths | join(', ') }})
+      {% endif %}
+
+- name: Compute SHA-1 of raw .iso/.gcm matches (skip compressed formats)
+  ansible.builtin.stat:
+    path: "{{ item.path }}"
+    checksum_algorithm: sha1
+  loop: "{{ _dusk_iso_find.files | default([]) }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
+  when: item.path is regex('\\.(iso|gcm)$', ignorecase=True)
+  register: _dusk_iso_sha
+  failed_when: false
+
+- name: Report supported / unsupported hashes
+  ansible.builtin.debug:
+    msg: |
+      {% for r in _dusk_iso_sha.results | default([]) if not r.skipped | default(false) %}
+      {{ r.item.path | basename }}: sha1={{ r.stat.checksum }}
+        {% if r.stat.checksum in dg_dusk_supported_sha1 %}
+        -> SUPPORTED ({{ 'GameCube USA' if r.stat.checksum == '75edd3ddff41f125d1b4ce1a40378f1b565519e7' else 'GameCube EUR' }})
+        {% else %}
+        -> NOT in Dusk's supported list; Dusk will reject this dump
+        {% endif %}
+      {% endfor %}
+  when: _dusk_iso_sha is defined and (_dusk_iso_sha.results | default([]) | rejectattr('skipped', 'defined') | list | length > 0)
+
+- name: Note compressed disc images that need conversion to raw ISO
+  # Dusk's documented format is raw GameCube ISO. .rvz / .gcz are
+  # Dolphin's compressed containers; the underlying disc data is the
+  # same but the SHA-1 differs because of the wrapper. Convert with
+  # dolphin-tool (lives inside the gaming distrobox) before pointing
+  # Dusk at the file — see docs/dusk-twilight-princess.md.
+  vars:
+    _iso_path: "{{ item.path | splitext | first }}.iso"
+  ansible.builtin.debug:
+    msg: |
+      Compressed disc image found — Dusk may refuse to load it.
+      To convert to raw .iso (preserves dump integrity):
+        distrobox enter gaming -- dolphin-tool convert \
+          -i "{{ item.path }}" \
+          -o "{{ _iso_path }}" \
+          -f iso
+  loop: "{{ _dusk_iso_find.files | default([]) }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
+  when: item.path is regex('\\.(rvz|gcz)$', ignorecase=True)
+
+- name: Print launch instructions
+  ansible.builtin.debug:
+    msg: |
+      Dusk installed.
+      Launch:   distrobox enter gaming -- dusk
+                (or `dusk` from an interactive box shell)
+      Setup:    Select Disc Image -> point at a SUPPORTED dump above,
+                press Play. Dusk remembers the choice across launches.

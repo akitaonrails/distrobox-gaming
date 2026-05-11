@@ -1,0 +1,8 @@
+---
+- name: Install or update Dusk (Twilight Princess reimpl)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_dusk
+    - { role: verify, tags: [verify] }

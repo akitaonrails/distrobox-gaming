@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+# dusk — launch the Dusk AppImage (open-source Twilight Princess
+# reimplementation, https://github.com/TwilitRealm/dusk).
+#
+# AppImage is portable, no install prefix. The role drops it at
+# $HOME/tools/dusk/Dusk.AppImage; override with DG_DUSK_APPIMAGE if
+# you've staged a different build.
+set -eu
+
+APPIMAGE="${DG_DUSK_APPIMAGE:-${HOME}/tools/dusk/Dusk.AppImage}"
+[ -x "$APPIMAGE" ] || {
+  echo "Dusk AppImage not found / not executable: $APPIMAGE" >&2
+  echo "Run install-dusk.yml or set DG_DUSK_APPIMAGE." >&2
+  exit 3
+}
+
+exec "$APPIMAGE" "$@"

@@ -1,0 +1,55 @@
+# Dusk — open-source reimplementation of The Legend of Zelda:
+# Twilight Princess (GameCube).
+#
+# Upstream:  https://github.com/TwilitRealm/dusk
+# Site:      https://twilitrealm.dev/
+#
+# Distribution: per-platform binary releases on GitHub. The Linux
+# build ships as a single AppImage (Dusk-vX.Y.Z-linux-x86_64.AppImage),
+# so installation is just download + chmod + a wrapper script — no
+# extraction, no install prefix, no Wine.
+#
+# Game-dump requirement: the user provides their own legally-dumped
+# GameCube ISO. Dusk currently accepts:
+#   GameCube USA  SHA-1 75edd3ddff41f125d1b4ce1a40378f1b565519e7
+#   GameCube EUR  SHA-1 2601822a488eeb86fb89db16ca8f29c2c953e1ca
+# The role searches dg_dusk_iso_search_paths for a matching disc image
+# (raw .iso/.gcm/.gcz/.ciso AND compressed .rvz produced by Dolphin),
+# verifies the raw-ISO SHA-1 when possible, and reports the discovered
+# path so the user can point Dusk at it via Select Disc Image.
+
+# Latest-release endpoint — the role hits this to pick up new versions
+# automatically. Asset filename pattern matches the Linux AppImage
+# regardless of the version number embedded in it.
+dg_dusk_release_api: "https://api.github.com/repos/TwilitRealm/dusk/releases/latest"
+dg_dusk_asset_substring: "linux-x86_64.AppImage"
+
+# Install layout — single AppImage in tools/dusk/, wrapper at bin/dusk.
+dg_dusk_cache_dir: "{{ dg_box_home }}/cache/dusk"
+dg_dusk_install_root: "{{ dg_box_home }}/tools/dusk"
+dg_dusk_appimage: "{{ dg_dusk_install_root }}/Dusk.AppImage"
+dg_dusk_wrapper_bin: "{{ dg_box_home }}/bin/dusk"
+
+# Where to look for a Twilight Princess disc image. Order = priority;
+# the first matching file wins. Both EmuDeck-tree (Dolphin-managed)
+# and the ROMS_FINAL archive are scanned so wherever the user keeps
+# their dump, the role finds it.
+dg_dusk_iso_search_paths:
+  - "{{ dg_rom_heavy_root }}/gc"
+  - "{{ dg_roms_final_root }}/gc"
+
+# File name pattern — case-insensitive Twilight Princess across all
+# common GC disc image formats. Most users will have .rvz (Dolphin's
+# compressed format) which Dusk may or may not accept directly; the
+# role surfaces it and the doc covers conversion to raw .iso if Dusk
+# rejects it.
+dg_dusk_iso_filename_regex: "(?i).*twilight.*princess.*\\.(iso|gcm|gcz|ciso|rvz)$"
+
+# Raw-ISO SHA-1 hashes Dusk recognises. The role's verify step only
+# matches against raw containers (.iso/.gcm) — compressed formats
+# like .rvz hash differently because of the wrapper, even when the
+# underlying disc image is identical, so for .rvz we only report
+# without asserting.
+dg_dusk_supported_sha1:
+  - "75edd3ddff41f125d1b4ce1a40378f1b565519e7"  # GameCube USA (NTSC-U)
+  - "2601822a488eeb86fb89db16ca8f29c2c953e1ca"  # GameCube EUR (PAL)
