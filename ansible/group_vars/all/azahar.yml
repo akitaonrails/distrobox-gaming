@@ -1,0 +1,78 @@
+# Azahar — open-source Nintendo 3DS emulator, fork of Citra.
+#
+# Upstream: https://github.com/azahar-emu/azahar
+# Site:     https://azahar-emu.org/
+#
+# Installed from AUR inside the gaming distrobox, same pattern as the
+# other first-class emulators (dolphin-emu, pcsx2, rpcs3, ...).
+# Launcher wiring lives in dg_emulator_launchers (launchers.yml) —
+# the generic emulator-launcher.desktop.j2 template renders the host
+# .desktop, no per-emulator file to maintain.
+
+dg_azahar_aur_package: "azahar"
+
+# Where Azahar lives + per-user data after install.
+dg_azahar_bin: "/usr/bin/azahar"
+dg_azahar_user_dir: "{{ dg_box_home }}/.local/share/azahar-emu"
+dg_azahar_config_dir: "{{ dg_box_home }}/.config/azahar-emu"
+dg_azahar_config: "{{ dg_azahar_config_dir }}/qt-config.ini"
+
+# Game library — n3ds ROMs live alongside the other roms_heavy systems
+# in the EmuDeck-managed tree.
+dg_azahar_game_dir: "{{ dg_rom_heavy_root }}/n3ds"
+
+# Texture-pack path inside the user dir (used by the upcoming HD
+# textures role; same convention Citra used so existing Citra packs
+# slot in unchanged).
+dg_azahar_textures_dir: "{{ dg_azahar_user_dir }}/load/textures"
+
+# Project-standard qt-config.ini values. The role applies them
+# idempotently with community.general.ini_file so user-toggled
+# overrides in the GUI survive (only the listed keys are managed).
+# Section names use literal `%20` for "Data Storage" matching Qt's
+# url-encoded section convention.
+dg_azahar_qt_settings:
+  # Hardware backend — Vulkan is faster than OpenGL on NVIDIA + 4K.
+  - { section: Renderer, option: backend, value: "2" }
+  - { section: Renderer, option: 'backend\default', value: "false" }
+  # 4x internal resolution (default is 1x = native 400x240). 4x lands
+  # in the 1600x960 range which scales cleanly to the G8.
+  - { section: Renderer, option: resolution_factor, value: "4" }
+  - { section: Renderer, option: 'resolution_factor\default', value: "false" }
+  # Anisotropic filtering 5 = 16x (Citra's enum: 0=off, 5=16x).
+  - { section: Renderer, option: anisotropic_filtering, value: "5" }
+  - { section: Renderer, option: 'anisotropic_filtering\default', value: "false" }
+  # Async GPU emulation — smoother frametimes.
+  - { section: Renderer, option: use_asynchronous_gpu_emulation, value: "true" }
+  - { section: Renderer, option: 'use_asynchronous_gpu_emulation\default', value: "false" }
+  # Texture filter 2 = anime4k (good for 3DS sprites/UI); set
+  # alongside anisotropic for sharper output.
+  - { section: Renderer, option: texture_filter, value: "2" }
+  - { section: Renderer, option: 'texture_filter\default', value: "false" }
+  - { section: Renderer, option: spirv_shader_gen, value: "true" }
+  - { section: Renderer, option: use_vsync_new, value: "true" }
+  - { section: Renderer, option: 'use_vsync_new\default', value: "false" }
+  # Async custom texture loading — needed when HD packs are present.
+  - { section: Renderer, option: async_custom_loading, value: "true" }
+  # New 3DS family (faster CPU, more RAM) — required for Smash, MM3D,
+  # Xenoblade, etc.; harmless for older games.
+  - { section: System, option: is_new_3ds, value: "true" }
+  - { section: System, option: 'is_new_3ds\default', value: "false" }
+  # Auto-detect region from ROM rather than forcing one.
+  - { section: System, option: region_value, value: "-1" }
+  - { section: System, option: 'region_value\default', value: "false" }
+  # Fullscreen by default and don't confirm on close (gaming flow).
+  - { section: UI, option: fullscreen, value: "true" }
+  - { section: UI, option: 'fullscreen\default', value: "false" }
+  - { section: UI, option: confirmClose, value: "false" }
+  - { section: UI, option: 'confirmClose\default', value: "false" }
+  # No telemetry.
+  - { section: WebService, option: enable_telemetry, value: "false" }
+  - { section: WebService, option: 'enable_telemetry\default', value: "false" }
+  # Single game-directory pointing at dg_azahar_game_dir.
+  - { section: Paths, option: romsPath, value: "{{ dg_azahar_game_dir }}" }
+  - { section: Paths, option: 'romsPath\default', value: "false" }
+  - { section: Paths, option: 'gamedirs\1\path', value: "{{ dg_azahar_game_dir }}" }
+  - { section: Paths, option: 'gamedirs\1\deep_scan', value: "true" }
+  - { section: Paths, option: 'gamedirs\1\expanded', value: "true" }
+  - { section: Paths, option: 'gamedirs\size', value: "1" }

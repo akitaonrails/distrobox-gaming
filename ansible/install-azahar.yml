@@ -1,0 +1,9 @@
+---
+- name: Install or update Azahar (3DS emulator)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_azahar
+    - { role: desktop_apps, tags: [desktop] }
+    - { role: verify, tags: [verify] }

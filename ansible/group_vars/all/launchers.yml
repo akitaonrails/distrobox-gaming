@@ -79,3 +79,10 @@ dg_emulator_launchers:
     icon: steam
     comment: "Steam game launcher"
     wm_class: Steam
+
+  - name: gaming-azahar
+    display_name: "Azahar (on {{ dg_box_name }})"
+    exec: azahar
+    icon: org.azahar_emu.azahar
+    comment: "Nintendo 3DS emulator (Citra fork)"
+    wm_class: org.azahar_emu.azahar

@@ -1,0 +1,64 @@
+---
+- name: Install Azahar from AUR inside the gaming distrobox
+  # yay -S --needed is idempotent — a no-op when the package is already
+  # installed and current. Build takes ~10-15 min on a fresh box;
+  # re-runs are near-instant.
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} yay -S --needed --noconfirm
+    {{ dg_azahar_aur_package }}
+  register: _azahar_install
+  changed_when: "'installing' in _azahar_install.stdout or 'upgrading' in _azahar_install.stdout"
+
+- name: Verify Azahar binary is on PATH inside the box
+  ansible.builtin.shell: "{{ dg_in_box }} which azahar"
+  register: _azahar_which
+  changed_when: false
+
+- name: Ensure Azahar config directory exists
+  ansible.builtin.file:
+    path: "{{ dg_azahar_config_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Ensure qt-config.ini exists (touch only — don't clobber user GUI changes)
+  ansible.builtin.file:
+    path: "{{ dg_azahar_config }}"
+    state: touch
+    mode: "0644"
+    modification_time: preserve
+    access_time: preserve
+
+- name: Apply project-standard Azahar qt-config.ini values
+  # Only the keys listed in dg_azahar_qt_settings are managed; any
+  # other keys the user toggles via the Azahar GUI stay untouched.
+  community.general.ini_file:
+    path: "{{ dg_azahar_config }}"
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    no_extra_spaces: false
+    create: true
+    mode: "0644"
+    backup: true
+  loop: "{{ dg_azahar_qt_settings }}"
+  loop_control:
+    label: "{{ item.section }}/{{ item.option }} = {{ item.value }}"
+
+- name: Ensure Azahar load/textures directory exists
+  # Pre-creates the parent so the HD-textures role can drop symlinks
+  # into it later without needing its own mkdir step.
+  ansible.builtin.file:
+    path: "{{ dg_azahar_textures_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Report Azahar install status
+  ansible.builtin.debug:
+    msg: |
+      Azahar installed inside the gaming distrobox.
+      Binary:    {{ _azahar_which.stdout | trim }}
+      Config:    {{ dg_azahar_config }}
+      Games:     {{ dg_azahar_game_dir }}
+      Textures:  {{ dg_azahar_textures_dir }}
+      Launch:    distrobox enter gaming -- azahar
+                 (or via the Walker "Azahar" entry)

@@ -69,3 +69,20 @@
   changed_when: false
   failed_when: false
   when: _dfv_check.rc == 0
+
+- name: Install rendered desktop files into host applications dir
+  # Runs scripts/install-host-launchers.sh, which symlinks every
+  # rendered entry into dg_host_applications_dir and removes stale
+  # symlinks whose source was deleted from rendered/. Skips entries
+  # whose target binary isn't installed in the configured box. The
+  # script is idempotent — only emits "installed"/"removed stale"
+  # for actual filesystem changes.
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _host_launchers
+  changed_when: >-
+    'installed ' in _host_launchers.stdout or
+    'removed stale ' in _host_launchers.stdout

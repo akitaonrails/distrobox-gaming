@@ -92,6 +92,17 @@ dg_esde_systems:
     platform: xbox
     theme: xbox
 
+  - name: n3ds
+    fullname: Nintendo 3DS
+    # Absolute path — 3DS ROMs live under dg_rom_heavy_root with the
+    # rest of the larger systems (PS3, GameCube, Wii, etc.).
+    path: "{{ dg_azahar_game_dir }}"
+    extension: ".3ds .3DS .cci .CCI .cxi .CXI .app .APP .elf .ELF .cia .CIA .3dsx .3DSX"
+    commands:
+      - { label: "Azahar (Standalone)", cmd: "{{ dg_azahar_bin }} %ROM%" }
+    platform: n3ds
+    theme: n3ds
+
   - name: xbox360
     fullname: Microsoft Xbox 360
     # Absolute path so ES-DE doesn't depend on whichever ROMPATH root is
