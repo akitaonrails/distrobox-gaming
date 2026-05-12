@@ -1,0 +1,104 @@
+---
+- name: "{{ pack.slug }}: stat archive"
+  ansible.builtin.stat:
+    path: "{{ pack.archive }}"
+  register: _pack_archive
+
+- name: "{{ pack.slug }}: report skip when archive missing"
+  ansible.builtin.debug:
+    msg: |
+      skipped — archive not present:
+        {{ pack.archive }}
+  when: not _pack_archive.stat.exists
+
+- name: "{{ pack.slug }}: resolve emulator-side paths"
+  ansible.builtin.set_fact:
+    _pack_extract_dir: >-
+      {{
+        (pack.emu == 'dolphin') | ternary(
+          dg_hd_dolphin_extract_root,
+          dg_hd_azahar_extract_root
+        )
+      }}/{{ pack.slug }}
+    _pack_emu_textures_dir: >-
+      {{
+        (pack.emu == 'dolphin') | ternary(
+          dg_hd_dolphin_textures_dir,
+          dg_hd_azahar_textures_dir
+        )
+      }}
+  when: _pack_archive.stat.exists
+
+- name: "{{ pack.slug }}: ensure extract + emulator dirs exist"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ _pack_extract_dir | default('') }}"
+    - "{{ _pack_emu_textures_dir | default('') }}"
+  when: _pack_archive.stat.exists
+
+- name: "{{ pack.slug }}: stat extraction marker"
+  ansible.builtin.stat:
+    path: "{{ _pack_extract_dir }}/.dg-extracted"
+  register: _pack_marker
+  when: _pack_archive.stat.exists
+
+- name: "{{ pack.slug }}: extract texture subtree from archive"
+  # `unzip -o` overwrites partial extracts. Filter pulls only the
+  # Load/Textures (or load/textures) tree out of the bundled
+  # Windows-portable-emulator zip, sparing ~1-2 GB per pack of
+  # binaries we don't need on Linux.
+  ansible.builtin.command:
+    cmd: >-
+      unzip -q -o "{{ pack.archive }}"
+      "{{ pack.unzip_pattern }}"
+      -d "{{ _pack_extract_dir }}"
+  when:
+    - _pack_archive.stat.exists
+    - not _pack_marker.stat.exists | default(false)
+
+- name: "{{ pack.slug }}: write extraction marker"
+  ansible.builtin.file:
+    path: "{{ _pack_extract_dir }}/.dg-extracted"
+    state: touch
+    mode: "0644"
+  when:
+    - _pack_archive.stat.exists
+    - not _pack_marker.stat.exists | default(false)
+
+- name: "{{ pack.slug }}: locate each game_id directory in extract"
+  ansible.builtin.find:
+    paths: "{{ _pack_extract_dir }}"
+    patterns: "{{ item }}"
+    file_type: directory
+    recurse: true
+  register: _gid_find
+  loop: "{{ pack.game_ids }}"
+  loop_control:
+    label: "{{ item }}"
+  when: _pack_archive.stat.exists
+
+- name: "{{ pack.slug }}: symlink each game_id into emulator texture dir"
+  ansible.builtin.file:
+    src: "{{ (item.files | first).path }}"
+    dest: "{{ _pack_emu_textures_dir }}/{{ item.item }}"
+    state: link
+    force: true
+  loop: "{{ _gid_find.results | default([]) }}"
+  loop_control:
+    label: "{{ item.item }}"
+  when:
+    - _pack_archive.stat.exists
+    - item.files | default([]) | length > 0
+
+- name: "{{ pack.slug }}: warn about game_ids that didn't appear in extract"
+  ansible.builtin.debug:
+    msg: "WARN — pattern '{{ item.item }}' not found in {{ _pack_extract_dir }}; symlink skipped"
+  loop: "{{ _gid_find.results | default([]) }}"
+  loop_control:
+    label: "{{ item.item }}"
+  when:
+    - _pack_archive.stat.exists
+    - item.files | default([]) | length == 0

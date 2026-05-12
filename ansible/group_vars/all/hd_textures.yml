@@ -1,0 +1,98 @@
+# HD texture packs for Dolphin (GameCube/Wii) and Azahar (3DS).
+#
+# Strategy: extract only the texture subtree from each pack on the
+# NAS (the Henriko Magnifico zips include a full Windows-portable
+# emulator install we don't need), then symlink each game-ID dir from
+# the NAS extracted tree into the emulator's per-user texture path
+# inside the gaming distrobox. NAS-canonical, NVMe-free, lazy-loaded
+# through the kernel page cache once a game is running.
+#
+# Twilight Princess is handled by install_dusk (different pack
+# variant), so not in this list.
+
+dg_hd_textures_root: "{{ dg_external_games_root }}/HD-textures"
+
+# Where extracted packs land on NAS. Stable across re-runs so we can
+# symlink to specific subpaths without breaking each time the archive
+# is touched.
+dg_hd_dolphin_archive_root: "{{ dg_hd_textures_root }}/dolphin-textures"
+dg_hd_azahar_archive_root: "{{ dg_hd_textures_root }}/citra-textures"
+dg_hd_dolphin_extract_root: "{{ dg_hd_dolphin_archive_root }}/extracted"
+dg_hd_azahar_extract_root: "{{ dg_hd_azahar_archive_root }}/extracted"
+
+# Per-emulator texture directory inside the box user data dirs.
+# Dolphin's HiresTextures setting is already True on this box; Azahar
+# needs custom_textures + preload_textures flipped (the role does it).
+dg_hd_dolphin_textures_dir: "{{ dg_box_home }}/.local/share/dolphin-emu/Load/Textures"
+dg_hd_azahar_textures_dir: "{{ dg_azahar_textures_dir }}"
+
+# Per-pack config. Adding a new pack = one entry here + drop the zip
+# at the configured archive path. unzip_pattern filters extraction so
+# we don't pull the bundled Windows-portable-emulator wrapper out of
+# the zip; only the Load/Textures/* (or load/textures/*) subtree gets
+# unpacked.
+dg_hd_texture_packs:
+  # ── Dolphin (GameCube + Wii) ────────────────────────────────────
+  - slug: luigis-mansion
+    emu: dolphin
+    archive: "{{ dg_hd_dolphin_archive_root }}/Luigi's Mansion 4K Texture Pack 1.1.0b (4K).zip"
+    unzip_pattern: "*/Load/Textures/*"
+    game_ids: [GLM]
+  - slug: super-mario-sunshine
+    emu: dolphin
+    archive: "{{ dg_hd_dolphin_archive_root }}/SMS 4K 2.0c (4K).zip"
+    unzip_pattern: "*/Load/Textures/*"
+    game_ids: [GMS]
+  - slug: skyward-sword
+    emu: dolphin
+    archive: "{{ dg_hd_dolphin_archive_root }}/Zelda Skyward Sword 4K (4K) 1.0.5.zip"
+    # Skyward Sword's portable bundle has the textures under
+    # "Standard Edition/User/Load/Textures/SOU/" (Post-Processing
+    # variant duplicates Sys/Resources/* but not the Load/Textures
+    # tree, so the unfiltered pattern still picks the right copy).
+    unzip_pattern: "*/Load/Textures/*"
+    game_ids: [SOU]
+  - slug: wind-waker
+    emu: dolphin
+    archive: "{{ dg_hd_dolphin_archive_root }}/ZWW4K 1.0.0d (4K).zip"
+    unzip_pattern: "*/Load/Textures/*"
+    game_ids: [GZL]
+
+  # ── Azahar (3DS) ────────────────────────────────────────────────
+  # Each Azahar pack covers multiple region TitleIDs (USA/EUR/JPN);
+  # the role symlinks them all so the right one is picked up
+  # regardless of which dump the user runs.
+  - slug: a-link-between-worlds
+    emu: azahar
+    archive: "{{ dg_hd_azahar_archive_root }}/ALBW 4K 2.0b (4K).zip"
+    unzip_pattern: "*/load/textures/*"
+    game_ids:
+      - "00040000000EC200"  # USA
+      - "00040000000EC300"  # EUR
+      - "00040000000EC400"  # JPN
+  - slug: majoras-mask-3d
+    emu: azahar
+    archive: "{{ dg_hd_azahar_archive_root }}/MM 3D 4K 3.0b-1 (4K).zip"
+    unzip_pattern: "*/load/textures/*"
+    game_ids:
+      - "00040000000D6E00"  # USA
+      - "0004000000125500"  # EUR
+      - "0004000000125600"  # JPN
+  - slug: ocarina-of-time-3d
+    emu: azahar
+    archive: "{{ dg_hd_azahar_archive_root }}/OOT3D 4K 4.0 (4K).zip"
+    unzip_pattern: "*/load/textures/*"
+    game_ids:
+      - "0004000000033400"  # USA
+      - "0004000000033500"  # EUR
+      - "0004000000033600"  # JPN
+  - slug: super-mario-3d-land
+    emu: azahar
+    # 1.2.0b is newer than 1.2.0a on disk; if both are present the
+    # role uses whichever this path points at — bump the suffix when
+    # a newer release lands.
+    archive: "{{ dg_hd_azahar_archive_root }}/SM3DL 4K 1.2.0b (4K).zip"
+    unzip_pattern: "*/load/textures/*"
+    game_ids:
+      - "0004000000053F00"  # USA
+      - "0004000000054000"  # JPN / EUR

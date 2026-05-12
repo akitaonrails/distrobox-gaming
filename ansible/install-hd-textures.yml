@@ -1,0 +1,8 @@
+---
+- name: Install or refresh HD texture packs for Dolphin + Azahar
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_hd_textures
+    - { role: verify, tags: [verify] }

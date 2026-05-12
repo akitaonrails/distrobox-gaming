@@ -1,0 +1,36 @@
+---
+- name: Process each HD texture pack
+  ansible.builtin.include_tasks: per_pack.yml
+  loop: "{{ dg_hd_texture_packs }}"
+  loop_control:
+    loop_var: pack
+    label: "{{ pack.slug }} ({{ pack.emu }})"
+
+- name: Enable Azahar custom_textures + preload_textures
+  # Flip the two Azahar toggles only if at least one Azahar pack
+  # actually landed (any symlink under dg_hd_azahar_textures_dir).
+  # The ini_file calls are idempotent — re-runs touch nothing.
+  block:
+    - name: Check for any Azahar texture symlinks
+      ansible.builtin.find:
+        paths: "{{ dg_hd_azahar_textures_dir }}"
+        file_type: link
+      register: _azahar_tex_links
+
+    - name: Enable Azahar custom texture settings
+      community.general.ini_file:
+        path: "{{ dg_azahar_config }}"
+        section: Renderer
+        option: "{{ item.option }}"
+        value: "{{ item.value }}"
+        no_extra_spaces: false
+        mode: "0644"
+        backup: true
+      loop:
+        - { option: custom_textures, value: "true" }
+        - { option: 'custom_textures\default', value: "false" }
+        - { option: preload_textures, value: "true" }
+        - { option: 'preload_textures\default', value: "false" }
+      loop_control:
+        label: "{{ item.option }} = {{ item.value }}"
+      when: _azahar_tex_links.files | length > 0
