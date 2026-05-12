@@ -77,6 +77,37 @@ Dusk opens its launcher window. First time:
 
 Dusk caches the choice; subsequent launches skip straight to game.
 
+## HD texture pack (optional)
+
+Dusk reuses Dolphin's HiResTexture format
+(`tex1_WxH_<hash>_<format>.dds`) and loads packs from a per-user
+directory. Drop a Twilight Princess pack (e.g. *Henriko Magnifico's
+ZTP 4K* in its "PC Version" build, which is Dusk-tuned) at:
+
+```
+{{ dg_external_games_root }}/HD-textures/dolphin-textures/ZTP 4K *.zip
+```
+
+(or whichever filename — point `dg_dusk_textures_archive` in
+`ansible/group_vars/all/dusk.yml` at it).
+
+Then `ansible-playbook install-dusk.yml` unpacks the archive into:
+
+```
+~/.local/share/TwilitRealm/Dusk/texture_replacements/GZ2/
+```
+
+(inside the gaming distrobox; `~` resolves to the box home, the same
+data dir Dusk uses for saves/settings.) Idempotent — re-runs skip the
+unzip when `texture_replacements/GZ2/` already exists.
+
+The pack ships with `GZ2/` at its top level matching Twilight Princess's
+GameCube game ID, so the layout slots in cleanly without any rename
+gymnastics. Dusk auto-loads it at launch; no in-game toggle required.
+
+The role surfaces a missing-archive notice instead of failing when no
+zip is staged, so this entire branch is opt-in.
+
 ## Caveats
 
 - The conversion step is one-time per disc image; keep the raw ISO

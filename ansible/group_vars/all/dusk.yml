@@ -54,3 +54,30 @@ dg_dusk_iso_filename_regex: "(?i).*twilight.*princess.*\\.(iso|gcm|gcz|ciso|rvz)
 dg_dusk_supported_sha1:
   - "75edd3ddff41f125d1b4ce1a40378f1b565519e7"  # GameCube USA (NTSC-U)
   - "2601822a488eeb86fb89db16ca8f29c2c953e1ca"  # GameCube EUR (PAL)
+
+# Optional HD texture pack handling.
+#
+# Dusk reuses Dolphin's HiResTexture format (tex1_WxH_<hash>_<fmt>.dds)
+# and loads packs from a per-user data directory. Dolphin packs labelled
+# "PC Version" are author-tuned for Dusk's render path; community packs
+# named "ZTP" target Zelda Twilight Princess (game ID GZ2).
+#
+# Drop the source zip at dg_dusk_textures_archive (any version — the
+# glob below picks the newest match). The role unpacks it directly to
+# dg_dusk_textures_root, which is exactly where Dusk scans, so the
+# zip's top-level GZ2/ folder lands as texture_replacements/GZ2/.
+#
+# Skipped silently if no matching archive is staged.
+
+# Source archive — single explicit path. If you keep multiple versions
+# side-by-side, point this at whichever version you want active.
+dg_dusk_textures_archive: "{{ dg_external_games_root }}/HD-textures/dolphin-textures/ZTP 4K 3.0c (4K, PC Version).zip"
+
+# Per-Dusk-user-dir target where Dusk scans for replacements. Trailing
+# slash matters for unzip's "extract into" semantics.
+dg_dusk_user_data_root: "{{ dg_box_home }}/.local/share/TwilitRealm/Dusk"
+dg_dusk_textures_root: "{{ dg_dusk_user_data_root }}/texture_replacements"
+
+# Idempotency marker — once this exists, the role assumes a successful
+# extract and skips re-unzipping the 5.6 GB archive on every run.
+dg_dusk_textures_marker: "{{ dg_dusk_textures_root }}/GZ2"

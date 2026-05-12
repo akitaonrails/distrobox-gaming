@@ -143,6 +143,59 @@
     label: "{{ item.path | basename }}"
   when: item.path is regex('\\.(rvz|gcz)$', ignorecase=True)
 
+- name: Stat optional HD texture pack archive
+  ansible.builtin.stat:
+    path: "{{ dg_dusk_textures_archive }}"
+  register: _dusk_tex_archive
+
+- name: Note when HD texture pack is not staged
+  ansible.builtin.debug:
+    msg: |
+      HD texture pack not found at:
+        {{ dg_dusk_textures_archive }}
+      Skipping. Drop the ZTP / Twilight Princess Dolphin-format pack at
+      that path to have the next playbook run install it automatically.
+  when: not _dusk_tex_archive.stat.exists
+
+- name: Ensure Dusk texture_replacements root exists
+  ansible.builtin.file:
+    path: "{{ dg_dusk_textures_root }}"
+    state: directory
+    mode: "0755"
+  when: _dusk_tex_archive.stat.exists
+
+- name: Stat texture pack marker (GZ2/ subdir)
+  ansible.builtin.stat:
+    path: "{{ dg_dusk_textures_marker }}"
+  register: _dusk_tex_marker
+  when: _dusk_tex_archive.stat.exists
+
+- name: Extract HD texture pack into texture_replacements
+  # Skipped on subsequent runs by the marker check above. unarchive's
+  # `creates` flag handles the idempotency directly — if GZ2/ is
+  # already present (single biggest tell that the unpack ran cleanly),
+  # the 5.6 GB unzip step is a no-op.
+  ansible.builtin.unarchive:
+    src: "{{ dg_dusk_textures_archive }}"
+    dest: "{{ dg_dusk_textures_root }}"
+    remote_src: true
+    creates: "{{ dg_dusk_textures_marker }}"
+  when:
+    - _dusk_tex_archive.stat.exists
+    - not _dusk_tex_marker.stat.exists | default(false)
+
+- name: Report HD texture pack status
+  ansible.builtin.debug:
+    msg: |
+      HD texture pack present at:
+        {{ dg_dusk_textures_marker }}
+      Dusk will pick up texture replacements from this directory at
+      launch (Dolphin-compatible tex1_WxH_<hash>_<format>.dds files).
+  when:
+    - _dusk_tex_archive.stat.exists
+    - _dusk_tex_marker.stat.exists | default(false) or
+      (_dusk_tex_marker is defined)
+
 - name: Print launch instructions
   ansible.builtin.debug:
     msg: |
