@@ -36,13 +36,32 @@
     section: "{{ item.section }}"
     option: "{{ item.option }}"
     value: "{{ item.value }}"
-    no_extra_spaces: false
+    no_extra_spaces: true
     create: true
     mode: "0644"
     backup: true
   loop: "{{ dg_azahar_qt_settings }}"
   loop_control:
     label: "{{ item.section }}/{{ item.option }} = {{ item.value }}"
+
+- name: Apply pinned [Controls] bindings (8BitDo Pro 2 / Xbox layout)
+  # Captured from the live qt-config.ini after configuring the pad in
+  # Azahar's GUI. SDL GUID is hardware-specific — override
+  # dg_azahar_controller_guid in host_vars/localhost.yml when running
+  # against a different controller (then re-grep the file and replace
+  # the binding values too).
+  community.general.ini_file:
+    path: "{{ dg_azahar_config }}"
+    section: Controls
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    no_extra_spaces: true
+    create: true
+    mode: "0644"
+    backup: true
+  loop: "{{ dg_azahar_controller_bindings }}"
+  loop_control:
+    label: "[Controls]/{{ item.option }}"
 
 - name: Ensure Azahar load/textures directory exists
   # Pre-creates the parent so the HD-textures role can drop symlinks

@@ -53,7 +53,9 @@ dg_azahar_qt_settings:
   - { section: Renderer, option: use_vsync_new, value: "true" }
   - { section: Renderer, option: 'use_vsync_new\default', value: "false" }
   # Async custom texture loading — needed when HD packs are present.
-  - { section: Renderer, option: async_custom_loading, value: "true" }
+  # Lives in [Utility] in qt-config.ini (Citra/Azahar convention).
+  - { section: Utility, option: async_custom_loading, value: "true" }
+  - { section: Utility, option: 'async_custom_loading\default', value: "false" }
   # New 3DS family (faster CPU, more RAM) — required for Smash, MM3D,
   # Xenoblade, etc.; harmless for older games.
   - { section: System, option: is_new_3ds, value: "true" }
@@ -76,3 +78,109 @@ dg_azahar_qt_settings:
   - { section: Paths, option: 'gamedirs\1\deep_scan', value: "true" }
   - { section: Paths, option: 'gamedirs\1\expanded', value: "true" }
   - { section: Paths, option: 'gamedirs\size', value: "1" }
+
+# ── Controller bindings ─────────────────────────────────────────────
+# Captured from Azahar's GUI after configuring the user's 8BitDo Pro 2
+# (Xbox layout: face buttons A=south, ZL/ZR=analog triggers via axes
+# 2/5, hat→D-pad, left stick→circle pad, right stick→C-stick with
+# modifier). Pinning here lets future re-installs reproduce the
+# mapping without manually re-clicking in the GUI.
+#
+# The SDL controller GUID is hardware-specific. Override in
+# host_vars/localhost.yml if using a different controller — easiest
+# path is: launch Azahar once, map your pad in the GUI, then
+# `grep guid ~/.config/azahar-emu/qt-config.ini` and paste here.
+dg_azahar_controller_guid: "0300f6b6c82d00000b31000014010000"
+
+# Profile-1 ("Default") bindings, applied verbatim into the [Controls]
+# section. The literal $0/$1 in circle_pad / c_stick are Citra's
+# escape encoding for commas and colons inside the nested sub-binding
+# spec — do NOT decode them.
+dg_azahar_controller_bindings:
+  - option: profile
+    value: "0"
+  - option: 'profile\default'
+    value: "true"
+  - option: 'profiles\size'
+    value: "1"
+  - option: 'profiles\1\name'
+    value: "Default"
+  - option: 'profiles\1\name\default'
+    value: "false"
+  # Face buttons (Xbox-style: A=bottom, B=right, X=left, Y=top)
+  - option: 'profiles\1\button_a'
+    value: '"button:1,engine:sdl,guid:{{ dg_azahar_controller_guid }},port:0"'
+  - option: 'profiles\1\button_a\default'
+    value: "false"
+  - option: 'profiles\1\button_b'
+    value: '"button:0,engine:sdl,guid:{{ dg_azahar_controller_guid }},port:0"'
+  - option: 'profiles\1\button_b\default'
+    value: "false"
+  - option: 'profiles\1\button_x'
+    value: '"button:3,engine:sdl,guid:{{ dg_azahar_controller_guid }},port:0"'
+  - option: 'profiles\1\button_x\default'
+    value: "false"
+  - option: 'profiles\1\button_y'
+    value: '"button:2,engine:sdl,guid:{{ dg_azahar_controller_guid }},port:0"'
+  - option: 'profiles\1\button_y\default'
+    value: "false"
+  # Shoulders
+  - option: 'profiles\1\button_l'
+    value: '"button:4,engine:sdl,guid:{{ dg_azahar_controller_guid }},port:0"'
+  - option: 'profiles\1\button_l\default'
+    value: "false"
+  - option: 'profiles\1\button_r'
+    value: '"button:5,engine:sdl,guid:{{ dg_azahar_controller_guid }},port:0"'
+  - option: 'profiles\1\button_r\default'
+    value: "false"
+  # Triggers as analog axes (LT=axis 2, RT=axis 5)
+  - option: 'profiles\1\button_zl'
+    value: '"axis:2,direction:+,engine:sdl,guid:{{ dg_azahar_controller_guid }},port:0,threshold:0.5"'
+  - option: 'profiles\1\button_zl\default'
+    value: "false"
+  - option: 'profiles\1\button_zr'
+    value: '"axis:5,direction:+,engine:sdl,guid:{{ dg_azahar_controller_guid }},port:0,threshold:0.5"'
+  - option: 'profiles\1\button_zr\default'
+    value: "false"
+  # D-pad via hat 0
+  - option: 'profiles\1\button_up'
+    value: '"direction:up,engine:sdl,guid:{{ dg_azahar_controller_guid }},hat:0,port:0"'
+  - option: 'profiles\1\button_up\default'
+    value: "false"
+  - option: 'profiles\1\button_down'
+    value: '"direction:down,engine:sdl,guid:{{ dg_azahar_controller_guid }},hat:0,port:0"'
+  - option: 'profiles\1\button_down\default'
+    value: "false"
+  - option: 'profiles\1\button_left'
+    value: '"direction:left,engine:sdl,guid:{{ dg_azahar_controller_guid }},hat:0,port:0"'
+  - option: 'profiles\1\button_left\default'
+    value: "false"
+  - option: 'profiles\1\button_right'
+    value: '"direction:right,engine:sdl,guid:{{ dg_azahar_controller_guid }},hat:0,port:0"'
+  - option: 'profiles\1\button_right\default'
+    value: "false"
+  # Start / Select / Home (keyboard for select+home since the 8BitDo
+  # button layout doesn't expose those — N=select, B=home)
+  - option: 'profiles\1\button_start'
+    value: '"button:7,engine:sdl,guid:{{ dg_azahar_controller_guid }},port:0"'
+  - option: 'profiles\1\button_start\default'
+    value: "false"
+  - option: 'profiles\1\button_select'
+    value: '"code:78,engine:keyboard"'
+  - option: 'profiles\1\button_select\default'
+    value: "true"
+  - option: 'profiles\1\button_home'
+    value: '"code:66,engine:keyboard"'
+  - option: 'profiles\1\button_home\default'
+    value: "true"
+  # Analog sticks (analog_from_button wraps axis pairs into a stick).
+  # The $0/$1 are Citra's escape codes for ":" and "," inside nested
+  # sub-bindings — do NOT replace them with the literal chars.
+  - option: 'profiles\1\circle_pad'
+    value: '"down:axis$01$1direction$0+$1engine$0sdl$1guid$0{{ dg_azahar_controller_guid }}$1port$00$1threshold$00.5,engine:analog_from_button,left:axis$00$1direction$0-$1engine$0sdl$1guid$0{{ dg_azahar_controller_guid }}$1port$00$1threshold$0-0.5,modifier:code$068$1engine$0keyboard,modifier_scale:0.500000,right:axis$00$1direction$0+$1engine$0sdl$1guid$0{{ dg_azahar_controller_guid }}$1port$00$1threshold$00.5,up:axis$01$1direction$0-$1engine$0sdl$1guid$0{{ dg_azahar_controller_guid }}$1port$00$1threshold$0-0.5"'
+  - option: 'profiles\1\circle_pad\default'
+    value: "false"
+  - option: 'profiles\1\c_stick'
+    value: '"down:axis$04$1direction$0+$1engine$0sdl$1guid$0{{ dg_azahar_controller_guid }}$1port$00$1threshold$00.5,engine:analog_from_button,left:axis$03$1direction$0-$1engine$0sdl$1guid$0{{ dg_azahar_controller_guid }}$1port$00$1threshold$0-0.5,modifier:code$068$1engine$0keyboard,modifier_scale:0.500000,right:axis$03$1direction$0+$1engine$0sdl$1guid$0{{ dg_azahar_controller_guid }}$1port$00$1threshold$00.5,up:axis$04$1direction$0-$1engine$0sdl$1guid$0{{ dg_azahar_controller_guid }}$1port$00$1threshold$0-0.5"'
+  - option: 'profiles\1\c_stick\default'
+    value: "false"

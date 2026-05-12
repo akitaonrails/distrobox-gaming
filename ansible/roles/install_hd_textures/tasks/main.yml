@@ -7,9 +7,11 @@
     label: "{{ pack.slug }} ({{ pack.emu }})"
 
 - name: Enable Azahar custom_textures + preload_textures
-  # Flip the two Azahar toggles only if at least one Azahar pack
-  # actually landed (any symlink under dg_hd_azahar_textures_dir).
-  # The ini_file calls are idempotent — re-runs touch nothing.
+  # Flip the Azahar toggles only if at least one pack actually landed.
+  # NOTE: these keys live in [Utility] in qt-config.ini (Citra/Azahar
+  # convention) — not [Renderer]. We write [Utility] and scrub any
+  # stale duplicates Ansible may have left in [Renderer] from earlier
+  # role versions, otherwise Azahar's GUI sees a mismatch.
   block:
     - name: Check for any Azahar texture symlinks
       ansible.builtin.find:
@@ -17,20 +19,45 @@
         file_type: link
       register: _azahar_tex_links
 
-    - name: Enable Azahar custom texture settings
+    - name: Enable Azahar custom texture settings in [Utility]
       community.general.ini_file:
         path: "{{ dg_azahar_config }}"
-        section: Renderer
+        section: Utility
         option: "{{ item.option }}"
         value: "{{ item.value }}"
-        no_extra_spaces: false
+        no_extra_spaces: true
         mode: "0644"
         backup: true
       loop:
         - { option: custom_textures, value: "true" }
         - { option: 'custom_textures\default', value: "false" }
-        - { option: preload_textures, value: "true" }
-        - { option: 'preload_textures\default', value: "false" }
+        # preload=false: the 4K Zelda packs are 3+ GB each. Preloading
+        # everything up-front stalls Azahar (black screen after the
+        # progress bar). async_custom_loading streams textures in
+        # on-demand instead — small stutter on first encounter,
+        # cached after.
+        - { option: preload_textures, value: "false" }
+        - { option: 'preload_textures\default', value: "true" }
+        - { option: async_custom_loading, value: "true" }
+        - { option: 'async_custom_loading\default', value: "false" }
       loop_control:
         label: "{{ item.option }} = {{ item.value }}"
+      when: _azahar_tex_links.files | length > 0
+
+    - name: Remove stale duplicates of these keys from [Renderer]
+      community.general.ini_file:
+        path: "{{ dg_azahar_config }}"
+        section: Renderer
+        option: "{{ item }}"
+        state: absent
+        backup: true
+      loop:
+        - custom_textures
+        - 'custom_textures\default'
+        - preload_textures
+        - 'preload_textures\default'
+        - async_custom_loading
+        - 'async_custom_loading\default'
+      loop_control:
+        label: "[Renderer]/{{ item }} -> absent"
       when: _azahar_tex_links.files | length > 0

@@ -80,12 +80,19 @@
     label: "{{ item }}"
   when: _pack_archive.stat.exists
 
-- name: "{{ pack.slug }}: symlink each game_id into emulator texture dir"
-  ansible.builtin.file:
-    src: "{{ (item.files | first).path }}"
-    dest: "{{ _pack_emu_textures_dir }}/{{ item.item }}"
-    state: link
-    force: true
+# Henriko Magnifico's Azahar packs only populate ONE region's TitleID
+# dir; the other regions in the zip are 0-file placeholders. To make
+# texture loading work regardless of which region dump the user runs
+# (since Citra/Azahar's texture lookup is hash-keyed, not region-keyed,
+# once you're inside the TitleID dir), we point every game_id entry at
+# the single populated dir. Dolphin packs have a single game_id so this
+# collapses to a no-op for them.
+- name: "{{ pack.slug }}: count files within each matched TitleID dir"
+  ansible.builtin.find:
+    paths: "{{ item.files[0].path }}"
+    file_type: file
+    recurse: true
+  register: _gid_files_in
   loop: "{{ _gid_find.results | default([]) }}"
   loop_control:
     label: "{{ item.item }}"
@@ -93,12 +100,44 @@
     - _pack_archive.stat.exists
     - item.files | default([]) | length > 0
 
-- name: "{{ pack.slug }}: warn about game_ids that didn't appear in extract"
-  ansible.builtin.debug:
-    msg: "WARN — pattern '{{ item.item }}' not found in {{ _pack_extract_dir }}; symlink skipped"
-  loop: "{{ _gid_find.results | default([]) }}"
-  loop_control:
-    label: "{{ item.item }}"
+- name: "{{ pack.slug }}: build populated-dir candidate list"
+  ansible.builtin.set_fact:
+    _pack_populated: >-
+      {{
+        _gid_files_in.results
+        | rejectattr('skipped', 'defined')
+        | selectattr('matched', 'gt', 0)
+        | sort(attribute='matched', reverse=true)
+        | list
+      }}
+  when: _pack_archive.stat.exists
+
+- name: "{{ pack.slug }}: select common target dir (most-populated TitleID)"
+  ansible.builtin.set_fact:
+    _pack_target_dir: "{{ _pack_populated[0].item.files[0].path }}"
   when:
     - _pack_archive.stat.exists
-    - item.files | default([]) | length == 0
+    - _pack_populated | default([]) | length > 0
+
+- name: "{{ pack.slug }}: symlink every game_id at the populated dir"
+  # All region-specific TitleIDs (plus the populated one itself) point
+  # at the same NAS path. force:true so re-runs heal stale links that
+  # used to point at empty placeholder dirs.
+  ansible.builtin.file:
+    src: "{{ _pack_target_dir }}"
+    dest: "{{ _pack_emu_textures_dir }}/{{ item }}"
+    state: link
+    force: true
+  loop: "{{ pack.game_ids }}"
+  loop_control:
+    label: "{{ item }} -> {{ _pack_target_dir | basename }}"
+  when:
+    - _pack_archive.stat.exists
+    - _pack_target_dir | default('') | length > 0
+
+- name: "{{ pack.slug }}: warn when no populated TitleID dir was found"
+  ansible.builtin.debug:
+    msg: "WARN — no populated TitleID dir found in {{ _pack_extract_dir }}; symlinks skipped"
+  when:
+    - _pack_archive.stat.exists
+    - _pack_target_dir | default('') | length == 0
