@@ -1,0 +1,121 @@
+---
+# Extracts the Master Mod zip onto NAS staging and overlays it onto the
+# v2.11 PDIPFS tree inside RPCS3's dev_hdd0/game/<title>/USRDIR.
+#
+# The mod ships with three trees:
+#   - PDIPFS/             ← the actual mod payload (overlays vanilla)
+#   - PDIPFS_ORIGINAL/    ← pre-mod files (for rollback)
+#   - Debug_Cam_Addon/PDIPFS/ ← optional addon, applied after the base
+
+- name: Ensure mod extract dir exists
+  ansible.builtin.file:
+    path: "{{ dg_gt5_mod_extract_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Stat mod-extraction marker
+  ansible.builtin.stat:
+    path: "{{ dg_gt5_mod_extract_dir }}/.dg-extracted"
+  register: _gt5_mod_marker
+
+- name: Extract mod zip to staging
+  # 155 MB zip → ~250 MB unpacked. Idempotent via marker file so
+  # re-runs don't re-unzip 834 small files each time.
+  ansible.builtin.unarchive:
+    src: "{{ dg_gt5_mod_archive }}"
+    dest: "{{ dg_gt5_mod_extract_dir }}"
+    remote_src: true
+  when: not _gt5_mod_marker.stat.exists
+
+- name: Write extraction marker
+  ansible.builtin.file:
+    path: "{{ dg_gt5_mod_extract_dir }}/.dg-extracted"
+    state: touch
+    mode: "0644"
+  when: not _gt5_mod_marker.stat.exists
+
+- name: Verify mod PDIPFS tree was extracted
+  ansible.builtin.stat:
+    path: "{{ dg_gt5_mod_extract_dir }}/PDIPFS"
+  register: _gt5_mod_pdipfs
+
+- name: Assert mod PDIPFS tree exists
+  ansible.builtin.assert:
+    that: _gt5_mod_pdipfs.stat.isdir
+    fail_msg: |
+      Expected {{ dg_gt5_mod_extract_dir }}/PDIPFS after extracting
+      {{ dg_gt5_mod_archive }}; not found. The archive may be the
+      wrong region zip (must be US-BCUS98114).
+
+- name: Stat pre-mod PDIPFS backup marker
+  ansible.builtin.stat:
+    path: "{{ dg_gt5_backup_dir }}/.dg-pre-mod-pdipfs-done"
+  register: _gt5_pre_mod_marker
+
+- name: Back up the pristine v2.11 PDIPFS before the mod overlays it
+  # A second backup distinct from the pre-downgrade one — captures the
+  # clean v2.11 state which is the natural "vanilla" to revert to
+  # without redoing the 4 GB downgrade chain.
+  ansible.builtin.shell: |
+    set -e
+    tar --use-compress-program='zstd -T0 -3' \
+        -cf "{{ dg_gt5_backup_dir }}/pre-mod-v211-pdipfs.tar.zst" \
+        -C "{{ dg_gt5_usrdir }}" \
+        PDIPFS
+    touch "{{ dg_gt5_backup_dir }}/.dg-pre-mod-pdipfs-done"
+  args:
+    creates: "{{ dg_gt5_backup_dir }}/.dg-pre-mod-pdipfs-done"
+  when: not _gt5_pre_mod_marker.stat.exists
+
+- name: Ensure target PDIPFS dir exists
+  ansible.builtin.file:
+    path: "{{ dg_gt5_pdipfs }}"
+    state: directory
+    mode: "0755"
+
+- name: Overlay mod PDIPFS onto the v2.11 install
+  # rsync gives us atomic-ish per-file copies + summary output, vs
+  # `copy:` recursing 800+ files (slow + no progress visibility).
+  ansible.builtin.command:
+    cmd: >-
+      rsync -a --inplace
+      "{{ dg_gt5_mod_extract_dir }}/PDIPFS/"
+      "{{ dg_gt5_pdipfs }}/"
+  register: _gt5_overlay
+  changed_when: true
+
+- name: Overlay Debug Cam Addon (optional)
+  ansible.builtin.command:
+    cmd: >-
+      rsync -a --inplace
+      "{{ dg_gt5_mod_extract_dir }}/Debug_Cam_Addon/PDIPFS/"
+      "{{ dg_gt5_pdipfs }}/"
+  when: dg_gt5_install_debug_cam | bool
+  changed_when: true
+
+- name: Touch installed-marker
+  # Cheap fingerprint so a future role re-run / verify step can tell
+  # the mod is in place without diffing 800 files.
+  ansible.builtin.copy:
+    dest: "{{ dg_gt5_update_dir }}/.dg-master-mod-1.9.2-installed"
+    content: |
+      Master Mod 1.9.2 applied {{ ansible_date_time.iso8601 }}
+      Game version at apply: {{ dg_gt5_target_version }}
+      Debug Cam Addon: {{ dg_gt5_install_debug_cam | bool }}
+      Backup: {{ dg_gt5_backup_dir }}
+    mode: "0644"
+
+- name: Report apply summary
+  ansible.builtin.debug:
+    msg: |
+      Master Mod 1.9.2 applied onto GT5 {{ dg_gt5_target_version }}.
+      First boot in RPCS3 will rebuild game databases — gives a long
+      black-screen pause that's expected per the readme.
+
+      To roll back to vanilla v2.11:
+        rsync -a "{{ dg_gt5_mod_extract_dir }}/PDIPFS_ORIGINAL/" "{{ dg_gt5_pdipfs }}/"
+      Or restore the pre-mod backup:
+        tar -I zstd -xf "{{ dg_gt5_backup_dir }}/pre-mod-v211-pdipfs.tar.zst" -C "{{ dg_gt5_usrdir }}"
+
+      To roll back further to your prior v2.17 install:
+        tar -I zstd -xf "{{ dg_gt5_backup_dir }}/pre-downgrade-02.17.tar.zst" -C "{{ dg_rpcs3_dev_hdd0_game }}"

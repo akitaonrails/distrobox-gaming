@@ -1,0 +1,74 @@
+# GT5 Master Mod (Nenkai) for RPCS3.
+#
+# Source: https://www.gtplanet.net/forum/threads/1-9-2-gt5-master-mod.395844/
+# Modding hub: https://nenkai.github.io/gt-modding-hub/
+#
+# The mod targets game version 2.11 EXACTLY. Vanilla discs ship as 2.00;
+# the latest Sony PS Store update is 2.17. The role downgrades to 2.11
+# when needed by replaying the official PSN CDN PKG chain (each PKG is
+# an incremental, not cumulative — every patch from 1.05 → 2.11 has to
+# be applied in order, per the mod author's readme).
+
+# RPCS3 title for the US disc. The mod ships per-region zips —
+# BCES00569 (EU), BCJS30001 (JP), BCAS20108 (ASIA), BCUS98114 (US).
+dg_gt5_title_id: "BCUS98114"
+
+# Target game version after downgrade. The mod's readme is unambiguous:
+# > "You need Gran Turismo 2.11, not higher, not lower."
+dg_gt5_target_version: "02.11"
+
+# Where RPCS3 stores the installed update (per-user dev_hdd0).
+dg_gt5_update_dir: "{{ dg_rpcs3_dev_hdd0_game }}/{{ dg_gt5_title_id }}"
+dg_gt5_param_sfo: "{{ dg_gt5_update_dir }}/PARAM.SFO"
+dg_gt5_usrdir: "{{ dg_gt5_update_dir }}/USRDIR"
+dg_gt5_pdipfs: "{{ dg_gt5_usrdir }}/PDIPFS"
+
+# Official PSN CDN base. Akamai-hosted; still serving 200 OK for GT5
+# legacy updates as of May 2026.
+dg_gt5_cdn_base: "http://b0.ww.np.dl.playstation.net/tppkg/np/BCUS98114/BCUS98114_T62/78125ba1e5a5c354"
+
+# The full incremental patch chain to walk from base 2.00 disc up to
+# 2.11. Most patches use revision V0100; 1.11 uniquely uses V0101.
+# Total download size is ~4.2 GB. Re-runs reuse already-downloaded
+# PKGs (idempotent via get_url + checksum on Content-Length).
+dg_gt5_pkg_chain:
+  - { ver: "01.05", url_ver: A0105, url_rev: V0100 }
+  - { ver: "01.06", url_ver: A0106, url_rev: V0100 }
+  - { ver: "01.07", url_ver: A0107, url_rev: V0100 }
+  - { ver: "01.08", url_ver: A0108, url_rev: V0100 }
+  - { ver: "01.09", url_ver: A0109, url_rev: V0100 }
+  - { ver: "01.10", url_ver: A0110, url_rev: V0100 }
+  - { ver: "01.11", url_ver: A0111, url_rev: V0101 }
+  - { ver: "01.12", url_ver: A0112, url_rev: V0100 }
+  - { ver: "01.13", url_ver: A0113, url_rev: V0100 }
+  - { ver: "02.00", url_ver: A0200, url_rev: V0100 }
+  - { ver: "02.01", url_ver: A0201, url_rev: V0100 }
+  - { ver: "02.02", url_ver: A0202, url_rev: V0100 }
+  - { ver: "02.03", url_ver: A0203, url_rev: V0100 }
+  - { ver: "02.04", url_ver: A0204, url_rev: V0100 }
+  - { ver: "02.05", url_ver: A0205, url_rev: V0100 }
+  - { ver: "02.06", url_ver: A0206, url_rev: V0100 }
+  - { ver: "02.07", url_ver: A0207, url_rev: V0100 }
+  - { ver: "02.08", url_ver: A0208, url_rev: V0100 }
+  - { ver: "02.09", url_ver: A0209, url_rev: V0100 }
+  - { ver: "02.10", url_ver: A0210, url_rev: V0100 }
+  - { ver: "02.11", url_ver: A0211, url_rev: V0100 }
+
+# Where downloaded PKGs land on the NAS. Kept in ps2/ since the user's
+# existing GT5 update bundle and the Master Mod zip already live there.
+dg_gt5_pkg_staging: "{{ dg_external_games_root }}/ps2/gt5-update-pkgs"
+
+# Mod archive — user-downloaded zip from the GTPlanet MediaFire link.
+# Override in host_vars/localhost.yml if the path differs.
+dg_gt5_mod_archive: "{{ dg_external_games_root }}/ps2/GT5_2.11_Master_Mod_1.9.2_(US-BCUS98114).zip"
+dg_gt5_mod_extract_dir: "{{ dg_external_games_root }}/ps2/gt5-master-mod-1.9.2"
+
+# Whether to also apply the optional Debug Cam addon (overlays after
+# the base mod per readme).
+dg_gt5_install_debug_cam: true
+
+# Backup landing zone. Holds:
+#  - a one-time tarball of the v2.17 update before we tear it down
+#  - a tarball of the pristine v2.11 PDIPFS before the mod overlays it
+# Both are protected by `.dg-*-done` markers so re-runs don't churn.
+dg_gt5_backup_dir: "{{ dg_external_games_root }}/ps2/gt5-backups"

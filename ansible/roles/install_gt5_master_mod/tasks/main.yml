@@ -1,0 +1,100 @@
+---
+# Preflight + dispatcher. The destructive work (PKG chain replay, mod
+# file overlay) lives in downgrade.yml and apply_mod.yml; this file
+# decides whether each needs to run and bails early if the host is in
+# a state that would corrupt the install. All preflight + version
+# detection tasks are tagged 'always' so they still execute when the
+# user filters with --tags downgrade or --tags apply — the dispatcher
+# below depends on facts they set.
+
+- name: Verify mod archive is present
+  ansible.builtin.stat:
+    path: "{{ dg_gt5_mod_archive }}"
+  register: _gt5_archive
+  tags: always
+
+- name: Fail when mod archive is missing
+  ansible.builtin.fail:
+    msg: |
+      Master Mod zip not found at {{ dg_gt5_mod_archive }}.
+      Download GT5_2.11_Master_Mod_1.9.2_(US-BCUS98114).zip from
+      https://www.mediafire.com/folder/6ye4yod7voapb/Gran+Turismo+5+Master+Mod+(2.11)
+      and drop it at that path (or override dg_gt5_mod_archive in
+      host_vars/localhost.yml).
+  when: not _gt5_archive.stat.exists
+  tags: always
+
+- name: Verify base disc directory exists
+  # The disc image must remain mounted/extracted on the NAS for RPCS3 to
+  # find the BCUS98114 entry — the update PKGs only ship deltas.
+  ansible.builtin.stat:
+    path: "{{ dg_rom_heavy_root }}/ps3/Gran Turismo 5 (USA) (EnJaFrEsPt) (v02.00).ps3"
+  register: _gt5_disc
+  tags: always
+
+- name: Warn when disc directory is missing
+  ansible.builtin.debug:
+    msg: |
+      WARN — base GT5 disc dir not found at the expected NAS path.
+      RPCS3 will still play with just the update tree present, but the
+      game won't appear in the games list without the disc registration.
+  when: not _gt5_disc.stat.exists
+  tags: always
+
+- name: Refuse to run while RPCS3 is open
+  # PKG installs and PDIPFS overwrites both touch files RPCS3 holds open
+  # at runtime; let the user know rather than silently corrupting state.
+  # check_mode: false so the safety-check still runs during --check.
+  # Match by `comm` (executable name) — the actual binary is
+  # AppRun.wrapped (AppImage), not 'rpcs3'.
+  ansible.builtin.shell: |
+    ps -eo pid,comm | awk '$2=="AppRun.wrapped" {print $1}'
+  register: _rpcs3_running
+  changed_when: false
+  check_mode: false
+  tags: always
+
+- name: Fail when RPCS3 is running
+  ansible.builtin.fail:
+    msg: "RPCS3 is currently running (PID(s): {{ _rpcs3_running.stdout_lines | default([]) }}). Close it before re-running this playbook."
+  when: _rpcs3_running.stdout | default('') | length > 0
+  tags: always
+
+- name: Read installed update version from PARAM.SFO
+  # PARAM.SFO is a binary blob; APP_VER is stored as an ASCII "NN.NN"
+  # token, which `strings` pulls out reliably without needing a custom
+  # parser. Empty result == no update installed (base disc only).
+  # check_mode: false so the read still happens during --check, otherwise
+  # the dispatcher can't decide whether downgrade is needed.
+  ansible.builtin.shell: |
+    if [ -f "{{ dg_gt5_param_sfo }}" ]; then
+      strings "{{ dg_gt5_param_sfo }}" | grep -oE '^0[12]\.[0-9]{2}$' | head -1
+    fi
+  register: _gt5_current_ver
+  changed_when: false
+  check_mode: false
+  tags: always
+
+- name: Compute downgrade-needed flag
+  ansible.builtin.set_fact:
+    _gt5_current_version: "{{ _gt5_current_ver.stdout | default('') | trim }}"
+    _gt5_needs_downgrade: "{{ (_gt5_current_ver.stdout | default('') | trim) != dg_gt5_target_version }}"
+  tags: always
+
+- name: Report current state
+  ansible.builtin.debug:
+    msg: |
+      GT5 update slot:           {{ dg_gt5_update_dir }}
+      Currently installed:       {{ _gt5_current_version | default('(none — base disc only)') }}
+      Target for the Master Mod: {{ dg_gt5_target_version }}
+      Downgrade pass needed:     {{ _gt5_needs_downgrade }}
+  tags: always
+
+- name: Run version-rollback (1.05 -> 2.11 PKG chain)
+  ansible.builtin.include_tasks: downgrade.yml
+  when: _gt5_needs_downgrade
+  tags: [downgrade]
+
+- name: Apply mod files onto the v2.11 install
+  ansible.builtin.include_tasks: apply_mod.yml
+  tags: [apply]

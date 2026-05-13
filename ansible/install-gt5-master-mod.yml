@@ -1,0 +1,7 @@
+---
+- name: Install Nenkai's GT5 Master Mod (1.9.2) for RPCS3
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_gt5_master_mod

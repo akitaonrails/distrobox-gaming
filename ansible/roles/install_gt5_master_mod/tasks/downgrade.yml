@@ -1,0 +1,107 @@
+---
+# Walks the official Sony CDN patch chain to bring GT5 back to v2.11.
+# Each PKG is an incremental delta. Nenkai's readme warns:
+# "Patches need to be installed one by one until 2.11. You can NOT
+# directly install 2.11." — so we apply every PKG from 1.05 to 2.11
+# in order. extract_ps3_dlc.py (deployed by scripts_in_box) handles
+# the AES-CTR decryption and writes each patch's files into RPCS3's
+# dev_hdd0/game/<TID>/ directly, with no RPCS3 GUI involvement.
+# --max-version 02.11 caps the chain so even if we accidentally have
+# 2.12+ PKGs in staging, they won't be applied.
+
+- name: Ensure staging + backup directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_gt5_pkg_staging }}"
+    - "{{ dg_gt5_backup_dir }}"
+
+- name: Decide whether to wipe + start from 1.05, or resume mid-chain
+  # If the installed version is one of the chain entries (1.05 .. 2.10)
+  # we're partway through and re-running the extractor is harmless —
+  # it just rewrites the same patch files. Wipe only when starting
+  # from a non-chain state (e.g. 2.17, unknown).
+  ansible.builtin.set_fact:
+    _gt5_in_chain: "{{ _gt5_current_version in (dg_gt5_pkg_chain | map(attribute='ver') | list) }}"
+
+- name: Stat pre-downgrade backup marker
+  ansible.builtin.stat:
+    path: "{{ dg_gt5_backup_dir }}/.dg-pre-downgrade-done"
+  register: _gt5_pre_backup_marker
+
+- name: Back up existing update tree before tearing it down
+  # One-shot tarball: zstd-compressed snapshot of dev_hdd0/game/<TID>/
+  # so we can roll the box back to whatever was there before. Marker
+  # file blocks re-creation on subsequent runs. Skipped when already
+  # on a chain version (resume case).
+  ansible.builtin.shell: |
+    set -e
+    tar --use-compress-program='zstd -T0 -3' \
+        -cf "{{ dg_gt5_backup_dir }}/pre-downgrade-{{ _gt5_current_version | default('unknown') }}.tar.zst" \
+        -C "{{ dg_rpcs3_dev_hdd0_game }}" \
+        "{{ dg_gt5_title_id }}"
+    touch "{{ dg_gt5_backup_dir }}/.dg-pre-downgrade-done"
+  args:
+    creates: "{{ dg_gt5_backup_dir }}/.dg-pre-downgrade-done"
+  when:
+    - not _gt5_pre_backup_marker.stat.exists
+    - _gt5_current_version | length > 0
+    - not _gt5_in_chain
+
+- name: Remove existing update tree (only when starting from a non-chain version)
+  ansible.builtin.file:
+    path: "{{ dg_gt5_update_dir }}"
+    state: absent
+  when:
+    - _gt5_current_version | length > 0
+    - not _gt5_in_chain
+
+- name: Download each PKG from the official PSN CDN
+  # Canonical Sony CDN filenames — matches the regex in
+  # extract_ps3_dlc.py (PATCH_VER_RE = r'-A(\d{2})(\d{2})-V') so the
+  # script correctly identifies the patch version per file.
+  ansible.builtin.get_url:
+    url: "{{ dg_gt5_cdn_base }}/UP9000-{{ dg_gt5_title_id }}_00-0000000000000000-{{ item.url_ver }}-{{ item.url_rev }}-PE.pkg"
+    dest: "{{ dg_gt5_pkg_staging }}/UP9000-{{ dg_gt5_title_id }}_00-0000000000000000-{{ item.url_ver }}-{{ item.url_rev }}-PE.pkg"
+    mode: "0644"
+    timeout: 600
+  loop: "{{ dg_gt5_pkg_chain }}"
+  loop_control:
+    label: "{{ item.ver }} ({{ item.url_ver }}-{{ item.url_rev }})"
+
+- name: Apply the patch chain via extract_ps3_dlc.py (no RPCS3 GUI)
+  # The decryptor handles AES-CTR + extraction. With --max-version
+  # capping at 02.11, even if newer PKGs sneak into staging they're
+  # ignored. Processed in sorted filename order, which equals version
+  # order thanks to zero-padded -A<major><minor>- naming.
+  #
+  # This whole task is one shell call (no per-PKG loop) — the script
+  # iterates internally and is much faster than the prior rpcs3-GUI
+  # dance (whole chain in <60s, vs ~3 min/PKG with the GUI).
+  ansible.builtin.command:
+    cmd: >-
+      {{ dg_in_box }} python3
+      {{ dg_box_home }}/scripts/extract_ps3_dlc.py
+      "{{ dg_gt5_pkg_staging }}/"
+      --dest "{{ dg_rpcs3_dev_hdd0_game }}/"
+      --max-version {{ dg_gt5_target_version }}
+  changed_when: true
+
+- name: Re-read PARAM.SFO to confirm v2.11 landed
+  ansible.builtin.shell: |
+    strings "{{ dg_gt5_param_sfo }}" | grep -oE '^0[12]\.[0-9]{2}$' | head -1
+  register: _gt5_post_downgrade_ver
+  changed_when: false
+
+- name: Assert post-downgrade version matches target
+  ansible.builtin.assert:
+    that: _gt5_post_downgrade_ver.stdout | trim == dg_gt5_target_version
+    fail_msg: |
+      Downgrade chain completed but PARAM.SFO reports
+      '{{ _gt5_post_downgrade_ver.stdout | trim }}', expected
+      '{{ dg_gt5_target_version }}'. Inspect
+      {{ dg_gt5_pkg_staging }}/ for missing or partial PKGs and
+      re-run the playbook.
+    success_msg: "GT5 update slot is now at {{ dg_gt5_target_version }} as expected."
