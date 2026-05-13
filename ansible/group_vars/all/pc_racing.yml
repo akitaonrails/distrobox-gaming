@@ -554,14 +554,32 @@ dg_pc_racing_games:
     winebus_registry:
       - name: Map Controllers
         value: 0
+    # Force SR2 to recognise the controller as a Logitech WingMan
+    # Formula Force wheel (type 0A in SpecialProducts) — that device
+    # type has SR2 read analog axes for steering / gas / brake instead
+    # of the Saturn-pad (07) digital-only mapping which leaves the
+    # 8BitDo's triggers inert. Xidi's CustomMapper below presents the
+    # XInput gamepad as that virtual DI7 wheel: left-stick → X axis,
+    # RT → Y- (throttle), LT → Y+ (brake).
     registry_values:
       - key: "HKEY_LOCAL_MACHINE\\Software\\Wow6432Node\\Sega\\SEGA RALLY 2\\ControlPanel\\Profiles\\0"
         name: nDeviceType
         type: REG_BINARY
-        value: "07000000"
+        value: "0A000000"
       - key: "HKEY_LOCAL_MACHINE\\Software\\Wow6432Node\\Sega\\SEGA RALLY 2\\InputSettings"
         name: "0"
-        value: "7"
+        value: "10"
+    # SR2 hard-codes an 800x600 window at startup and dgVoodoo can't
+    # override that under Wayland: dgVoodoo's FullScreenMode would
+    # take a true X display, but under Xwayland (either gamescope's
+    # nested one or wine /desktop) it falls back to windowed mode.
+    # Tried wine /desktop=,3840x2160 once — the 800x600 game window
+    # just sat in the top-left of the 4K wine desktop. Reverted.
+    #
+    # Best achievable with the 2024 build: gamescope upscales the
+    # 800x600 frame to 4K (4:3 pillarboxed on 16:9 monitor). For
+    # true 4K rendering you need 1.9.0's AuToMaNiAk005 widescreen
+    # patch which crashes in Wine 11.8 (mginput+0x3fee).
     gamescope_game_width: 800
     gamescope_game_height: 600
     gamescope_output_width: "{{ dg_pc_racing_gamescope_width }}"
@@ -571,18 +589,54 @@ dg_pc_racing_games:
     env:
       - name: WINEDLLOVERRIDES
         value: "ddraw,d3dimm,dxgi,dinput=n,b"
-    patches:
-      - name: Xidi XInput fallback
-        source: "{{ dg_pc_racing_cache_root }}/sega-rally-2-xinput-fallback.zip"
-        cache_from_pattern: "Troubleshooting/If XInput gamepad doesn*work.zip"
-        creates: "dinput8.dll"
-        extract_flat: true
-        backup_files:
-          - dinput.dll
-    config_blocks:
-      - name: xidi-trigger-keyboard-fallback
-        file: Xidi.ini
-        marker: "; {mark} distrobox-gaming xidi trigger keyboard fallback"
-        state: absent
-        block: ""
-    notes: "OldNewPixel Inno Setup package installed silently to G:\\sega-rally-2. The game renders internally at 800x600, so gamescope scales it to the configured 4K output while preserving 4:3 aspect ratio."
+    # Replace Xidi default config with a CustomMapper that emits a
+    # virtual DI7 wheel: triggers become a single analog Y axis (gas
+    # pulls Y-, brake pushes Y+) — same pattern used for CMR2, which
+    # has the same DI7 split-axis throttle/brake binding behaviour.
+    # SR2 sees a continuous Y axis (range -1.0..+1.0, 0 = neutral)
+    # for the throttle/brake plane, plus X for steering.
+    xidi:
+      source: "{{ dg_pc_racing_xidi_archive }}"
+      url: "{{ dg_pc_racing_xidi_url }}"
+      archive_root: "Xidi-{{ dg_pc_racing_xidi_version }}"
+      architecture: Win32
+      wrappers:
+        - dinput.dll
+      config: |
+        [Mapper]
+        Type = SR2Wheel
+
+        [CustomMapper:SR2Wheel]
+        Template = StandardGamepad
+        StickLeftX = Axis(X)
+        StickLeftY = Null
+        TriggerRT = Axis(Y, -)
+        TriggerLT = Axis(Y, +)
+        DpadUp = Keyboard(UpArrow)
+        DpadDown = Keyboard(DownArrow)
+        DpadLeft = Keyboard(LeftArrow)
+        DpadRight = Keyboard(RightArrow)
+        ButtonStart = Keyboard(Enter)
+        ButtonBack = Keyboard(Esc)
+
+        [Properties]
+        UseBuiltInProperties = yes
+        DeadzonePercentStickLeft = 5
+        DeadzonePercentStickRight = 5
+        DeadzonePercentTriggerLT = 0
+        DeadzonePercentTriggerRT = 0
+        SaturationPercentStickLeft = 100
+        SaturationPercentStickRight = 100
+        SaturationPercentTriggerLT = 100
+        SaturationPercentTriggerRT = 100
+
+        [Log]
+        Enabled = no
+        Level = 1
+
+        [Import]
+        dinput.dll = C:\Windows\system32\dinput.dll
+
+        [Workarounds]
+        ActiveVirtualControllerMask = 0x01
+    notes: "OldNewPixel Inno Setup (2024 release) installed silently to G:\\sega-rally-2. Game renders at hardcoded 800x600 (1.9.0's AuToMaNiAk005 widescreen patch crashes in Wine, so we stay on 2024), gamescope upscales to the configured 4K output preserving 4:3 (pillarbox on 16:9 monitor). Controls: Xidi presents the XInput gamepad as a Logitech wheel (DI7 device type 0A) so SR2 reads triggers as analog Y axis (gas Y-, brake Y+)."
