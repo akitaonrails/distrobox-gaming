@@ -46,7 +46,12 @@ dg_dolphin_config_dir: "{{ dg_box_home }}/.config/dolphin-emu"
 
 dg_xemu_config_dir: "{{ dg_box_home }}/.config/xemu"
 dg_xemu_data_dir: "{{ dg_box_home }}/.local/share/xemu"
-dg_xemu_config: "{{ dg_xemu_config_dir }}/xemu.toml"
+# xemu writes its toml + eeprom + shaders to <data_dir>/xemu/. The
+# <config_dir>/xemu.toml is ignored by upstream xemu — only the data-dir
+# copy is read at startup and rewritten on shutdown.
+dg_xemu_runtime_dir: "{{ dg_xemu_data_dir }}/xemu"
+dg_xemu_config: "{{ dg_xemu_runtime_dir }}/xemu.toml"
+dg_xemu_eeprom: "{{ dg_xemu_runtime_dir }}/eeprom.bin"
 dg_xemu_bootrom_source: "{{ dg_bios_root }}/mcpx_1.0.bin"
 dg_xemu_flashrom_source: "{{ dg_bios_root }}/Complex_4627.bin"
 dg_xemu_hdd_source: "{{ dg_bios_root }}/xbox_hdd.qcow2"

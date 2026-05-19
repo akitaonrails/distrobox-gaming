@@ -1,13 +1,44 @@
 ---
-- name: Ensure xemu config directory exists
+- name: Ensure xemu config + runtime directories exist
   ansible.builtin.file:
-    path: "{{ dg_xemu_config_dir }}"
+    path: "{{ item }}"
     state: directory
     mode: "0755"
+  loop:
+    - "{{ dg_xemu_config_dir }}"
+    - "{{ dg_xemu_runtime_dir }}"
 
-- name: Deploy xemu config from template
+- name: Remove stale xemu.toml at the wrong path
+  # The role used to render xemu.toml to dg_xemu_config_dir (~/.config/xemu/),
+  # but upstream xemu only reads from dg_xemu_runtime_dir
+  # (~/.local/share/xemu/xemu/). Drop the stale copy so future readers
+  # of the repo don't get confused about which file is authoritative.
+  ansible.builtin.file:
+    path: "{{ dg_xemu_config_dir }}/xemu.toml"
+    state: absent
+
+- name: Deploy xemu config from template (first-time only — preserves UI edits)
   ansible.builtin.template:
     src: xemu.toml.j2
     dest: "{{ dg_xemu_config }}"
-    backup: true
+    force: false
     mode: "0644"
+
+- name: Enforce xemu BIOS / HDD / EEPROM paths in xemu.toml
+  # xemu's UI lets the user browse to any file when picking the
+  # bootrom/flashrom/hdd/eeprom; picking the wrong .bin from the
+  # EmuDeck bios dir (e.g., dc_flash.bin instead of Complex_4627.bin)
+  # bricks Xbox boot silently. These four lines re-enforce the
+  # Ansible-managed symlink targets on every run, so the paths can't
+  # drift back to wrong values without an explicit Ansible edit.
+  ansible.builtin.replace:
+    path: "{{ dg_xemu_config }}"
+    regexp: "^{{ item.key }}_path\\s*=\\s*.*"
+    replace: "{{ item.key }}_path = '{{ item.value }}'"
+  loop:
+    - { key: bootrom, value: "{{ dg_xemu_bootrom }}" }
+    - { key: flashrom, value: "{{ dg_xemu_flashrom }}" }
+    - { key: hdd, value: "{{ dg_xemu_hdd }}" }
+    - { key: eeprom, value: "{{ dg_xemu_eeprom }}" }
+  loop_control:
+    label: "{{ item.key }}"

@@ -1,9 +1,18 @@
-# xemu config - managed by Ansible
-# Do not edit manually; run reset-configs.yml to restore defaults.
+# xemu initial config - written by Ansible only when this file is
+# missing. On every run the seed_configs role *re-enforces* the four
+# critical path keys (bootrom_path, flashrom_path, hdd_path,
+# eeprom_path) via ansible.builtin.replace, even if you've changed
+# other settings via the xemu UI. To wipe everything and start over
+# from this template, delete the file and re-run reset-configs.yml
+# --tags configs.
 
 [general]
 show_welcome = false
-skip_boot_anim = true
+# Show the X-swoosh boot animation. Useful as a smoke test on first
+# launch: if you see it, the bootrom + flashrom are valid; if the
+# screen stays black, one of those paths is wrong. Flip to true after
+# the setup is known good.
+skip_boot_anim = false
 last_viewed_menu_index = 0
 screenshot_dir = ''
 discord_presence = false
@@ -30,8 +39,11 @@ last_height = 2160
 startup_size = 'native'
 
 [display.quality]
-surface_scale = 6
-render_scale = 6
+# 3x upscale = 1440p internal from Xbox 480p native — sharp on a 4K
+# panel without melting the GPU on every game. Crank to 4-6 for
+# screenshots / titles that need maximum sharpness.
+surface_scale = 3
+render_scale = 3
 
 [display.renderer]
 backend = 'vulkan'
@@ -50,11 +62,15 @@ avpack = 'hdtv'
 hdd_model = ''
 
 [sys.files]
+# These four paths are also re-enforced by the seed_configs role on
+# every run via ansible.builtin.replace, so they can't drift back to
+# wrong values (e.g., picking dc_flash.bin from the EmuDeck bios dir
+# in xemu's file picker instead of Complex_4627.bin).
 bootrom_path = '{{ dg_xemu_bootrom }}'
 flashrom_path = '{{ dg_xemu_flashrom }}'
 hdd_path = '{{ dg_xemu_hdd }}'
+eeprom_path = '{{ dg_xemu_eeprom }}'
 dvd_path = ''
-eeprom_path = ''
 
 [perf]
 hard_fpu = true
