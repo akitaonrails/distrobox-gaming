@@ -1,0 +1,5045 @@
+{
+  "apps": [
+    {
+      "app_id": 220,
+      "compat_policy": "prefer_native_linux",
+      "has_curated_override": false,
+      "install_dir": "Half-Life 2",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Half-Life 2",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.9,
+        "tier": "platinum",
+        "total": 198,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/220"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": true,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/220/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 320,
+      "compat_policy": "prefer_native_linux",
+      "has_curated_override": false,
+      "install_dir": "Half-Life 2 Deathmatch",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Half-Life 2: Deathmatch",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "good",
+        "score": 0.43,
+        "tier": "gold",
+        "total": 41,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/320"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": true,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/320/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 340,
+      "compat_policy": "prefer_native_linux",
+      "has_curated_override": false,
+      "install_dir": "Half-Life 2",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Half-Life 2: Lost Coast",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "moderate",
+        "score": 0.64,
+        "tier": "platinum",
+        "total": 14,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/340"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": true,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/340/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 380,
+      "compat_policy": "prefer_native_linux",
+      "has_curated_override": false,
+      "install_dir": "Half-Life 2",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Half-Life 2: Episode One",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "good",
+        "score": 0.7,
+        "tier": "platinum",
+        "total": 30,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/380"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": true,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/380/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 420,
+      "compat_policy": "prefer_native_linux",
+      "has_curated_override": false,
+      "install_dir": "Half-Life 2",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Half-Life 2: Episode Two",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "good",
+        "score": 0.74,
+        "tier": "platinum",
+        "total": 28,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/420"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": true,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/420/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2200,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Quake 3 Arena",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Quake III Arena",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.64,
+        "tier": "gold",
+        "total": 36,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2200"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unsupported",
+        "steamos_category": "unsupported",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2200/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2270,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Wolfenstein 3D",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Wolfenstein 3D",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.68,
+        "tier": "gold",
+        "total": 36,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/2270"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2270/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2280,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Ultimate Doom",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "DOOM + DOOM II",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.83,
+        "tier": "platinum",
+        "total": 193,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2280"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2280/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2290,
+      "compat_policy": "steam_default_proton_low_confidence",
+      "has_curated_override": false,
+      "install_dir": "Final Doom",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Final DOOM",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "moderate",
+        "score": 0.56,
+        "tier": "gold",
+        "total": 14,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/2290"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unsupported",
+        "steamos_category": "unsupported",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2290/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2300,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Doom 2",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "DOOM II",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.71,
+        "tier": "gold",
+        "total": 56,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2300"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2300/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2310,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Quake",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Quake",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.81,
+        "tier": "platinum",
+        "total": 205,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2310"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2310/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2320,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Quake 2",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Quake II",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.75,
+        "tier": "gold",
+        "total": 87,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2320"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2320/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2330,
+      "compat_policy": "check_sources_before_testing",
+      "has_curated_override": false,
+      "install_dir": "Quake 2",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Quake II: The Reckoning",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "moderate",
+        "score": 0.15,
+        "tier": "silver",
+        "total": 12,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/2330"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unknown",
+        "steamos_category": "unknown",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2330/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2340,
+      "compat_policy": "check_sources_before_testing",
+      "has_curated_override": false,
+      "install_dir": "Quake 2",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Quake II: Ground Zero",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "moderate",
+        "score": 0.11,
+        "tier": "bronze",
+        "total": 12,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/2340"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unknown",
+        "steamos_category": "unknown",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2340/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2350,
+      "compat_policy": "research_before_testing",
+      "has_curated_override": false,
+      "install_dir": "Quake 3 Arena",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Quake III: Team Arena",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "low",
+        "score": 0.44,
+        "tier": "gold",
+        "total": 8,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/2350"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unknown:None",
+        "steamos_category": "unknown:None",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "url": "https://store.steampowered.com/app/2350/"
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 9010,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Return to Castle Wolfenstein",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Return to Castle Wolfenstein",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.63,
+        "tier": "gold",
+        "total": 50,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/9010"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/9010/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 9030,
+      "compat_policy": "research_before_testing",
+      "has_curated_override": false,
+      "install_dir": "Quake",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Quake Mission Pack 2: Dissolution of Eternity",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "low",
+        "score": 0.65,
+        "tier": "platinum",
+        "total": 9,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/9030"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unknown",
+        "steamos_category": "unknown",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/9030/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 9040,
+      "compat_policy": "research_before_testing",
+      "has_curated_override": false,
+      "install_dir": "Quake",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Quake Mission Pack 1: Scourge of Armagon",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "low",
+        "score": 0.61,
+        "tier": "platinum",
+        "total": 7,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/9040"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unknown",
+        "steamos_category": "unknown",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/9040/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 9050,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Doom 3",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "DOOM 3",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.76,
+        "tier": "gold",
+        "total": 81,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/9050"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/9050/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 9070,
+      "compat_policy": "steam_default_proton_low_confidence",
+      "has_curated_override": false,
+      "install_dir": "Doom 3",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "DOOM 3: Resurrection of Evil",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "moderate",
+        "score": 0.64,
+        "tier": "platinum",
+        "total": 16,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/9070"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unknown",
+        "steamos_category": "unknown",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/9070/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 9160,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Master Levels of Doom",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Master Levels for DOOM II",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "moderate",
+        "score": 0.39,
+        "tier": "gold",
+        "total": 11,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/9160"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/9160/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 12210,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Grand Theft Auto IV",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Grand Theft Auto IV: The Complete Edition",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.77,
+        "tier": "gold",
+        "total": 629,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/12210"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/12210/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 15100,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Assassins Creed",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Assassin's Creed",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.77,
+        "tier": "gold",
+        "total": 153,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/15100"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/15100/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 32400,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Dark Forces",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "STAR WARS\u2122: Dark Forces",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.71,
+        "tier": "platinum",
+        "total": 40,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/32400"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": true,
+        "url": "https://store.steampowered.com/app/32400/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 33230,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Assassin's Creed 2",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Assassin's Creed II",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.64,
+        "tier": "gold",
+        "total": 147,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/33230"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/33230/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 35140,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Batman Arkham Asylum GOTY",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Batman: Arkham Asylum GOTY Edition",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.77,
+        "tier": "gold",
+        "total": 472,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/35140"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unsupported",
+        "steamos_category": "unsupported",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/35140/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 45760,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Super Street Fighter IV - Arcade Edition",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Ultra Street Fighter IV",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.76,
+        "tier": "gold",
+        "total": 114,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/45760"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unsupported",
+        "steamos_category": "unsupported",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/45760/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 71250,
+      "compat_policy": "local_fix_recorded",
+      "has_curated_override": true,
+      "install_dir": "Sonic Adventure DX",
+      "known_issues": [
+        "Local test needed the distrobox Steam NVIDIA 32-bit library fix before 32-bit Proton/DXVK games launched reliably."
+      ],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [
+        "Local Sonic Adventure DX test worked after the Steam runtime library path fix and setting the game config to windowed mode."
+      ],
+      "name": "Sonic Adventure DX",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.88,
+        "tier": "platinum",
+        "total": 113,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/71250"
+      },
+      "recommended_proton": null,
+      "source_notes": [
+        {
+          "note": "Use ProtonDB as the compatibility baseline, then keep the local windowed-mode note because it is specific to this setup.",
+          "url": "https://www.protondb.com/app/71250"
+        }
+      ],
+      "steam_deck": {
+        "deck_category": "unsupported",
+        "steamos_category": "unsupported",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/71250/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 71340,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Sonic Generations",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Sonic Generations",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.72,
+        "tier": "gold",
+        "total": 231,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/71340"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/71340/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 200940,
+      "compat_policy": "check_sources_before_testing",
+      "has_curated_override": false,
+      "install_dir": "Sonic CD",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Sonic CD",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.5,
+        "tier": "silver",
+        "total": 113,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/200940"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/200940/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 202530,
+      "compat_policy": "check_sources_before_testing",
+      "has_curated_override": false,
+      "install_dir": "Sonic the Hedgehog 4 EP 1",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "SONIC THE HEDGEHOG 4 Episode I",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.42,
+        "tier": "silver",
+        "total": 42,
+        "trendingTier": "silver",
+        "url": "https://www.protondb.com/app/202530"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unsupported",
+        "steamos_category": "unsupported",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/202530/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 203160,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Tomb Raider",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Tomb Raider",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.9,
+        "tier": "platinum",
+        "total": 291,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/203160"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": true,
+        "url": "https://store.steampowered.com/app/203160/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 203650,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Sonic the Hedgehog 4 - EP 2",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "SONIC THE HEDGEHOG 4 Episode II",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.57,
+        "tier": "gold",
+        "total": 32,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/203650"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/203650/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 208200,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "DOOM 3 BFG Edition",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "DOOM 3: BFG Edition",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.58,
+        "tier": "gold",
+        "total": 152,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/208200"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unsupported",
+        "steamos_category": "unsupported",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/208200/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 213610,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Sonic Adventure 2",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Sonic Adventure\u2122 2 ",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.76,
+        "tier": "gold",
+        "total": 144,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/213610"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/213610/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 227600,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Castle of Illusion",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Castle of Illusion",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.76,
+        "tier": "platinum",
+        "total": 60,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/227600"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/227600/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 228980,
+      "compat_policy": "runtime_component",
+      "has_curated_override": false,
+      "install_dir": "Steamworks Shared",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Steamworks Common Redistributables",
+      "protondb": {
+        "error": "Command '['curl', '-fsSL', '--max-time', '20', '--retry', '2', '-H', 'Accept: application/json', '-A', 'distrobox-gaming-compat-db/1.0', 'https://www.protondb.com/api/v1/reports/summaries/228980.json']' returned non-zero exit status 22.",
+        "url": "https://www.protondb.com/app/228980"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unknown:None",
+        "steamos_category": "unknown:None",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "url": "https://store.steampowered.com/app/228980/"
+      },
+      "type": "runtime"
+    },
+    {
+      "app_id": 234080,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "CastlevaniaLoS",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Castlevania: Lords of Shadow - Ultimate Edition",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.83,
+        "tier": "platinum",
+        "total": 66,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/234080"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/234080/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 235210,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Strider",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Strider",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.65,
+        "tier": "gold",
+        "total": 74,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/235210"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/235210/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 235460,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "METAL GEAR RISING REVENGEANCE",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "METAL GEAR RISING: REVENGEANCE",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.85,
+        "tier": "platinum",
+        "total": 216,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/235460"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": true,
+        "url": "https://store.steampowered.com/app/235460/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 237630,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "DuckTales Remastered",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "DuckTales Remastered",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.78,
+        "tier": "platinum",
+        "total": 83,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/237630"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/237630/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 241930,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "ShadowOfMordor",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Middle-earth\u2122: Shadow of Mordor\u2122",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.84,
+        "tier": "platinum",
+        "total": 128,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/241930"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/241930/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 246580,
+      "compat_policy": "check_sources_before_testing",
+      "has_curated_override": false,
+      "install_dir": "Typing of the Dead Overkill",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "The Typing of The Dead: Overkill",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.43,
+        "tier": "silver",
+        "total": 61,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/246580"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/246580/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 250180,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Metal Slug 3",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "METAL SLUG 3",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.64,
+        "tier": "gold",
+        "total": 49,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/250180"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unsupported",
+        "steamos_category": "unsupported",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/250180/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 250760,
+      "compat_policy": "prefer_native_linux",
+      "has_curated_override": false,
+      "install_dir": "Shovel Knight",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Shovel Knight: Treasure Trove",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "good",
+        "score": 0.81,
+        "tier": "platinum",
+        "total": 18,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/250760"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": true,
+        "mac": true,
+        "url": "https://store.steampowered.com/app/250760/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 287700,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "MGS_TPP",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "METAL GEAR SOLID V: THE PHANTOM PAIN",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.84,
+        "tier": "platinum",
+        "total": 498,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/287700"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/287700/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 292030,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "The Witcher 3",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "The Witcher 3: Wild Hunt",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.87,
+        "tier": "platinum",
+        "total": 1692,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/292030"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/292030/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 310950,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "StreetFighterV",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Street Fighter V",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.67,
+        "tier": "gold",
+        "total": 181,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/310950"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/310950/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 312610,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Metal Slug X",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "METAL SLUG X",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "good",
+        "score": 0.51,
+        "tier": "gold",
+        "total": 28,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/312610"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/312610/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 354160,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "WRC 5",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "WRC 5",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "good",
+        "score": 0.57,
+        "tier": "gold",
+        "total": 16,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/354160"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/354160/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 357190,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "ULTIMATE MARVEL VS. CAPCOM 3",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Ultimate Marvel vs. Capcom 3",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.67,
+        "tier": "gold",
+        "total": 52,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/357190"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/357190/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 362890,
+      "compat_policy": "prefer_native_linux",
+      "has_curated_override": false,
+      "install_dir": "Black Mesa",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Black Mesa",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.73,
+        "tier": "gold",
+        "total": 433,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/362890"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": true,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/362890/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 363440,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Suzy",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Mega Man Legacy Collection",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.75,
+        "tier": "platinum",
+        "total": 66,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/363440"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/363440/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 366250,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "METAL SLUG",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "METAL SLUG",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.47,
+        "tier": "gold",
+        "total": 47,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/366250"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/366250/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 377870,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "DARIUSBURST Chronicle Saviours",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "DARIUSBURST Chronicle Saviours",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "good",
+        "score": 0.71,
+        "tier": "platinum",
+        "total": 20,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/377870"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/377870/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 389140,
+      "compat_policy": "prefer_native_linux",
+      "has_curated_override": false,
+      "install_dir": "Horizon Chase",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Horizon Chase Turbo",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.83,
+        "tier": "platinum",
+        "total": 35,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/389140"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": true,
+        "mac": true,
+        "url": "https://store.steampowered.com/app/389140/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 398850,
+      "compat_policy": "prefer_native_linux",
+      "has_curated_override": false,
+      "install_dir": "Epistory",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Epistory - Typing Chronicles",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "low",
+        "score": 0.65,
+        "tier": "platinum",
+        "total": 8,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/398850"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": true,
+        "mac": true,
+        "url": "https://store.steampowered.com/app/398850/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 495050,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "MegaMan2",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Mega Man Legacy Collection 2",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.53,
+        "tier": "gold",
+        "total": 47,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/495050"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unsupported",
+        "steamos_category": "unsupported",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/495050/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 502500,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "ACE COMBAT 7",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "ACE COMBAT\u21227: SKIES UNKNOWN",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.85,
+        "tier": "platinum",
+        "total": 198,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/502500"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/502500/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 504230,
+      "compat_policy": "prefer_native_linux",
+      "has_curated_override": false,
+      "install_dir": "Celeste",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Celeste",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.89,
+        "tier": "platinum",
+        "total": 258,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/504230"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": true,
+        "mac": true,
+        "url": "https://store.steampowered.com/app/504230/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 544750,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "SoulcaliburVI",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "SOULCALIBUR VI",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.7,
+        "tier": "gold",
+        "total": 158,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/544750"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/544750/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 550320,
+      "compat_policy": "local_fix_recorded",
+      "has_curated_override": true,
+      "install_dir": "artofrally",
+      "known_issues": [
+        "Native launch directly under the distrobox/Hyprland/Xwayland dual-monitor layout logs Desktop is 0 x 0 @ 0 Hz and exits or leaves a hidden CPU-burning process.",
+        "The failure is local display detection, not Proton compatibility. OpenGL and Vulkan are visible, and gamescope gives Unity a valid 2560x1440 display."
+      ],
+      "known_launch_options": [
+        "gamescope -W 2560 -H 1440 -w 2560 -h 1440 -f -- %command% -screen-fullscreen 1 -screen-width 2560 -screen-height 1440"
+      ],
+      "last_checked": "2026-05-03",
+      "local_notes": [
+        "SteamDB records the Linux launch option as artofrally.x64.",
+        "No per-game Steam LaunchOptions were found locally when checked on 2026-05-03.",
+        "A direct distrobox test with gamescope reached a visible art of rally window and loaded into the game after setting SteamAppId=550320 and SteamGameId=550320.",
+        "If the game appears to do nothing, check for a stale artofrally.x64 process. Unity single-instance mode blocks relaunches while the hidden process remains."
+      ],
+      "name": "art of rally",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.83,
+        "tier": "platinum",
+        "total": 49,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/550320"
+      },
+      "recommended_proton": "native",
+      "source_notes": [
+        {
+          "note": "Steam store lists SteamOS/Linux support and Linux system requirements.",
+          "url": "https://store.steampowered.com/app/550320/art_of_rally/"
+        },
+        {
+          "note": "SteamDB records Windows, macOS, and Linux support; Steam Deck Verified; recommended runtime native; and Linux executable artofrally.x64.",
+          "url": "https://steamdb.info/app/550320/config/"
+        },
+        {
+          "note": "ProtonDB summary is Platinum, but native remains the preferred first path because Valve recommends native.",
+          "url": "https://www.protondb.com/app/550320"
+        }
+      ],
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": true,
+        "mac": true,
+        "url": "https://store.steampowered.com/app/550320/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 577940,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Killer Instinct",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Killer Instinct",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.56,
+        "tier": "gold",
+        "total": 59,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/577940"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/577940/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 584400,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Sonic Mania",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Sonic Mania",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.89,
+        "tier": "platinum",
+        "total": 271,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/584400"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/584400/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 586200,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Street Fighter 30th Anniversary Collection",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Street Fighter 30th Anniversary Collection",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.89,
+        "tier": "platinum",
+        "total": 37,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/586200"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unsupported",
+        "steamos_category": "unsupported",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/586200/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 601150,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Devil May Cry 5",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Devil May Cry 5",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.8,
+        "tier": "gold",
+        "total": 278,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/601150"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/601150/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 613830,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Chrono Trigger",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "CHRONO TRIGGER",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.6,
+        "tier": "gold",
+        "total": 138,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/613830"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/613830/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 678950,
+      "compat_policy": "check_sources_before_testing",
+      "has_curated_override": false,
+      "install_dir": "DRAGON BALL FighterZ",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "DRAGON BALL FighterZ",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.51,
+        "tier": "silver",
+        "total": 208,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/678950"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unsupported",
+        "steamos_category": "unsupported",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/678950/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 731490,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Crash Bandicoot - N Sane Trilogy",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Crash Bandicoot\u2122 N. Sane Trilogy",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.83,
+        "tier": "platinum",
+        "total": 218,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/731490"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/731490/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 742300,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Mega Man 11",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Mega Man 11",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.74,
+        "tier": "platinum",
+        "total": 46,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/742300"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/742300/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 743890,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Mega Man X Legacy Collection",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Mega Man X Legacy Collection",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.71,
+        "tier": "gold",
+        "total": 62,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/743890"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unsupported",
+        "steamos_category": "unsupported",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/743890/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 743900,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Mega Man X Legacy Collection 2",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Mega Man X Legacy Collection 2",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.63,
+        "tier": "gold",
+        "total": 37,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/743900"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unsupported",
+        "steamos_category": "unsupported",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/743900/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 744050,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Space Invaders Extreme",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Space Invaders Extreme",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "moderate",
+        "score": 0.63,
+        "tier": "platinum",
+        "total": 13,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/744050"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/744050/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 814380,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Sekiro",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Sekiro\u2122: Shadows Die Twice",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.88,
+        "tier": "platinum",
+        "total": 515,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/814380"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/814380/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 838380,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Dead or Alive 6",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "DEAD OR ALIVE 6",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.6,
+        "tier": "gold",
+        "total": 62,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/838380"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unsupported",
+        "steamos_category": "unsupported",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/838380/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 940680,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Textorcist",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "The Textorcist: The Story of Ray Bibbia",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.5,
+        "tier": "gold",
+        "total": 27,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/940680"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": true,
+        "url": "https://store.steampowered.com/app/940680/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 944920,
+      "compat_policy": "prefer_native_linux",
+      "has_curated_override": false,
+      "install_dir": "Nanotale",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Nanotale - Typing Chronicles",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "moderate",
+        "score": 0.65,
+        "tier": "platinum",
+        "total": 12,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/944920"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": true,
+        "mac": true,
+        "url": "https://store.steampowered.com/app/944920/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 964800,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Prodeus",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Prodeus",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.85,
+        "tier": "platinum",
+        "total": 72,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/964800"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": true,
+        "url": "https://store.steampowered.com/app/964800/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 976730,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Halo The Master Chief Collection",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Halo: The Master Chief Collection",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.72,
+        "tier": "gold",
+        "total": 826,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/976730"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/976730/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 985890,
+      "compat_policy": "prefer_native_linux",
+      "has_curated_override": false,
+      "install_dir": "Streets of Rage 4",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Streets of Rage 4",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.82,
+        "tier": "platinum",
+        "total": 69,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/985890"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": true,
+        "mac": true,
+        "url": "https://store.steampowered.com/app/985890/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1004640,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "FINAL FANTASY TACTICS - The Ivalice Chronicles",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "FINAL FANTASY TACTICS - The Ivalice Chronicles",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.74,
+        "tier": "gold",
+        "total": 61,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/1004640"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1004640/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1018000,
+      "compat_policy": "check_sources_before_testing",
+      "has_curated_override": false,
+      "install_dir": "Arcade Classics Anniversary Collection",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Arcade Classics Anniversary Collection",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.33,
+        "tier": "silver",
+        "total": 31,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/1018000"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unsupported",
+        "steamos_category": "unsupported",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1018000/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1018010,
+      "compat_policy": "check_sources_before_testing",
+      "has_curated_override": true,
+      "install_dir": "Castlevania Anniversary Collection",
+      "known_issues": [
+        "Local test in this distrobox reached shader compilation and then closed the window after brief launch.",
+        "A prior local run reached gameplay but ran too fast, which suggests a frame pacing or refresh-rate issue still needs a source-backed fix.",
+        "Valve marks gamescope frame limiter support as unavailable for this title, so do not use gamescope frame limiting as the first fix path."
+      ],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [
+        "Do not keep experimental Steam launch options on this app unless they are recorded here.",
+        "Historical ProtonDB reports mention PROTON_FORCE_LARGE_ADDRESS_AWARE=1, but those reports are old and should not be treated as the current default without retesting.",
+        "No per-game Steam LaunchOptions were found locally when checked on 2026-05-03."
+      ],
+      "name": "Castlevania Anniversary Collection",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.49,
+        "tier": "gold",
+        "total": 36,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/1018010"
+      },
+      "recommended_proton": "proton-stable",
+      "source_notes": [
+        {
+          "note": "ProtonDB detailed community reports include historical Large Address Aware and save/crash notes.",
+          "url": "https://protondb.max-p.me/games/1018010/reports/"
+        },
+        {
+          "note": "SteamDB records Steam Deck Verified, SteamOS compatible, recommended runtime proton-stable, and gamescope frame limiter unsupported.",
+          "url": "https://steamdb.info/app/1018010/info/"
+        },
+        {
+          "note": "Official Steam Deck compatibility endpoint currently reports Deck Verified and SteamOS Playable for this app.",
+          "url": "https://store.steampowered.com/saleaction/ajaxgetdeckappcompatibilityreport?nAppID=1018010"
+        },
+        {
+          "note": "Konami/Steam news states the collection is fully playable on Steam Deck.",
+          "url": "https://store.steampowered.com/news/app/1018010/view/5255143518694019047"
+        }
+      ],
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1018010/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1018020,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Contra Anniversary Collection",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Contra Anniversary Collection",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "moderate",
+        "score": 0.6,
+        "tier": "platinum",
+        "total": 13,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/1018020"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1018020/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1030300,
+      "compat_policy": "prefer_native_linux",
+      "has_curated_override": false,
+      "install_dir": "Hollow Knight Silksong",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Hollow Knight: Silksong",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.98,
+        "tier": "platinum",
+        "total": 327,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/1030300"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": true,
+        "mac": true,
+        "url": "https://store.steampowered.com/app/1030300/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1034860,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "GRANDIA HD Remaster",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "GRANDIA HD Remaster",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.48,
+        "tier": "gold",
+        "total": 39,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/1034860"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unsupported",
+        "steamos_category": "unsupported",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1034860/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1056960,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Wolfenstein Youngblood",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Wolfenstein: Youngblood",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.62,
+        "tier": "gold",
+        "total": 76,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/1056960"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1056960/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1061730,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "SMBBBHD",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Super Monkey Ball: Banana Blitz HD",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "low",
+        "score": 0.3,
+        "tier": "gold",
+        "total": 5,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/1061730"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1061730/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1070560,
+      "compat_policy": "runtime_component",
+      "has_curated_override": false,
+      "install_dir": "SteamLinuxRuntime",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Steam Linux Runtime 1.0 (scout)",
+      "protondb": {
+        "error": "Command '['curl', '-fsSL', '--max-time', '20', '--retry', '2', '-H', 'Accept: application/json', '-A', 'distrobox-gaming-compat-db/1.0', 'https://www.protondb.com/api/v1/reports/summaries/1070560.json']' returned non-zero exit status 22.",
+        "url": "https://www.protondb.com/app/1070560"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unknown:None",
+        "steamos_category": "unknown:None",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "url": "https://store.steampowered.com/app/1070560/"
+      },
+      "type": "runtime"
+    },
+    {
+      "app_id": 1089130,
+      "compat_policy": "prefer_native_linux",
+      "has_curated_override": false,
+      "install_dir": "Quake II RTX",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Quake II RTX",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.62,
+        "tier": "gold",
+        "total": 36,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/1089130"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unsupported",
+        "steamos_category": "unsupported",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": true,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1089130/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1091500,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Cyberpunk 2077",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Cyberpunk 2077",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.75,
+        "tier": "gold",
+        "total": 2581,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/1091500"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": true,
+        "url": "https://store.steampowered.com/app/1091500/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1145350,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Hades II",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Hades II",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.86,
+        "tier": "platinum",
+        "total": 210,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/1145350"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": true,
+        "url": "https://store.steampowered.com/app/1145350/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1148590,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Doom 64",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "DOOM 64",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.76,
+        "tier": "gold",
+        "total": 147,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/1148590"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1148590/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1172380,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Jedi Fallen Order",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "STAR WARS Jedi: Fallen Order\u2122 ",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.71,
+        "tier": "gold",
+        "total": 585,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/1172380"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1172380/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1174180,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Red Dead Redemption 2",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Red Dead Redemption 2",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.77,
+        "tier": "gold",
+        "total": 1356,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/1174180"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1174180/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1178880,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Panzer Dragoon Remake",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Panzer Dragoon: Remake",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "good",
+        "score": 0.82,
+        "tier": "platinum",
+        "total": 17,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/1178880"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1178880/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1237320,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "SonicFrontiers",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Sonic Frontiers",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.69,
+        "tier": "gold",
+        "total": 128,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/1237320"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1237320/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1245620,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "ELDEN RING",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "ELDEN RING",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.78,
+        "tier": "gold",
+        "total": 2029,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/1245620"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1245620/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1262560,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Need for Speed(TM) Most Wanted",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Need for Speed\u2122 Most Wanted",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.69,
+        "tier": "gold",
+        "total": 103,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/1262560"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1262560/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1328660,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Need For Speed Hot Pursuit Remastered",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Need for Speed\u2122 Hot Pursuit Remastered",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.66,
+        "tier": "gold",
+        "total": 114,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/1328660"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1328660/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1333470,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Alex Kidd in Miracle World DX",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Alex Kidd in Miracle World DX",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "moderate",
+        "score": 0.6,
+        "tier": "gold",
+        "total": 14,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/1333470"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1333470/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1342260,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "SamuraiShodown",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "SAMURAI SHODOWN",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "good",
+        "score": 0.53,
+        "tier": "gold",
+        "total": 21,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/1342260"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1342260/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1361510,
+      "compat_policy": "prefer_native_linux",
+      "has_curated_override": false,
+      "install_dir": "TMNT",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Teenage Mutant Ninja Turtles: Shredder's Revenge",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.81,
+        "tier": "platinum",
+        "total": 55,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/1361510"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": true,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1361510/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1384160,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "GUILTY GEAR STRIVE",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "GUILTY GEAR -STRIVE-",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.81,
+        "tier": "gold",
+        "total": 281,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/1384160"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1384160/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1391110,
+      "compat_policy": "runtime_component",
+      "has_curated_override": false,
+      "install_dir": "SteamLinuxRuntime_soldier",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Steam Linux Runtime 2.0 (soldier)",
+      "protondb": {
+        "error": "Command '['curl', '-fsSL', '--max-time', '20', '--retry', '2', '-H', 'Accept: application/json', '-A', 'distrobox-gaming-compat-db/1.0', 'https://www.protondb.com/api/v1/reports/summaries/1391110.json']' returned non-zero exit status 22.",
+        "url": "https://www.protondb.com/app/1391110"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unknown:None",
+        "steamos_category": "unknown:None",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "url": "https://store.steampowered.com/app/1391110/"
+      },
+      "type": "runtime"
+    },
+    {
+      "app_id": 1449560,
+      "compat_policy": "prefer_native_linux",
+      "has_curated_override": false,
+      "install_dir": "Metro Exodus Enhanced Edition",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Metro Exodus Enhanced Edition",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.42,
+        "tier": "silver",
+        "total": 38,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/1449560"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": true,
+        "mac": true,
+        "url": "https://store.steampowered.com/app/1449560/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1493710,
+      "compat_policy": "runtime_component",
+      "has_curated_override": false,
+      "install_dir": "Proton - Experimental",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Proton Experimental",
+      "protondb": {
+        "error": "Command '['curl', '-fsSL', '--max-time', '20', '--retry', '2', '-H', 'Accept: application/json', '-A', 'distrobox-gaming-compat-db/1.0', 'https://www.protondb.com/api/v1/reports/summaries/1493710.json']' returned non-zero exit status 22.",
+        "url": "https://www.protondb.com/app/1493710"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unknown:None",
+        "steamos_category": "unknown:None",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "url": "https://store.steampowered.com/app/1493710/"
+      },
+      "type": "runtime"
+    },
+    {
+      "app_id": 1498570,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "THE KING OF FIGHTERS XV",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "THE KING OF FIGHTERS XV",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.67,
+        "tier": "gold",
+        "total": 42,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/1498570"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1498570/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1546970,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "GTA III - The Definitive Edition",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Grand Theft Auto III - The Definitive Edition",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.75,
+        "tier": "platinum",
+        "total": 31,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/1546970"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1546970/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1546990,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "GTA Vice City - The Definitive Edition",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Grand Theft Auto: Vice City - The Definitive Edition",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "good",
+        "score": 0.64,
+        "tier": "gold",
+        "total": 24,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/1546990"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1546990/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1547000,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "GTA San Andreas - The Definitive Edition",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Grand Theft Auto: San Andreas - The Definitive Edition",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.67,
+        "tier": "gold",
+        "total": 50,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/1547000"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1547000/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1552550,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Castlevania Advance Collection",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Castlevania Advance Collection",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.46,
+        "tier": "gold",
+        "total": 28,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/1552550"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1552550/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1628350,
+      "compat_policy": "runtime_component",
+      "has_curated_override": false,
+      "install_dir": "SteamLinuxRuntime_sniper",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Steam Linux Runtime 3.0 (sniper)",
+      "protondb": {
+        "error": "Command '['curl', '-fsSL', '--max-time', '20', '--retry', '2', '-H', 'Accept: application/json', '-A', 'distrobox-gaming-compat-db/1.0', 'https://www.protondb.com/api/v1/reports/summaries/1628350.json']' returned non-zero exit status 22.",
+        "url": "https://www.protondb.com/app/1628350"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unknown:None",
+        "steamos_category": "unknown:None",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "url": "https://store.steampowered.com/app/1628350/"
+      },
+      "type": "runtime"
+    },
+    {
+      "app_id": 1638330,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Darius Cozmic Collection Arcade",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Darius Cozmic Collection Arcade",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "low",
+        "score": 0.44,
+        "tier": "platinum",
+        "total": 4,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/1638330"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1638330/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1640160,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "G-Darius HD",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "G-Darius HD",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "low",
+        "score": 0.51,
+        "tier": "platinum",
+        "total": 4,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/1640160"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1640160/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1659420,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Uncharted Legacy of Thieves Collection",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "UNCHARTED\u2122: Legacy of Thieves Collection",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.71,
+        "tier": "gold",
+        "total": 157,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/1659420"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1659420/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1659600,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "TMNT Cowabunga",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Teenage Mutant Ninja Turtles: The Cowabunga Collection",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "moderate",
+        "score": 0.69,
+        "tier": "platinum",
+        "total": 14,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/1659600"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1659600/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1681430,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Robocop Rogue City",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "RoboCop: Rogue City",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.75,
+        "tier": "gold",
+        "total": 143,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/1681430"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": true,
+        "url": "https://store.steampowered.com/app/1681430/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1715130,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Crysis Remastered",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Crysis Remastered",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.77,
+        "tier": "platinum",
+        "total": 83,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/1715130"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1715130/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1730680,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "KLONOA",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Klonoa Phantasy Reverie Series",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.8,
+        "tier": "platinum",
+        "total": 25,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/1730680"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1730680/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1778820,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "TEKKEN 8",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "TEKKEN 8",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.68,
+        "tier": "gold",
+        "total": 219,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/1778820"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1778820/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 1794960,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "SonicOrigins",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Sonic Origins",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.76,
+        "tier": "platinum",
+        "total": 54,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/1794960"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/1794960/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2012840,
+      "compat_policy": "check_sources_before_testing",
+      "has_curated_override": false,
+      "install_dir": "PortalRTX",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Portal with RTX",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.43,
+        "tier": "silver",
+        "total": 198,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/2012840"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unsupported",
+        "steamos_category": "unsupported",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2012840/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2022670,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Sonic Superstars",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Sonic Superstars",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "good",
+        "score": 0.62,
+        "tier": "gold",
+        "total": 19,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2022670"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2022670/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2050650,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "RESIDENT EVIL 4  BIOHAZARD RE4",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Resident Evil 4",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.73,
+        "tier": "gold",
+        "total": 344,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2050650"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2050650/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2055290,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "SonicColorsUltimate",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Sonic Colors: Ultimate",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "good",
+        "score": 0.64,
+        "tier": "gold",
+        "total": 24,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2055290"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2055290/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2292260,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "STAR WARS Dark Forces Remaster",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "STAR WARS\u2122: Dark Forces Remaster",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "moderate",
+        "score": 0.72,
+        "tier": "platinum",
+        "total": 10,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2292260"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2292260/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2358720,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "BlackMythWukong",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Black Myth: Wukong",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.82,
+        "tier": "platinum",
+        "total": 190,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2358720"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unsupported",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2358720/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2361770,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "SHINOBI_AOV",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "SHINOBI: Art of Vengeance",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "moderate",
+        "score": 0.77,
+        "tier": "platinum",
+        "total": 13,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2361770"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2361770/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2369900,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Castlevania Dominus Collection",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Castlevania Dominus Collection",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "moderate",
+        "score": 0.67,
+        "tier": "platinum",
+        "total": 13,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2369900"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2369900/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2417610,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "MGSDelta",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "METAL GEAR SOLID \u0394: SNAKE EATER",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.88,
+        "tier": "platinum",
+        "total": 70,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2417610"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unsupported",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2417610/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2442380,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "SNK VS CAPCOM SVC CHAOS",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "SNK VS. CAPCOM SVC CHAOS",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "low",
+        "score": 0.44,
+        "tier": "platinum",
+        "total": 3,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2442380"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2442380/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2478970,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Tomb Raider I-III Remastered",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Tomb Raider I-III Remastered Starring Lara Croft",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.87,
+        "tier": "platinum",
+        "total": 53,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2478970"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2478970/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2492040,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "CotW",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "FATAL FURY: City of the Wolves",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "good",
+        "score": 0.83,
+        "tier": "platinum",
+        "total": 19,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2492040"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2492040/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2513280,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "SONIC_X_SHADOW_GENERATIONS",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "SONIC X SHADOW GENERATIONS",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.88,
+        "tier": "platinum",
+        "total": 71,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2513280"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2513280/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2515020,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "FINAL FANTASY XVI",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "FINAL FANTASY XVI",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.56,
+        "tier": "gold",
+        "total": 165,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/2515020"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unsupported",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2515020/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2521380,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Soul Reaver I-II",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Legacy of Kain\u2122 Soul Reaver 1&2 Remastered",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "good",
+        "score": 0.84,
+        "tier": "platinum",
+        "total": 20,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2521380"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2521380/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2542120,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "NINJA GAIDEN Ragebound",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "NINJA GAIDEN: Ragebound",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "moderate",
+        "score": 0.7,
+        "tier": "platinum",
+        "total": 9,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2542120"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2542120/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2552430,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "KINGDOM HEARTS -HD 1.5+2.5 ReMIX-",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "KINGDOM HEARTS -HD 1.5+2.5 ReMIX-",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.75,
+        "tier": "gold",
+        "total": 101,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2552430"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2552430/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2627260,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "NINJAGAIDEN4",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Ninja Gaiden 4",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.48,
+        "tier": "gold",
+        "total": 32,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/2627260"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2627260/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2634950,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "TokyoXtremeRacer",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Tokyo Xtreme Racer",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.91,
+        "tier": "platinum",
+        "total": 77,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2634950"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2634950/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2668510,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Red Dead Redemption",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Red Dead Redemption",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.78,
+        "tier": "gold",
+        "total": 131,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2668510"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2668510/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2824660,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Old School Rally",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Old School Rally",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "good",
+        "score": 0.76,
+        "tier": "platinum",
+        "total": 20,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2824660"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2824660/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2897590,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "GRADIUS origin collection",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "GRADIUS origin collection",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "low",
+        "score": 0.51,
+        "tier": "platinum",
+        "total": 4,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2897590"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2897590/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 2988580,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Yakuza 0 Directors Cut",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Yakuza 0 Director's Cut",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "good",
+        "score": 0.41,
+        "tier": "gold",
+        "total": 17,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/2988580"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/2988580/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 3112260,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "VFREVO",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Virtua Fighter 5 R.E.V.O. World Stage",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.65,
+        "tier": "gold",
+        "total": 44,
+        "trendingTier": "silver",
+        "url": "https://www.protondb.com/app/3112260"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/3112260/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 3218630,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Super Woden Rally Edge",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Super Woden: Rally Edge",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "good",
+        "score": 0.82,
+        "tier": "platinum",
+        "total": 18,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/3218630"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/3218630/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 3240220,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "Grand Theft Auto V Enhanced",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Grand Theft Auto V Enhanced",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.61,
+        "tier": "gold",
+        "total": 347,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/3240220"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "unsupported",
+        "steamos_category": "unsupported",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/3240220/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 3255380,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "LUNAR Remastered Collection",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "LUNAR Remastered Collection",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "low",
+        "score": 0.61,
+        "tier": "platinum",
+        "total": 6,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/3255380"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/3255380/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 3280350,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "DEATH STRANDING 2 - ON THE BEACH",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "DEATH STRANDING 2: ON THE BEACH",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.73,
+        "tier": "gold",
+        "total": 347,
+        "trendingTier": "gold",
+        "url": "https://www.protondb.com/app/3280350"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/3280350/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 3489700,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "StellarBlade",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Stellar Blade\u2122",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.9,
+        "tier": "platinum",
+        "total": 133,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/3489700"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "verified",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/3489700/",
+        "windows": true
+      },
+      "type": "game"
+    },
+    {
+      "app_id": 3764200,
+      "compat_policy": "steam_default_proton",
+      "has_curated_override": false,
+      "install_dir": "RESIDENT EVIL requiem BIOHAZARD requiem",
+      "known_issues": [],
+      "known_launch_options": [],
+      "last_checked": "2026-05-03",
+      "local_notes": [],
+      "name": "Resident Evil Requiem",
+      "protondb": {
+        "bestReportedTier": "platinum",
+        "confidence": "strong",
+        "score": 0.84,
+        "tier": "platinum",
+        "total": 318,
+        "trendingTier": "platinum",
+        "url": "https://www.protondb.com/app/3764200"
+      },
+      "recommended_proton": null,
+      "steam_deck": {
+        "deck_category": "playable",
+        "steamos_category": "playable",
+        "url": "https://store.steampowered.com/steamdeck/mygames"
+      },
+      "store_platforms": {
+        "linux": false,
+        "mac": false,
+        "url": "https://store.steampowered.com/app/3764200/",
+        "windows": true
+      },
+      "type": "game"
+    }
+  ],
+  "generated_by": "scripts/build-steam-proton-db.py",
+  "generated_on": "2026-05-03",
+  "schema_version": 1,
+  "source_policy": [
+    "ProtonDB summary is used for broad compatibility only.",
+    "Valve Steam Deck compatibility is used as an official SteamOS signal.",
+    "Launch options and Proton version pins must come from curated overrides with source links."
+  ]
+}

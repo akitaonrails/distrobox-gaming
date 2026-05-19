@@ -79,6 +79,37 @@
     - item.wine_runner is defined
     - item.wine_runner.url is defined
 
+- name: Extract PC racing source archives inside box
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      archive="{{ item.source_archive | default('') }}"
+      source_dir="{{ item.source_dir }}"
+      marker="$source_dir/.dg-source-archive-$(basename "$archive")"
+
+      if [ -z "$archive" ]; then
+        exit 0
+      fi
+      if [ ! -f "$archive" ]; then
+        printf "%s\n" "ERROR: source archive missing: $archive" >&2
+        exit 1
+      fi
+      if [ -f "$marker" ]; then
+        exit 0
+      fi
+
+      mkdir -p "$source_dir"
+      7z x -y -o"$source_dir" "$archive" >/dev/null
+      printf "%s\n" "$archive" > "$marker"
+      printf "%s\n" "source-archive-extracted {{ item.name }}"
+    '
+  register: _pc_racing_source_archives
+  changed_when: "'source-archive-extracted' in _pc_racing_source_archives.stdout"
+  loop: "{{ _dg_pc_racing_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: item.source_archive is defined
+
 - name: Extract PC racing Wine runners
   ansible.builtin.unarchive:
     src: "{{ item.wine_runner.source }}"
@@ -89,6 +120,41 @@
   loop_control:
     label: "{{ item.name }} / {{ item.wine_runner.name | default('wine-runner') }}"
   when: item.wine_runner is defined
+
+- name: Ensure pinned Arch Wine sidecar runners are extracted
+  # Some games regress on the current Wine release and need to be pinned
+  # to a known-working version. We extract an Arch wine-X.Y-N pkg.tar.zst
+  # into wine_runner_root/wine-X.Y/, then a game's catalog entry points
+  # wine_binary/wine_path at that sidecar. System Wine stays free to
+  # update for every other game.
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      version="{{ item.version }}"
+      release="{{ item.release | default("1") }}"
+      runner_dir="{{ dg_pc_racing_wine_runner_root }}/wine-${version}"
+      if [ -x "$runner_dir/usr/bin/wine" ]; then
+        exit 0
+      fi
+      pkg="/var/cache/pacman/pkg/wine-${version}-${release}-x86_64.pkg.tar.zst"
+      if [ ! -f "$pkg" ]; then
+        pkg="{{ dg_pc_racing_cache_root }}/wine-${version}-${release}-x86_64.pkg.tar.zst"
+        if [ ! -f "$pkg" ]; then
+          mkdir -p "$(dirname "$pkg")"
+          curl -fL --retry 3 \
+            -o "$pkg" \
+            "https://archive.archlinux.org/packages/w/wine/wine-${version}-${release}-x86_64.pkg.tar.zst"
+        fi
+      fi
+      mkdir -p "$runner_dir"
+      tar -I zstd -xf "$pkg" -C "$runner_dir"
+      printf "%s\n" "extracted-pinned-wine ${version}-${release}"
+    '
+  register: _pc_racing_pinned_wine
+  changed_when: "'extracted-pinned-wine' in _pc_racing_pinned_wine.stdout"
+  loop: "{{ dg_pc_racing_pinned_wine_runners }}"
+  loop_control:
+    label: "wine-{{ item.version }}-{{ item.release | default('1') }}"
 
 - name: Validate PC racing source directories
   ansible.builtin.stat:
@@ -520,6 +586,11 @@
     label: "{{ item.name }}"
 
 - name: Render PC racing desktop entries
+  # Always render so every selected slug has a .desktop alongside the
+  # host wrapper at {{ dg_box_home }}/bin/<slug>. Override
+  # dg_pc_racing_export_desktop=false in host_vars to skip if you
+  # really don't want a desktop entry — installing one for a slug
+  # that isn't playable is harmless, the launcher just errors out.
   ansible.builtin.template:
     src: pc-racing.desktop.j2
     dest: "{{ dg_desktop_render_dir }}/pc-{{ item.slug }}.desktop"
@@ -527,17 +598,20 @@
   loop: "{{ _dg_pc_racing_games_selected }}"
   loop_control:
     label: "{{ item.name }}"
-  when: dg_pc_racing_export_desktop | bool
 
-- name: Report PC racing desktop entries are rendered only
-  ansible.builtin.debug:
-    msg: "PC racing desktop entries are rendered only. Run scripts/install-host-launchers.sh on the host to install them."
-  loop: "{{ _dg_pc_racing_games_selected }}"
-  loop_control:
-    label: "{{ item.name }}"
-  when:
-    - dg_pc_racing_export_desktop | bool
-    - not ansible_check_mode
+- name: Install rendered PC racing desktop files into host applications dir
+  # Same install-host-launchers.sh used by desktop_apps + azahar +
+  # hd-textures roles. Symlinks rendered .desktop files into
+  # dg_host_applications_dir, removes stale links, idempotent.
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _pc_racing_host_launchers
+  changed_when: >-
+    'installed ' in _pc_racing_host_launchers.stdout or
+    'removed stale ' in _pc_racing_host_launchers.stdout
 
 - name: Check PC racing launch executable state
   ansible.builtin.shell: >-
@@ -709,11 +783,14 @@
       fi
       {% endfor %}
 
-      if [ "{{ item.1.extract_flat | default(false) }}" = "True" ]; then
-        7z e -y -o"$game_dir" "$patch_src" >/dev/null
-      else
-        7z x -y -o"$game_dir" "$patch_src" >/dev/null
-      fi
+      {% if item.1.extract_files is defined and (item.1.extract_files | length > 0) -%}
+      # Specific paths inside the archive — 7z `e` flattens to game_dir.
+      7z e -y -o"$game_dir" "$patch_src" {{ item.1.extract_files | map('quote') | join(' ') }} >/dev/null
+      {% elif item.1.extract_flat | default(false) -%}
+      7z e -y -o"$game_dir" "$patch_src" >/dev/null
+      {% else -%}
+      7z x -y -o"$game_dir" "$patch_src" >/dev/null
+      {% endif -%}
 
       {% for move in item.1.post_extract_moves | default([]) %}
       if [ -f "$game_dir/{{ move.source }}" ]; then

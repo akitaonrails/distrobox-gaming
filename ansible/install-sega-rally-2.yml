@@ -4,8 +4,13 @@
   connection: local
   gather_facts: true
   vars:
+    # Two slugs share the same install + prefix: the widescreen launcher
+    # (1.9.0 default) and the classic 4:3 launcher. Both host launchers
+    # are rendered (~/bin/sega-rally-2 and ~/bin/sega-rally-2-4x3) so
+    # the user can pick a build per session without re-installing.
     dg_pc_racing_selected_slugs:
       - sega-rally-2
+      - sega-rally-2-4x3
     dg_pc_racing_run_installers: true
     dg_pc_racing_export_desktop: true
   roles:

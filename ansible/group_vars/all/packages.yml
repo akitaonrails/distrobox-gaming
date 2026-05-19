@@ -34,6 +34,7 @@ dg_pacman_packages:
   - gtk4
   - xdg-utils
   - desktop-file-utils
+  - gamescope
   - libarchive
   - fuse2
   - fuse3

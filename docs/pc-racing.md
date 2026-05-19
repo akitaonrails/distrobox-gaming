@@ -73,9 +73,9 @@ Current per-game controller handling:
   conflict with the Tweaks loader.
 - Sega Rally Revo uses `Map Controllers=1`, because this game needs Wine's
   SDL-backed XInput device to see the 8BitDo controller.
-- Sega Rally 2 stays on the restored DirectInput/Saturn-pad baseline with
-  `Map Controllers=0`. The Xidi trigger-keyboard experiment is explicitly
-  removed by Ansible because it caused repeated menu input.
+- Sega Rally 2 uses the 1.9.0 widescreen executable with `Map Controllers=0`.
+  Disable the repack's top-level `dinput.dll`/`dinput8.dll` shims on Linux;
+  they crash the widescreen launcher in `mginput` or early swapchain setup.
 
 If `evdev-joystick --listdevs` only shows the Moonlander keyboard and SDL sees
 zero joysticks, the 8BitDo is in a hidraw-only mode such as `2dc8:6013`. Switch
@@ -352,34 +352,44 @@ main-menu path before the offline DirectX runtime was installed.
 
 ## Sega Rally 2
 
-Sega Rally 2 uses the OldNewPixel 25th Anniversary Inno Setup package under
-`{{ dg_pc_racing_source_root }}/Sega-Rally-2-Championship_Win_EN-ES_25th-Anniversary-Edition-by-OldNewPixel`.
-The focused playbook installs it silently to `G:\sega-rally-2` and launches
-`SEGA RALLY 2.exe`.
+Sega Rally 2 uses the OldNewPixel 1.9.0 archive under
+`{{ dg_pc_racing_source_root }}/Sega Rally 2 ~ 25th Anniversary Edition 1.9.0.7z`.
+The role extracts that archive into the PC racing cache so the installer files
+are available. The installer must still be run interactively, because the
+1.9.0 Inno setup exposes the widescreen mode through a custom UI page rather
+than a reliable `/COMPONENTS` flag. Choose the 16:9 widescreen option and keep
+the install path at `G:\sega-rally-2`.
 
-The package ships its own compatibility stack: dgVoodoo files
-(`DDraw.dll`, `D3DImm.dll`), ReShade (`dxgi.dll`), Xidi (`dinput.dll`), and
-`_inmm.dll` music support. The launcher sets
-`WINEDLLOVERRIDES=ddraw,d3dimm,dxgi,dinput=n,b` so Wine prefers those bundled
-DLLs. The game still renders internally at 800x600; the wrapper runs gamescope
-with an 800x600 internal size and the configured 3840x2160 output using
-`-S fit`, which preserves the 4:3 aspect ratio with pillarboxing.
+After a widescreen install, launch `SEGA RALLY 2 WIDESCREEN.exe` directly. The
+launcher exposes the repack's 1067x600 16:9 dgVoodoo mode through gamescope and
+scales it to the configured output. The normal `SEGA RALLY 2.EXE` remains the
+4:3 fallback and should not be used for the desktop launcher.
 
-The focused playbook also applies the bundled "If XInput gamepad doesn't work"
-troubleshooting ZIP from the installed game directory. This adds `dinput8.dll`
-beside the game executable and backs up the original `dinput.dll` as
-`dinput.dll.original` before replacement. The launcher still forces only
-`dinput=n,b`; forcing native `dinput8` and enabling Wine's `Map Controllers=1`
-made the menu repeat an up input and later caused the controller to disappear
-from the game. Keep Sega Rally 2 on the restored DirectInput/Saturn-pad
-baseline: `Map Controllers=0`, `nDeviceType=07000000`, and `InputSettings=7`.
+The package ships its own compatibility stack: dgVoodoo files, ReShade, DSOAL,
+Dinputto8, Xidi, and ogg-winmm support. On Linux, do not use the top-level
+`dinput.dll` or `dinput8.dll` shims, including the nested `MUSASHI/dinput.dll`
+Dinputto8 wrapper, and do not use the ReShade `dxgi.dll` layer. The launcher
+sets `WINEDLLOVERRIDES=ddraw,d3dimm=n,b` and the role disables those
+conflicting DLLs. Keep `DisableInput=0` and `Map Controllers=0`; basic
+DirectInput needs Wine input enabled for keyboard/controller events, but Wine's
+SDL controller mapper caused repeated menu input in earlier tests.
+The shared DirectInput disabled-device list also hides the 8BitDo composite
+keyboard/mouse interfaces by name, because this controller exposes extra HID
+functions that can confuse old DirectInput games.
 
-Controller status is partially working. Steering, menu buttons, and the pad
-itself are detected on the restored baseline, but accelerator input remains
-unresolved in Wine. Do not re-enable the XInput/Xidi trigger-keyboard fallback
-without retesting for repeated menu input. The launcher keeps an absent managed
-block for that experiment so Ansible removes any stale `TriggerRT=Keyboard(X)`
-and `TriggerLT=Keyboard(C)` lines from `Xidi.ini`.
+The role applies the repack's bundled Linux dgVoodoo 2.79.3 fallback from
+`Troubleshooting/Linux/dgVoodoo2_79_3.zip`. It replaces `D3DImm.dll`,
+`MUSASHI/DDraw.dll`, and `dgVoodooCpl.exe`, preserving `.original` backups
+before the first replacement. This matches the repack's Linux note for avoiding
+newer dgVoodoo failures under Wine/Proton.
+
+The game profile is still forced to the Logitech wheel device type
+(`nDeviceType=0A000000`, `InputSettings=10`) for now, but controller behavior
+needs retesting after the widescreen launcher is stable. A stale `dinput.dll`
+from the earlier 1.1.0 overlay caused the widescreen launcher to crash at
+`mginput+0x3fee`; the 1.9.0 `dinput8.dll`/Dinputto8 path also crashed under
+Wine with the 8BitDo attached, matching the repack's Linux troubleshooting
+note.
 
 During manual testing, the game kept running and music continued even when the
 gamescope window lost focus or disappeared behind the desktop. Test from the

@@ -1,0 +1,81 @@
+{
+  "1018010": {
+    "compat_policy": "check_sources_before_testing",
+    "recommended_proton": "proton-stable",
+    "known_issues": [
+      "Local test in this distrobox reached shader compilation and then closed the window after brief launch.",
+      "A prior local run reached gameplay but ran too fast, which suggests a frame pacing or refresh-rate issue still needs a source-backed fix.",
+      "Valve marks gamescope frame limiter support as unavailable for this title, so do not use gamescope frame limiting as the first fix path."
+    ],
+    "local_notes": [
+      "Do not keep experimental Steam launch options on this app unless they are recorded here.",
+      "Historical ProtonDB reports mention PROTON_FORCE_LARGE_ADDRESS_AWARE=1, but those reports are old and should not be treated as the current default without retesting.",
+      "No per-game Steam LaunchOptions were found locally when checked on 2026-05-03."
+    ],
+    "source_notes": [
+      {
+        "note": "ProtonDB detailed community reports include historical Large Address Aware and save/crash notes.",
+        "url": "https://protondb.max-p.me/games/1018010/reports/"
+      },
+      {
+        "note": "SteamDB records Steam Deck Verified, SteamOS compatible, recommended runtime proton-stable, and gamescope frame limiter unsupported.",
+        "url": "https://steamdb.info/app/1018010/info/"
+      },
+      {
+        "note": "Official Steam Deck compatibility endpoint currently reports Deck Verified and SteamOS Playable for this app.",
+        "url": "https://store.steampowered.com/saleaction/ajaxgetdeckappcompatibilityreport?nAppID=1018010"
+      },
+      {
+        "note": "Konami/Steam news states the collection is fully playable on Steam Deck.",
+        "url": "https://store.steampowered.com/news/app/1018010/view/5255143518694019047"
+      }
+    ]
+  },
+  "550320": {
+    "compat_policy": "local_fix_recorded",
+    "known_launch_options": [
+      "gamescope -W 2560 -H 1440 -w 2560 -h 1440 -f -- %command% -screen-fullscreen 1 -screen-width 2560 -screen-height 1440"
+    ],
+    "recommended_proton": "native",
+    "known_issues": [
+      "Native launch directly under the distrobox/Hyprland/Xwayland dual-monitor layout logs Desktop is 0 x 0 @ 0 Hz and exits or leaves a hidden CPU-burning process.",
+      "The failure is local display detection, not Proton compatibility. OpenGL and Vulkan are visible, and gamescope gives Unity a valid 2560x1440 display."
+    ],
+    "local_notes": [
+      "SteamDB records the Linux launch option as artofrally.x64.",
+      "No per-game Steam LaunchOptions were found locally when checked on 2026-05-03.",
+      "A direct distrobox test with gamescope reached a visible art of rally window and loaded into the game after setting SteamAppId=550320 and SteamGameId=550320.",
+      "The direct test bypasses Steam's launch wrapper and Steam Input, so controller detection must be validated from a normal Steam launch with the gamescope launch option, not from the direct binary test.",
+      "If the game appears to do nothing, check for a stale artofrally.x64 process. Unity single-instance mode blocks relaunches while the hidden process remains."
+    ],
+    "source_notes": [
+      {
+        "note": "Steam store lists SteamOS/Linux support and Linux system requirements.",
+        "url": "https://store.steampowered.com/app/550320/art_of_rally/"
+      },
+      {
+        "note": "SteamDB records Windows, macOS, and Linux support; Steam Deck Verified; recommended runtime native; and Linux executable artofrally.x64.",
+        "url": "https://steamdb.info/app/550320/config/"
+      },
+      {
+        "note": "ProtonDB summary is Platinum, but native remains the preferred first path because Valve recommends native.",
+        "url": "https://www.protondb.com/app/550320"
+      }
+    ]
+  },
+  "71250": {
+    "compat_policy": "local_fix_recorded",
+    "known_issues": [
+      "Local test needed the distrobox Steam NVIDIA 32-bit library fix before 32-bit Proton/DXVK games launched reliably."
+    ],
+    "local_notes": [
+      "Local Sonic Adventure DX test worked after the Steam runtime library path fix and setting the game config to windowed mode."
+    ],
+    "source_notes": [
+      {
+        "note": "Use ProtonDB as the compatibility baseline, then keep the local windowed-mode note because it is specific to this setup.",
+        "url": "https://www.protondb.com/app/71250"
+      }
+    ]
+  }
+}

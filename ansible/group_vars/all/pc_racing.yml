@@ -7,6 +7,13 @@ dg_pc_racing_prefix_root: "{{ dg_box_home }}/wineprefixes/pc-racing"
 dg_pc_racing_media_root: "{{ dg_box_home }}/tools/pc-racing/media"
 dg_pc_racing_cache_root: "{{ dg_box_home }}/cache/pc-racing"
 dg_pc_racing_wine_runner_root: "{{ dg_box_home }}/tools/wine-runners"
+# Older Wine builds extracted as sidecar runners for games that regress
+# on the current release. Each entry resolves to an Arch pkg.tar.zst,
+# pulled from /var/cache/pacman/pkg if present, else from
+# archive.archlinux.org. A game opts in via wine_binary/wine_path.
+dg_pc_racing_pinned_wine_runners:
+  - version: "11.8"
+    release: "1"
 dg_pc_racing_directx_jun2010_redist: "{{ dg_pc_racing_source_root }}/Project 06 - Silver Release (Patch v1.45)/Sonic the Hedgehog (P-06)/Redist/directx_Jun2010_redist.exe"
 dg_pc_racing_xidi_version: v4.3.1
 dg_pc_racing_xidi_url: "https://github.com/samuelgr/Xidi/releases/download/{{ dg_pc_racing_xidi_version }}/Xidi-{{ dg_pc_racing_xidi_version }}.zip"
@@ -28,6 +35,10 @@ dg_pc_racing_dinput_disabled_joysticks:
   - ZSA Technology Labs Moonlander Mark I System Control
   - ZSA Technology Labs Moonlander Mark I Consumer Control
   - ZSA Technology Labs Moonlander Mark I Keyboard
+  - 8BitDo Ultimate 2 Wireless Controller
+  - 8BitDo 8BitDo Ultimate 2 Wireless Controller for PC
+  - 8BitDo 8BitDo Ultimate 2 Wireless Controller for PC Keyboard
+  - 8BitDo 8BitDo Ultimate 2 Wireless Controller for PC Mouse
 dg_pc_racing_winebus_registry:
   - name: DisableHidraw
     value: 1
@@ -77,6 +88,28 @@ dg_pc_racing_games:
     install_args: []
     launch_exe: "CMR2.exe"
     installed_path: "{{ dg_pc_racing_prefix_root }}/colin-mcrae-rally-2/drive_c/Program Files (x86)/Codemasters/Colin McRae Rally 2"
+    # Wine virtual desktop is REQUIRED for CMR2. Without it the game's
+    # D3D7 3D menu surface never composites to the window — intro
+    # video plays, audio works, screen freezes on the last video frame
+    # while the menu is silently rendered into a backbuffer wine can't
+    # display. The fullscreen mode-switch path the game uses to swap
+    # from video to 3D rendering interacts badly with the wlroots /
+    # Xwayland / NVIDIA combination on this host stack; wrapping the
+    # process in `wine explorer /desktop=...` keeps everything inside a
+    # plain X11 child window and bypasses the broken handoff.
+    # Referenced fix: https://www.patrickmin.com/linux/tip.php?name=cmr2
+    wine_desktop:
+      name: cmr2
+    # Defensive pin: this game broke during the May 2026 host upgrade
+    # window (wine 11.8→11.9, mesa 26.0.5→.6, NVIDIA 595.58→.71, libdrm
+    # 2.4.131→.133, vulkan-icd 1.4.341→.350). Once the wine_desktop
+    # workaround above is in place, system wine 11.9 may also work —
+    # this pin just keeps us on the wine version where it was last
+    # verified end-to-end (intro + menu + race). Drop these two lines
+    # to fall back to system Wine; the sidecar runner is still extracted
+    # by the install_pc_racing role from dg_pc_racing_pinned_wine_runners.
+    wine_binary: "{{ dg_pc_racing_wine_runner_root }}/wine-11.8/usr/bin/wine"
+    wine_path: "{{ dg_pc_racing_wine_runner_root }}/wine-11.8/usr/bin:{{ dg_pc_racing_wine_path }}"
     patches:
       - name: silentpatch
         source: "{{ dg_pc_racing_cache_root }}/silentpatch_cmr2.zip"
@@ -332,72 +365,6 @@ dg_pc_racing_games:
         ActiveVirtualControllerMask = 0x01
     notes: "PLAYABLE. Magipack Inno Setup repack installed silently to G:\\colin-mcrae-rally-04. CrossOver reports the DRM-free/budget edition running well with DXVK, while old PlayOnLinux notes warn that the original protected retail media does not run under Wine. The game registry is forced to 2880x2160 and gamescope exposes the same 4:3 nested display inside the configured 3840x2160 monitor to preserve aspect ratio without stretching horizontally. The 4:3 image is not perfectly centered on the monitor. Xidi is configured as a keyboard-emulation layer: d-pad and left stick emit arrows, RT accelerates, LT brakes, A/Start confirm, B/Back cancel, X maps to Space, and Y maps to C. If the 2004-era engine refuses to render at 2880x2160, fall back to 1920x1440 in both gamescope_game_* and the registry; gamescope will still scale the 4:3 nested display onto the 4K monitor."
 
-  - slug: colin-mcrae-rally-2005
-    name: "Colin McRae Rally 2005"
-    playable_status: not_playable
-    install_mode: innoextract
-    source_dir: "{{ dg_pc_racing_source_root }}/Colin-McRae-Rally-2005_Win_EN-FR-DE-IT-ES_DRM-Free"
-    installer: "setup_colin2005.exe"
-    innoextract_root: app
-    launch_exe: "cmr5.exe"
-    installed_path: "{{ dg_pc_racing_install_root }}/colin-mcrae-rally-2005"
-    prefix_path: "{{ dg_pc_racing_prefix_root }}/colin-mcrae-rally-2005-system"
-    winearch: win64
-    winebus_registry:
-      - name: Map Controllers
-        value: 0
-    registry_values:
-      - key: "HKEY_CURRENT_USER\\Software\\Wine"
-        name: Version
-        value: winxp
-      - key: "HKEY_CURRENT_USER\\Software\\Wine\\AppDefaults\\cmr5.exe"
-        name: Version
-        value: winxp
-      - key: "HKEY_CURRENT_USER\\Software\\Wine\\Direct3D"
-        name: VideoMemorySize
-        value: "64"
-      - key: "HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Windows"
-        name: CSDVersion
-        type: REG_DWORD
-        value: "768"
-      - key: "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion"
-        name: CSDVersion
-        value: "Service Pack 3"
-    registry_absent_keys:
-      - "HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\sfsync02"
-      - "HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\sfhlp02"
-      - "HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\sfdrv01"
-    prefix_absent_files:
-      - "drive_c/windows/system32/drivers/sfsync02.sys"
-      - "drive_c/windows/system32/drivers/sfhlp02.sys"
-      - "drive_c/windows/system32/drivers/sfdrv01.sys"
-    winetricks_components:
-      - d3dx9
-      - dxvk
-    disabled_files:
-      - dinput8.dll
-      - Xidi.ini
-      - protect.dll
-      - protect.exe
-      - protect.x64
-      - .dg-patch-win64-patch
-    gamescope_enabled: true
-    gamescope_game_width: "{{ dg_pc_racing_gamescope_width }}"
-    gamescope_game_height: "{{ dg_pc_racing_gamescope_height }}"
-    gamescope_output_width: "{{ dg_pc_racing_gamescope_width }}"
-    gamescope_output_height: "{{ dg_pc_racing_gamescope_height }}"
-    wine_desktop:
-      name: CMR2005
-      width: "{{ dg_pc_racing_gamescope_width }}"
-      height: "{{ dg_pc_racing_gamescope_height }}"
-    launch_args:
-      - NOVIDEOMEMORYCHECK
-      - NOVIDEO
-    env:
-      - name: WINEDLLOVERRIDES
-        value: "dinput8=b;d3d9,dxgi=n,b"
-    notes: "NOT PLAYABLE. GOG/Inno Setup DRM-free package extracted with innoextract because the Wine-hosted installer crashes before copying files. The launcher uses the original DRM-free executable with system Wine, DXVK D3D9, a fixed 3840x2160 Wine desktop, plus NOVIDEOMEMORYCHECK and NOVIDEO to avoid fragile legacy startup paths. Wine-GE 8.26 was tested and is not usable for this 32-bit title in the distrobox: pure win32 prefixes cannot load a window driver, and WoW64 prefixes lack a working 32-bit subsystem. The game reaches the executable in Windows XP mode but crashes consistently at cmr5+0x1da27 / 0x0041DA27 in a text/font measurement path. Xidi and stale Win64 patch/StarForce protection files are disabled."
-
   - slug: outrun-2006
     name: "OutRun 2006: Coast 2 Coast"
     install_mode: installer
@@ -541,17 +508,18 @@ dg_pc_racing_games:
   - slug: sega-rally-2
     name: "Sega Rally 2: 25th Anniversary Edition"
     install_mode: installer
-    source_dir: "{{ dg_pc_racing_source_root }}/Sega-Rally-2-Championship_Win_EN-ES_25th-Anniversary-Edition-by-OldNewPixel"
-    installer: "Sega Rally 2 25th Anniversary.exe"
+    source_archive: "{{ dg_pc_racing_source_root }}/Sega Rally 2 ~ 25th Anniversary Edition 1.9.0.7z"
+    source_dir: "{{ dg_pc_racing_cache_root }}/sega-rally-2-25th-anniversary-1.9.0"
+    installer: "Sega Rally 2 ~ 25th Anniversary Edition 1.9.0.exe"
+    # The 1.9.0 installer exposes the widescreen choice only through its custom
+    # UI. Run the focused installer interactively and select 16:9 widescreen.
     install_args:
-      - /VERYSILENT
-      - /SUPPRESSMSGBOXES
-      - /NORESTART
-      - /SP-
       - "/DIR=G:\\sega-rally-2"
-    launch_exe: "SEGA RALLY 2.exe"
+    launch_exe: "SEGA RALLY 2 WIDESCREEN.exe"
     installed_path: "{{ dg_pc_racing_install_root }}/sega-rally-2"
     winebus_registry:
+      - name: DisableInput
+        value: 0
       - name: Map Controllers
         value: 0
     # Force SR2 to recognise the controller as a Logitech WingMan
@@ -569,17 +537,71 @@ dg_pc_racing_games:
       - key: "HKEY_LOCAL_MACHINE\\Software\\Wow6432Node\\Sega\\SEGA RALLY 2\\InputSettings"
         name: "0"
         value: "10"
-    # SR2 hard-codes an 800x600 window at startup and dgVoodoo can't
-    # override that under Wayland: dgVoodoo's FullScreenMode would
-    # take a true X display, but under Xwayland (either gamescope's
-    # nested one or wine /desktop) it falls back to windowed mode.
-    # Tried wine /desktop=,3840x2160 once — the 800x600 game window
-    # just sat in the top-left of the 4K wine desktop. Reverted.
-    #
-    # Best achievable with the 2024 build: gamescope upscales the
-    # 800x600 frame to 4K (4:3 pillarboxed on 16:9 monitor). For
-    # true 4K rendering you need 1.9.0's AuToMaNiAk005 widescreen
-    # patch which crashes in Wine 11.8 (mginput+0x3fee).
+    # The 1.9.0 widescreen installer adds AuToMaNiAk005's 16:9 launcher and
+    # makes dgVoodoo enumerate 1067x600. Expose that exact nested mode so the
+    # widescreen image scales evenly to the configured 16:9 output.
+    gamescope_game_width: 1067
+    gamescope_game_height: 600
+    gamescope_output_width: "{{ dg_pc_racing_gamescope_width }}"
+    gamescope_output_height: "{{ dg_pc_racing_gamescope_height }}"
+    gamescope_scaler: fit
+    gamescope_filter: linear
+    env:
+      - name: WINEDLLOVERRIDES
+        value: "ddraw,d3dimm=n,b"
+    patches:
+      - name: dgvoodoo-2.79.3-linux
+        source: "{{ dg_pc_racing_cache_root }}/sega-rally-2-dgVoodoo2_79_3.zip"
+        cache_from_pattern: "Troubleshooting/Linux/dgVoodoo2_79_3.zip"
+        creates: ".dg-dgvoodoo-2.79.3"
+        backup_files:
+          - "D3DImm.dll"
+          - "MUSASHI/DDraw.dll"
+          - "dgVoodooCpl.exe"
+        post_extract_moves:
+          - source: "MS/x86/D3DImm.dll"
+            dest: "D3DImm.dll"
+          - source: "MS/x86/DDraw.dll"
+            dest: "MUSASHI/DDraw.dll"
+    disabled_files:
+      - "dinput.dll"
+      - "dinput8.dll"
+      - "MUSASHI/dinput.dll"
+      - "DDraw.dll"
+      - "dxgi.dll"
+      - "_inmmserv.exe"
+    notes: "OldNewPixel 1.9.0 must be installed interactively from the 7z-staged installer: choose 16:9 widescreen so SEGA RALLY 2 WIDESCREEN.exe is created. The launcher runs that widescreen executable at the repack's 1067x600 16:9 mode and lets gamescope scale it to the configured output. Disable the 1.9.0 Dinputto8/Xidi shims and ReShade dxgi.dll on Linux; the 8BitDo can crash the widescreen launcher in mginput/early swapchain setup. Use the bundled Linux dgVoodoo 2.79.3 fallback for DirectDraw. Keep Wine input enabled but Map Controllers off so basic DirectInput can see keyboard/controller input without Wine's SDL mapper."
+
+  # Sister entry for the classic 4:3 launcher. Shares the same install
+  # dir and Wine prefix with the widescreen slug above — the install
+  # already exists, the patches/disabled-files/registry edits are
+  # idempotent, and SEGA RALLY 2.EXE is the original 1999 launcher
+  # that the 1.9.0 installer keeps alongside the widescreen wrapper.
+  # Useful when the widescreen launcher misbehaves (exits silently
+  # after the title chime) so we can fall back to the 4:3 build
+  # without reinstalling.
+  - slug: sega-rally-2-4x3
+    name: "Sega Rally 2: 25th Anniversary Edition (4:3 classic)"
+    install_mode: installer
+    source_archive: "{{ dg_pc_racing_source_root }}/Sega Rally 2 ~ 25th Anniversary Edition 1.9.0.7z"
+    source_dir: "{{ dg_pc_racing_cache_root }}/sega-rally-2-25th-anniversary-1.9.0"
+    installer: "Sega Rally 2 ~ 25th Anniversary Edition 1.9.0.exe"
+    install_args:
+      - "/DIR=G:\\sega-rally-2"
+    launch_exe: "SEGA RALLY 2.EXE"
+    # Both slugs point at the same install + prefix — registry, DLL
+    # overrides, dgVoodoo, and disabled-files all already applied by
+    # the widescreen entry's playbook run. Re-running this slug is a
+    # no-op apart from rendering the host launcher.
+    installed_path: "{{ dg_pc_racing_install_root }}/sega-rally-2"
+    prefix_path: "{{ dg_pc_racing_prefix_root }}/sega-rally-2"
+    winebus_registry:
+      - name: DisableInput
+        value: 0
+      - name: Map Controllers
+        value: 0
+    # 4:3 800x600 → gamescope upscale to the configured 4K output,
+    # pillarboxed on a 16:9 monitor (preserves aspect ratio).
     gamescope_game_width: 800
     gamescope_game_height: 600
     gamescope_output_width: "{{ dg_pc_racing_gamescope_width }}"
@@ -588,55 +610,5 @@ dg_pc_racing_games:
     gamescope_filter: linear
     env:
       - name: WINEDLLOVERRIDES
-        value: "ddraw,d3dimm,dxgi,dinput=n,b"
-    # Replace Xidi default config with a CustomMapper that emits a
-    # virtual DI7 wheel: triggers become a single analog Y axis (gas
-    # pulls Y-, brake pushes Y+) — same pattern used for CMR2, which
-    # has the same DI7 split-axis throttle/brake binding behaviour.
-    # SR2 sees a continuous Y axis (range -1.0..+1.0, 0 = neutral)
-    # for the throttle/brake plane, plus X for steering.
-    xidi:
-      source: "{{ dg_pc_racing_xidi_archive }}"
-      url: "{{ dg_pc_racing_xidi_url }}"
-      archive_root: "Xidi-{{ dg_pc_racing_xidi_version }}"
-      architecture: Win32
-      wrappers:
-        - dinput.dll
-      config: |
-        [Mapper]
-        Type = SR2Wheel
-
-        [CustomMapper:SR2Wheel]
-        Template = StandardGamepad
-        StickLeftX = Axis(X)
-        StickLeftY = Null
-        TriggerRT = Axis(Y, -)
-        TriggerLT = Axis(Y, +)
-        DpadUp = Keyboard(UpArrow)
-        DpadDown = Keyboard(DownArrow)
-        DpadLeft = Keyboard(LeftArrow)
-        DpadRight = Keyboard(RightArrow)
-        ButtonStart = Keyboard(Enter)
-        ButtonBack = Keyboard(Esc)
-
-        [Properties]
-        UseBuiltInProperties = yes
-        DeadzonePercentStickLeft = 5
-        DeadzonePercentStickRight = 5
-        DeadzonePercentTriggerLT = 0
-        DeadzonePercentTriggerRT = 0
-        SaturationPercentStickLeft = 100
-        SaturationPercentStickRight = 100
-        SaturationPercentTriggerLT = 100
-        SaturationPercentTriggerRT = 100
-
-        [Log]
-        Enabled = no
-        Level = 1
-
-        [Import]
-        dinput.dll = C:\Windows\system32\dinput.dll
-
-        [Workarounds]
-        ActiveVirtualControllerMask = 0x01
-    notes: "OldNewPixel Inno Setup (2024 release) installed silently to G:\\sega-rally-2. Game renders at hardcoded 800x600 (1.9.0's AuToMaNiAk005 widescreen patch crashes in Wine, so we stay on 2024), gamescope upscales to the configured 4K output preserving 4:3 (pillarbox on 16:9 monitor). Controls: Xidi presents the XInput gamepad as a Logitech wheel (DI7 device type 0A) so SR2 reads triggers as analog Y axis (gas Y-, brake Y+)."
+        value: "ddraw,d3dimm=n,b"
+    notes: "Sibling of sega-rally-2 sharing the same install + Wine prefix. Launches SEGA RALLY 2.EXE (the original 1999 4:3 executable kept alongside AuToMaNiAk005's WIDESCREEN.exe in the 1.9.0 install). Use this when the widescreen launcher exits silently or you want classic aspect."

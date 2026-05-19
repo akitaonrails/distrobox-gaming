@@ -78,11 +78,12 @@ but also extracts the matching archived `lib32-nvidia-utils` package into:
 {{ dg_nvidia_lib32_extract_dir }}/usr/lib32
 ```
 
-Desktop launchers then pass this path to Steam through
-`PRESSURE_VESSEL_APP_LD_LIBRARY_PATH`, not `LD_LIBRARY_PATH`. This distinction
-matters: setting `LD_LIBRARY_PATH` before Steam Runtime starts can break
-pressure-vessel's own helper programs, while `PRESSURE_VESSEL_APP_LD_LIBRARY_PATH`
-is applied to the game process inside the runtime.
+Desktop launchers pass this path as `LD_LIBRARY_PATH` with only the extracted
+lib32 NVIDIA directory. Steam Runtime's `_v2-entry-point` converts that value
+into `PRESSURE_VESSEL_APP_LD_LIBRARY_PATH` for the Proton app container and then
+unsets `LD_LIBRARY_PATH`. Do not add broad host paths here: keep it limited to
+the extracted lib32 NVIDIA directory, otherwise pressure-vessel helper programs
+can pick up incompatible libraries.
 
 If a 32-bit Proton game starts, compiles shaders, and immediately exits, check:
 

@@ -32,7 +32,11 @@ if [ ! -f "$installer" ]; then
 fi
 cd "$source_dir"
 printf '%s\n' "Target install directory inside Wine: G:\\{{ item.slug }}"
-exec env -u PYTHONHOME -u PYTHONPATH "$wine_bin" "$installer" {{ item.install_args | default([]) | map('quote') | join(' ') }}
+env -u PYTHONHOME -u PYTHONPATH "$wine_bin" "$installer" {{ item.install_args | default([]) | map('quote') | join(' ') }}
+{% for post in item.post_install_exes | default([]) -%}
+printf '%s\n' "Post-install step: {{ post.name | default(post.source | basename) }}"
+env -u PYTHONHOME -u PYTHONPATH "$wine_bin" "{{ post.source }}" {{ post.args | default([]) | map('quote') | join(' ') }}
+{% endfor -%}
 {% elif item.install_mode == 'innoextract' -%}
 if [ ! -f "$installer" ]; then
   printf '%s\n' "ERROR: Inno installer missing: $installer" >&2
@@ -62,7 +66,11 @@ if [ ! -f "$media_dir/{{ item.media_setup | default('setup.exe') }}" ]; then
 fi
 printf '%s\n' "Target install directory inside Wine: G:\\{{ item.slug }}"
 cd "$media_dir"
-exec env -u PYTHONHOME -u PYTHONPATH "$wine_bin" "$media_dir/{{ item.media_setup | default('setup.exe') }}" {{ item.install_args | default([]) | map('quote') | join(' ') }}
+env -u PYTHONHOME -u PYTHONPATH "$wine_bin" "$media_dir/{{ item.media_setup | default('setup.exe') }}" {{ item.install_args | default([]) | map('quote') | join(' ') }}
+{% for post in item.post_install_exes | default([]) -%}
+printf '%s\n' "Post-install step: {{ post.name | default(post.source | basename) }}"
+env -u PYTHONHOME -u PYTHONPATH "$wine_bin" "{{ post.source }}" {{ post.args | default([]) | map('quote') | join(' ') }}
+{% endfor -%}
 {% elif item.install_mode == 'cue' -%}
 printf '%s\n' "{{ item.name }} uses BIN/CUE media and is prepared but not automatically installed." >&2
 printf '%s\n' "Media: $installer" >&2
