@@ -1,10 +1,16 @@
 # ES-DE custom system definitions.
 # Each entry generates a <system> block in es_systems.xml.
+#
+# Path strategy: every system uses an explicit absolute path under the
+# EmuDeck rom-tree split. ES-DE's %ROMPATH% / ROMDirectory setting is
+# unused — different systems live in different tier dirs (roms /
+# roms_mid / roms_heavy / roms_rare) and ES-DE only supports one
+# ROMDirectory, so a single %ROMPATH% can't cover them all.
 
 dg_esde_systems:
   - name: switch
     fullname: Nintendo Switch
-    path: "%ROMPATH%/switch"
+    path: "{{ dg_emudeck_root }}/roms_heavy/switch"
     extension: ".nca .NCA .nro .NRO .nso .NSO .nsp .NSP .xci .XCI"
     commands:
       - { label: "Eden (Standalone)", cmd: "env -u QT_STYLE_OVERRIDE eden %ROM%" }
@@ -14,7 +20,7 @@ dg_esde_systems:
 
   - name: psx
     fullname: Sony PlayStation
-    path: "%ROMPATH%/psx"
+    path: "{{ dg_emudeck_root }}/roms/psx"
     extension: ".bin .BIN .cbn .CBN .ccd .CCD .chd .CHD .cue .CUE .ecm .ECM .exe .EXE .img .IMG .iso .ISO .m3u .M3U .mdf .MDF .mds .MDS .minipsf .MINIPSF .pbp .PBP .psexe .PSEXE .psf .PSF .toc .TOC .z .Z .znx .ZNX .7z .7Z .zip .ZIP"
     commands:
       - { label: "DuckStation (Standalone)", cmd: "duckstation-qt -batch %ROM%" }
@@ -25,7 +31,7 @@ dg_esde_systems:
 
   - name: ps2
     fullname: Sony PlayStation 2
-    path: "%ROMPATH%/ps2"
+    path: "{{ dg_emudeck_root }}/roms_heavy/ps2"
     extension: ".bin .BIN .chd .CHD .ciso .CISO .cso .CSO .dump .DUMP .elf .ELF .gz .GZ .m3u .M3U .mdf .MDF .img .IMG .iso .ISO .isz .ISZ .ngr .NRG .zso .ZSO"
     commands:
       - { label: "PCSX2 (Standalone)", cmd: "pcsx2-qt -batch %ROM%" }
@@ -35,7 +41,7 @@ dg_esde_systems:
 
   - name: dreamcast
     fullname: Sega Dreamcast
-    path: "%ROMPATH%/dreamcast"
+    path: "{{ dg_emudeck_root }}/roms_mid/dreamcast"
     extension: ".cdi .CDI .chd .CHD .cue .CUE .dat .DAT .elf .ELF .gdi .GDI .iso .ISO .lst .LST .m3u .M3U .7z .7Z .zip .ZIP"
     commands:
       - { label: "Flycast (Standalone)", cmd: "{{ dg_box_home }}/bin/flycast-hires %ROM%" }
@@ -45,7 +51,7 @@ dg_esde_systems:
 
   - name: gc
     fullname: Nintendo GameCube
-    path: "%ROMPATH%/gc"
+    path: "{{ dg_emudeck_root }}/roms_heavy/gc"
     extension: ".ciso .CISO .dff .DFF .dol .DOL .elf .ELF .gcm .GCM .gcz .GCZ .iso .ISO .json .JSON .m3u .M3U .rvz .RVZ .tgc .TGC .wad .WAD .wbfs .WBFS .wia .WIA .7z .7Z .zip .ZIP"
     commands:
       - { label: "Dolphin (Standalone)", cmd: "dolphin-emu -b -e %ROM%" }
@@ -55,7 +61,7 @@ dg_esde_systems:
 
   - name: wii
     fullname: Nintendo Wii
-    path: "%ROMPATH%/wii"
+    path: "{{ dg_emudeck_root }}/roms_heavy/wii"
     extension: ".ciso .CISO .dff .DFF .dol .DOL .elf .ELF .gcm .GCM .gcz .GCZ .iso .ISO .json .JSON .m3u .M3U .rvz .RVZ .tgc .TGC .wad .WAD .wbfs .WBFS .wia .WIA .7z .7Z .zip .ZIP"
     commands:
       - { label: "Dolphin (Standalone)", cmd: "dolphin-emu -b -e %ROM%" }
@@ -65,7 +71,7 @@ dg_esde_systems:
 
   - name: psp
     fullname: Sony PlayStation Portable
-    path: "%ROMPATH%/psp"
+    path: "{{ dg_emudeck_root }}/roms_mid/psp"
     extension: ".chd .CHD .cso .CSO .elf .ELF .iso .ISO .pbp .PBP .prx .PRX .7z .7Z .zip .ZIP"
     commands:
       - { label: "PPSSPP (Standalone)", cmd: "PPSSPPQt %ROM%" }
@@ -75,7 +81,7 @@ dg_esde_systems:
 
   - name: ps4
     fullname: Sony PlayStation 4
-    path: "%ROMPATH%/ps4/{{ dg_shadps4_title_id }}"
+    path: "{{ dg_shadps4_game_dir }}"
     extension: ".bin .BIN"
     commands:
       - label: "shadPS4 Driveclub (Standalone)"
@@ -85,7 +91,7 @@ dg_esde_systems:
 
   - name: xbox
     fullname: Microsoft Xbox
-    path: "%ROMPATH%/xbox"
+    path: "{{ dg_emudeck_root }}/roms_heavy/xbox"
     extension: ".iso .ISO .xiso .XISO"
     commands:
       - { label: "xemu (Standalone)", cmd: "xemu -dvd_path %ROM%" }
@@ -124,7 +130,7 @@ dg_esde_systems:
 
   - name: model3
     fullname: Sega Model 3
-    path: "%ROMPATH%/model3"
+    path: "{{ dg_emudeck_root }}/roms_rare/model3"
     extension: ".zip .ZIP"
     commands:
       - { label: "Supermodel (Standalone)", cmd: "supermodel %ROM%" }
@@ -133,7 +139,7 @@ dg_esde_systems:
 
   - name: naomi
     fullname: Sega NAOMI
-    path: "%ROMPATH%/naomi"
+    path: "{{ dg_emudeck_root }}/roms_rare/naomi"
     extension: ".bin .BIN .cdi .CDI .chd .CHD .cue .CUE .dat .DAT .elf .ELF .gdi .GDI .iso .ISO .lst .LST .zip .ZIP .7z .7Z"
     commands:
       - { label: "Flycast (Standalone)", cmd: "{{ dg_box_home }}/bin/flycast-hires %ROM%" }
