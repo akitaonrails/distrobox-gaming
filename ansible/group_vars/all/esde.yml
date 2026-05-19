@@ -94,7 +94,11 @@ dg_esde_systems:
     path: "{{ dg_emudeck_root }}/roms_heavy/xbox"
     extension: ".iso .ISO .xiso .XISO"
     commands:
-      - { label: "xemu (Standalone)", cmd: "xemu -dvd_path %ROM%" }
+      # Wrapper at $HOME/bin/xemu re-asserts surface_scale in xemu.toml
+      # before delegating to /opt/xemu/bin/xemu (xemu doesn't persist
+      # the Int. Resolution Scale on shutdown on this stack).
+      - label: "xemu (Standalone)"
+        cmd: "{{ dg_box_home }}/bin/xemu -dvd_path %ROM%"
     platform: xbox
     theme: xbox
 

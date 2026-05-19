@@ -1,0 +1,44 @@
+#!/usr/bin/env sh
+set -eu
+
+# Wrapper around the real xemu binary. Lives at $HOME/bin/xemu (which
+# shadows /opt/xemu/bin/xemu via $PATH) so every invocation — direct
+# terminal call, ES-DE launch, .desktop click — goes through here first.
+#
+# Purpose: re-enforce settings in xemu.toml that the emulator doesn't
+# reliably persist across sessions (currently surface_scale). User
+# changes via the View menu still take effect for the active session;
+# on next launch this script resets the value back to the Ansible-
+# managed default.
+
+XEMU_TOML="$HOME/.local/share/xemu/xemu/xemu.toml"
+if [ -f "$XEMU_TOML" ]; then
+  if grep -qE '^surface_scale[[:space:]]*=' "$XEMU_TOML"; then
+    sed -i \
+      's|^surface_scale[[:space:]]*=.*|surface_scale = {{ dg_xemu_surface_scale }}|' \
+      "$XEMU_TOML"
+  else
+    # No surface_scale key yet — insert it under the [display.quality]
+    # section so xemu picks it up on first launch after a fresh setup.
+    awk -v val='{{ dg_xemu_surface_scale }}' '
+      /^\[display\.quality\]/ { print; print "surface_scale = " val; inserted=1; next }
+      { print }
+      END {
+        if (!inserted) {
+          print ""
+          print "[display.quality]"
+          print "surface_scale = " val
+        }
+      }' "$XEMU_TOML" > "$XEMU_TOML.tmp" && mv "$XEMU_TOML.tmp" "$XEMU_TOML"
+  fi
+fi
+
+# Hand off to the real xemu binary. Skip $PATH lookup so we never
+# recurse into our own wrapper.
+for cand in /opt/xemu/bin/xemu /usr/bin/xemu /usr/local/bin/xemu; do
+  if [ -x "$cand" ]; then
+    exec "$cand" "$@"
+  fi
+done
+printf '%s\n' "ERROR: xemu binary not found in /opt/xemu/bin, /usr/bin, or /usr/local/bin" >&2
+exit 1

@@ -24,6 +24,15 @@
     force: false
     mode: "0644"
 
+- name: Install xemu launch wrapper at $HOME/bin/xemu
+  # Shadows /opt/xemu/bin/xemu via $PATH ordering so every xemu
+  # invocation goes through the wrapper first. The wrapper re-asserts
+  # surface_scale before handing off to the real binary.
+  ansible.builtin.template:
+    src: xemu-launch.sh.j2
+    dest: "{{ dg_box_home }}/bin/xemu"
+    mode: "0755"
+
 - name: Enforce xemu BIOS / HDD / EEPROM paths in xemu.toml
   # xemu's UI lets the user browse to any file when picking the
   # bootrom/flashrom/hdd/eeprom; picking the wrong .bin from the

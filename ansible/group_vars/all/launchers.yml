@@ -47,7 +47,11 @@ dg_emulator_launchers:
 
   - name: gaming-xemu
     display_name: "xemu (on {{ dg_box_name }})"
-    exec: xemu
+    # Wrapper at $HOME/bin/xemu — re-asserts surface_scale in
+    # xemu.toml before handing off to /opt/xemu/bin/xemu, because
+    # xemu's View → Int. Resolution Scale doesn't persist across
+    # sessions on this stack. See seed_configs/templates/xemu-launch.sh.j2.
+    exec: "{{ dg_box_home }}/bin/xemu"
     icon: xemu
     comment: "Xbox emulator"
     wm_class: xemu
