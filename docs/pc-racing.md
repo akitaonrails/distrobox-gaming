@@ -10,7 +10,6 @@ Currently managed games:
 - Colin McRae Rally 2.0
 - Colin McRae Rally 3
 - Colin McRae Rally 04
-- Colin McRae Rally 2005
 - OutRun 2006: Coast 2 Coast
 - Sega Rally 2: 25th Anniversary Edition
 - Sega Rally Revo
@@ -65,9 +64,6 @@ Current per-game controller handling:
 - Colin McRae Rally 04 starts with the same CMR3-style Xidi baseline because it
   is a nearby legacy DirectInput title and should not retest the raw-trigger
   axis path first.
-- Colin McRae Rally 2005 is marked not playable. Keep it on the conservative
-  `Map Controllers=0` baseline until the launch crash is solved and controller
-  behavior can be tested.
 - OutRun 2006 uses the global `Map Controllers=0` baseline and native
   `OutRun2006Tweaks` `dinput8.dll`; Xidi is not enabled because it would
   conflict with the Tweaks loader.
@@ -117,18 +113,18 @@ cd ansible
 ansible-playbook install-colin-mcrae-rally-3.yml
 ```
 
+Focused install for Colin McRae Rally 2.0:
+
+```sh
+cd ansible
+ansible-playbook install-colin-mcrae-rally-2.yml
+```
+
 Focused install for Colin McRae Rally 04:
 
 ```sh
 cd ansible
 ansible-playbook install-colin-mcrae-rally-04.yml
-```
-
-Focused install for Colin McRae Rally 2005:
-
-```sh
-cd ansible
-ansible-playbook install-colin-mcrae-rally-2005.yml
 ```
 
 Focused install for Sega Rally Revo:
@@ -158,7 +154,7 @@ Run installer helpers manually from inside the box when a game still needs a
 GUI installer:
 
 ```sh
-distrobox-enter -n gaming -- "{{ dg_box_home }}/bin/install-colin-mcrae-rally-2005"
+distrobox-enter -n gaming -- "{{ dg_box_home }}/bin/install-colin-mcrae-rally-2"
 ```
 
 To let Ansible launch installer helpers for games whose launcher executable is
@@ -173,20 +169,78 @@ directory when an installer asks where to install. Games that need a fixed
 installed path, such as Colin McRae Rally 2.0, define `installed_path` and run
 from that prefix directory instead.
 
-Colin McRae Rally 2.0 uses SilentPatch from:
+## Colin McRae Rally 2.0
+
+CMR2 uses the pre-extracted US CD media at
+`{{ dg_pc_racing_source_root }}/Colin-McRae-Rally-2-0_Win_EN-FR-ES_US_CD_Extracted`.
+The focused playbook runs the original `Setup.exe` through Wine and lands the
+game in the prefix's `Program Files (x86)/Codemasters/Colin McRae Rally 2`
+under an `installed_path` override (so the binary is at a known location
+regardless of what the installer prompts for).
+
+**SilentPatch** is applied on top from
+`{{ dg_pc_racing_cache_root }}/silentpatch_cmr2.zip`, which adds widescreen
+rendering and several stability fixes. `SPCMR2.ini` is managed:
+`Region=AMERICA` matches the US media in `CountrySpecific/USA`, and the
+widescreen target is `2560x1440` (SilentPatch's ceiling for this build).
+`Window=0`/`Borderless=0` keeps the game in fullscreen mode inside the Wine
+virtual desktop; the in-game graphics picker still exposes 4K and the user can
+select it at runtime if they prefer.
+
+**Wine virtual desktop is mandatory.** Without `wine explorer /desktop=...`,
+CMR2's intro video plays but the 3D menu surface never composites to the
+window — symptom: audio works, screen freezes on the last video frame. This
+was tracked down through patrickmin.com/linux/tip.php?name=cmr2 after a long
+detour through unrelated host-stack regressions. The catalog wires this up via
+`wine_desktop: { name: cmr2, width: 2560, height: 1440 }`, which the launcher
+template renders as `wine explorer /desktop=cmr2,2560x1440 CMR2.exe`.
+
+**Gamescope is disabled.** Wrapping the wine virtual desktop in gamescope
+produces a solid green/red/pink screen at runtime (the same Xwayland →
+gamescope → Wayland presentation that breaks the inner composite). The
+launcher runs CMR2 directly under Hyprland and uses a Hyprland windowrule to
+fullscreen the wine X11 window:
 
 ```text
-{{ dg_pc_racing_cache_root }}/silentpatch_cmr2.zip
+host_pre_launch_commands:
+  - hyprctl keyword windowrulev2 'fullscreen, title:^cmr2$' >/dev/null
+host_post_launch_commands:
+  - hyprctl reload >/dev/null 2>&1
 ```
 
-The role configures `SPCMR2.ini` with `Region=AMERICA` for the US media found
-in `CountrySpecific/USA`, and uses fullscreen mode (`Window=0`,
-`Borderless=0`) because Wine's built-in DirectDraw path leaves the menu stuck
-behind the intro frame in windowed modes. dgVoodoo is not installed because it
-crashes in this Wine setup.
+This is rendered into a separate host-side wrapper at
+`{{ dg_box_home }}/bin/colin-mcrae-rally-2-host`, which the `.desktop` entry
+points at. The wrapper applies the windowrule, calls `distrobox-enter` into
+the box-side launcher, and on exit runs `hyprctl reload` to restore the
+original config (which removes the temporary windowrule keyword override).
+The user's monitor scale is honored — Hyprland handles the upscale from the
+1440p X11 surface to physical pixels.
 
-The launcher wraps CMR2 in `gamescope` at `3840x2160` so Wine does not choose
-the portrait monitor's `2160x3840` mode on the multi-monitor desktop.
+**Wine pin.** CMR2 broke during the May 2026 host upgrade window (wine 11.8 →
+11.9, mesa 26.0.5 → .6, NVIDIA 595.58 → .71, libdrm 2.4.131 → .133,
+vulkan-icd 1.4.341 → .350). Pinning to wine 11.8 keeps the game on the last
+end-to-end-verified upstream version. The sidecar runner is extracted by
+`install_pc_racing` from `/var/cache/pacman/pkg/wine-11.8-1-x86_64.pkg.tar.zst`
+or, if absent, from `archive.archlinux.org`. The pin lives in two lines of the
+catalog entry:
+
+```yaml
+wine_binary: "{{ dg_pc_racing_wine_runner_root }}/wine-11.8/usr/bin/wine"
+wine_path: "{{ dg_pc_racing_wine_runner_root }}/wine-11.8/usr/bin:{{ dg_pc_racing_wine_path }}"
+```
+
+Remove them to fall back to system Wine when the wine_desktop fix has had a
+chance to age into a newer upstream wine.
+
+**Xidi.** CMR2 is DirectInput 7-era (no DX8), so the wrapper is `dinput.dll`,
+not `dinput8.dll` like CMR3/CMR04. Without Xidi the in-game controller options
+page lists the 8BitDo but greys most rows out — modern controllers don't pass
+CMR2's partial DI7 device-type checks. Xidi's StandardGamepad-derived
+`CMR2Gamepad` mapper presents a virtual DI joystick and re-enables the binding
+rows. The mapper sends physical RT to virtual Y- (throttle) and physical LT to
+virtual Y+ (brake) because CMR2 only binds throttle/brake to the left-stick Y
+axis (no native trigger axes in DI7), and silences physical left-stick Y to
+avoid accidental throttle on steering.
 
 ## Colin McRae Rally 3
 
@@ -248,35 +302,6 @@ keyboard-emulation layer for CMR04 because selecting the Xidi joystick in-game
 allowed menu navigation but did not reliably bind in-race actions. The mapper
 sends d-pad and left stick to arrow keys, RT to accelerate, LT to brake,
 A/Start to confirm, B/Back to cancel, X to Space, and Y to C.
-
-## Colin McRae Rally 2005
-
-Colin McRae Rally 2005 uses the GOG/Inno Setup DRM-free package under
-`{{ dg_pc_racing_source_root }}/Colin-McRae-Rally-2005_Win_EN-FR-DE-IT-ES_DRM-Free`.
-The focused playbook extracts it with `innoextract` to
-`{{ dg_pc_racing_install_root }}/colin-mcrae-rally-2005` and launches
-`cmr5.exe`. This avoids the Wine-hosted installer path, which crashed before
-copying files during testing.
-
-The entry preconfigures gamescope at the shared 3840x2160 output before the
-first launch test so Wine does not select the portrait monitor. It uses system
-Wine, DXVK D3D9, an isolated Wine desktop, `NOVIDEOMEMORYCHECK`, and `NOVIDEO`.
-Wine-GE 8.26 was rejected for this game: pure win32 prefixes fail to create
-GUI windows in the distrobox, while its WoW64 prefix cannot run 32-bit
-executables because the 32-bit subsystem is incomplete.
-
-Current status: CMR2005 is not playable. It remains in Ansible only as a
-documented failed experiment so future work does not repeat the same tests.
-System Wine reaches the game executable in Windows XP mode and then crashes
-consistently at `cmr5+0x1da27` (`0x0041DA27`, null read from
-`ECX+0x10`). Disassembly places the crash in a text/font measurement path, and
-the expected `.pcf` font metadata and `.dds` font textures are present. Tested
-non-fixes include DXVK versus WineD3D, Windows XP/SP3 registry settings, 64 MB
-video memory, `NOVIDEOMEMORYCHECK`, `NOVIDEO`, `SAFEMODE`, restored
-`MathPIII.dll`, and `.dds` to `.xxx` aliases. Keep this entry experimental
-until a proven official patch or installer-registry fix changes the crash.
-
-The game list lives in `ansible/group_vars/all/pc_racing.yml`.
 
 ## OutRun 2006
 

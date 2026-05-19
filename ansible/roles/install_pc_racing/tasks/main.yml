@@ -576,6 +576,25 @@
   loop_control:
     label: "{{ item.name }}"
 
+- name: Deploy PC racing host-side launcher wrappers
+  # Games whose catalog entry defines host_pre_launch_commands or
+  # host_post_launch_commands get a second wrapper script that runs on
+  # the host (not inside the box), so things like hyprctl / monitor
+  # mode switches / compositor window rules can happen around the
+  # distrobox-enter call. The .desktop entry's Exec points at this
+  # wrapper when it exists; otherwise it goes through distrobox-enter
+  # directly.
+  ansible.builtin.template:
+    src: pc-racing-launcher-host.sh.j2
+    dest: "{{ dg_box_home }}/bin/{{ item.slug }}-host"
+    mode: "0755"
+  loop: "{{ _dg_pc_racing_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - (item.host_pre_launch_commands is defined) or
+      (item.host_post_launch_commands is defined)
+
 - name: Deploy PC racing installer helpers
   ansible.builtin.template:
     src: pc-racing-installer.sh.j2

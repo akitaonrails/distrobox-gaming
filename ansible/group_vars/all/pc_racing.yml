@@ -100,6 +100,24 @@ dg_pc_racing_games:
     # Referenced fix: https://www.patrickmin.com/linux/tip.php?name=cmr2
     wine_desktop:
       name: cmr2
+      # Matches SilentPatch's widescreen ceiling. The in-game picker
+      # then offers 4K too (wine virtual desktop renegotiates with the
+      # X11 root). Smaller wine_desktop also makes the Hyprland
+      # fullscreen window rule cleaner — the X11 surface is exactly the
+      # game's render target with no wasted area.
+      width: 2560
+      height: 1440
+    # Wrap the gameplay session with a host-side Hyprland windowrule so
+    # the wine virtual desktop (title "cmr2") opens fullscreen on the
+    # current monitor. Honors whatever scale the user has configured —
+    # Hyprland handles the upscale from the wine_desktop's 1440p X11
+    # surface to physical pixels. `hyprctl reload` after the game exits
+    # removes the temporary keyword override. NEVER add a monitor scale
+    # override here: the user's scale=1.5 on DP-1 is intentional.
+    host_pre_launch_commands:
+      - hyprctl keyword windowrulev2 'fullscreen, title:^cmr2$' >/dev/null
+    host_post_launch_commands:
+      - hyprctl reload >/dev/null 2>&1
     # Defensive pin: this game broke during the May 2026 host upgrade
     # window (wine 11.8→11.9, mesa 26.0.5→.6, NVIDIA 595.58→.71, libdrm
     # 2.4.131→.133, vulkan-icd 1.4.341→.350). Once the wine_desktop
@@ -125,11 +143,11 @@ dg_pc_racing_games:
       - file: "SPCMR2.ini"
         key: Borderless
         value: "0"
-      # SilentPatch widescreen — render at 1440p natively. Smaller
-      # framebuffer than 4K cuts wined3d's D3D7 → GL translation
-      # overhead (single-threaded, CPU-bound on a 2000-era engine
-      # path) so frame rate climbs back up. Gamescope upscales the
-      # 1440p output to the G8's native 4K.
+      # SilentPatch widescreen ceiling — wine_desktop matches. The
+      # in-game picker still exposes 4K (wine virtual desktop renegotiates
+      # against the X11 root), so the user can pick 4K from inside the
+      # game; SPCMR2 honors that at runtime regardless of the .ini values
+      # here, which only set the initial state.
       - file: "SPCMR2.ini"
         key: Width
         value: "2560"
@@ -142,13 +160,14 @@ dg_pc_racing_games:
     env:
       - name: WINEDLLOVERRIDES
         value: "dinput=n,b"
-    gamescope_enabled: true
-    gamescope_game_width: 2560
-    gamescope_game_height: 1440
-    gamescope_output_width: "{{ dg_pc_racing_gamescope_width }}"
-    gamescope_output_height: "{{ dg_pc_racing_gamescope_height }}"
-    gamescope_scaler: fit
-    gamescope_filter: nis
+    # gamescope on top of wine_desktop produces the same green/red/pink
+    # solid-color symptom that bypassing gamescope entirely cured: the
+    # Xwayland → gamescope → Wayland presentation path apparently can't
+    # composite wine's X11 virtual-desktop window correctly. Run the
+    # game directly under Hyprland — the 2560x1440 wine_desktop window
+    # is comfortable on a 4K display; revisit 4K upscale later if
+    # gamescope ever ships a fix or we find the right -w / -h shape.
+    gamescope_enabled: false
     xidi:
       # CMR2 is DirectInput 7-era (no DX8) so the wrapper is dinput.dll,
       # not dinput8.dll like CMR3/CMR04. Without Xidi the in-game

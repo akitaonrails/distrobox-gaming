@@ -35,6 +35,9 @@ cd "$install_dir"
 {% if item.launch_args is defined and (item.launch_args | length > 0) -%}
 set -- {% for launch_arg in item.launch_args %}"{{ launch_arg }}" {% endfor %}"$@"
 {% endif -%}
+{% for cmd in item.pre_launch_commands | default([]) -%}
+{{ cmd }}
+{% endfor -%}
 {% if item.gamescope_enabled | default(dg_pc_racing_gamescope_enabled) | bool -%}
 if command -v gamescope >/dev/null 2>&1; then
   cleanup() {
@@ -42,6 +45,9 @@ if command -v gamescope >/dev/null 2>&1; then
       kill "$gamescope_pid" 2>/dev/null || true
     fi
     env -u PYTHONHOME -u PYTHONPATH wineserver -k >/dev/null 2>&1 || true
+{% for cmd in item.post_launch_commands | default([]) -%}
+    {{ cmd }} 2>/dev/null || true
+{% endfor -%}
   }
 
   trap cleanup EXIT HUP INT TERM
@@ -81,7 +87,23 @@ if command -v gamescope >/dev/null 2>&1; then
   exit "$status"
 fi
 {% endif -%}
-exec env -u PYTHONHOME -u PYTHONPATH "$wine_bin" {% if item.wine_desktop is defined -%}
+cleanup() {
+  env -u PYTHONHOME -u PYTHONPATH wineserver -k >/dev/null 2>&1 || true
+{% for cmd in item.post_launch_commands | default([]) -%}
+  {{ cmd }} 2>/dev/null || true
+{% endfor -%}
+}
+trap cleanup EXIT HUP INT TERM
+
+env -u PYTHONHOME -u PYTHONPATH "$wine_bin" {% if item.wine_desktop is defined -%}
   explorer "/desktop={{ item.wine_desktop.name | default(item.slug) }},{{ item.wine_desktop.width | default(item.gamescope_game_width | default(dg_pc_racing_gamescope_width)) }}x{{ item.wine_desktop.height | default(item.gamescope_game_height | default(dg_pc_racing_gamescope_height)) }}" \
 {% endif -%}
-  "$exe" "$@"
+  "$exe" "$@" &
+wine_pid=$!
+set +e
+wait "$wine_pid"
+status=$?
+set -e
+trap - EXIT HUP INT TERM
+cleanup
+exit "$status"

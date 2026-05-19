@@ -1,6 +1,10 @@
 [Desktop Entry]
 Name={{ item.name }} (PC on {{ dg_box_name }})
+{% if item.host_pre_launch_commands is defined or item.host_post_launch_commands is defined -%}
+Exec={{ dg_box_home }}/bin/{{ item.slug }}-host
+{% else -%}
 Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_box_home }}/bin/{{ item.slug }}
+{% endif -%}
 Terminal=false
 Type=Application
 Icon=wine
