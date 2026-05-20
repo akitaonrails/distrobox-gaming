@@ -90,3 +90,10 @@ dg_emulator_launchers:
     icon: org.azahar_emu.azahar
     comment: "Nintendo 3DS emulator (Citra fork)"
     wm_class: org.azahar_emu.azahar
+
+  - name: gaming-retroarch
+    display_name: "RetroArch (on {{ dg_box_name }})"
+    exec: retroarch
+    icon: retroarch
+    comment: "Multi-system libretro emulator frontend"
+    wm_class: retroarch
