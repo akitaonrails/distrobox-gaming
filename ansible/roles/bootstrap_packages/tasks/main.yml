@@ -225,3 +225,34 @@
     {{ dg_aur_packages | join(' ') }}
   register: _yay
   changed_when: "'installing' in _yay.stdout"
+
+- name: Repair flycast-git's libjuice soname mismatch
+  # flycast-git was linked against libjuice.so.1.7.0, but libjuice
+  # bumped to 1.7.1 on 2026-05-05 with a soname change in a patch
+  # release. Flycast then errors out on launch with
+  # "libjuice.so.1.7.0: cannot open shared object file" — Dreamcast +
+  # NAOMI launches from ES-DE silently fail. Rebuilding flycast-git
+  # would be the proper fix but takes 10+ minutes; libjuice 1.7.0
+  # → 1.7.1 is an ABI-compatible patch release so a compat symlink
+  # works. When upstream flycast-git updates to link against 1.7.1
+  # this task becomes a no-op. Alternative: switch to libretro-flycast
+  # via the RetroArch core (already wired as the secondary command
+  # for both systems in dg_esde_systems).
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      target=$(ls /usr/lib/libjuice.so.1.7.* 2>/dev/null \
+        | grep -v "\.so\.1\.7\.0$" | sort | tail -1)
+      link=/usr/lib/libjuice.so.1.7.0
+      if [ -z "$target" ]; then
+        printf "%s\n" "no libjuice.so.1.7.x present, skipping repair"
+        exit 0
+      fi
+      if [ -L "$link" ] && [ "$(readlink "$link")" = "$target" ]; then
+        exit 0
+      fi
+      sudo ln -sf "$target" "$link"
+      printf "%s\n" "linked $link -> $target"
+    '
+  register: _flycast_juice_symlink
+  changed_when: "'linked ' in _flycast_juice_symlink.stdout"
