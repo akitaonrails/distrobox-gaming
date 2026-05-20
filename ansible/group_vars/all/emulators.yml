@@ -45,6 +45,16 @@ dg_pcsx2_settings:
   # Enable per-game settings + cheats to actually be read from our
   # gamesettings/<SERIAL>.ini files.
   - { section: "EmuCore", option: "EnablePerGameSettings", value: "true" }
+  # Auto save state on PCSX2 quit (creates a per-game "resume" state).
+  # Auto-LOAD only fires when launching the game from PCSX2-Qt's own
+  # built-in game library — right-click the game → Resume, or
+  # double-click a game with a resume state and accept the popup. CLI
+  # launches via `pcsx2-qt -batch %ROM%` (ES-DE path) can't access the
+  # resume state; that's an upstream limitation tracked in PCSX2
+  # issues #12067 (auto-load on start) and #12413 (CLI access to
+  # resume state). To use auto-resume: launch GT3 / etc. from
+  # PCSX2-Qt's own window, not from ES-DE.
+  - { section: "EmuCore", option: "SaveStateOnShutdown", value: "true" }
   # Input source: SDL gamepad backend covers Xbox One/Series, 8BitDo, etc.
   - { section: InputSources, option: SDL, value: "true" }
   - { section: InputSources, option: SDLControllerEnhancedMode, value: "true" }
