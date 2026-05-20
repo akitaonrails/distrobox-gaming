@@ -7,6 +7,12 @@ dg_pcsx2_settings:
   # Without Language set, PCSX2 tries to load pcsx2-qt_.qm and errors out.
   - { section: UI, option: Language, value: "en-US" }
   - { section: Hotkeys, option: ShutdownVM, value: "SDL-0/Start & SDL-0/Back" }
+  # Quick save / load on slot 1 via the controller. Select(=Back) + R1
+  # saves, Select + L1 loads. Slot 1 (not 0) so it stays out of PCSX2's
+  # "resume" state behavior — that resume state is auto-managed by
+  # SaveStateOnShutdown and lives in its own dedicated slot.
+  - { section: Hotkeys, option: SaveStateToSlot1, value: "SDL-0/Back & SDL-0/RightShoulder" }
+  - { section: Hotkeys, option: LoadStateFromSlot1, value: "SDL-0/Back & SDL-0/LeftShoulder" }
   # Renderer 14 = Vulkan; NVIDIA selection comes from VK_ICD_FILENAMES
   # injected by the desktop launcher, so the Adapter setting can stay Auto.
   - { section: "EmuCore/GS", option: "Renderer", value: "14" }
