@@ -201,12 +201,14 @@ dg_pcsx2_per_game_settings:
       - { section: "EmuCore/GS", option: "AccurateBlendingUnit", value: "Basic" }
       - { section: "EmuCore/GS", option: "MaxAnisotropy", value: "16" }
       - { section: "EmuCore/GS", option: "TextureFiltering", value: "2" }
-      # GT3 retexture pack (4.7 GB, 566 PNGs) is configured but NOT loaded
-      # by default: streaming the PNGs from NFS during car-showcase caused
-      # visible flicker during live testing. Flip to `true` here if you
-      # want the pack and accept the flicker, or look into mirroring the
-      # pack onto local disk first.
-      - { section: "EmuCore/GS", option: "LoadTextureReplacements", value: "false" }
+      # GT3 retexture pack lives on the NAS as 14,846 .dds files (~4.7 GB).
+      # PCSX2 loads them via the symlink at
+      # textures/SCUS-97102/replacements/retexture-1.0/. .dds is
+      # GPU-native (no CPU decompression in the hot path) so the past
+      # flicker concern from the PNG-based pack version no longer
+      # applies. Async stays off because PCSX2's async pipeline has
+      # been observed to drop frames on slower I/O paths.
+      - { section: "EmuCore/GS", option: "LoadTextureReplacements", value: "true" }
       - { section: "EmuCore/GS", option: "PrecacheTextureReplacements", value: "false" }
       - { section: "EmuCore/GS", option: "TextureReplacementsAsync", value: "false" }
       - { section: "EmuCore", option: "EnableWideScreenPatches", value: "true" }
