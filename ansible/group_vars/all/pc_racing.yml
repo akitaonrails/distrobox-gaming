@@ -312,6 +312,13 @@ dg_pc_racing_games:
         value: 1
     winetricks_components:
       - dxvk
+    # CMR04's engine only exposes 4:3 modes (max in-game is 2048x1536).
+    # 16:9 register-forcing was tested and rejected — the engine
+    # silently clamps to its mode list. Stay at 4:3 native; gamescope
+    # nests the 2880x2160 (4:3) canvas inside the 16:9 monitor with
+    # black bars on the sides. Proper Hor+ widescreen would require
+    # the PCGamingWiki widescreen-fix + dgvoodoo2, which has a poor
+    # track record on this stack (see CMR2 setup).
     gamescope_enabled: true
     gamescope_game_width: 2880
     gamescope_game_height: 2160
@@ -382,7 +389,7 @@ dg_pc_racing_games:
 
         [Workarounds]
         ActiveVirtualControllerMask = 0x01
-    notes: "PLAYABLE. Magipack Inno Setup repack installed silently to G:\\colin-mcrae-rally-04. CrossOver reports the DRM-free/budget edition running well with DXVK, while old PlayOnLinux notes warn that the original protected retail media does not run under Wine. The game registry is forced to 2880x2160 and gamescope exposes the same 4:3 nested display inside the configured 3840x2160 monitor to preserve aspect ratio without stretching horizontally. The 4:3 image is not perfectly centered on the monitor. Xidi is configured as a keyboard-emulation layer: d-pad and left stick emit arrows, RT accelerates, LT brakes, A/Start confirm, B/Back cancel, X maps to Space, and Y maps to C. If the 2004-era engine refuses to render at 2880x2160, fall back to 1920x1440 in both gamescope_game_* and the registry; gamescope will still scale the 4:3 nested display onto the 4K monitor."
+    notes: "PLAYABLE. Magipack Inno Setup repack installed silently to G:\\colin-mcrae-rally-04. CrossOver reports the DRM-free/budget edition running well with DXVK, while old PlayOnLinux notes warn that the original protected retail media does not run under Wine. CMR04's engine only exposes 4:3 modes (max in-game picker = 2048x1536); 16:9 register-forcing was tested and confirmed not viable — the engine silently clamps to its mode list. The game registry is forced to 2880x2160 and gamescope nests the same 4:3 canvas inside the 3840x2160 monitor, giving black bars on the left and right of the OLED. Proper Hor+ widescreen would need the PCGamingWiki widescreen-fix + dgvoodoo2 (not currently installed for this game; has a poor track record on this Wayland/NVIDIA stack — see CMR2 setup). Xidi is configured as a keyboard-emulation layer: d-pad and left stick emit arrows, RT accelerates, LT brakes, A/Start confirm, B/Back cancel, X maps to Space, and Y maps to C."
 
   - slug: outrun-2006
     name: "OutRun 2006: Coast 2 Coast"
