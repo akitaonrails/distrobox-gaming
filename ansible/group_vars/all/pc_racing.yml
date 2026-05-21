@@ -236,6 +236,17 @@ dg_pc_racing_games:
     winebus_registry:
       - name: Map Controllers
         value: 1
+    winetricks_components:
+      # DXVK replaces wine's builtin d3d9/d3d10/d3d11/dxgi with
+      # Vulkan-backed implementations. The Magipack repack's notes
+      # claim dgVoodoo2 is bundled, but no native d3d9.dll lands in
+      # the install dir — so CMR3 falls through to wine's builtin
+      # d3d9, which uses wined3d's OpenGL backend. On a modern NVIDIA
+      # GPU at 4K that path collapses to ~10 FPS even though the game
+      # itself is single-threaded 2003-era and trivial to render.
+      # DXVK + WINEDLLOVERRIDES d3d9=n,b sends D3D9 calls through
+      # Vulkan instead, restoring sane framerate.
+      - dxvk
     gamescope_enabled: true
     gamescope_game_width: "{{ dg_pc_racing_gamescope_width }}"
     gamescope_game_height: "{{ dg_pc_racing_gamescope_height }}"
