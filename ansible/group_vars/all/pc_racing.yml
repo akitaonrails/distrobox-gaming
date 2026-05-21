@@ -391,6 +391,89 @@ dg_pc_racing_games:
         ActiveVirtualControllerMask = 0x01
     notes: "PLAYABLE. Magipack Inno Setup repack installed silently to G:\\colin-mcrae-rally-04. CrossOver reports the DRM-free/budget edition running well with DXVK, while old PlayOnLinux notes warn that the original protected retail media does not run under Wine. CMR04's engine only exposes 4:3 modes (max in-game picker = 2048x1536); 16:9 register-forcing was tested and confirmed not viable — the engine silently clamps to its mode list. The game registry is forced to 2880x2160 and gamescope nests the same 4:3 canvas inside the 3840x2160 monitor, giving black bars on the left and right of the OLED. Proper Hor+ widescreen would need the PCGamingWiki widescreen-fix + dgvoodoo2 (not currently installed for this game; has a poor track record on this Wayland/NVIDIA stack — see CMR2 setup). Xidi is configured as a keyboard-emulation layer: d-pad and left stick emit arrows, RT accelerates, LT brakes, A/Start confirm, B/Back cancel, X maps to Space, and Y maps to C."
 
+  - slug: colin-mcrae-rally-2005
+    name: "Colin McRae Rally 2005"
+    playable_status: not_playable
+    install_mode: innoextract
+    source_dir: "{{ dg_pc_racing_source_root }}/Colin-McRae-Rally-2005_Win_EN-FR-DE-IT-ES_DRM-Free"
+    installer: "setup_colin2005.exe"
+    innoextract_root: app
+    launch_exe: "cmr5.exe"
+    installed_path: "{{ dg_pc_racing_install_root }}/colin-mcrae-rally-2005"
+    prefix_path: "{{ dg_pc_racing_prefix_root }}/colin-mcrae-rally-2005-system"
+    winearch: win64
+    winebus_registry:
+      - name: Map Controllers
+        value: 0
+    registry_values:
+      # Windows XP SP3 compat — both the wine-wide marker and the
+      # cmr5.exe app-specific override. Stock CMR2005 reports "won't run
+      # on Vista+" without this.
+      - key: "HKEY_CURRENT_USER\\Software\\Wine"
+        name: Version
+        value: winxp
+      - key: "HKEY_CURRENT_USER\\Software\\Wine\\AppDefaults\\cmr5.exe"
+        name: Version
+        value: winxp
+      - key: "HKEY_CURRENT_USER\\Software\\Wine\\Direct3D"
+        name: VideoMemorySize
+        value: "64"
+      - key: "HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Windows"
+        name: CSDVersion
+        type: REG_DWORD
+        value: "768"
+      - key: "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion"
+        name: CSDVersion
+        value: "Service Pack 3"
+    registry_absent_keys:
+      # StarForce DRM service entries — the GOG release doesn't have
+      # StarForce but the installer may still register them.
+      - "HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\sfsync02"
+      - "HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\sfhlp02"
+      - "HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\sfdrv01"
+    prefix_absent_files:
+      - "drive_c/windows/system32/drivers/sfsync02.sys"
+      - "drive_c/windows/system32/drivers/sfhlp02.sys"
+      - "drive_c/windows/system32/drivers/sfdrv01.sys"
+    # NEW since the previous attempt:
+    # - corefonts: prior attempt crashed in cmr5+0x1da27 reading from
+    #   ECX+0x10 (TEXTMETRIC/font path). Most likely cause: wine's stock
+    #   font setup hands back NULL where Codemasters' code expects a
+    #   measured Windows core font (Arial/Times/Verdana). corefonts
+    #   installs the actual MS Web Fonts, which is a common fix for
+    #   2000-era Codemasters titles.
+    # - vcrun6: VC++ 6.0 runtime, the era CMR2005 was built against.
+    #   wine's builtin msvcrt may have ABI gaps the original retail
+    #   binary expects from msvcp60/mfc42.
+    winetricks_components:
+      - corefonts
+      - vcrun6
+      - d3dx9
+      - dxvk
+    disabled_files:
+      - dinput8.dll
+      - Xidi.ini
+    gamescope_enabled: true
+    gamescope_game_width: "{{ dg_pc_racing_gamescope_width }}"
+    gamescope_game_height: "{{ dg_pc_racing_gamescope_height }}"
+    gamescope_output_width: "{{ dg_pc_racing_gamescope_width }}"
+    gamescope_output_height: "{{ dg_pc_racing_gamescope_height }}"
+    wine_desktop:
+      name: CMR2005
+      width: "{{ dg_pc_racing_gamescope_width }}"
+      height: "{{ dg_pc_racing_gamescope_height }}"
+    launch_args:
+      # NEW: WIDESCREENDISPLAY is an official cmr5.exe CLI argument
+      # documented in the Steam community guide. Enables 16:9 with
+      # proper FOV + widescreen HUD (the game is otherwise 4:3 only).
+      - WIDESCREENDISPLAY
+      - NOVIDEOMEMORYCHECK
+      - NOVIDEO
+    env:
+      - name: WINEDLLOVERRIDES
+        value: "dinput8=b;d3d9,dxgi=n,b"
+    notes: "NOT PLAYABLE — confirmed dead-end on this Wine + 64-bit Linux stack. Three independent paths tested and all failed: (1) GOG DRM-free cmr5.exe crashes at cmr5+0x1da27 (0x0041DA27, NULL read from ECX+0x10) immediately on launch, before any window appears — corefonts, vcrun6, winxp/SP3 compat mode, DXVK, wine virtual desktop, NOVIDEOMEMORYCHECK + NOVIDEO + WIDESCREENDISPLAY launch args were all tried and the crash signature is unchanged; the offset is in cmr5.exe's early init reading from a NULL `this` pointer that Wine never populates. (2) Codemasters' 64-bit Windows patch from PCGW (https://community.pcgamingwiki.com/files/file/2288-colin-mcrae-rally-2005-64bits-patch/) ships a different cmr5.exe but it imports PROTECT.DLL (verified via wine's `err:module:import_dll Library PROTECT.DLL not found` after attempting to load without it), and PROTECT.DLL is the StarForce DRM layer which installs ring-0 kernel drivers Wine cannot load. With PROTECT.DLL present, a 'reboot to complete installation' dialog appears and the game exits whether you click Yes or No. (3) Mixing GOG cmr5.exe with patched PROTECT.DLL produces the same dialog. The catalog entry stays as a documented failure so future-me doesn't repeat the same dead-ends. To revive: a clean PROTECT.DLL stub (signature-compatible but does nothing) would in theory satisfy the import and let the patched cmr5.exe run, but such a stub is not officially sourced. Until upstream Wine / Proton gains support for the specific kernel APIs StarForce uses (vanishingly unlikely — StarForce is end-of-life and notorious for the breakage it caused on real hardware), CMR2005 will not run."
+
   - slug: outrun-2006
     name: "OutRun 2006: Coast 2 Coast"
     install_mode: installer
