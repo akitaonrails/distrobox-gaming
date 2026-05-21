@@ -323,42 +323,43 @@ dg_pc_racing_games:
         value: 1
     winetricks_components:
       - dxvk
-    # Per PCGamingWiki: "the PC version does not support widescreen
-    # natively, but contains graphics for it" — the in-game settings
-    # dropdown only enumerates 4:3 modes, but the engine reads
-    # Width/Height from the registry at startup and renders at that
-    # resolution including 16:9. The earlier "max 2048x1536"
-    # diagnosis from the dropdown was a red herring.
-    #
-    # 2560x1440 = 16:9, matches Hyprland's DP-1 logical-pixel space
-    # (3840 / scale=1.5 = 2560). wine_desktop at that size + a
-    # Hyprland windowrule fullscreen produces a 1:1-no-scaling X11
-    # window that Hyprland upscales to fill the 4K monitor — same
-    # pattern as CMR2. No gamescope, no Xwayland-scale mismatch.
-    #
-    # HUD elements are positioned for 4:3 in the stock engine and
-    # don't auto-reflow at widescreen. PCGamingWiki's CMR04 Widescreen
-    # Fix mod has three progressive HUD-correction levels but requires
-    # dgvoodoo2 (not currently wired due to its track record on this
-    # stack — see CMR2 setup).
-    wine_desktop:
-      name: cmr4
-      width: 2560
-      height: 1440
-    host_pre_launch_commands:
-      - hyprctl keyword windowrulev2 'fullscreen, title:^cmr4$' >/dev/null
-    host_post_launch_commands:
-      - hyprctl reload >/dev/null 2>&1
-    gamescope_enabled: false
+    # CMR04 is truly widescreen-hostile in stock form. Testing on
+    # 2026-05-21:
+    #   * Registry Width=2560 Height=1440 (16:9): engine creates the
+    #     backbuffer at that size (rendering really does happen at
+    #     1440p — visibly higher detail than the 640x480 the in-game
+    #     dropdown shows as max), BUT the engine renders a 4:3 scene
+    #     internally and stretches it horizontally to fill the
+    #     widescreen backbuffer. Cars look fat, circles become ovals.
+    #   * In-game settings dropdown enumerates only a 4:3 mode list
+    #     (640x480 / 800x600 / 1024x768 when the wine_desktop is 1440p
+    #     tall; up to 2048x1536 when the desktop is taller). The
+    #     engine's mode-list is hardcoded, not display-discovery.
+    #   * `strings cmr4.exe` shows NOSOUND / NOVIDEO / SAFEMODE but no
+    #     widescreen CLI flag — unlike CMR2005's WIDESCREENDISPLAY.
+    # Conclusion: native widescreen is impossible in stock form. Stay
+    # at 4:3 native + gamescope letterbox on the 4K monitor — the
+    # cleanest playable result. Proper Hor+ widescreen needs
+    # PCGamingWiki's CMR04 Widescreen Fix by AuToMaNiAk005 (3 levels
+    # of progressive HUD-position correction) + dgvoodoo2, which has
+    # a poor track record on this Wayland/NVIDIA stack — see CMR2
+    # setup notes for why dgvoodoo2 is not currently wired in.
+    gamescope_enabled: true
+    gamescope_game_width: 2880
+    gamescope_game_height: 2160
+    gamescope_output_width: "{{ dg_pc_racing_gamescope_width }}"
+    gamescope_output_height: "{{ dg_pc_racing_gamescope_height }}"
+    gamescope_scaler: fit
+    gamescope_filter: nis
     registry_values:
       - key: "HKEY_LOCAL_MACHINE\\Software\\Wow6432Node\\Codemasters\\Colin McRae Rally 04"
         name: Width
         type: REG_DWORD
-        value: "2560"
+        value: "2880"
       - key: "HKEY_LOCAL_MACHINE\\Software\\Wow6432Node\\Codemasters\\Colin McRae Rally 04"
         name: Height
         type: REG_DWORD
-        value: "1440"
+        value: "2160"
     env:
       - name: WINEDLLOVERRIDES
         value: "dinput8,dsound,d3d8,d3d9=n,b"
@@ -413,7 +414,7 @@ dg_pc_racing_games:
 
         [Workarounds]
         ActiveVirtualControllerMask = 0x01
-    notes: "PLAYABLE. Magipack Inno Setup repack installed silently to G:\\colin-mcrae-rally-04. CrossOver reports the DRM-free/budget edition running well with DXVK, while old PlayOnLinux notes warn that the original protected retail media does not run under Wine. Per PCGamingWiki the PC release lacks a widescreen toggle in the in-game settings menu (which only enumerates 4:3 modes), but the engine itself does render at whatever Width/Height the registry holds — so 2560x1440 (16:9) is forced via registry. The earlier 4:3-only catalog was a misdiagnosis from an apparent 'too large' result that was actually a gamescope/Hyprland scale collision (same class of bug as CMR2). wine_desktop at 2560x1440 + a Hyprland windowrule for fullscreen sidesteps gamescope and produces a clean 16:9 render upscaled to the 4K monitor at the user's existing scale=1.5. The stock engine doesn't reflow HUD elements for widescreen — they stay in their 4:3 positions; PCGamingWiki's CMR04 Widescreen Fix mod (by AuToMaNiAk005) has three progressive HUD-correction levels but requires dgvoodoo2, which has a poor track record on this Wayland/NVIDIA stack (see CMR2 notes). `strings cmr4.exe` shows NOSOUND / NOVIDEO / SAFEMODE as CLI tokens but no widescreen-equivalent — unlike CMR2005's WIDESCREENDISPLAY. Xidi is configured as a keyboard-emulation layer: d-pad and left stick emit arrows, RT accelerates, LT brakes, A/Start confirm, B/Back cancel, X maps to Space, and Y maps to C."
+    notes: "PLAYABLE. Magipack Inno Setup repack installed silently to G:\\colin-mcrae-rally-04. CrossOver reports the DRM-free/budget edition running well with DXVK, while old PlayOnLinux notes warn that the original protected retail media does not run under Wine. Verified 2026-05-21: stock CMR04 is widescreen-hostile — the engine reads Width/Height from the registry and creates the backbuffer at that size (the rendering is genuinely higher-resolution, not just the dropdown 640x480), but it then renders a 4:3 scene internally and stretches it horizontally to fill a widescreen backbuffer (cars look fat, circles become ovals). Native 16:9 is not achievable without modifying the engine. Configuration stays at 4:3 native render + gamescope letterboxing the 2880x2160 (4:3) canvas inside the 3840x2160 monitor, producing black bars on left and right of the OLED but a clean undistorted picture. The in-game dropdown's hardcoded 4:3 mode list and the lack of any widescreen CLI flag in `strings cmr4.exe` (unlike CMR2005's WIDESCREENDISPLAY) both reflect this engine limitation. Proper Hor+ widescreen would need PCGamingWiki's CMR04 Widescreen Fix by AuToMaNiAk005 + dgvoodoo2; dgvoodoo2 has a poor track record on this Wayland/NVIDIA stack (see CMR2 notes for why it is not wired in). Xidi is configured as a keyboard-emulation layer: d-pad and left stick emit arrows, RT accelerates, LT brakes, A/Start confirm, B/Back cancel, X maps to Space, and Y maps to C."
 
   - slug: colin-mcrae-rally-2005
     name: "Colin McRae Rally 2005"
