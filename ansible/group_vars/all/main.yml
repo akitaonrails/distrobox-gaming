@@ -50,9 +50,11 @@ dg_xemu_data_dir: "{{ dg_box_home }}/.local/share/xemu"
 # A pre-launch wrapper re-enforces this in xemu.toml before every run
 # because xemu doesn't reliably persist user changes to surface_scale
 # on shutdown — the toml ends up back at 1 even after picking 3x via
-# View → Int. Resolution Scale. 3 = 1440p internal from Xbox 480p
-# native, sharp on 4K without melting the GPU. Range 1-16.
-dg_xemu_surface_scale: 3
+# View → Int. Resolution Scale. 4 = 1920p internal from Xbox 480p
+# native (480 × 4 = 1920), sharper than 3x on a 4K panel with
+# acceptable load on the RTX 5090. Range 1-16; bump down to 2 or 3
+# if you see frametime drops, up to 6 for screenshot-grade sharpness.
+dg_xemu_surface_scale: 4
 # xemu writes its toml + eeprom + shaders to <data_dir>/xemu/. The
 # <config_dir>/xemu.toml is ignored by upstream xemu — only the data-dir
 # copy is read at startup and rewritten on shutdown.
