@@ -290,7 +290,7 @@ dg_esde_systems:
     extension: ".zip .ZIP .7z .7Z"
     commands:
       - { label: "FB Neo (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/fbneo_libretro.so %ROM%" }
-    platform: cps1
+    platform: arcade
     theme: cps
 
   - name: cps2
@@ -299,7 +299,7 @@ dg_esde_systems:
     extension: ".zip .ZIP .7z .7Z"
     commands:
       - { label: "FB Neo (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/fbneo_libretro.so %ROM%" }
-    platform: cps2
+    platform: arcade
     theme: cps2
 
   - name: mame
