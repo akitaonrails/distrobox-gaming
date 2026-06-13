@@ -150,3 +150,163 @@ dg_esde_systems:
       - { label: "Flycast (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/flycast_libretro.so %ROM%" }
     platform: arcade
     theme: naomi
+
+  # ---------------------------------------------------------------------
+  # RetroArch-cored systems. Each entry uses a single libretro core
+  # installed in the gaming box's ~/.config/retroarch/cores/. To add
+  # alternative cores per-system, add more {label, cmd} entries to the
+  # `commands` list — ES-DE shows them as a dropdown at launch.
+  # ---------------------------------------------------------------------
+
+  - name: nes
+    fullname: Nintendo Entertainment System
+    path: "{{ dg_emudeck_root }}/roms/nes"
+    extension: ".nes .NES .fds .FDS .unif .UNIF .unf .UNF .zip .ZIP .7z .7Z"
+    commands:
+      - { label: "Mesen (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/mesen_libretro.so %ROM%" }
+    platform: nes
+    theme: nes
+
+  - name: snes
+    fullname: Super Nintendo Entertainment System
+    path: "{{ dg_emudeck_root }}/roms/snes"
+    extension: ".smc .SMC .sfc .SFC .swc .SWC .fig .FIG .bs .BS .st .ST .7z .7Z .zip .ZIP"
+    commands:
+      - { label: "Snes9x (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/snes9x_libretro.so %ROM%" }
+    platform: snes
+    theme: snes
+
+  - name: gb
+    fullname: Nintendo Game Boy
+    path: "{{ dg_emudeck_root }}/roms/gb"
+    extension: ".gb .GB .7z .7Z .zip .ZIP"
+    commands:
+      - { label: "Gambatte (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/gambatte_libretro.so %ROM%" }
+    platform: gb
+    theme: gb
+
+  - name: gbc
+    fullname: Nintendo Game Boy Color
+    path: "{{ dg_emudeck_root }}/roms/gbc"
+    extension: ".gbc .GBC .gb .GB .7z .7Z .zip .ZIP"
+    commands:
+      - { label: "Gambatte (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/gambatte_libretro.so %ROM%" }
+    platform: gbc
+    theme: gbc
+
+  - name: gba
+    fullname: Nintendo Game Boy Advance
+    path: "{{ dg_emudeck_root }}/roms/gba"
+    extension: ".gba .GBA .7z .7Z .zip .ZIP"
+    commands:
+      - { label: "mGBA (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/mgba_libretro.so %ROM%" }
+    platform: gba
+    theme: gba
+
+  - name: nds
+    fullname: Nintendo DS
+    path: "{{ dg_emudeck_root }}/roms_mid/nds"
+    extension: ".nds .NDS .zip .ZIP .7z .7Z"
+    commands:
+      - { label: "melonDS (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/melonds_libretro.so %ROM%" }
+    platform: nds
+    theme: nds
+
+  - name: n64
+    fullname: Nintendo 64
+    path: "{{ dg_emudeck_root }}/roms_mid/n64"
+    extension: ".n64 .N64 .v64 .V64 .z64 .Z64 .ndd .NDD .zip .ZIP .7z .7Z"
+    commands:
+      - { label: "Mupen64Plus-Next (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/mupen64plus_next_libretro.so %ROM%" }
+    platform: n64
+    theme: n64
+
+  - name: mastersystem
+    fullname: Sega Master System
+    path: "{{ dg_emudeck_root }}/roms/mastersystem"
+    extension: ".sms .SMS .7z .7Z .zip .ZIP"
+    commands:
+      - { label: "Genesis Plus GX (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/genesis_plus_gx_libretro.so %ROM%" }
+    platform: mastersystem
+    theme: mastersystem
+
+  - name: genesis
+    fullname: Sega Genesis / Mega Drive
+    path: "{{ dg_emudeck_root }}/roms/genesis"
+    extension: ".smd .SMD .md .MD .bin .BIN .gen .GEN .7z .7Z .zip .ZIP"
+    commands:
+      - { label: "Genesis Plus GX (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/genesis_plus_gx_libretro.so %ROM%" }
+    platform: genesis
+    theme: genesis
+
+  - name: gamegear
+    fullname: Sega Game Gear
+    path: "{{ dg_emudeck_root }}/roms/gamegear"
+    extension: ".gg .GG .7z .7Z .zip .ZIP"
+    commands:
+      - { label: "Genesis Plus GX (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/genesis_plus_gx_libretro.so %ROM%" }
+    platform: gamegear
+    theme: gamegear
+
+  - name: sega32x
+    fullname: Sega 32X
+    path: "{{ dg_emudeck_root }}/roms/sega32x"
+    extension: ".32x .32X .smd .SMD .md .MD .bin .BIN .7z .7Z .zip .ZIP"
+    commands:
+      - { label: "PicoDrive (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/picodrive_libretro.so %ROM%" }
+    platform: sega32x
+    theme: sega32x
+
+  - name: megacd
+    fullname: Sega CD / Mega CD
+    path: "{{ dg_emudeck_root }}/roms_mid/megacd"
+    extension: ".cue .CUE .chd .CHD .iso .ISO .ccd .CCD .m3u .M3U .7z .7Z .zip .ZIP"
+    commands:
+      - { label: "Genesis Plus GX (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/genesis_plus_gx_libretro.so %ROM%" }
+    platform: segacd
+    theme: segacd
+
+  - name: saturn
+    fullname: Sega Saturn
+    path: "{{ dg_emudeck_root }}/roms/saturn"
+    extension: ".cue .CUE .chd .CHD .iso .ISO .ccd .CCD .mds .MDS .m3u .M3U .7z .7Z .zip .ZIP"
+    commands:
+      - { label: "Beetle Saturn (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/mednafen_saturn_libretro.so %ROM%" }
+    platform: saturn
+    theme: saturn
+
+  - name: neogeo
+    fullname: SNK Neo Geo AES / MVS
+    path: "{{ dg_emudeck_root }}/roms/neogeo"
+    extension: ".zip .ZIP .7z .7Z"
+    commands:
+      - { label: "FB Neo (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/fbneo_libretro.so %ROM%" }
+    platform: neogeo
+    theme: neogeo
+
+  - name: cps
+    fullname: Capcom Play System
+    path: "{{ dg_emudeck_root }}/roms/cps"
+    extension: ".zip .ZIP .7z .7Z"
+    commands:
+      - { label: "FB Neo (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/fbneo_libretro.so %ROM%" }
+    platform: cps1
+    theme: cps
+
+  - name: cps2
+    fullname: Capcom Play System II
+    path: "{{ dg_emudeck_root }}/roms/cps2"
+    extension: ".zip .ZIP .7z .7Z"
+    commands:
+      - { label: "FB Neo (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/fbneo_libretro.so %ROM%" }
+    platform: cps2
+    theme: cps2
+
+  - name: mame
+    fullname: Arcade (MAME)
+    path: "{{ dg_emudeck_root }}/roms/mame"
+    extension: ".zip .ZIP .7z .7Z"
+    commands:
+      - { label: "MAME (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/mame_libretro.so %ROM%" }
+    platform: arcade
+    theme: mame
