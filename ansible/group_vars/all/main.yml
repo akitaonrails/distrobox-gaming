@@ -109,6 +109,11 @@ dg_retroarch_buildbot: https://buildbot.libretro.com
 # client code. Verified 2026-06-13 on SNES (was no-audio + super-fast).
 dg_retroarch_settings:
   - { key: audio_driver, value: '"pulse"' }
+  # Xbox-style menu navigation: south face button (Xbox A / Nintendo B)
+  # confirms, east face button cancels. Default is Nintendo-style
+  # (east = OK). This is the menu mapping only — in-game controls come
+  # from each libretro core's defaults plus per-core remaps.
+  - { key: menu_swap_ok_cancel_buttons, value: '"true"' }
 dg_retroarch_cores:
   - fbneo
   - stella
