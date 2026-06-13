@@ -1,0 +1,36 @@
+---
+# RetroArch config enforcement.
+#
+# We don't template the full retroarch.cfg (it's ~114 KB and almost
+# every key represents a user-facing UI preference we want them to be
+# able to change freely). Instead, we surgically enforce just the few
+# settings that have caused real problems in this stack — currently
+# audio_driver=pulse — leaving everything else to RetroArch itself.
+
+- name: Ensure RetroArch config directory exists
+  ansible.builtin.file:
+    path: "{{ dg_retroarch_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Check whether retroarch.cfg exists
+  # RetroArch writes it on first launch with full defaults. If it
+  # doesn't exist yet, we skip the replace task rather than create a
+  # half-baked file that RetroArch would later overwrite anyway.
+  ansible.builtin.stat:
+    path: "{{ dg_retroarch_config }}"
+  register: _retroarch_cfg
+
+- name: Enforce critical RetroArch settings in retroarch.cfg
+  # Each entry rewrites the line for `key`. RetroArch's UI may flip
+  # these values during a session, but they reset to our enforced
+  # value on the next reset-configs run.
+  ansible.builtin.lineinfile:
+    path: "{{ dg_retroarch_config }}"
+    regexp: '^{{ item.key }}\s*='
+    line: '{{ item.key }} = {{ item.value }}'
+    backup: true
+  loop: "{{ dg_retroarch_settings }}"
+  loop_control:
+    label: "{{ item.key }} = {{ item.value }}"
+  when: _retroarch_cfg.stat.exists

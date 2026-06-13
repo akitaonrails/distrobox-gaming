@@ -98,7 +98,17 @@ dg_eden_nand_registered: "{{ dg_eden_data_dir }}/nand/user/Contents/registered"
 # RetroArch
 dg_retroarch_dir: "{{ dg_box_home }}/.config/retroarch"
 dg_retroarch_cache_dir: "{{ dg_box_home }}/cache/retroarch-downloads"
+dg_retroarch_config: "{{ dg_retroarch_dir }}/retroarch.cfg"
 dg_retroarch_buildbot: https://buildbot.libretro.com
+# Key=value settings enforced in retroarch.cfg on every reset-configs run.
+# RetroArch's frame timer slaves to audio_sync; if its native pipewire
+# driver fails to bind a sink (Arch's default), audio is silently disabled
+# AND audio_sync becomes a no-op, so libretro cores free-run at uncapped
+# speed. Going through the pipewire-pulse compat layer ("pulse") is the
+# robust path — same pipewire server underneath, more battle-tested
+# client code. Verified 2026-06-13 on SNES (was no-audio + super-fast).
+dg_retroarch_settings:
+  - { key: audio_driver, value: '"pulse"' }
 dg_retroarch_cores:
   - fbneo
   - stella

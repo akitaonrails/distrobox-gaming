@@ -13,3 +13,4 @@
 - ansible.builtin.include_tasks: xemu.yml
 - ansible.builtin.include_tasks: shadps4.yml
 - ansible.builtin.include_tasks: cemu.yml
+- ansible.builtin.include_tasks: retroarch.yml
