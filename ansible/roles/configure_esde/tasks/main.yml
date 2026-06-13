@@ -11,3 +11,5 @@
     dest: "{{ dg_box_home }}/ES-DE/custom_systems/es_systems.xml"
     backup: true
     mode: "0644"
+
+- ansible.builtin.include_tasks: media-symlinks.yml

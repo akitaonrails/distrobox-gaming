@@ -1,0 +1,96 @@
+---
+# Bridge Skraper-/EmuDeck-style scraped art into ES-DE's downloaded_media
+# layout via symlinks, so the NAS art tree stays the single source of truth
+# and other frontends (Daijisho, Steam ROM Manager, EmulationStation legacy)
+# can keep consuming it unchanged.
+#
+# ES-DE auto-detects art when files live at:
+#     <downloaded_media>/<system>/<media-type>/<rom-basename>.<ext>
+# (no <image> gamelist.xml entry needed).
+#
+# Two EmuDeck layouts coexist in this repo's ROM tree and both are handled:
+#
+#   1. Skraper-flat in <rom_dir>/images/:
+#         <rom>-image.{png,jpg}   →  covers/<rom>.<ext>
+#         <rom>-marquee.png       →  marquees/<rom>.<ext>
+#         <rom>-thumb.png         →  skipped (redundant cover variant)
+#
+#   2. Hierarchical in <rom_dir>/media/<subdir>/:
+#         marquees/<rom>.<ext>    →  marquees/<rom>.<ext>
+#         screenshots/<rom>.<ext> →  screenshots/<rom>.<ext>
+#         (subdir name passes through 1:1 to ES-DE)
+#
+# Catalog entries whose path: points outside EmuDeck (n3ds, ps4, xbox360)
+# have no images/ or media/ siblings; the shell guards skip them cleanly.
+
+- name: Ensure ES-DE downloaded_media root exists
+  ansible.builtin.file:
+    path: "{{ dg_esde_media_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Symlink EmuDeck/Skraper scraper art into ES-DE downloaded_media layout
+  ansible.builtin.shell: |
+    set -euo pipefail
+    ESDE_MEDIA="{{ dg_esde_media_dir }}"
+    created=0
+
+    # First-writer-wins: skip if dest already exists (file or symlink, ok or
+    # broken). Process media/ before images/ so the hierarchical layout
+    # (whose filenames already match ES-DE's expected naming) takes precedence
+    # over the Skraper-flat layout (which we have to suffix-strip). Without
+    # this ordering, systems that ship both layouts (saturn, neogeo) flip-flop
+    # the same symlink between two valid sources on every run.
+    link_fill() {
+      local src="$1" dest="$2"
+      [ -e "$src" ] || return 0
+      if [ -e "$dest" ] || [ -L "$dest" ]; then
+        return 0
+      fi
+      mkdir -p "$(dirname "$dest")"
+      ln -sfn "$src" "$dest"
+      created=$((created + 1))
+    }
+
+    {% for s in dg_esde_systems %}
+    # ----- {{ s.name }} -----
+    rom_dir="{{ s.path }}"
+
+    # Pass 1 (preferred): hierarchical <rom_dir>/media/<subdir>/<rom>.<ext>.
+    # Subdir name (marquees, screenshots, …) passes through to ES-DE.
+    if [ -d "$rom_dir/media" ]; then
+      for subdir in "$rom_dir/media"/*/; do
+        [ -d "$subdir" ] || continue
+        sub_name="$(basename "$subdir")"
+        for f in "$subdir"*; do
+          [ -f "$f" ] || continue
+          link_fill "$f" "$ESDE_MEDIA/{{ s.name }}/${sub_name}/$(basename "$f")"
+        done
+      done
+    fi
+
+    # Pass 2 (gap-fill): Skraper-flat <rom_dir>/images/<rom>-{image,marquee,thumb}.{png,jpg}
+    # Only creates dests that pass 1 didn't already populate.
+    if [ -d "$rom_dir/images" ]; then
+      for f in "$rom_dir/images"/*-image.png "$rom_dir/images"/*-image.jpg "$rom_dir/images"/*-image.jpeg; do
+        [ -f "$f" ] || continue
+        base="$(basename "$f")"
+        rom_base="${base%-image.*}"
+        ext="${base##*.}"
+        link_fill "$f" "$ESDE_MEDIA/{{ s.name }}/covers/${rom_base}.${ext}"
+      done
+      for f in "$rom_dir/images"/*-marquee.png "$rom_dir/images"/*-marquee.jpg "$rom_dir/images"/*-marquee.jpeg; do
+        [ -f "$f" ] || continue
+        base="$(basename "$f")"
+        rom_base="${base%-marquee.*}"
+        ext="${base##*.}"
+        link_fill "$f" "$ESDE_MEDIA/{{ s.name }}/marquees/${rom_base}.${ext}"
+      done
+    fi
+
+    {% endfor %}
+    echo "esde-media-symlinks: created=${created}"
+  args:
+    executable: /bin/bash
+  register: _esde_media_symlinks
+  changed_when: "'created=0' not in _esde_media_symlinks.stdout"

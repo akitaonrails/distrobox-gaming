@@ -95,6 +95,9 @@ dg_eden_data_dir: "{{ dg_box_home }}/.local/share/eden"
 dg_eden_load_dir: "{{ dg_eden_data_dir }}/load"
 dg_eden_nand_registered: "{{ dg_eden_data_dir }}/nand/user/Contents/registered"
 
+# ES-DE
+dg_esde_media_dir: "{{ dg_box_home }}/ES-DE/downloaded_media"
+
 # RetroArch
 dg_retroarch_dir: "{{ dg_box_home }}/.config/retroarch"
 dg_retroarch_cache_dir: "{{ dg_box_home }}/cache/retroarch-downloads"
