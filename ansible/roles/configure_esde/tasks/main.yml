@@ -13,3 +13,4 @@
     mode: "0644"
 
 - ansible.builtin.include_tasks: media-symlinks.yml
+- ansible.builtin.include_tasks: ps4-gamelist.yml

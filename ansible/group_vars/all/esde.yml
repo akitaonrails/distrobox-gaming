@@ -81,11 +81,16 @@ dg_esde_systems:
 
   - name: ps4
     fullname: Sony PlayStation 4
-    path: "{{ dg_shadps4_game_dir }}"
+    # Multi-game path: every <ps4_root>/CUSA_xxxxx/eboot.bin is a game.
+    # Display names come from a generated gamelist.xml that reads each
+    # game's PARAM.SFO TITLE field (see configure_esde/tasks/ps4-gamelist.yml).
+    # The shadps4-launch wrapper derives the CUSA ID from the parent dir
+    # and auto-applies <patches>/<CUSA>.xml when present.
+    path: "{{ dg_ps4_rom_root }}"
     extension: ".bin .BIN"
     commands:
-      - label: "shadPS4 Driveclub (Standalone)"
-        cmd: "{{ dg_shadps4_bin }} -g {{ dg_shadps4_game_arg }} -p {{ dg_shadps4_patch_xml }} -f true"
+      - label: "shadPS4 (Standalone)"
+        cmd: "{{ dg_box_home }}/bin/shadps4-launch %ROM%"
     platform: ps4
     theme: ps4
 
@@ -115,10 +120,12 @@ dg_esde_systems:
 
   - name: xbox360
     fullname: Microsoft Xbox 360
-    # Absolute path so ES-DE doesn't depend on whichever ROMPATH root is
-    # active. xbox360 ROMs live under dg_rom_heavy_root (a separate tree
-    # from the smaller-system ROMs).
-    path: "{{ dg_xenia_game_dir }}"
+    # Multi-game path: every ISO / default.xex under roms_heavy/xbox360
+    # is a launchable title. Modded subdirs (FM2/FM3/FM4 Project Forza
+    # Plus, RidgeRacerCollection, etc.) have default.xex inside; ES-DE
+    # recurses subdirs by default and picks them up. The wrapper resolves
+    # each ROM to its Xenia Manager per-game config via games.json.
+    path: "{{ dg_emudeck_root }}/roms_heavy/xbox360"
     extension: ".iso .ISO .xex .XEX"
     commands:
       # Wrapper resolves %ROM% to its per-game .config.toml via Xenia

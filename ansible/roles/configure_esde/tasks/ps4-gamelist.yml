@@ -1,0 +1,38 @@
+---
+# Generate ES-DE gamelist.xml for the PS4 system from PARAM.SFO metadata
+# in each CUSA dir. ES-DE shows games by their <name> entry from
+# gamelist.xml when present; without it every game would appear as
+# "eboot" because each CUSA's launcher file is literally <CUSA>/eboot.bin.
+#
+# Regenerated on every reset-configs run — user-side edits to <image>,
+# <video>, <rating>, etc. will be overwritten. Trade-off accepted: SFO
+# is authoritative for names and we want new CUSA drops to auto-appear.
+# Backup is set so the prior file lands at gamelist.xml.<timestamp>.bak
+# if the user added metadata they want to recover.
+
+- name: Ensure ES-DE PS4 gamelist directory exists
+  ansible.builtin.file:
+    path: "{{ dg_box_home }}/ES-DE/gamelists/ps4"
+    state: directory
+    mode: "0755"
+
+- name: Check that the PS4 ROM root exists
+  ansible.builtin.stat:
+    path: "{{ dg_ps4_rom_root }}"
+  register: _ps4_rom_root
+
+- name: Generate PS4 gamelist.xml from PARAM.SFO
+  ansible.builtin.command:
+    argv:
+      - python3
+      - "{{ role_path }}/files/ps4-sfo-to-gamelist.py"
+      - "{{ dg_ps4_rom_root }}"
+      - "{{ dg_box_home }}/ES-DE/gamelists/ps4/gamelist.xml"
+  register: _ps4_gamelist_gen
+  changed_when: "'wrote ' in _ps4_gamelist_gen.stdout"
+  when: _ps4_rom_root.stat.exists
+
+- name: Show PS4 gamelist generation summary
+  ansible.builtin.debug:
+    msg: "{{ _ps4_gamelist_gen.stdout_lines }}"
+  when: _ps4_rom_root.stat.exists and _ps4_gamelist_gen.stdout is defined

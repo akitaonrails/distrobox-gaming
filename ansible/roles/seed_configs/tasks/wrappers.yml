@@ -17,6 +17,17 @@
     mode: "0755"
     backup: true
 
+- name: Install shadps4-launch wrapper
+  # ES-DE bridge for multi-game PS4 support. Derives the CUSA title ID
+  # from the parent dir of the eboot.bin and auto-applies a matching
+  # <CUSA>.xml from the shadPS4 patches dir if present. Per-game JSON
+  # configs in custom_configs/ are picked up by shadPS4 itself.
+  ansible.builtin.copy:
+    src: wrappers/shadps4-launch
+    dest: "{{ dg_box_home }}/bin/shadps4-launch"
+    mode: "0755"
+    backup: true
+
 - name: Install macOS-style `open` shim
   # Cheat Engine's Patreon OAuth flow shells out to `open <url>` (and
   # so do some Electron-based apps). The distrobox ships an

@@ -1,0 +1,49 @@
+#!/usr/bin/env sh
+# shadps4-launch — ES-DE bridge to shadPS4 for multi-game support.
+#
+# Takes a PS4 ROM path (eboot.bin or a CUSA dir's interior file),
+# derives the title ID from the parent directory name (PS4 ROMs
+# convention: <ps4_root>/<CUSA_xxxxx>/eboot.bin), and launches the
+# QtLauncher-managed Pre-release shadPS4 build with that title ID.
+#
+# Auto-applies a patch XML if <CUSA>.xml exists in shadPS4's patches
+# dir — convention is one patch file per title, named after the CUSA.
+# Per-game configs in custom_configs/<CUSA>.json are picked up by
+# shadPS4 itself with no extra args needed.
+#
+# Returns the shadPS4 exit code so ES-DE can detect crashes.
+
+set -eu
+
+ROM="${1:-}"
+[ -n "$ROM" ] || {
+  echo "usage: $(basename "$0") <eboot.bin>" >&2
+  exit 2
+}
+[ -f "$ROM" ] || {
+  echo "[shadps4-launch] eboot not found: $ROM" >&2
+  exit 2
+}
+
+CUSA="$(basename "$(dirname "$ROM")")"
+case "$CUSA" in
+  CUSA[0-9]*) ;;
+  *)
+    echo "[shadps4-launch] WARN: parent dir '$CUSA' doesn't look like a CUSA ID; launching anyway" >&2
+    ;;
+esac
+
+PATCH_DIR="$HOME/.local/share/shadPS4/patches"
+PATCH_XML="$PATCH_DIR/${CUSA}.xml"
+
+patch_args=""
+if [ -f "$PATCH_XML" ]; then
+  patch_args="-p $PATCH_XML"
+  echo "[shadps4-launch] using patch: $PATCH_XML" >&2
+fi
+
+# Delegate to the existing shadps4 wrapper, which locates the
+# QtLauncher-managed AppImage and handles AppRun env. The -g flag tells
+# shadPS4 to use its game-library entry for this title ID (matches the
+# eboot at sce_sys/, no need to pass --path).
+exec "$HOME/bin/shadps4" -g "$CUSA" $patch_args -f true

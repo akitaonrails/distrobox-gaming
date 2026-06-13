@@ -43,3 +43,15 @@
     dest: "{{ dg_shadps4_patch_xml }}"
     backup: true
     mode: "0644"
+
+- name: Link CUSA-named patch to the title-named file
+  # The ES-DE bridge wrapper (bin/shadps4-launch) auto-applies a patch
+  # iff <patches>/<CUSA>.xml exists — convention is "one file per title
+  # ID". The legacy Driveclub desktop entry uses Driveclub.xml directly,
+  # so we keep that file and add a CUSA00003.xml symlink so both paths
+  # resolve to the same content.
+  ansible.builtin.file:
+    src: "{{ dg_shadps4_patch_name }}"
+    dest: "{{ dg_box_home }}/.local/share/shadPS4/patches/{{ dg_shadps4_title_id }}.xml"
+    state: link
+    force: true
