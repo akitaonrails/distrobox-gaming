@@ -20,11 +20,10 @@ material changes.
   badly-staged input. No fork patch for DriveClubFS is needed.
 - **v1.28 is now the working base**, not v1.00. Earlier guidance "v1.00
   only because DriveClubFS can't handle v1.28" is wrong.
-- The **60 FPS patch is disabled** — not because its offsets don't match
-  v1.00, but because shadPS4 doesn't scale the game's internal fixed
-  timestep. Patched to 60 fps the game renders smoothly but the
-  simulation runs at half real-time ("slow-motion smooth playback").
-  Disabled → 30 fps at correct wall-clock speed, matches stock PS4 base.
+- Both **60 FPS patches are disabled**. The deltatime patch tripped
+  shadPS4 v0.16.x's startup path on this box, and the official fixed
+  tickrate patch also crashed when tested. Stock 30 FPS is the current
+  stable path.
 - The **dim daytime image** is Driveclub's own design intent (PS4
   firmware 4.0's display-calibration pipeline doesn't exist on our side),
   not an emulator bug. The investigation doc's Phase 2 + Phase 5 walk
@@ -214,31 +213,26 @@ checkForUpdates=false
 checkOnStartup=false
 ```
 
-## 60 FPS patch — don't enable
+## 60 FPS patches — leave disabled
 
 `Driveclub.xml` in `~/.local/share/shadPS4/patches/` ships with two 60 FPS
-patch blocks. Leave them disabled. The patches rewrite the render rate
-but **not** the game's internal fixed-timestep logic rate. On real PS4
-Pro, the engine reconciles the mismatch internally; shadPS4 doesn't.
+patch blocks. Leave both disabled on this box.
 
-Symptom if enabled: game appears to run smoothly at 60 fps but cars
-accelerate in slow-motion, lap times don't advance at real speed. Disable
-→ 30 fps at correct wall-clock speed, matches stock PS4 base console.
+Test results on shadPS4 v0.16.x / Driveclub v1.28:
 
-To disable cleanly:
+- `60 FPS with deltatime`: crashes during startup after patching
+  (`Exception: stoi`).
+- `60 FPS with fixed tickrate`: official safer patch, but still crashed
+  when tested here.
+- Both disabled: Driveclub loads.
+
+To keep stock 30 FPS, set both Driveclub `Metadata` blocks to
+`isEnabled="false"` in both:
 
 ```sh
-mv ~/.local/share/shadPS4/patches/Driveclub.xml \
-   ~/.local/share/shadPS4/patches/Driveclub.xml.disabled-for-v1.0
+~/.local/share/shadPS4/patches/Driveclub.xml
+~/.local/share/shadPS4/patches/shadPS4/Driveclub.xml
 ```
-
-The filename suffix is historical — at the time we thought the issue was
-v1.00 eboot offset mismatch; it's actually the timestep mismatch and
-applies to both v1.00 and v1.28. Rename pattern kept to avoid churn.
-
-Long-term fix options (out of scope): patch the game to also scale the
-internal timestep; implement frame interpolation host-side; both are
-substantial work that isn't queued.
 
 ## Night scenes — known upstream gap
 

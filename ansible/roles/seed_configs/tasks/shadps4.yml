@@ -66,16 +66,14 @@
   # shadPS4 reads config.toml at startup and rewrites it at shutdown.
   # Editing while it's running means our changes get clobbered when
   # the user closes it. Detect first so we can fail with a clear msg.
-  ansible.builtin.shell: |
-    set -o pipefail
-    if pgrep -fi 'shadPS4QtLauncher|Shadps4-sdl|cheatengine' >/dev/null 2>&1; then
-      echo running
-    else
-      echo stopped
-    fi
-  args:
-    executable: /bin/bash
-  register: _shadps4_running
+  # Character classes avoid matching this guard's own pgrep command line
+  # while still matching the real process names case-insensitively.
+  ansible.builtin.command:
+    argv:
+      - pgrep
+      - -fi
+      - "[s]hadPS4QtLauncher|[s]hadps4-sdl|[c]heatengine"
+  register: _shadps4_processes
   changed_when: false
   failed_when: false
 
@@ -86,7 +84,7 @@
       it before re-running reset-configs --tags configs — otherwise
       the shadPS4 config.toml edits below would be silently
       overwritten when the GUI writes its config back on shutdown.
-  when: _shadps4_running.stdout == 'running'
+  when: _shadps4_processes.rc == 0
 
 - name: Configure shadPS4 addonInstallDir in both config.toml files
   # shadPS4 keeps two parallel config files — one under .config/ (XDG

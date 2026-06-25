@@ -257,6 +257,40 @@ recompiler bugs (`liverpool_to_vk.cpp StencilOp: Unreachable code`,
 fresh nightlies can be tested without re-doing the install; the
 per-game JSON ships safe defaults.
 
+### Gravity Rush Remastered + Gravity Rush 2
+
+Gravity Rush Remastered's loose PKG was initially filed under `CUSA01130`,
+but `shadpkg sfo-info` reports the real `TITLE_ID` as `CUSA01113`:
+
+```
+TITLE_ID=CUSA01113
+TITLE="Gravity Rush™ Remastered"
+CONTENT_ID=EP9000-CUSA01113_00-GRAVITYRUSHHDEU1
+```
+
+Keep the extracted game directory and ES-DE launcher parent dir named
+`CUSA01113`; otherwise `bin/shadps4-launch` derives the wrong title ID from
+the parent directory.
+
+Gravity Rush 2 (`CUSA04943`) uses the normal base-plus-update flow:
+extract the base to `roms_rare/ps4/CUSA04943/`, stage the v1.11 update on
+NVMe, then `rsync -a` the staged files over the base tree.
+
+For add-on content, do **not** merge DLC into the game tree. shadPS4 scans
+additional content under:
+
+```
+{{ dg_shadps4_addon_install_dir }}/<TITLE_ID>/<CONTENT_ID>/sce_sys/param.sfo
+```
+
+The Gravity Rush 2 DLCs are installed under
+`roms_rare/ps4-addons/CUSA04943/<CONTENT_ID>/`:
+
+- `EP9000-CUSA04943_00-ACEUKIT17XXXXXXX` — Dark Angel Costume
+- `EP9000-CUSA04943_00-ACEUX1NIERXXXXXX` — NieR: Automata Collaboration Pack
+- `EP9000-CUSA04943_00-ACEUPSO2XXXXXXXX` — Phantasy Star Online 2 Collaboration Pack
+- `EP9000-CUSA04943_00-ACEUCROWXXXXXXXX` — The Ark of Time: Raven's Choice
+
 ## Filesystem layout after a clean install
 
 ```

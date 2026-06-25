@@ -14,7 +14,7 @@
               PatchVer="2.0"
               AppVer="01.28"
               AppElf="eboot.bin"
-              isEnabled="true">
+              isEnabled="false">
         <PatchList>
             <Line Type="bytes" Address="0x01184800" Value="b801000000"/>
             <Line Type="bytes" Address="0x01184725" Value="48b001"/>
@@ -34,4 +34,3 @@
         </PatchList>
     </Metadata>
 </Patch>
-
