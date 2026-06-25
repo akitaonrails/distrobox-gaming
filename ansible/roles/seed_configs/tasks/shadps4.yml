@@ -55,3 +55,54 @@
     dest: "{{ dg_box_home }}/.local/share/shadPS4/patches/{{ dg_shadps4_title_id }}.xml"
     state: link
     force: true
+
+- name: Ensure shadPS4 addon install directory exists
+  ansible.builtin.file:
+    path: "{{ dg_shadps4_addon_install_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Detect whether shadPS4 / QtLauncher is currently running
+  # shadPS4 reads config.toml at startup and rewrites it at shutdown.
+  # Editing while it's running means our changes get clobbered when
+  # the user closes it. Detect first so we can fail with a clear msg.
+  ansible.builtin.shell: |
+    set -o pipefail
+    if pgrep -fi 'shadPS4QtLauncher|Shadps4-sdl|cheatengine' >/dev/null 2>&1; then
+      echo running
+    else
+      echo stopped
+    fi
+  args:
+    executable: /bin/bash
+  register: _shadps4_running
+  changed_when: false
+  failed_when: false
+
+- name: Refuse to touch config.toml while shadPS4 is running
+  ansible.builtin.fail:
+    msg: |
+      shadPS4 / QtLauncher / cheatengine is currently running. Close
+      it before re-running reset-configs --tags configs — otherwise
+      the shadPS4 config.toml edits below would be silently
+      overwritten when the GUI writes its config back on shutdown.
+  when: _shadps4_running.stdout == 'running'
+
+- name: Configure shadPS4 addonInstallDir in both config.toml files
+  # shadPS4 keeps two parallel config files — one under .config/ (XDG
+  # standard, written by Qt) and one under .local/share/ (used by the
+  # emulator core). They drift independently when the user clicks
+  # around the GUI, so keep both in sync with the canonical value.
+  community.general.ini_file:
+    path: "{{ item }}"
+    section: GUI
+    option: addonInstallDir
+    value: '"{{ dg_shadps4_addon_install_dir }}"'
+    backup: true
+    create: false
+    no_extra_spaces: false
+  loop:
+    - "{{ dg_box_home }}/.config/shadPS4/config.toml"
+    - "{{ dg_box_home }}/.local/share/shadPS4/config.toml"
+  loop_control:
+    label: "{{ item }}"

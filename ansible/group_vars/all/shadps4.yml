@@ -13,6 +13,11 @@ dg_shadps4_managed_bin: "{{ dg_shadps4_versions_root }}/{{ dg_shadps4_channel }}
 dg_shadps4_bin: "{{ dg_box_home }}/bin/shadps4-current"
 dg_shadps4_cmd_alias: "{{ dg_box_home }}/bin/shadps4"
 
+# Where shadPS4 installs DLC / addon PKGs. Must NOT be under
+# dg_ps4_rom_root or ES-DE's `.bin` scan would pick up addon files as
+# fake games. Keep it as a sibling dir on the same NAS tier.
+dg_shadps4_addon_install_dir: "{{ dg_emudeck_root }}/roms_rare/ps4-addons"
+
 # Per-game configs that seed_configs deploys to
 # ~/.local/share/shadPS4/custom_configs/<title_id>.json. Add a new game
 # by creating roles/seed_configs/templates/<title_id>.json.j2 and
