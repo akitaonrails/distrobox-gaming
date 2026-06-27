@@ -34,3 +34,24 @@
   loop_control:
     label: "{{ item.key }} = {{ item.value }}"
   when: _retroarch_cfg.stat.exists
+
+- name: Ensure RetroArch core option directories exist
+  ansible.builtin.file:
+    path: "{{ item.path | dirname }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ dg_retroarch_core_options | default([]) }}"
+  loop_control:
+    label: "{{ item.path | dirname }}"
+
+- name: Enforce critical RetroArch core options
+  ansible.builtin.lineinfile:
+    path: "{{ item.0.path }}"
+    regexp: '^{{ item.1.key }}\s*='
+    line: '{{ item.1.key }} = {{ item.1.value }}'
+    create: true
+    backup: true
+    mode: "0644"
+  loop: "{{ (dg_retroarch_core_options | default([])) | subelements('settings') }}"
+  loop_control:
+    label: "{{ item.0.path }}: {{ item.1.key }} = {{ item.1.value }}"

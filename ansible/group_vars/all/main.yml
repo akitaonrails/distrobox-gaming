@@ -117,6 +117,16 @@ dg_retroarch_settings:
   # (east = OK). This is the menu mapping only — in-game controls come
   # from each libretro core's defaults plus per-core remaps.
   - { key: menu_swap_ok_cancel_buttons, value: '"true"' }
+dg_retroarch_core_options:
+  # Vitor Vilela's Super Mario World Widescreen patch is not a Mode-7-only
+  # widescreen hack; it needs bsnes-hd's full-scene widescreen renderer. The
+  # ROM-specific .bso file still carries the exact per-game render string.
+  - path: "{{ dg_retroarch_dir }}/config/bsnes-hd beta/bsnes-hd beta.opt"
+    settings:
+      - { key: bsnes_mode7_wsMode, value: '"all"' }
+      - { key: bsnes_mode7_widescreen, value: '"16:9"' }
+      - { key: bsnes_mode7_wsobj, value: '"unsafe"' }
+      - { key: bsnes_video_aspectcorrection, value: '"ON"' }
 dg_retroarch_cores:
   - bsnes
   - bsnes_hd_beta
