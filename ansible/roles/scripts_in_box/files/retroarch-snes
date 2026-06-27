@@ -1,0 +1,30 @@
+#!/bin/sh
+# Select the right RetroArch SNES core for edge-case ROM hacks.
+# Default: bsnes. Vitor Vilela's SMW widescreen hack needs bsnes-hd beta
+# plus a matching .bso file, and lives in the snes/no_match folder.
+
+set -eu
+
+if [ "$#" -lt 1 ]; then
+  echo "Usage: retroarch-snes ROM [retroarch args...]" >&2
+  exit 64
+fi
+
+rom=$1
+shift
+
+core_dir=${RETROARCH_CORE_DIR:-"$HOME/.config/retroarch/cores"}
+core=bsnes_libretro.so
+
+case $(printf '%s' "$rom" | tr '[:upper:]' '[:lower:]') in
+  */snes/no_match/*smw*widescreen*|*/snes/no_match/*super*mario*world*widescreen*)
+    core=bsnes_hd_beta_libretro.so
+    ;;
+esac
+
+if [ "${DG_RETROARCH_SNES_PRINT_CORE:-0}" = 1 ]; then
+  printf '%s\n' "$core"
+  exit 0
+fi
+
+exec retroarch -L "$core_dir/$core" "$rom" "$@"

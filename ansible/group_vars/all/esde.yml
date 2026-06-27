@@ -179,7 +179,10 @@ dg_esde_systems:
     path: "{{ dg_emudeck_root }}/roms/snes"
     extension: ".smc .SMC .sfc .SFC .swc .SWC .fig .FIG .bs .BS .st .ST .7z .7Z .zip .ZIP"
     commands:
+      - { label: "Auto bsnes/bsnes-hd (RetroArch)", cmd: "{{ dg_box_home }}/bin/retroarch-snes %ROM%" }
       - { label: "bsnes (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/bsnes_libretro.so %ROM%" }
+      - { label: "bsnes-hd beta (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/bsnes_hd_beta_libretro.so %ROM%" }
+      - { label: "Snes9x (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/snes9x_libretro.so %ROM%" }
     platform: snes
     theme: snes
 

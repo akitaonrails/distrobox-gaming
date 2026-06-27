@@ -25,3 +25,9 @@
     src: update-gaming
     dest: "{{ dg_box_home }}/bin/update-gaming"
     mode: "0755"
+
+- name: Deploy RetroArch SNES core selector
+  ansible.builtin.copy:
+    src: retroarch-snes
+    dest: "{{ dg_box_home }}/bin/retroarch-snes"
+    mode: "0755"

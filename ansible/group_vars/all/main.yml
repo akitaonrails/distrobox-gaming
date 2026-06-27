@@ -119,6 +119,7 @@ dg_retroarch_settings:
   - { key: menu_swap_ok_cancel_buttons, value: '"true"' }
 dg_retroarch_cores:
   - bsnes
+  - bsnes_hd_beta
   - fbneo
   - stella
   - prosystem
