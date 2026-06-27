@@ -118,6 +118,7 @@ dg_retroarch_settings:
   # from each libretro core's defaults plus per-core remaps.
   - { key: menu_swap_ok_cancel_buttons, value: '"true"' }
 dg_retroarch_cores:
+  - bsnes
   - fbneo
   - stella
   - prosystem
