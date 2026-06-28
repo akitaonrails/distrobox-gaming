@@ -1,4 +1,4 @@
-# Cheat Engine on the gaming distrobox
+# Cheats and trainers on the gaming distrobox
 
 Single-player cheats / trainers via **native Linux** Cheat Engine 7.6.6,
 attached to Steam Proton or Wine processes via standard ptrace.
@@ -144,6 +144,57 @@ and `.CT` activations work normally.
 5. Tick the cheat checkboxes — they activate immediately.
 
 Same shape works for any Steam Proton single-player title.
+
+## Emulator cheat databases
+
+The distrobox has two cheat flows:
+
+- **Eden Cheats Manager** is installed by the main playbook. Run the full
+  playbook or the focused tag:
+  ```sh
+  cd ansible
+  ansible-playbook site.yml --tags eden_cheats_manager,desktop
+  ```
+  The role downloads the pinned AppImage, extracts it under
+  `{{ dg_box_home }}/tools/eden-cheats-manager/`, installs the stable wrapper
+  `{{ dg_box_home }}/bin/eden-cheats-manager`, and renders the host launcher
+  `gaming-eden-cheats-manager.desktop`.
+- **Azahar, PCSX2, DuckStation, and RPCS3 community databases** are synced
+  from local clones with `scripts/sync-emulator-cheats.py`. The script is
+  intentionally conservative: it only copies files that match local emulator
+  caches or ROM names, and it skips ambiguous 3DS title matches.
+
+Example after cloning the upstream cheat repositories somewhere outside the
+repo checkout:
+
+```sh
+scripts/sync-emulator-cheats.py \
+  --box-home "$DG_BOX_HOME" \
+  --n3ds-root "$DG_N3DS_ROOT" \
+  --ctrpf "$DG_CTRPF_CHEATS_REPO" \
+  --pcsx2 "$DG_PCSX2_CHEATS_REPO" \
+  --duckstation "$DG_DUCKSTATION_CHTDB_REPO" \
+  --rpcs3-artemis "$DG_RPCS3_ARTEMIS_REPO" \
+  --report /tmp/emulator-cheat-sync-report.json
+```
+
+Use `--dry-run` first when changing source repos or library roots.
+
+Installed destinations:
+
+| Emulator | Destination | Filename rule |
+| --- | --- | --- |
+| Azahar | `{{ dg_box_home }}/.local/share/azahar-emu/cheats/` | `16_UPPERCASE_HEX_TITLEID.txt` |
+| PCSX2 Qt | `{{ dg_box_home }}/.config/PCSX2/cheats/` | `<SERIAL>_<CRC>.pnach`; CRC-only aliases are kept for compatibility |
+| DuckStation | `{{ dg_box_home }}/.config/duckstation/cheats/` | `<SERIAL>.cht` |
+| RPCS3 | `{{ dg_box_home }}/.config/rpcs3/patches/` | `<TITLE_ID>_patch.yml` |
+
+RPCS3 loads the installed patch YAML files, but cheats still need to be enabled
+in RPCS3's Patch Manager. DuckStation is configured in this repo under
+`{{ dg_box_home }}/.config/duckstation`; if a future DuckStation build opens
+`{{ dg_box_home }}/.local/share/duckstation` from **Tools → Open Data
+Directory**, mirror the generated `cheats/` files there or update the wrapper
+environment before expecting auto-load to work.
 
 ## Caveats
 

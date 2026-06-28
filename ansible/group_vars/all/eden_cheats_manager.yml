@@ -1,0 +1,13 @@
+# Eden Cheats Manager desktop app for managing Eden emulator cheats.
+
+dg_eden_cheats_manager_version: v0.1.3
+dg_eden_cheats_manager_asset_name: Eden.Cheats.Manager_0.1.0_amd64.AppImage
+dg_eden_cheats_manager_asset_sha256: 782b14a212813dfc1eef8c93ad5708d2b756a975db7a870d68753ff51f18b92c
+dg_eden_cheats_manager_download_url: >-
+  https://github.com/ChrisA95G/eden-cheats-manager/releases/download/{{ dg_eden_cheats_manager_version }}/{{ dg_eden_cheats_manager_asset_name }}
+
+dg_eden_cheats_manager_root: "{{ dg_box_home }}/tools/eden-cheats-manager"
+dg_eden_cheats_manager_release_root: "{{ dg_eden_cheats_manager_root }}/releases/{{ dg_eden_cheats_manager_version }}"
+dg_eden_cheats_manager_download: "{{ dg_eden_cheats_manager_root }}/downloads/{{ dg_eden_cheats_manager_version }}-{{ dg_eden_cheats_manager_asset_name }}"
+dg_eden_cheats_manager_current: "{{ dg_eden_cheats_manager_root }}/current"
+dg_eden_cheats_manager_bin: "{{ dg_box_home }}/bin/eden-cheats-manager"

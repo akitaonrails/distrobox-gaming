@@ -1,0 +1,62 @@
+---
+- name: Ensure Eden Cheats Manager directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_eden_cheats_manager_root }}"
+    - "{{ dg_eden_cheats_manager_root }}/downloads"
+    - "{{ dg_eden_cheats_manager_root }}/releases"
+    - "{{ dg_eden_cheats_manager_release_root }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Download Eden Cheats Manager AppImage
+  ansible.builtin.get_url:
+    url: "{{ dg_eden_cheats_manager_download_url }}"
+    dest: "{{ dg_eden_cheats_manager_download }}"
+    checksum: "sha256:{{ dg_eden_cheats_manager_asset_sha256 }}"
+    mode: "0755"
+
+- name: Copy Eden Cheats Manager AppImage into release directory
+  ansible.builtin.copy:
+    src: "{{ dg_eden_cheats_manager_download }}"
+    dest: "{{ dg_eden_cheats_manager_release_root }}/{{ dg_eden_cheats_manager_asset_name }}"
+    remote_src: true
+    mode: "0755"
+
+- name: Check if Eden Cheats Manager AppImage is already extracted
+  ansible.builtin.stat:
+    path: "{{ dg_eden_cheats_manager_release_root }}/squashfs-root/AppRun"
+  register: _eden_cheats_manager_extracted
+
+- name: Extract Eden Cheats Manager AppImage
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      cd "{{ dg_eden_cheats_manager_release_root }}"
+      rm -rf squashfs-root
+      chmod +x "{{ dg_eden_cheats_manager_asset_name }}"
+      "./{{ dg_eden_cheats_manager_asset_name }}" --appimage-extract >/dev/null
+    '
+  args:
+    creates: "{{ dg_eden_cheats_manager_release_root }}/squashfs-root/AppRun"
+  when: not _eden_cheats_manager_extracted.stat.exists
+
+- name: Link current Eden Cheats Manager release
+  ansible.builtin.file:
+    src: "{{ dg_eden_cheats_manager_release_root }}/squashfs-root"
+    dest: "{{ dg_eden_cheats_manager_current }}"
+    state: link
+    force: true
+
+- name: Install Eden Cheats Manager wrapper
+  ansible.builtin.copy:
+    dest: "{{ dg_eden_cheats_manager_bin }}"
+    mode: "0755"
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+
+      export APPDIR="{{ dg_eden_cheats_manager_current }}"
+      exec "${APPDIR}/AppRun" "$@"

@@ -9,6 +9,7 @@
     - { role: bootstrap_packages,        tags: [bootstrap] }
     - { role: refresh_shadps4,           tags: [shadps4] }
     - { role: install_hedgemodmanager,   tags: [hedgemodmanager] }
+    - { role: install_eden_cheats_manager, tags: [eden_cheats_manager] }
     - { role: link_storage,              tags: [configure, storage] }
     - { role: seed_configs,              tags: [configure, configs, reset_configs] }
     - { role: scripts_in_box,            tags: [configure, scripts] }

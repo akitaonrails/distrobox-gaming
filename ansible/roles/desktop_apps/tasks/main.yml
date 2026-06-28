@@ -13,6 +13,7 @@
   loop:
     - gaming-shadps4-gui.desktop
     - gaming-flycast.desktop
+    - gaming-eden-cheats-manager.desktop
 
 - name: Render generic emulator launcher desktop entries
   ansible.builtin.template:
