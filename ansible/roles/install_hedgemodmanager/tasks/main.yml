@@ -6,9 +6,12 @@
     mode: "0755"
   loop:
     - "{{ dg_hmm_cache_dir }}"
-    - "{{ dg_hmm_source_root | dirname }}"
     - "{{ dg_hmm_releases_dir }}"
+    - "{{ dg_hmm_release_dir }}"
     - "{{ dg_box_home }}/bin"
+    - "{{ dg_hmm_host_bin_dir }}"
+    - "{{ dg_hmm_bash_completion_dir }}"
+    - "{{ dg_hmm_zsh_completion_dir }}"
 
 - name: Install Hedge Mod Manager build dependencies inside box
   ansible.builtin.shell: >-
@@ -17,35 +20,19 @@
   register: _hmm_pacman
   changed_when: "'installing' in _hmm_pacman.stdout"
 
-- name: Download Hedge Mod Manager source release
+- name: Download Hedge Mod Manager Linux release
   ansible.builtin.get_url:
-    url: "{{ dg_hmm_source_url }}"
-    dest: "{{ dg_hmm_cache_dir }}/{{ dg_hmm_release_tag }}.tar.gz"
+    url: "{{ dg_hmm_release_url }}"
+    dest: "{{ dg_hmm_cache_dir }}/{{ dg_hmm_release_archive }}"
+    checksum: "sha256:{{ dg_hmm_release_sha256 }}"
     mode: "0644"
 
-- name: Extract Hedge Mod Manager source release
+- name: Extract Hedge Mod Manager Linux release
   ansible.builtin.unarchive:
-    src: "{{ dg_hmm_cache_dir }}/{{ dg_hmm_release_tag }}.tar.gz"
-    dest: "{{ dg_hmm_source_root | dirname }}"
+    src: "{{ dg_hmm_cache_dir }}/{{ dg_hmm_release_archive }}"
+    dest: "{{ dg_hmm_release_dir }}"
     remote_src: true
-    creates: "{{ dg_hmm_project }}"
-
-- name: Check if Hedge Mod Manager release is already published
-  ansible.builtin.stat:
-    path: "{{ dg_hmm_release_dir }}/HedgeModManager.UI.dll"
-  register: _hmm_published
-
-- name: Publish Hedge Mod Manager Linux build inside box
-  ansible.builtin.shell: >-
-    {{ dg_in_box }} env
-    DOTNET_CLI_HOME="{{ dg_box_home }}/.dotnet"
-    DOTNET_CLI_TELEMETRY_OPTOUT=1
-    dotnet publish "{{ dg_hmm_project }}"
-    --configuration Release
-    --runtime linux-x64
-    --self-contained false
-    --output "{{ dg_hmm_release_dir }}"
-  when: not _hmm_published.stat.exists
+    creates: "{{ dg_hmm_release_dir }}/output/linux-x64/HedgeModManager.UI.dll"
 
 - name: Link current Hedge Mod Manager release
   ansible.builtin.file:
@@ -59,6 +46,33 @@
     src: hedge-mod-manager.sh.j2
     dest: "{{ dg_hmm_bin }}"
     mode: "0755"
+
+- name: Write Hedge Mod Manager Sonic game registry
+  ansible.builtin.copy:
+    dest: "{{ dg_hmm_games_registry }}"
+    mode: "0644"
+    content: |
+      {% for game in dg_hmm_supported_steam_games %}
+      {{ game.key }}	{{ game.appid }}	{{ game.executable }}	{{ game.name }}	{{ game.aliases | default([]) | join(',') }}	{{ game.loader }}	{{ game.mods_dir }}
+      {% endfor %}
+
+- name: Install host dg-hmm launcher
+  ansible.builtin.template:
+    src: dg-hmm.j2
+    dest: "{{ dg_hmm_host_launcher }}"
+    mode: "0755"
+
+- name: Install bash completion for dg-hmm
+  ansible.builtin.template:
+    src: dg-hmm.bash-completion.j2
+    dest: "{{ dg_hmm_bash_completion_dir }}/dg-hmm"
+    mode: "0644"
+
+- name: Install zsh completion for dg-hmm
+  ansible.builtin.template:
+    src: dg-hmm.zsh-completion.j2
+    dest: "{{ dg_hmm_zsh_completion_dir }}/_dg-hmm"
+    mode: "0644"
 
 - name: Verify Steam library metadata is visible to Hedge Mod Manager
   ansible.builtin.stat:

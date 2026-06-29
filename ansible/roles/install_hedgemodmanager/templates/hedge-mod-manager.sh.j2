@@ -3,17 +3,202 @@ set -eu
 
 app="{{ dg_hmm_executable }}"
 dll="{{ dg_hmm_dll }}"
+registry="{{ dg_hmm_games_registry }}"
+config_dir="${XDG_DATA_HOME:-$HOME/.local/share}/hedge-dev/HedgeModManager/Config"
+program_config="$config_dir/ProgramConfig.json"
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
-if [ -x "$app" ]; then
-  exec "$app" "$@"
-fi
+usage() {
+  cat <<EOF
+Usage:
+  $(basename "$0")                 # launch Hedge Mod Manager
+  $(basename "$0") list            # list installed supported Sonic games
+  $(basename "$0") all             # list all HMM-supported Sonic Steam games
+  $(basename "$0") keys            # print keys and aliases
+  $(basename "$0") path <key>      # print detected executable path
+  $(basename "$0") <key-or-alias>  # preselect game, then launch HMM
+EOF
+}
 
-if [ -f "$dll" ]; then
-  exec dotnet "$dll" "$@"
-fi
+run_hmm() {
+  if [ -x "$app" ]; then
+    exec "$app" "$@"
+  fi
 
-printf '%s\n' "ERROR: Hedge Mod Manager is not installed at {{ dg_hmm_current }}" >&2
-printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-hedgemodmanager.yml" >&2
-exit 1
+  if [ -f "$dll" ]; then
+    exec dotnet "$dll" "$@"
+  fi
+
+  printf '%s\n' "ERROR: Hedge Mod Manager is not installed at {{ dg_hmm_current }}" >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-hedgemodmanager.yml" >&2
+  exit 1
+}
+
+hmm_registry() {
+  python3 - "$registry" "$@" <<'PY'
+import json
+import os
+import re
+import sys
+from pathlib import Path
+
+registry = Path(sys.argv[1])
+command = sys.argv[2] if len(sys.argv) > 2 else "list"
+query = sys.argv[3].lower() if len(sys.argv) > 3 else ""
+
+def load_games():
+    games = []
+    for line in registry.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        key, appid, executable, name, aliases, loader, mods_dir = line.split("\t")
+        games.append({
+            "key": key,
+            "appid": appid,
+            "executable": executable,
+            "name": name,
+            "aliases": [a for a in aliases.split(",") if a],
+            "loader": loader,
+            "mods_dir": mods_dir,
+        })
+    return games
+
+def vdf_value(line, key):
+    match = re.search(r'"' + re.escape(key) + r'"\s+"(.*)"', line)
+    return match.group(1).replace('\\\\', '\\') if match else None
+
+def steam_libraries():
+    home = Path.home()
+    roots = []
+    for steam in [home / ".local/share/Steam", home / ".steam/steam"]:
+        vdf = steam / "steamapps/libraryfolders.vdf"
+        if not vdf.exists():
+            continue
+        roots.append(steam)
+        for line in vdf.read_text(encoding="utf-8", errors="ignore").splitlines():
+            path = vdf_value(line, "path")
+            if path:
+                roots.append(Path(path))
+    deduped = []
+    seen = set()
+    for root in roots:
+        key = str(root)
+        if key not in seen:
+            seen.add(key)
+            deduped.append(root)
+    return deduped
+
+def manifest_installdir(manifest):
+    for line in manifest.read_text(encoding="utf-8", errors="ignore").splitlines():
+        value = vdf_value(line, "installdir")
+        if value:
+            return value
+    return None
+
+def detect(game):
+    for library in steam_libraries():
+        manifest = library / "steamapps" / f"appmanifest_{game['appid']}.acf"
+        if not manifest.exists():
+            continue
+        installdir = manifest_installdir(manifest)
+        if not installdir:
+            continue
+        root = library / "steamapps/common" / installdir
+        executable = root / game["executable"]
+        return root, executable, executable.exists()
+    return None, None, False
+
+def match_game(games, value):
+    for game in games:
+        names = [game["key"], game["appid"], *game["aliases"]]
+        if value in [name.lower() for name in names]:
+            return game
+    return None
+
+games = load_games()
+
+if command == "all":
+    for game in games:
+        aliases = ",".join(game["aliases"])
+        print("\t".join([game["key"], game["appid"], game["executable"], game["name"], aliases, game["loader"], game["mods_dir"]]))
+    raise SystemExit(0)
+
+if command == "keys":
+    keys = []
+    for game in games:
+        keys.append(game["key"])
+        keys.extend(game["aliases"])
+    print("\n".join(keys))
+    raise SystemExit(0)
+
+if command == "list":
+    for game in games:
+        root, executable, exists = detect(game)
+        if exists:
+            aliases = ",".join(game["aliases"])
+            print("\t".join([game["key"], game["appid"], str(executable), game["name"], aliases, game["loader"], game["mods_dir"]]))
+    raise SystemExit(0)
+
+if command in {"path", "select"}:
+    game = match_game(games, query)
+    if not game:
+        print(f"Unknown HMM game key or alias: {query}", file=sys.stderr)
+        raise SystemExit(2)
+    root, executable, exists = detect(game)
+    if not executable:
+        print(f"{game['name']} (appid {game['appid']}) is not installed in a visible Steam library.", file=sys.stderr)
+        raise SystemExit(1)
+    if not exists:
+        print(f"Detected {game['name']}, but executable is missing: {executable}", file=sys.stderr)
+        raise SystemExit(1)
+    print(executable)
+    raise SystemExit(0)
+
+print(f"Unknown command: {command}", file=sys.stderr)
+raise SystemExit(2)
+PY
+}
+
+select_game() {
+  selected_path=$(hmm_registry select "$1")
+  mkdir -p "$config_dir"
+  python3 - "$program_config" "$selected_path" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+config = Path(sys.argv[1])
+selected_path = sys.argv[2]
+data = {}
+if config.exists():
+    try:
+        data = json.loads(config.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        data = {}
+data["LastSelectedPath"] = selected_path
+config.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+PY
+  printf 'Selected for Hedge Mod Manager: %s\n' "$selected_path" >&2
+}
+
+case "${1:-}" in
+  -h|--help)
+    usage
+    ;;
+  "")
+    run_hmm
+    ;;
+  list|all|keys)
+    hmm_registry "$1"
+    ;;
+  path)
+    shift
+    [ "${1:-}" ] || { usage >&2; exit 2; }
+    hmm_registry path "$1"
+    ;;
+  *)
+    select_game "$1"
+    run_hmm
+    ;;
+esac

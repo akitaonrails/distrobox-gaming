@@ -1,0 +1,7 @@
+_dg_hmm_complete()
+{
+  local cur
+  cur="${COMP_WORDS[COMP_CWORD]}"
+  COMPREPLY=( $(compgen -W "menu list all keys path {% for game in dg_hmm_supported_steam_games %}{{ game.key }} {{ game.aliases | default([]) | join(' ') }} {% endfor %}" -- "$cur") )
+}
+complete -F _dg_hmm_complete dg-hmm

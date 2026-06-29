@@ -1,25 +1,79 @@
 # Hedge Mod Manager 8 native Linux build.
 
-dg_hmm_release_tag: 8.0.0-beta4
-dg_hmm_source_url: "https://github.com/hedge-dev/HedgeModManager/archive/refs/tags/{{ dg_hmm_release_tag }}.tar.gz"
+dg_hmm_release_tag: 8.0.0-beta7
+dg_hmm_release_archive: HedgeModManager-linux-x64.tar.gz
+dg_hmm_release_url: "https://github.com/hedge-dev/HedgeModManager/releases/download/{{ dg_hmm_release_tag }}/{{ dg_hmm_release_archive }}"
+dg_hmm_release_sha256: 9d66b1074693ba11198f8a707d5880e63e43a4bddf1d31552d12e0e74447204a
 dg_hmm_root: "{{ dg_box_home }}/tools/hedge-mod-manager"
 dg_hmm_cache_dir: "{{ dg_hmm_root }}/downloads"
-dg_hmm_source_root: "{{ dg_hmm_root }}/sources/HedgeModManager-{{ dg_hmm_release_tag }}"
 dg_hmm_releases_dir: "{{ dg_hmm_root }}/releases"
 dg_hmm_release_dir: "{{ dg_hmm_releases_dir }}/{{ dg_hmm_release_tag }}"
 dg_hmm_current: "{{ dg_hmm_root }}/current"
 dg_hmm_bin: "{{ dg_box_home }}/bin/hedge-mod-manager"
-dg_hmm_project: "{{ dg_hmm_source_root }}/Source/HedgeModManager.UI/HedgeModManager.UI.csproj"
-dg_hmm_executable: "{{ dg_hmm_current }}/HedgeModManager.UI"
-dg_hmm_dll: "{{ dg_hmm_current }}/HedgeModManager.UI.dll"
+dg_hmm_app_dir: "{{ dg_hmm_current }}/output/linux-x64"
+dg_hmm_executable: "{{ dg_hmm_app_dir }}/HedgeModManager.UI"
+dg_hmm_dll: "{{ dg_hmm_app_dir }}/HedgeModManager.UI.dll"
+dg_hmm_games_registry: "{{ dg_hmm_root }}/sonic-games.tsv"
+dg_hmm_host_bin_dir: "{{ ansible_facts.env.HOME }}/.local/bin"
+dg_hmm_host_launcher: "{{ dg_hmm_host_bin_dir }}/dg-hmm"
+dg_hmm_bash_completion_dir: "{{ ansible_facts.env.HOME }}/.local/share/bash-completion/completions"
+dg_hmm_zsh_completion_dir: "{{ ansible_facts.env.HOME }}/.local/share/zsh/site-functions"
 
 dg_hmm_pacman_packages:
   - dotnet-sdk
 
-# HMM 8 supports these Steam app IDs and this setup currently has several
-# installed on the external Steam library. Superstars/Mania/CD/Adventure are
-# intentionally not listed because HMM does not support them.
-dg_hmm_supported_steam_appids:
-  - "1237320"  # Sonic Frontiers
-  - "1794960"  # Sonic Origins
-  - "2513280"  # SONIC X SHADOW GENERATIONS / Shadow Generations
+# HMM supports one shared manager for these Steam Sonic games. Superstars,
+# Mania, CD, Adventure DX, Adventure 2, and Team Sonic Racing are intentionally
+# omitted because current HMM does not support them.
+dg_hmm_supported_steam_games:
+  - key: sonic-generations
+    aliases: [generations, sg]
+    name: Sonic Generations
+    appid: "71340"
+    executable: SonicGenerations.exe
+    loader: HE1ModLoader
+    mods_dir: mods
+  - key: sonic-lost-world
+    aliases: [lost-world, slw]
+    name: Sonic Lost World
+    appid: "329440"
+    executable: slw.exe
+    loader: HE1ModLoader
+    mods_dir: mods
+  - key: sonic-forces
+    aliases: [forces]
+    name: Sonic Forces
+    appid: "637100"
+    executable: build/main/projects/exec/Sonic Forces.exe
+    loader: HE2ModLoader
+    mods_dir: mods
+  - key: sonic-colors-ultimate
+    aliases: [colors, scu]
+    name: Sonic Colors Ultimate
+    appid: "2055290"
+    executable: exec/SonicColorsUltimate.exe
+    loader: RainbowModLoader
+    mods_dir: mods
+  - key: sonic-origins
+    aliases: [origins]
+    name: Sonic Origins
+    appid: "1794960"
+    executable: build/main/projects/exec/SonicOrigins.exe
+    loader: HiteModLoader
+    mods_dir: mods
+  - key: sonic-frontiers
+    aliases: [frontiers]
+    name: Sonic Frontiers
+    appid: "1237320"
+    executable: SonicFrontiers.exe
+    loader: HE2ModLoader
+    mods_dir: mods
+  - key: shadow-generations
+    aliases: [sxsg, shadow, sonic-x-shadow-generations]
+    name: Shadow Generations / Sonic X Shadow Generations
+    appid: "2513280"
+    executable: SONIC_X_SHADOW_GENERATIONS.exe
+    loader: HE2ModLoader
+    mods_dir: mods_shadow
+
+dg_hmm_supported_steam_appids: "{{ dg_hmm_supported_steam_games | map(attribute='appid') | list }}"

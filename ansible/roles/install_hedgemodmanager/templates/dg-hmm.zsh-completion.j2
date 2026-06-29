@@ -1,0 +1,21 @@
+#compdef dg-hmm
+
+_dg_hmm() {
+  local -a commands
+  commands=(
+    'menu:interactive picker'
+    'list:list installed supported games'
+    'all:list all supported games'
+    'keys:print keys and aliases'
+    'path:print detected executable path'
+{% for game in dg_hmm_supported_steam_games %}
+    '{{ game.key }}:{{ game.name }}'
+{% for alias in game.aliases | default([]) %}
+    '{{ alias }}:{{ game.name }}'
+{% endfor %}
+{% endfor %}
+  )
+  _describe 'dg-hmm command' commands
+}
+
+_dg_hmm "$@"
