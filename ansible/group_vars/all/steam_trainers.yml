@@ -6,6 +6,8 @@ dg_steam_trainers_download_dir: "{{ dg_steam_trainers_root }}/downloads"
 dg_steam_trainers_install_dir: "{{ dg_steam_trainers_root }}/installed"
 dg_steam_trainers_config: "{{ dg_steam_trainers_root }}/trainers.tsv"
 dg_steam_trainers_wrapper_bin: "{{ dg_box_home }}/bin/steam-trainer"
+dg_steam_trainers_steam_config: ""
+dg_steam_trainers_stop_steam: false
 
 dg_steam_trainers:
   - key: streets-of-rage-4
@@ -15,4 +17,5 @@ dg_steam_trainers:
     source_name: "Streets of Rage 4 v1.0-v20210715 Plus 10 Trainer.exe"
     sha256: 88c9ce038035c6f6d4faac728f5180260ac80ce2a29fbab2888c925c6fefd469
     executable_name: "Streets of Rage 4 v1.0-v20210715 Plus 10 Trainer.exe"
+    force_proton: true
     notes: "Official FLiNG page: https://flingtrainer.com/trainer/streets-of-rage-4-trainer/"

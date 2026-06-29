@@ -214,6 +214,20 @@ environment before expecting auto-load to work.
   process. The game must also have been launched once from Steam so its Proton
   compatdata prefix exists.
 
+  Streets of Rage 4 ships a native Linux build, but the FLiNG trainer is a
+  Windows process trainer. Force Proton for it before expecting a prefix:
+
+  ```sh
+  cd ansible
+  ansible-playbook install-steam-trainers.yml \
+    -e dg_steam_trainers_steam_config=$HOME/.local/share/Steam/config/config.vdf
+  ```
+
+  If Steam is running, close it first or add
+  `-e dg_steam_trainers_stop_steam=true`. After that, launch Streets of Rage 4
+  once from Steam so it downloads/boots the Windows build and creates
+  `compatdata/985890/pfx`.
+
   Current staged trainers:
 
   | Key | Steam app ID | Source |

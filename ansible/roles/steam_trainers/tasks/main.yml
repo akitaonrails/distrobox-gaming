@@ -56,3 +56,67 @@
     dest: "{{ dg_steam_trainers_wrapper_bin }}"
     mode: "0755"
     backup: true
+
+- name: Check if Steam is running before forcing Proton
+  ansible.builtin.shell: |
+    pgrep -u "$(id -u)" -x steam >/dev/null || pgrep -u "$(id -u)" -f '/steam(webhelper)?( |$)' >/dev/null
+  register: _steam_trainers_steam_running
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  when: dg_steam_trainers_steam_config | length > 0
+
+- name: Stop Steam before forcing Proton
+  ansible.builtin.command: steam -shutdown
+  changed_when: true
+  failed_when: false
+  when:
+    - dg_steam_trainers_steam_config | length > 0
+    - dg_steam_trainers_stop_steam | bool
+    - _steam_trainers_steam_running.rc == 0
+
+- name: Wait for Steam to exit before forcing Proton
+  ansible.builtin.shell: |
+    for _ in $(seq 1 30); do
+      if ! pgrep -u "$(id -u)" -x steam >/dev/null && ! pgrep -u "$(id -u)" -f '/steam(webhelper)?( |$)' >/dev/null; then
+        exit 0
+      fi
+      sleep 1
+    done
+    exit 1
+  changed_when: false
+  when:
+    - dg_steam_trainers_steam_config | length > 0
+    - dg_steam_trainers_stop_steam | bool
+    - _steam_trainers_steam_running.rc == 0
+
+- name: Refuse to force Proton while Steam is running
+  ansible.builtin.fail:
+    msg: >-
+      Steam is running. Close it first or set dg_steam_trainers_stop_steam=true
+      before editing {{ dg_steam_trainers_steam_config }}.
+  when:
+    - dg_steam_trainers_steam_config | length > 0
+    - not (dg_steam_trainers_stop_steam | bool)
+    - _steam_trainers_steam_running.rc == 0
+
+- name: Force Proton for trainers that need Windows builds
+  ansible.builtin.command: >-
+    python3 {{ dg_project_root }}/scripts/set-steam-compat-tool.py
+    --config {{ dg_steam_trainers_steam_config | quote }}
+    {% for trainer in dg_steam_trainers if trainer.force_proton | default(false) %}
+    --appid {{ trainer.appid | quote }}
+    {% endfor %}
+  register: _steam_trainers_compat_tool
+  changed_when: "'changed: true' in _steam_trainers_compat_tool.stdout"
+  when:
+    - dg_steam_trainers_steam_config | length > 0
+    - (dg_steam_trainers | selectattr('force_proton', 'defined') | selectattr('force_proton') | list | length) > 0
+
+- name: Report skipped Proton forcing
+  ansible.builtin.debug:
+    msg: >-
+      Steam compatibility mappings were not edited. Set
+      dg_steam_trainers_steam_config to Steam config.vdf to force Proton for
+      trainer-backed native games.
+  when: dg_steam_trainers_steam_config | length == 0
