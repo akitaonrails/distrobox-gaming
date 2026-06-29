@@ -62,9 +62,16 @@ If Steam is running, either close it first or add
 
 ## Post-install game settings
 
-For MGS2 and MGS3, open each game's launcher and set **Internal Resolution** and
-**Internal Upscaling** to **Default / Original**. MGSHDFix handles resolution and
-upscaling after that. The config tools live under each game's `plugins/` folder:
+For MGS1, the role keeps MGSM2Fix on desktop-sized borderless output and forces
+the internal render height to `2160` in `MGSM2Fix.ini`. The in-game resolution
+still needs to be set to a high-resolution mode, such as **High** or **Max**, for
+MGSM2Fix's internal override to apply.
+
+For MGS2 and MGS3, the role writes `plugins/MGSHDFix.settings` to use
+borderless-windowed 3840x2160 output and 3840x2160 internal render resolution.
+Open each game's launcher and set **Internal Resolution** and **Internal
+Upscaling** to **Default / Original** so the game's built-in FSR/upscaling does
+not fight MGSHDFix. The config tools live under each game's `plugins/` folder:
 
 ```text
 MGS2/plugins/MGSHDFix Config Tool.exe

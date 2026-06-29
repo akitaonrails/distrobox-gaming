@@ -58,6 +58,62 @@ dg_mgs_master_fix_installs:
     game_dir: MGS3
     marker: MGS3-CBC-Base_1.1.0.sha256
 
+dg_mgs_master_ini_settings:
+  - game_dir: MGS1
+    path: MGSM2Fix.ini
+    settings:
+      - section: External Resolution
+        key: Enabled
+        value: "true"
+      - section: External Resolution
+        key: Width
+        value: "0"
+      - section: External Resolution
+        key: Height
+        value: "0"
+      - section: External Resolution
+        key: Windowed
+        value: "false"
+      - section: External Resolution
+        key: Borderless
+        value: "true"
+      - section: Internal Resolution
+        key: Widescreen
+        value: "false"
+      - section: Internal Resolution
+        key: Borderless
+        value: "false"
+      - section: Internal Resolution
+        key: Enabled
+        value: "true"
+      - section: Internal Resolution
+        key: Height
+        value: "2160"
+  - game_dir: MGS2
+    path: plugins/MGSHDFix.settings
+    settings: &mgs_master_mgshdfix_4k_settings
+      - section: Window Settings
+        key: Enable Resolution Overrides
+        value: "1"
+      - section: Window Settings
+        key: Fullscreen, Borderless, and Windowed
+        value: Borderless Windowed
+      - section: Window Settings
+        key: Window Width
+        value: "3840"
+      - section: Window Settings
+        key: Window Height
+        value: "2160"
+      - section: Internal Resolution / Render Scale (+ Downsampling / Supersampling / 21:9+ and 4:3 Support)
+        key: Render Width
+        value: "3840"
+      - section: Internal Resolution / Render Scale (+ Downsampling / Supersampling / 21:9+ and 4:3 Support)
+        key: Render Height
+        value: "2160"
+  - game_dir: MGS3
+    path: plugins/MGSHDFix.settings
+    settings: *mgs_master_mgshdfix_4k_settings
+
 dg_mgs_master_launch_options:
   "2131630": 'WINEDLLOVERRIDES="dinput8=n,b;d3d11=n,b" %command%'
   "2306740": 'WINEDLLOVERRIDES="dinput8=n,b;d3d11=n,b" %command%'

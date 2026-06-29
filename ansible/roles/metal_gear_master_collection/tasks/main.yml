@@ -76,6 +76,20 @@
   loop_control:
     label: "{{ item.game_dir }} {{ item.marker }}"
 
+- name: Configure Metal Gear fix INI settings
+  ansible.builtin.command: >-
+    {{ dg_project_root }}/scripts/set-ini-options.py
+    --create
+    --file {{ (dg_mgs_master_common_dir + '/' + item.game_dir + '/' + item.path) | quote }}
+    {% for setting in item.settings %}
+    --set {{ (setting.section + '.' + setting.key + '=' + setting.value) | quote }}
+    {% endfor %}
+  loop: "{{ dg_mgs_master_ini_settings }}"
+  loop_control:
+    label: "{{ item.game_dir }}/{{ item.path }}"
+  register: _mgs_master_ini_settings
+  changed_when: "'changed: true' in _mgs_master_ini_settings.stdout"
+
 - name: Check if Steam is running before editing launch options
   ansible.builtin.shell: |
     pgrep -u "$(id -u)" -x steam >/dev/null || pgrep -u "$(id -u)" -f '/steam(webhelper)?( |$)' >/dev/null
