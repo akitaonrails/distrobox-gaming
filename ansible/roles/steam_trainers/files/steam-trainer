@@ -1,0 +1,103 @@
+#!/usr/bin/env sh
+# steam-trainer — launch staged per-game trainer executables inside the
+# matching Steam Proton prefix.
+#
+# Usage:
+#   steam-trainer list
+#   steam-trainer streets-of-rage-4
+#   steam-trainer 985890
+#
+# Trainers are offline/single-player only. Do not use with VAC/EAC/BattlEye or
+# multiplayer titles.
+set -eu
+
+CONFIG="${DG_STEAM_TRAINERS_CONFIG:-$HOME/tools/steam-trainers/trainers.tsv}"
+
+usage() {
+  cat <<EOF
+Usage:
+  $(basename "$0") list
+  $(basename "$0") <trainer-key-or-steam-appid>
+
+Examples:
+  $(basename "$0") streets-of-rage-4
+  $(basename "$0") 985890
+EOF
+}
+
+find_proton_prefix() {
+  appid="$1"
+  vdf="$HOME/.local/share/Steam/config/libraryfolders.vdf"
+  [ -f "$vdf" ] || return 0
+  awk '/"path"/ { match($0, /"path"[[:space:]]+"([^"]+)"/, a); print a[1] }' "$vdf" 2>/dev/null \
+    | while IFS= read -r lib; do
+        [ -n "$lib" ] || continue
+        cand="$lib/steamapps/compatdata/$appid/pfx"
+        if [ -d "$cand" ]; then
+          printf '%s\n' "$cand"
+          break
+        fi
+      done
+}
+
+[ -f "$CONFIG" ] || {
+  echo "Trainer registry not found: $CONFIG" >&2
+  echo "Run ansible-playbook install-steam-trainers.yml." >&2
+  exit 3
+}
+
+case "${1:-}" in
+  -h|--help|"")
+    usage
+    exit 0
+    ;;
+  list)
+    awk -F '\t' 'NF >= 4 { printf "%s\t%s\t%s\n", $1, $2, $4 }' "$CONFIG"
+    exit 0
+    ;;
+esac
+
+needle="$1"
+row=$(awk -F '\t' -v needle="$needle" '$1 == needle || $2 == needle { print; exit }' "$CONFIG")
+[ -n "$row" ] || {
+  echo "Unknown trainer: $needle" >&2
+  echo "Available trainers:" >&2
+  awk -F '\t' 'NF >= 4 { printf "  %s (%s) — %s\n", $1, $2, $4 }' "$CONFIG" >&2
+  exit 2
+}
+
+key=$(printf '%s\n' "$row" | awk -F '\t' '{print $1}')
+appid=$(printf '%s\n' "$row" | awk -F '\t' '{print $2}')
+exe=$(printf '%s\n' "$row" | awk -F '\t' '{print $3}')
+name=$(printf '%s\n' "$row" | awk -F '\t' '{print $4}')
+
+[ -f "$exe" ] || {
+  echo "Trainer executable missing: $exe" >&2
+  echo "Run ansible-playbook install-steam-trainers.yml." >&2
+  exit 3
+}
+
+command -v protontricks-launch >/dev/null 2>&1 || {
+  echo "protontricks-launch not found inside the gaming distrobox." >&2
+  echo "Install protontricks in the box before launching trainers." >&2
+  exit 4
+}
+
+prefix=$(find_proton_prefix "$appid")
+[ -n "$prefix" ] || {
+  cat >&2 <<EOF
+No Steam Proton prefix found for $name (appid $appid).
+
+Launch the game from Steam once, reach the main menu, then quit or leave it
+running and re-run:
+  $(basename "$0") $key
+EOF
+  exit 3
+}
+
+cat >&2 <<EOF
+[steam-trainer] launching $name inside appid $appid prefix
+[steam-trainer] start the game first if the trainer says it cannot find the game process
+EOF
+cd "$HOME"
+exec protontricks-launch --appid "$appid" "$exe"

@@ -1,0 +1,58 @@
+---
+- name: Ensure Steam trainer directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_steam_trainers_root }}"
+    - "{{ dg_steam_trainers_download_dir }}"
+    - "{{ dg_steam_trainers_install_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Download configured Steam trainers
+  ansible.builtin.get_url:
+    url: "{{ item.source_url }}"
+    dest: "{{ dg_steam_trainers_download_dir }}/{{ item.source_name }}"
+    checksum: "sha256:{{ item.sha256 }}"
+    mode: "0644"
+    headers:
+      User-Agent: "Mozilla/5.0"
+  loop: "{{ dg_steam_trainers }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: Ensure per-trainer install directories exist
+  ansible.builtin.file:
+    path: "{{ dg_steam_trainers_install_dir }}/{{ item.key }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ dg_steam_trainers }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: Install trainer executables
+  ansible.builtin.copy:
+    src: "{{ dg_steam_trainers_download_dir }}/{{ item.source_name }}"
+    dest: "{{ dg_steam_trainers_install_dir }}/{{ item.key }}/{{ item.executable_name }}"
+    remote_src: true
+    mode: "0755"
+  loop: "{{ dg_steam_trainers }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: Write Steam trainer registry
+  ansible.builtin.copy:
+    dest: "{{ dg_steam_trainers_config }}"
+    mode: "0644"
+    content: |
+      {% for trainer in dg_steam_trainers %}
+      {{ trainer.key }}	{{ trainer.appid }}	{{ dg_steam_trainers_install_dir }}/{{ trainer.key }}/{{ trainer.executable_name }}	{{ trainer.name }}
+      {% endfor %}
+
+- name: Install steam-trainer wrapper
+  ansible.builtin.copy:
+    src: steam-trainer
+    dest: "{{ dg_steam_trainers_wrapper_bin }}"
+    mode: "0755"
+    backup: true

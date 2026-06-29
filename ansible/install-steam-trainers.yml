@@ -1,0 +1,7 @@
+---
+- name: Install reusable Steam Proton trainer launchers
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - steam_trainers

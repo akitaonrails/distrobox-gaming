@@ -199,14 +199,35 @@ environment before expecting auto-load to work.
 ## Caveats
 
 - **Trainer .exes** (FLiNG / FearLessRevolution / CheatHappens
-  standalones) are designed for Windows CE attaching to Windows
-  processes. Native Linux CE doesn't run them directly. If you need
-  one of those instead of a `.CT`, fall back to the older
-  protontricks-based pattern: `protontricks-launch --appid <id>
-  /path/to/Trainer.exe` to launch the trainer in the same compatdata
-  prefix as the game. The `protontricks` package was previously
-  installed by this role; you can reinstall it manually with
-  `yay -S --needed protontricks` if needed.
+  standalones) are separate per-game Windows executables. This repo uses
+  `steam-trainer` as the reusable wrapper: each game gets a staged trainer
+  binary, but the launch flow is shared.
+
+  ```sh
+  cd ansible
+  ansible-playbook install-steam-trainers.yml
+  distrobox-enter -n gaming -- /mnt/data/distrobox/gaming/bin/steam-trainer list
+  distrobox-enter -n gaming -- /mnt/data/distrobox/gaming/bin/steam-trainer streets-of-rage-4
+  ```
+
+  Start the Steam game first if the trainer says it cannot find the game
+  process. The game must also have been launched once from Steam so its Proton
+  compatdata prefix exists.
+
+  Current staged trainers:
+
+  | Key | Steam app ID | Source |
+  | --- | --- | --- |
+  | `streets-of-rage-4` | `985890` | Official FLiNG Streets of Rage 4 trainer, 10 options, `v1.0-v20210715+` |
+
+  FLiNG does **not** ship one reusable trainer app. It ships one trainer
+  executable per game. The reusable piece in this repo is the `steam-trainer`
+  launcher and Ansible data model; add future games to
+  `ansible/group_vars/all/steam_trainers.yml` with their Steam app ID, official
+  source URL, and SHA-256.
+
+  Spider-Man Remastered is currently set up for the Windows Cheat Engine flow
+  (`cheat-engine --proton 1817070`); no Spider-Man FLiNG trainer is staged yet.
 - **Address randomisation** — modern games use ASLR. Saved `.CT`
   tables with hardcoded addresses won't survive game restarts; use
   AOB (array-of-bytes) scans or pointer scans instead. CE skill
