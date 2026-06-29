@@ -1,0 +1,66 @@
+# Metal Gear Solid: Master Collection Vol. 1 community fixes.
+# Run with ansible/install-metal-gear-master-collection-fixes.yml or
+# `ansible-playbook site.yml --tags metal_gear_master_collection`.
+
+dg_mgs_master_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0) else dg_box_home + '/.local/share/Steam' }}
+dg_mgs_master_common_dir: "{{ dg_mgs_master_steam_library_root }}/steamapps/common"
+dg_mgs_master_cache_dir: "{{ dg_box_home }}/cache/metal-gear-master-collection-fixes"
+
+# Empty by default because Steam userdata IDs are account-specific. Set this
+# when you want the role to write launch options, e.g.
+# ~/.local/share/Steam/userdata/65294540/config/localconfig.vdf
+dg_mgs_master_steam_localconfig: ""
+
+# The role refuses to edit Steam localconfig while Steam is running. Stop Steam
+# first, or set this true for a local one-shot run.
+dg_mgs_master_stop_steam: false
+dg_mgs_master_force_reinstall: false
+
+dg_mgs_master_archives:
+  mgsm2fix:
+    name: MGSM2Fix_3.6.0.zip
+    url: https://github.com/nuggslet/MGSM2Fix/releases/download/v3.6/MGSM2Fix_3.6.0.zip
+    sha256: a979dea88acd8324b269b101a79293d32674af03d64e800ab9978216b215410d
+  mgshdfix:
+    name: MGSHDFix_3.1.0.zip
+    url: https://github.com/ShizCalev/MGSHDFix/releases/download/3.1.0/MGSHDFix_3.1.0.zip
+    sha256: ec42a40a26d80425496cf20a52c13d91f1523d74472c77183dda0aaf0d46db33
+  mgs2_cbc:
+    name: MGS2-Community-Bugfix-Compilation_Base_v2.2.0.zip
+    url: https://github.com/ShizCalev/MGS2-Community-Bugfix-Compilation/releases/download/2.2.0/MGS2-Community-Bugfix-Compilation_Base_v2.2.0.zip
+    sha256: c09d2c51128d389af1e90a4356dbfbca1e0cd63beb8f5e1ae76200b00b42c131
+  mgs3_cbc:
+    name: MGS3-Community-Bugfix-Compilation_Base_v1.1.0.zip
+    url: https://github.com/ShizCalev/MGS3-Community-Bugfix-Compilation/releases/download/1.1.0/MGS3-Community-Bugfix-Compilation_Base_v1.1.0.zip
+    sha256: 1bc091847726560e31f019e9a327303623bf646bbb6bd0adc1d9a18cabb754f9
+
+dg_mgs_master_fix_installs:
+  - archive: mgsm2fix
+    game_dir: MGS1
+    marker: MGSM2Fix_3.6.0.sha256
+  - archive: mgsm2fix
+    game_dir: MGS Master Collection Bonus Content
+    marker: MGSM2Fix_3.6.0.sha256
+  - archive: mgshdfix
+    game_dir: MG and MG2
+    marker: MGSHDFix_3.1.0.sha256
+  - archive: mgshdfix
+    game_dir: MGS2
+    marker: MGSHDFix_3.1.0.sha256
+  - archive: mgs2_cbc
+    game_dir: MGS2
+    marker: MGS2-CBC-Base_2.2.0.sha256
+  - archive: mgshdfix
+    game_dir: MGS3
+    marker: MGSHDFix_3.1.0.sha256
+  - archive: mgs3_cbc
+    game_dir: MGS3
+    marker: MGS3-CBC-Base_1.1.0.sha256
+
+dg_mgs_master_launch_options:
+  "2131630": 'WINEDLLOVERRIDES="dinput8=n,b;d3d11=n,b" %command%'
+  "2306740": 'WINEDLLOVERRIDES="dinput8=n,b;d3d11=n,b" %command%'
+  "2131680": 'WINEDLLOVERRIDES="wininet,winhttp=n,b" %command%'
+  "2131640": 'WINEDLLOVERRIDES="wininet,winhttp=n,b" %command%'
+  "2131650": 'WINEDLLOVERRIDES="wininet,winhttp=n,b" %command%'

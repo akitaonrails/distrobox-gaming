@@ -1,0 +1,7 @@
+---
+- name: Install Metal Gear Master Collection community fixes
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - metal_gear_master_collection

@@ -36,3 +36,9 @@
 #
 # Switch updates staging dir (NSP files).
 # dg_switch_updates_source: "{{ dg_rom_heavy_root }}/switch_updates"
+#
+# External Steam library root used by optional Steam-game fix roles. Point at
+# the directory that contains steamapps/, not steamapps itself.
+# dg_external_usb_games_root: /run/media/me/STEAM
+# dg_mgs_master_steam_library_root: "{{ dg_external_usb_games_root }}"
+# dg_mgs_master_steam_localconfig: /home/me/.local/share/Steam/userdata/<steamid>/config/localconfig.vdf

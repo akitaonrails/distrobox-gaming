@@ -1,0 +1,138 @@
+---
+- name: Ensure Metal Gear fix cache exists
+  ansible.builtin.file:
+    path: "{{ dg_mgs_master_cache_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Build Metal Gear fix archive list
+  ansible.builtin.set_fact:
+    _mgs_master_archives: "{{ dg_mgs_master_archives | dict2items }}"
+
+- name: Download Metal Gear fix archives
+  ansible.builtin.get_url:
+    url: "{{ item.value.url }}"
+    dest: "{{ dg_mgs_master_cache_dir }}/{{ item.value.name }}"
+    checksum: "sha256:{{ item.value.sha256 }}"
+    mode: "0644"
+  loop: "{{ _mgs_master_archives }}"
+  loop_control:
+    label: "{{ item.value.name }}"
+
+- name: Check target game directories
+  ansible.builtin.stat:
+    path: "{{ dg_mgs_master_common_dir }}/{{ item.game_dir }}"
+  loop: "{{ dg_mgs_master_fix_installs }}"
+  loop_control:
+    label: "{{ item.game_dir }}"
+  register: _mgs_master_targets
+
+- name: Fail when expected Metal Gear game folders are missing
+  ansible.builtin.fail:
+    msg: >-
+      Missing Steam install folder {{ item.stat.path }}. Override
+      dg_mgs_master_steam_library_root if the Master Collection lives in a
+      different Steam library.
+  loop: "{{ _mgs_master_targets.results }}"
+  loop_control:
+    label: "{{ item.item.game_dir }}"
+  when: not item.stat.exists
+
+- name: Ensure per-game fix marker directories exist
+  ansible.builtin.file:
+    path: "{{ dg_mgs_master_common_dir }}/{{ item.game_dir }}/.dg-metal-gear-fixes"
+    state: directory
+    mode: "0755"
+  loop: "{{ dg_mgs_master_fix_installs }}"
+  loop_control:
+    label: "{{ item.game_dir }}"
+
+- name: Check installed fix markers
+  ansible.builtin.stat:
+    path: "{{ dg_mgs_master_common_dir }}/{{ item.game_dir }}/.dg-metal-gear-fixes/{{ item.marker }}"
+  loop: "{{ dg_mgs_master_fix_installs }}"
+  loop_control:
+    label: "{{ item.game_dir }} {{ item.marker }}"
+  register: _mgs_master_markers
+
+- name: Extract Metal Gear fixes into game folders
+  ansible.builtin.unarchive:
+    src: "{{ dg_mgs_master_cache_dir }}/{{ dg_mgs_master_archives[item.item.archive].name }}"
+    dest: "{{ dg_mgs_master_common_dir }}/{{ item.item.game_dir }}"
+    remote_src: true
+  loop: "{{ _mgs_master_markers.results }}"
+  loop_control:
+    label: "{{ item.item.game_dir }} <- {{ dg_mgs_master_archives[item.item.archive].name }}"
+  when: dg_mgs_master_force_reinstall | bool or not item.stat.exists
+
+- name: Write installed fix markers
+  ansible.builtin.copy:
+    dest: "{{ dg_mgs_master_common_dir }}/{{ item.game_dir }}/.dg-metal-gear-fixes/{{ item.marker }}"
+    mode: "0644"
+    content: |
+      {{ dg_mgs_master_archives[item.archive].name }}
+      sha256={{ dg_mgs_master_archives[item.archive].sha256 }}
+  loop: "{{ dg_mgs_master_fix_installs }}"
+  loop_control:
+    label: "{{ item.game_dir }} {{ item.marker }}"
+
+- name: Check if Steam is running before editing launch options
+  ansible.builtin.shell: |
+    pgrep -u "$(id -u)" -x steam >/dev/null || pgrep -u "$(id -u)" -f '/steam(webhelper)?( |$)' >/dev/null
+  register: _mgs_master_steam_running
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  when: dg_mgs_master_steam_localconfig | length > 0
+
+- name: Stop Steam before editing launch options
+  ansible.builtin.command: steam -shutdown
+  changed_when: true
+  failed_when: false
+  when:
+    - dg_mgs_master_steam_localconfig | length > 0
+    - dg_mgs_master_stop_steam | bool
+    - _mgs_master_steam_running.rc == 0
+
+- name: Wait for Steam to exit
+  ansible.builtin.shell: |
+    for _ in $(seq 1 30); do
+      if ! pgrep -u "$(id -u)" -x steam >/dev/null && ! pgrep -u "$(id -u)" -f '/steam(webhelper)?( |$)' >/dev/null; then
+        exit 0
+      fi
+      sleep 1
+    done
+    exit 1
+  changed_when: false
+  when:
+    - dg_mgs_master_steam_localconfig | length > 0
+    - dg_mgs_master_stop_steam | bool
+    - _mgs_master_steam_running.rc == 0
+
+- name: Refuse to edit launch options while Steam is running
+  ansible.builtin.fail:
+    msg: >-
+      Steam is running. Close it first or set dg_mgs_master_stop_steam=true
+      before editing {{ dg_mgs_master_steam_localconfig }}.
+  when:
+    - dg_mgs_master_steam_localconfig | length > 0
+    - not (dg_mgs_master_stop_steam | bool)
+    - _mgs_master_steam_running.rc == 0
+
+- name: Configure Steam launch options for Metal Gear fixes
+  ansible.builtin.command: >-
+    {{ dg_project_root }}/scripts/set-steam-launch-options.py
+    --localconfig {{ dg_mgs_master_steam_localconfig | quote }}
+    {% for app in dg_mgs_master_launch_options | dict2items %}
+    --set {{ app.key | quote }} {{ app.value | quote }}
+    {% endfor %}
+  register: _mgs_master_launch_options
+  changed_when: "'changed: true' in _mgs_master_launch_options.stdout"
+  when: dg_mgs_master_steam_localconfig | length > 0
+
+- name: Report launch option status
+  ansible.builtin.debug:
+    msg: >-
+      Launch options were not edited. Set dg_mgs_master_steam_localconfig to
+      your Steam userdata localconfig.vdf to manage DLL overrides.
+  when: dg_mgs_master_steam_localconfig | length == 0
