@@ -1,4 +1,42 @@
 ---
+- name: Validate Steam trainer keys are unique
+  ansible.builtin.assert:
+    that:
+      - (dg_steam_trainers | map(attribute='key') | list | unique | length) == (dg_steam_trainers | length)
+    fail_msg: "dg_steam_trainers keys must be unique."
+
+- name: Validate Steam trainer aliases are unique and do not shadow keys
+  ansible.builtin.assert:
+    that:
+      - (_steam_trainer_aliases | unique | length) == (_steam_trainer_aliases | length)
+      - (_steam_trainer_aliases | intersect(_steam_trainer_keys) | length) == 0
+    fail_msg: "dg_steam_trainers aliases must be unique and must not collide with keys."
+  vars:
+    _steam_trainer_keys: "{{ dg_steam_trainers | map(attribute='key') | list }}"
+    _steam_trainer_aliases: "{{ dg_steam_trainers | map(attribute='aliases') | list | flatten }}"
+
+- name: Validate enabled Steam trainer metadata
+  ansible.builtin.assert:
+    that:
+      - item.key is defined
+      - item.name is defined
+      - item.appid is defined
+      - item.status | default('available') == 'available'
+      - item.source_page is defined
+      - item.source_page is match('^https://flingtrainer\.com/trainer/.+')
+      - item.source_url is defined
+      - item.source_url is match('^https://flingtrainer\.com/downloads/.+')
+      - item.source_name is defined
+      - item.sha256 is defined
+      - item.artifact_type | default('exe') in ['exe', 'zip']
+      - item.executable_name is defined
+      - (item.artifact_type | default('exe') != 'zip') or (item.archive_member is defined)
+    fail_msg: "Enabled trainer {{ item.key | default('<missing key>') }} is missing required official FLiNG metadata."
+  loop: "{{ dg_steam_trainers }}"
+  loop_control:
+    label: "{{ item.key | default('<missing key>') }}"
+  when: item.enabled | default(true) | bool
+
 - name: Ensure Steam trainer directories exist
   ansible.builtin.file:
     path: "{{ item }}"
@@ -9,6 +47,9 @@
     - "{{ dg_steam_trainers_download_dir }}"
     - "{{ dg_steam_trainers_install_dir }}"
     - "{{ dg_box_home }}/bin"
+    - "{{ dg_steam_trainers_host_bin_dir }}"
+    - "{{ dg_steam_trainers_bash_completion_dir }}"
+    - "{{ dg_steam_trainers_zsh_completion_dir }}"
 
 - name: Download configured Steam trainers
   ansible.builtin.get_url:
@@ -21,6 +62,9 @@
   loop: "{{ dg_steam_trainers }}"
   loop_control:
     label: "{{ item.key }}"
+  when:
+    - item.enabled | default(true) | bool
+    - item.status | default('available') == 'available'
 
 - name: Ensure per-trainer install directories exist
   ansible.builtin.file:
@@ -30,8 +74,11 @@
   loop: "{{ dg_steam_trainers }}"
   loop_control:
     label: "{{ item.key }}"
+  when:
+    - item.enabled | default(true) | bool
+    - item.status | default('available') == 'available'
 
-- name: Install trainer executables
+- name: Install direct trainer executables
   ansible.builtin.copy:
     src: "{{ dg_steam_trainers_download_dir }}/{{ item.source_name }}"
     dest: "{{ dg_steam_trainers_install_dir }}/{{ item.key }}/{{ item.executable_name }}"
@@ -40,14 +87,55 @@
   loop: "{{ dg_steam_trainers }}"
   loop_control:
     label: "{{ item.key }}"
+  when:
+    - item.enabled | default(true) | bool
+    - item.status | default('available') == 'available'
+    - item.artifact_type | default('exe') == 'exe'
+
+- name: Extract zipped trainer executables
+  ansible.builtin.command:
+    argv:
+      - python3
+      - -c
+      - >-
+        import pathlib, sys, zipfile;
+        src, member, dest = sys.argv[1:4];
+        data = zipfile.ZipFile(src).read(member);
+        path = pathlib.Path(dest);
+        old = path.read_bytes() if path.exists() else None;
+        print('ok' if old == data else 'changed');
+        path.write_bytes(data) if old != data else None
+      - "{{ dg_steam_trainers_download_dir }}/{{ item.source_name }}"
+      - "{{ item.archive_member }}"
+      - "{{ dg_steam_trainers_install_dir }}/{{ item.key }}/{{ item.executable_name }}"
+  register: _steam_trainers_zip_extract
+  changed_when: _steam_trainers_zip_extract.stdout == 'changed'
+  loop: "{{ dg_steam_trainers }}"
+  loop_control:
+    label: "{{ item.key }}"
+  when:
+    - item.enabled | default(true) | bool
+    - item.status | default('available') == 'available'
+    - item.artifact_type | default('exe') == 'zip'
+
+- name: Ensure extracted trainer executables are executable
+  ansible.builtin.file:
+    path: "{{ dg_steam_trainers_install_dir }}/{{ item.key }}/{{ item.executable_name }}"
+    mode: "0755"
+  loop: "{{ dg_steam_trainers }}"
+  loop_control:
+    label: "{{ item.key }}"
+  when:
+    - item.enabled | default(true) | bool
+    - item.status | default('available') == 'available'
 
 - name: Write Steam trainer registry
   ansible.builtin.copy:
     dest: "{{ dg_steam_trainers_config }}"
     mode: "0644"
     content: |
-      {% for trainer in dg_steam_trainers %}
-      {{ trainer.key }}	{{ trainer.appid }}	{{ dg_steam_trainers_install_dir }}/{{ trainer.key }}/{{ trainer.executable_name }}	{{ trainer.name }}
+      {% for trainer in dg_steam_trainers if (trainer.enabled | default(true)) and (trainer.status | default('available') == 'available') %}
+      {{ trainer.key }}	{{ trainer.appid }}	{{ dg_steam_trainers_install_dir }}/{{ trainer.key }}/{{ trainer.executable_name }}	{{ trainer.name }}	{{ trainer.status | default('available') }}	{{ trainer.source_page }}	{{ trainer.aliases | default([]) | join(',') }}	{{ trainer.online_risk | default(false) | ternary('online_risk', '') }}
       {% endfor %}
 
 - name: Install steam-trainer wrapper
@@ -56,6 +144,24 @@
     dest: "{{ dg_steam_trainers_wrapper_bin }}"
     mode: "0755"
     backup: true
+
+- name: Install host dg-fling launcher
+  ansible.builtin.template:
+    src: dg-fling.j2
+    dest: "{{ dg_steam_trainers_host_launcher }}"
+    mode: "0755"
+
+- name: Install bash completion for dg-fling
+  ansible.builtin.template:
+    src: dg-fling.bash-completion.j2
+    dest: "{{ dg_steam_trainers_bash_completion_dir }}/dg-fling"
+    mode: "0644"
+
+- name: Install zsh completion for dg-fling
+  ansible.builtin.template:
+    src: dg-fling.zsh-completion.j2
+    dest: "{{ dg_steam_trainers_zsh_completion_dir }}/_dg-fling"
+    mode: "0644"
 
 - name: Check if Steam is running before forcing Proton
   ansible.builtin.shell: |
@@ -104,7 +210,7 @@
   ansible.builtin.command: >-
     python3 {{ dg_project_root }}/scripts/set-steam-compat-tool.py
     --config {{ dg_steam_trainers_steam_config | quote }}
-    {% for trainer in dg_steam_trainers if trainer.force_proton | default(false) %}
+    {% for trainer in dg_steam_trainers if (trainer.enabled | default(true)) and (trainer.status | default('available') == 'available') and (trainer.force_proton | default(false)) %}
     --appid {{ trainer.appid | quote }}
     {% endfor %}
   register: _steam_trainers_compat_tool

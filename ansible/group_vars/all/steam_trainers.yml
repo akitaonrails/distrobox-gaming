@@ -6,16 +6,338 @@ dg_steam_trainers_download_dir: "{{ dg_steam_trainers_root }}/downloads"
 dg_steam_trainers_install_dir: "{{ dg_steam_trainers_root }}/installed"
 dg_steam_trainers_config: "{{ dg_steam_trainers_root }}/trainers.tsv"
 dg_steam_trainers_wrapper_bin: "{{ dg_box_home }}/bin/steam-trainer"
+dg_steam_trainers_host_bin_dir: "{{ ansible_facts.env.HOME }}/.local/bin"
+dg_steam_trainers_host_launcher: "{{ dg_steam_trainers_host_bin_dir }}/dg-fling"
+dg_steam_trainers_bash_completion_dir: "{{ ansible_facts.env.HOME }}/.local/share/bash-completion/completions"
+dg_steam_trainers_zsh_completion_dir: "{{ ansible_facts.env.HOME }}/.local/share/zsh/site-functions"
 dg_steam_trainers_steam_config: ""
 dg_steam_trainers_stop_steam: false
 
 dg_steam_trainers:
   - key: streets-of-rage-4
+    aliases: [sor4]
     name: Streets of Rage 4 FLiNG Trainer
     appid: "985890"
+    status: available
+    enabled: true
+    source_page: "https://flingtrainer.com/trainer/streets-of-rage-4-trainer/"
     source_url: "https://flingtrainer.com/downloads/_-D5KrIcTSwNiKH6igxiZw,,"
     source_name: "Streets of Rage 4 v1.0-v20210715 Plus 10 Trainer.exe"
     sha256: 88c9ce038035c6f6d4faac728f5180260ac80ce2a29fbab2888c925c6fefd469
+    artifact_type: exe
     executable_name: "Streets of Rage 4 v1.0-v20210715 Plus 10 Trainer.exe"
     force_proton: true
-    notes: "Official FLiNG page: https://flingtrainer.com/trainer/streets-of-rage-4-trainer/"
+    notes: "Validated with virtual desktop while the game is running."
+
+  - key: spider-man-remastered
+    aliases: [spiderman, spider-man]
+    name: Marvel's Spider-Man Remastered FLiNG Trainer
+    appid: "1817070"
+    status: available
+    enabled: true
+    source_page: "https://flingtrainer.com/trainer/marvels-spider-man-remastered-trainers/"
+    source_url: "https://flingtrainer.com/downloads/1BAxL4QqESaUQ3ys6qUV7A,,"
+    source_name: "Marvels Spider Man Remastered v1.812-v2.616 Plus 30 Trainer.exe"
+    sha256: 4efd2811e312cf9be5ecfa7d3964d682660ab6f2e4b5d8e51ad3b9eeeb01416f
+    artifact_type: exe
+    executable_name: "Marvels Spider Man Remastered v1.812-v2.616 Plus 30 Trainer.exe"
+    force_proton: false
+    notes: "Official FLiNG trainer. Use offline/single-player only."
+
+  - key: soulcalibur-vi
+    aliases: [soul-calibur-vi, sc6]
+    name: Soulcalibur VI FLiNG Trainer
+    appid: "544750"
+    status: available
+    enabled: true
+    source_page: "https://flingtrainer.com/trainer/soulcalibur-vi-trainer/"
+    source_url: "https://flingtrainer.com/downloads/t2UHjcvh5qW6yTfJNsJJ3Q,,"
+    source_name: "Soulcalibur VI v1.0-v2.25 Plus 12 Trainer.exe"
+    sha256: cb3238d558ff5e3d3afdb80b166b7dda799947daf4a204f55dbfbfb2858d7332
+    artifact_type: exe
+    executable_name: "Soulcalibur VI v1.0-v2.25 Plus 12 Trainer.exe"
+    force_proton: false
+    notes: "Official FLiNG trainer."
+
+  - key: bloodstained-ritual-of-the-night
+    aliases: [bloodstained]
+    name: Bloodstained Ritual of the Night FLiNG Trainer
+    appid: "692850"
+    status: available
+    enabled: true
+    source_page: "https://flingtrainer.com/trainer/bloodstained-ritual-of-the-night-trainer/"
+    source_url: "https://flingtrainer.com/downloads/gS5Oz2hogBsRtlNC0K8dCQ,,"
+    source_name: "Bloodstained Ritual of the Night v1.0-v1.4 Plus 15 Trainer.exe"
+    sha256: f6aa174c8d379b18fa37b14c164f02148a56e7e167d9d4a531bc4e5337d48d2a
+    artifact_type: exe
+    executable_name: "Bloodstained Ritual of the Night v1.0-v1.4 Plus 15 Trainer.exe"
+    force_proton: false
+    notes: "Official FLiNG trainer."
+
+  - key: black-myth-wukong
+    aliases: [wukong, bmw]
+    name: Black Myth Wukong FLiNG Trainer
+    appid: "2358720"
+    status: available
+    enabled: true
+    source_page: "https://flingtrainer.com/trainer/black-myth-wukong-trainer/"
+    source_url: "https://flingtrainer.com/downloads/J0ZX9_hiI3QYHi9EG5A7vw,,"
+    source_name: "Black Myth Wukong v1.0-v1.0.20 Plus 44 Trainer.exe"
+    sha256: e81321810a9f5058ed73edce827453442d603ca89a2de4939ce55b83e7d7ff63
+    artifact_type: exe
+    executable_name: "Black Myth Wukong v1.0-v1.0.20 Plus 44 Trainer.exe"
+    force_proton: false
+    notes: "Official FLiNG trainer."
+
+  - key: devil-may-cry-5
+    aliases: [dmc5]
+    name: Devil May Cry 5 FLiNG Trainer
+    appid: "601150"
+    status: available
+    enabled: true
+    source_page: "https://flingtrainer.com/trainer/devil-may-cry-5-trainer/"
+    source_url: "https://flingtrainer.com/downloads/kTPVNSgEtHvRHk0qeer7fA,,"
+    source_name: "Devil May Cry 5 v1.0-v20201215 Plus 25 Trainer.exe"
+    sha256: b927d8aaabbd38abe94056122cdcd333599eefae956edfc4e6aa288a5fa1864f
+    artifact_type: exe
+    executable_name: "Devil May Cry 5 v1.0-v20201215 Plus 25 Trainer.exe"
+    force_proton: false
+    notes: "Official FLiNG trainer."
+
+  - key: final-fantasy-vii-rebirth
+    aliases: [ff7-rebirth, ffvii-rebirth]
+    name: Final Fantasy VII Rebirth FLiNG Trainer
+    appid: "2909400"
+    status: available
+    enabled: true
+    source_page: "https://flingtrainer.com/trainer/final-fantasy-vii-rebirth-trainer/"
+    source_url: "https://flingtrainer.com/downloads/vxUaB_0gelQVT1YOTMOmcQ,,"
+    source_name: "Final Fantasy VII Rebirth v1.0-v1.005 Plus 58 Trainer Updated.exe"
+    sha256: 757fe032fe21b11c3822c65206742de9598bbe631e26852341abf4286ec4662b
+    artifact_type: exe
+    executable_name: "Final Fantasy VII Rebirth v1.0-v1.005 Plus 58 Trainer Updated.exe"
+    force_proton: false
+    notes: "Official FLiNG trainer."
+
+  - key: halo-mcc-ce-anniversary
+    aliases: [halo-ce, halo-ce-anniversary]
+    name: Halo MCC Halo CE Anniversary FLiNG Trainer
+    appid: "976730"
+    status: available
+    enabled: true
+    source_page: "https://flingtrainer.com/trainer/halo-the-master-chief-collection-halo-ce-anniversary-trainer/"
+    source_url: "https://flingtrainer.com/downloads/3l_L6hA4eViSjrMroDYl8Q,,"
+    source_name: "Halo The Master Chief Collection (Halo CE Anniversary) v1.0-v20240214 Plus 13 Trainer.exe"
+    sha256: f7667caa0245eb973e2848409ea89693e7272b20af1536c2e90695a929fd0411
+    artifact_type: exe
+    executable_name: "Halo The Master Chief Collection (Halo CE Anniversary) v1.0-v20240214 Plus 13 Trainer.exe"
+    force_proton: false
+    online_risk: true
+    notes: "Official campaign-specific FLiNG trainer. Launch MCC with anti-cheat disabled/offline only."
+
+  - key: halo-mcc-halo-2-anniversary
+    aliases: [halo-2, halo-2-anniversary]
+    name: Halo MCC Halo 2 Anniversary FLiNG Trainer
+    appid: "976730"
+    status: available
+    enabled: true
+    source_page: "https://flingtrainer.com/trainer/halo-the-master-chief-collection-halo-2-anniversary-trainer/"
+    source_url: "https://flingtrainer.com/downloads/uAsUEtMCsbMU1Wrik7202w,,"
+    source_name: "Halo.The.Master.Chief.Collection.(Halo.2.Anniversary).v1.0-v20221219.Plus.13.Trainer-FLiNG.zip"
+    sha256: 9b780fab4515233e4e0cfd84679a837fb2a29e278d5948d718076007d0c69dcf
+    artifact_type: zip
+    archive_member: "Halo The Master Chief Collection (Halo 2 Anniversary) v1.0-v20221219 Plus 13 Trainer.exe"
+    executable_name: "Halo The Master Chief Collection (Halo 2 Anniversary) v1.0-v20221219 Plus 13 Trainer.exe"
+    force_proton: false
+    online_risk: true
+    notes: "Official campaign-specific FLiNG trainer. Launch MCC with anti-cheat disabled/offline only."
+
+  - key: halo-mcc-halo-3
+    aliases: [halo-3]
+    name: Halo MCC Halo 3 FLiNG Trainer
+    appid: "976730"
+    status: available
+    enabled: true
+    source_page: "https://flingtrainer.com/trainer/halo-the-master-chief-collection-halo-3-trainer/"
+    source_url: "https://flingtrainer.com/downloads/pAhkXwrVC7C7R6qiwbAXDg,,"
+    source_name: "Halo.The.Master.Chief.Collection.(Halo.3).v1.0-v20240214.Plus.13.Trainer-FLiNG.zip"
+    sha256: 6a70377565899cafae9da7db671465eba10ec191ebd50b13253ab82b252198a3
+    artifact_type: zip
+    archive_member: "Halo The Master Chief Collection (Halo 3) v1.0-v20240214 Plus 13 Trainer.exe"
+    executable_name: "Halo The Master Chief Collection (Halo 3) v1.0-v20240214 Plus 13 Trainer.exe"
+    force_proton: false
+    online_risk: true
+    notes: "Official campaign-specific FLiNG trainer. Launch MCC with anti-cheat disabled/offline only."
+
+  - key: halo-mcc-halo-3-odst
+    aliases: [halo-3-odst, odst]
+    name: Halo MCC Halo 3 ODST FLiNG Trainer
+    appid: "976730"
+    status: available
+    enabled: true
+    source_page: "https://flingtrainer.com/trainer/halo-the-master-chief-collection-halo-3-odst-trainer/"
+    source_url: "https://flingtrainer.com/downloads/-3SGxbaleXvnZboQ5AO5jw,,"
+    source_name: "Halo.The.Master.Chief.Collection.(Halo.3.ODST).v1.0-v20221219.Plus.13.Trainer-FLiNG.zip"
+    sha256: d35a1a198bccd9b8180b99fd9b1969620af5f5f497e2ae0dd1b6506ec24adc69
+    artifact_type: zip
+    archive_member: "Halo The Master Chief Collection (Halo 3 ODST) v1.0-v20221219 Plus 13 Trainer.exe"
+    executable_name: "Halo The Master Chief Collection (Halo 3 ODST) v1.0-v20221219 Plus 13 Trainer.exe"
+    force_proton: false
+    online_risk: true
+    notes: "Official campaign-specific FLiNG trainer. Launch MCC with anti-cheat disabled/offline only."
+
+  - key: halo-mcc-halo-4
+    aliases: [halo-4]
+    name: Halo MCC Halo 4 FLiNG Trainer
+    appid: "976730"
+    status: available
+    enabled: true
+    source_page: "https://flingtrainer.com/trainer/halo-the-master-chief-collection-halo-4-trainer/"
+    source_url: "https://flingtrainer.com/downloads/IHFRigW6TMhhnwFZJqJEVg,,"
+    source_name: "Halo.The.Master.Chief.Collection.(Halo.4).v1.0-v20221219.Plus.14.Trainer-FLiNG.zip"
+    sha256: 179a963caac30c34ce415389eb1d12739c796b5c2b2e265c44af4ea59923a026
+    artifact_type: zip
+    archive_member: "Halo The Master Chief Collection (Halo 4) v1.0-v20221219 Plus 14 Trainer.exe"
+    executable_name: "Halo The Master Chief Collection (Halo 4) v1.0-v20221219 Plus 14 Trainer.exe"
+    force_proton: false
+    online_risk: true
+    notes: "Official campaign-specific FLiNG trainer. Launch MCC with anti-cheat disabled/offline only."
+
+  - key: halo-mcc-reach
+    aliases: [halo-reach, reach]
+    name: Halo MCC Reach FLiNG Trainer
+    appid: "976730"
+    status: available
+    enabled: true
+    source_page: "https://flingtrainer.com/trainer/halo-the-master-chief-collection-halo-reach-trainer/"
+    source_url: "https://flingtrainer.com/downloads/oBIJudlifAb05pM-X5eC1w,,"
+    source_name: "Halo.The.Master.Chief.Collection.(Halo.Reach).v1.0-v20221219.Plus.13.Trainer-FLiNG.zip"
+    sha256: 94ba4c2ee8ee5a9501827fe88b24564d450eb4df4dfab4098bc76954496ecf31
+    artifact_type: zip
+    archive_member: "Halo The Master Chief Collection (Halo Reach) v1.0-v20221219 Plus 13 Trainer.exe"
+    executable_name: "Halo The Master Chief Collection (Halo Reach) v1.0-v20221219 Plus 13 Trainer.exe"
+    force_proton: false
+    online_risk: true
+    notes: "Official campaign-specific FLiNG trainer. Launch MCC with anti-cheat disabled/offline only."
+
+  - key: mega-man-x-legacy-collection
+    aliases: [mmx-legacy, megaman-x-legacy]
+    name: Mega Man X Legacy Collection FLiNG Trainer
+    appid: "743890"
+    status: available
+    enabled: true
+    source_page: "https://flingtrainer.com/trainer/mega-man-x-legacy-collection-trainer/"
+    source_url: "https://flingtrainer.com/downloads/oyaKDwhlBkT_o7he8XxBWw,,"
+    source_name: "Mega Man X Legacy Collection v1.0 Plus 4 Trainer.exe"
+    sha256: d5c8dc112f47d0a9a6b62601941ba1ce35215e4a1bffda8999f2d4bad6f11794
+    artifact_type: exe
+    executable_name: "Mega Man X Legacy Collection v1.0 Plus 4 Trainer.exe"
+    force_proton: false
+    notes: "Official FLiNG trainer."
+
+  - key: mega-man-x-legacy-collection-2
+    aliases: [mmx-legacy-2, megaman-x-legacy-2]
+    name: Mega Man X Legacy Collection 2 FLiNG Trainer
+    appid: "743900"
+    status: available
+    enabled: true
+    source_page: "https://flingtrainer.com/trainer/mega-man-x-legacy-collection-2-trainer/"
+    source_url: "https://flingtrainer.com/downloads/0-LIMgMzpy7Gx7yiG6oL4A,,"
+    source_name: "Mega Man X Legacy Collection 2 v1.0 Plus 5 Trainer.exe"
+    sha256: e5bca0e89d354a224cb1d4f5da63a4f1eac2f1a73de1136b37aa7e5be35bf15a
+    artifact_type: exe
+    executable_name: "Mega Man X Legacy Collection 2 v1.0 Plus 5 Trainer.exe"
+    force_proton: false
+    notes: "Official FLiNG trainer."
+
+  - key: red-dead-redemption
+    aliases: [rdr1]
+    name: Red Dead Redemption FLiNG Trainer
+    appid: "2668510"
+    status: available
+    enabled: true
+    source_page: "https://flingtrainer.com/trainer/red-dead-redemption-trainer/"
+    source_url: "https://flingtrainer.com/downloads/GlCOetMwNfJxhhgCdON0DQ,,"
+    source_name: "Red Dead Redemption v1.0 Plus 11 Trainer.exe"
+    sha256: cdb0e8f956acdc8f5271b86011e10e65a74bc2dfa5f6c13c08d5ee3bf9db93c4
+    artifact_type: exe
+    executable_name: "Red Dead Redemption v1.0 Plus 11 Trainer.exe"
+    force_proton: false
+    online_risk: true
+    notes: "Official FLiNG trainer. Use offline/single-player only."
+
+  - key: red-dead-redemption-2
+    aliases: [rdr2]
+    name: Red Dead Redemption 2 FLiNG Trainer
+    appid: "1174180"
+    status: available
+    enabled: true
+    source_page: "https://flingtrainer.com/trainer/red-dead-redemption-2-trainer/"
+    source_url: "https://flingtrainer.com/downloads/E0kUz4fcskCQIXA76rV1Ng,,"
+    source_name: "Red Dead Redemption 2 v1.0-v1491.50 Plus 12 Trainer.exe"
+    sha256: 233836f39745221f7edb7124b36faf4187984316effc597efb2e799bac1f3df5
+    artifact_type: exe
+    executable_name: "Red Dead Redemption 2 v1.0-v1491.50 Plus 12 Trainer.exe"
+    force_proton: false
+    online_risk: true
+    notes: "Official FLiNG trainer. Use offline/single-player only; avoid Red Dead Online."
+
+  - key: resident-evil-4
+    aliases: [re4, re4-remake]
+    name: Resident Evil 4 FLiNG Trainer
+    appid: "2050650"
+    status: available
+    enabled: true
+    source_page: "https://flingtrainer.com/trainer/resident-evil-4-trainer/"
+    source_url: "https://flingtrainer.com/downloads/9P6maJ_oxleH-v0V3SQQOA,,"
+    source_name: "Resident Evil 4 v1.0-v20260203 Plus 36 Trainer.exe"
+    sha256: a92e4dace3cc9e76cebb2373b301cfc74a622e2d8cd09f13451c299f0625d59d
+    artifact_type: exe
+    executable_name: "Resident Evil 4 v1.0-v20260203 Plus 36 Trainer.exe"
+    force_proton: false
+    notes: "Official FLiNG trainer for the remake-era Steam title."
+
+  - key: resident-evil-requiem
+    aliases: [re9, requiem]
+    name: Resident Evil Requiem FLiNG Trainer
+    appid: "3764200"
+    status: available
+    enabled: true
+    source_page: "https://flingtrainer.com/trainer/resident-evil-requiem-trainer/"
+    source_url: "https://flingtrainer.com/downloads/bE1jkWuQGRS8StZzHoFESQ,,"
+    source_name: "Resident Evil Requiem v1.0-v1.3.0 Plus 29 Trainer.exe"
+    sha256: 293ae53c25e7a5b1516a235a76f7fdd105d9b55b42c3001597ea0356bd63dbab
+    artifact_type: exe
+    executable_name: "Resident Evil Requiem v1.0-v1.3.0 Plus 29 Trainer.exe"
+    force_proton: false
+    notes: "Official FLiNG trainer."
+
+  - key: sekiro
+    aliases: [sekiro-shadows-die-twice]
+    name: Sekiro Shadows Die Twice FLiNG Trainer
+    appid: "814380"
+    status: available
+    enabled: true
+    source_page: "https://flingtrainer.com/trainer/sekiro-shadows-die-twice-trainer/"
+    source_url: "https://flingtrainer.com/downloads/ySIxn2GNtF-IyCVXqZZ1Zw,,"
+    source_name: "Sekiro Shadows Die Twice v1.02-v1.05 Plus 24 Trainer.exe"
+    sha256: d13f31170d42f41729420a71a17d1dc4800ed791d9643efc1f676c4cf021adb2
+    artifact_type: exe
+    executable_name: "Sekiro Shadows Die Twice v1.02-v1.05 Plus 24 Trainer.exe"
+    force_proton: false
+    notes: "Official FLiNG trainer."
+
+  - key: uncharted-legacy-of-thieves
+    aliases: [uncharted, legacy-of-thieves]
+    name: Uncharted Legacy of Thieves Collection FLiNG Trainer
+    appid: "1659420"
+    status: available
+    enabled: true
+    source_page: "https://flingtrainer.com/trainer/uncharted-legacy-of-thieves-collection-trainer/"
+    source_url: "https://flingtrainer.com/downloads/psHfqFVBlCuThu2xBKOr8Q,,"
+    source_name: "UNCHARTED Legacy of Thieves Collection v1.0-v1.3 Plus 5 Trainer.exe"
+    sha256: 12510434020bef1a5a2085b8835636ef055cf7a92fe6e53251ffadcc2488999c
+    artifact_type: exe
+    executable_name: "UNCHARTED Legacy of Thieves Collection v1.0-v1.3 Plus 5 Trainer.exe"
+    force_proton: false
+    notes: "Official FLiNG trainer."

@@ -206,13 +206,35 @@ environment before expecting auto-load to work.
   ```sh
   cd ansible
   ansible-playbook install-steam-trainers.yml
-  distrobox-enter -n gaming -- /mnt/data/distrobox/gaming/bin/steam-trainer list
-  distrobox-enter -n gaming -- /mnt/data/distrobox/gaming/bin/steam-trainer streets-of-rage-4
+  dg-fling list
+  dg-fling streets-of-rage-4
   ```
+
+  The playbook also installs a host-side helper:
+
+  ```sh
+  dg-fling              # menu; fzf when available, numbered fallback otherwise
+  dg-fling list         # launchable official FLiNG trainers only
+  dg-fling keys         # keys and aliases for shell completion
+  dg-fling sor4         # direct launch by key or alias
+  ```
+
+  Launch the Steam game first, reach gameplay or a menu, then run `dg-fling` and
+  pick the matching trainer. Shell completion files are installed for bash and
+  zsh under the user's local completion directories.
 
   Start the Steam game first if the trainer says it cannot find the game
   process. The game must also have been launched once from Steam so its Proton
   compatdata prefix exists.
+
+  The wrapper launches trainers in a Wine virtual desktop by default
+  (`trainer_<appid>,1024x768`). This avoids FLiNG WinForms windows colliding
+  with fullscreen/game windows under Wine, which can show up as an X11
+  `BadWindow` crash. To bypass that mode for troubleshooting:
+
+  ```sh
+  DG_STEAM_TRAINER_DESKTOP=none steam-trainer streets-of-rage-4
+  ```
 
   Streets of Rage 4 ships a native Linux build, but the FLiNG trainer is a
   Windows process trainer. Force Proton for it before expecting a prefix:
@@ -228,11 +250,60 @@ environment before expecting auto-load to work.
   once from Steam so it downloads/boots the Windows build and creates
   `compatdata/985890/pfx`.
 
-  Current staged trainers:
+  Streets of Rage 4's FLiNG trainer was tested with the game already running;
+  it needs the wrapper's virtual desktop mode to keep the trainer window open.
+  Avoid forcing `dotnet48` into this Proton/CachyOS prefix: the attempted
+  install removed Wine Mono and did not complete. If the trainer stops launching
+  with `mscoree.dll` errors, restore the prefix's built-in Wine `mscoree.dll`
+  links from the active Proton tool instead of rerunning `dotnet48`.
 
-  | Key | Steam app ID | Source |
-  | --- | --- | --- |
-  | `streets-of-rage-4` | `985890` | Official FLiNG Streets of Rage 4 trainer, 10 options, `v1.0-v20210715+` |
+  That virtual-desktop mode is now the default for every `steam-trainer` /
+  `dg-fling` launch. It uses Proton's own `wine` from Steam's configured compat
+  tool and runs `explorer /desktop=trainer_<appid>,1024x768 <trainer.exe>`.
+
+  Current staged official FLiNG trainers:
+
+  | Key | Aliases | Steam app ID | Source |
+  | --- | --- | ---: | --- |
+  | `streets-of-rage-4` | `sor4` | `985890` | Streets of Rage 4, 10 options, `v1.0-v20210715+` |
+  | `spider-man-remastered` | `spiderman`, `spider-man` | `1817070` | Marvel's Spider-Man Remastered, 30 options, `v1.812-v2.616+` |
+  | `soulcalibur-vi` | `soul-calibur-vi`, `sc6` | `544750` | Soulcalibur VI, 12 options, `v1.0-v2.25+` |
+  | `bloodstained-ritual-of-the-night` | `bloodstained` | `692850` | Bloodstained, 15 options, `v1.0-v1.4+` |
+  | `black-myth-wukong` | `wukong`, `bmw` | `2358720` | Black Myth Wukong, 44 options, `v1.0-v1.0.20+` |
+  | `devil-may-cry-5` | `dmc5` | `601150` | Devil May Cry 5, 25 options, `v1.0-v20201215+` |
+  | `final-fantasy-vii-rebirth` | `ff7-rebirth`, `ffvii-rebirth` | `2909400` | Final Fantasy VII Rebirth, 58 options, `v1.0-v1.005+` |
+  | `halo-mcc-ce-anniversary` | `halo-ce`, `halo-ce-anniversary` | `976730` | Halo MCC: Halo CE Anniversary, 13 options |
+  | `halo-mcc-halo-2-anniversary` | `halo-2`, `halo-2-anniversary` | `976730` | Halo MCC: Halo 2 Anniversary, 13 options |
+  | `halo-mcc-halo-3` | `halo-3` | `976730` | Halo MCC: Halo 3, 13 options |
+  | `halo-mcc-halo-3-odst` | `halo-3-odst`, `odst` | `976730` | Halo MCC: Halo 3 ODST, 13 options |
+  | `halo-mcc-halo-4` | `halo-4` | `976730` | Halo MCC: Halo 4, 14 options |
+  | `halo-mcc-reach` | `halo-reach`, `reach` | `976730` | Halo MCC: Reach, 13 options |
+  | `mega-man-x-legacy-collection` | `mmx-legacy`, `megaman-x-legacy` | `743890` | Mega Man X Legacy Collection, 4 options |
+  | `mega-man-x-legacy-collection-2` | `mmx-legacy-2`, `megaman-x-legacy-2` | `743900` | Mega Man X Legacy Collection 2, 5 options |
+  | `red-dead-redemption` | `rdr1` | `2668510` | Red Dead Redemption, 11 options |
+  | `red-dead-redemption-2` | `rdr2` | `1174180` | Red Dead Redemption 2, 12 options |
+  | `resident-evil-4` | `re4`, `re4-remake` | `2050650` | Resident Evil 4 remake-era trainer, 36 options |
+  | `resident-evil-requiem` | `re9`, `requiem` | `3764200` | Resident Evil Requiem, 29 options |
+  | `sekiro` | `sekiro-shadows-die-twice` | `814380` | Sekiro, 24 options |
+  | `uncharted-legacy-of-thieves` | `uncharted`, `legacy-of-thieves` | `1659420` | Uncharted Legacy of Thieves, 5 options |
+
+  Halo MCC, Red Dead Redemption, and Red Dead Redemption 2 are online-capable;
+  use these trainers only in offline/single-player modes. For Halo MCC, launch
+  the anti-cheat-disabled/offline mode.
+
+  Requested titles with no verified official FLiNG trainer page/direct download
+  are intentionally not added to the launcher: Sonic Generations, Sonic Mania,
+  TMNT Shredder's Revenge, TMNT Cowabunga Collection, Batman Arkham Asylum,
+  Batman Arkham City, Capcom Fighting Collection 1/2, Castlevania Advance /
+  Anniversary / Dominus Collections, Chrono Trigger, Contra Anniversary
+  Collection, GTA IV, Legacy of Kain Soul Reaver 1&2 Remastered, Marvel Cosmic
+  Invasion, Mega Man Legacy Collection 1/2, Old School Rally, Shinobi: Art of
+  Vengeance, SNK vs Capcom SVC Chaos, Sonic Adventure DX/2, Sonic CD, Sonic
+  Colors Ultimate, Sonic Frontiers, Sonic Origins, Sonic Superstars, Sonic X
+  Shadow Generations, Strider, Ultra Street Fighter IV, and Virtua Fighter 5.
+  Batman Arkham Knight, Crash N. Sane Trilogy, Mega Man 11, and Ultimate Marvel
+  vs Capcom 3 were seen only in FLiNG's old archive text without a direct
+  official download, so they are also not launchable here.
 
   FLiNG does **not** ship one reusable trainer app. It ships one trainer
   executable per game. The reusable piece in this repo is the `steam-trainer`
@@ -240,8 +311,6 @@ environment before expecting auto-load to work.
   `ansible/group_vars/all/steam_trainers.yml` with their Steam app ID, official
   source URL, and SHA-256.
 
-  Spider-Man Remastered is currently set up for the Windows Cheat Engine flow
-  (`cheat-engine --proton 1817070`); no Spider-Man FLiNG trainer is staged yet.
 - **Address randomisation** — modern games use ASLR. Saved `.CT`
   tables with hardcoded addresses won't survive game restarts; use
   AOB (array-of-bytes) scans or pointer scans instead. CE skill

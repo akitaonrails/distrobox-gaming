@@ -1,0 +1,88 @@
+#!/usr/bin/env sh
+# Host launcher for FLiNG trainers managed by distrobox-gaming.
+set -eu
+
+BOX_NAME={{ dg_box_name | quote }}
+IN_BOX_WRAPPER={{ dg_steam_trainers_wrapper_bin | quote }}
+
+run_in_box() {
+  distrobox-enter -n "$BOX_NAME" -- "$IN_BOX_WRAPPER" "$@"
+}
+
+usage() {
+  cat <<EOF
+Usage:
+  $(basename "$0")                 # interactive picker
+  $(basename "$0") menu            # interactive picker
+  $(basename "$0") list            # list launchable official FLiNG trainers
+  $(basename "$0") keys            # completion-friendly keys and aliases
+  $(basename "$0") <key-or-alias>  # launch after the game is running
+
+Examples:
+  $(basename "$0") sor4
+  $(basename "$0") spiderman
+  $(basename "$0") sekiro
+EOF
+}
+
+pick_with_fzf() {
+  run_in_box list \
+    | awk -F '\t' '{ aliases = ($5 == "" ? "" : " [" $5 "]"); printf "%s\t%s\t%s\t%s%s\n", $1, $2, $3, $4, aliases }' \
+    | fzf --prompt='FLiNG trainer> ' --with-nth=4,1,2,5 --delimiter='\t' \
+    | awk -F '\t' '{print $1}'
+}
+
+pick_with_menu() {
+  tmp=$(mktemp)
+  trap 'rm -f "$tmp"' EXIT HUP INT TERM
+  run_in_box list >"$tmp"
+  [ -s "$tmp" ] || {
+    echo "No launchable FLiNG trainers are installed." >&2
+    exit 1
+  }
+
+  echo "Available FLiNG trainers:"
+  awk -F '\t' '{ printf "%2d) %-34s %s\n", NR, $1, $4 }' "$tmp"
+  printf 'Pick number or type key/alias: ' >&2
+  IFS= read -r choice
+  [ -n "$choice" ] || exit 1
+
+  case "$choice" in
+    *[!0-9]*) printf '%s\n' "$choice" ;;
+    *) awk -F '\t' -v n="$choice" 'NR == n { print $1 }' "$tmp" ;;
+  esac
+}
+
+menu() {
+  [ -t 0 ] || {
+    usage >&2
+    exit 2
+  }
+
+  if command -v fzf >/dev/null 2>&1; then
+    key=$(pick_with_fzf)
+  else
+    key=$(pick_with_menu)
+  fi
+  [ -n "${key:-}" ] || exit 1
+  run_in_box "$key"
+}
+
+case "${1:-}" in
+  -h|--help)
+    usage
+    ;;
+  ""|menu)
+    menu
+    ;;
+  list)
+    shift
+    run_in_box list "$@"
+    ;;
+  keys)
+    run_in_box keys
+    ;;
+  *)
+    run_in_box "$@"
+    ;;
+esac

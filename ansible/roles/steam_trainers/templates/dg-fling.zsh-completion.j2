@@ -1,0 +1,5 @@
+#compdef dg-fling
+
+local -a keys
+keys=(list keys menu ${(f)"$({{ dg_steam_trainers_host_launcher | quote }} keys 2>/dev/null)"})
+_describe 'dg-fling command or trainer' keys

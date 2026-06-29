@@ -4,30 +4,39 @@
 #
 # Usage:
 #   steam-trainer list
+#   steam-trainer keys
 #   steam-trainer streets-of-rage-4
 #   steam-trainer 985890
+#
+# By default trainers are launched in their own Wine virtual desktop. This keeps
+# WinForms trainer windows isolated from fullscreen/game windows that can trigger
+# X11 window-management crashes under Wine. Set DG_STEAM_TRAINER_DESKTOP=none to
+# fall back to protontricks-launch.
 #
 # Trainers are offline/single-player only. Do not use with VAC/EAC/BattlEye or
 # multiplayer titles.
 set -eu
 
 CONFIG="${DG_STEAM_TRAINERS_CONFIG:-$HOME/tools/steam-trainers/trainers.tsv}"
+STEAM_ROOT="${DG_STEAM_ROOT:-$HOME/.local/share/Steam}"
 
 usage() {
   cat <<EOF
 Usage:
   $(basename "$0") list
-  $(basename "$0") <trainer-key-or-steam-appid>
+  $(basename "$0") keys
+  $(basename "$0") <trainer-key-or-alias-or-steam-appid>
 
 Examples:
   $(basename "$0") streets-of-rage-4
+  $(basename "$0") sor4
   $(basename "$0") 985890
 EOF
 }
 
 find_proton_prefix() {
   appid="$1"
-  vdf="$HOME/.local/share/Steam/config/libraryfolders.vdf"
+  vdf="$STEAM_ROOT/config/libraryfolders.vdf"
   [ -f "$vdf" ] || return 0
   awk '/"path"/ { match($0, /"path"[[:space:]]+"([^"]+)"/, a); print a[1] }' "$vdf" 2>/dev/null \
     | while IFS= read -r lib; do
@@ -38,6 +47,51 @@ find_proton_prefix() {
           break
         fi
       done
+}
+
+find_compat_tool_name() {
+  appid="$1"
+  vdf="$STEAM_ROOT/config/config.vdf"
+  [ -f "$vdf" ] || return 0
+  awk -v appid="$appid" '
+    /"CompatToolMapping"/ { in_map = 1; next }
+    in_map && /^[[:space:]]+"[^"]+"[[:space:]]*$/ {
+      match($0, /"([^"]+)"/, key)
+      current = key[1]
+      next
+    }
+    in_map && current != "" && /"name"/ {
+      match($0, /"name"[[:space:]]+"([^"]+)"/, a)
+      if (current == appid) { found = 1; print a[1]; exit }
+      if (current == "0") default_tool = a[1]
+      current = ""
+    }
+    END { if (!found && default_tool != "") print default_tool }
+  ' "$vdf" 2>/dev/null
+}
+
+find_proton_wine() {
+  appid="$1"
+
+  if [ -n "${DG_STEAM_TRAINER_WINE:-}" ]; then
+    [ -x "$DG_STEAM_TRAINER_WINE" ] && printf '%s\n' "$DG_STEAM_TRAINER_WINE"
+    return 0
+  fi
+
+  tool=$(find_compat_tool_name "$appid")
+  if [ -n "$tool" ]; then
+    for cand in \
+      "$STEAM_ROOT/compatibilitytools.d/$tool/files/bin/wine" \
+      "$STEAM_ROOT/steamapps/common/$tool/files/bin/wine"
+    do
+      if [ -x "$cand" ]; then
+        printf '%s\n' "$cand"
+        return 0
+      fi
+    done
+  fi
+
+  return 0
 }
 
 [ -f "$CONFIG" ] || {
@@ -52,17 +106,43 @@ case "${1:-}" in
     exit 0
     ;;
   list)
-    awk -F '\t' 'NF >= 4 { printf "%s\t%s\t%s\n", $1, $2, $4 }' "$CONFIG"
+    # Columns: key, appid, exe, name, status, source_page, aliases, flags.
+    awk -F '\t' 'NF >= 4 { status = ($5 == "" ? "available" : $5); printf "%s\t%s\t%s\t%s\t%s\n", $1, $2, status, $4, $7 }' "$CONFIG"
+    exit 0
+    ;;
+  keys)
+    awk -F '\t' 'NF >= 4 { print $1; n = split($7, aliases, ","); for (i = 1; i <= n; i++) if (aliases[i] != "") print aliases[i] }' "$CONFIG"
     exit 0
     ;;
 esac
 
 needle="$1"
-row=$(awk -F '\t' -v needle="$needle" '$1 == needle || $2 == needle { print; exit }' "$CONFIG")
+
+case "$needle" in
+  *[!0-9]*|"") ;;
+  *)
+    appid_rows=$(awk -F '\t' -v needle="$needle" 'NF >= 4 && $2 == needle { print }' "$CONFIG")
+    appid_count=$(printf '%s\n' "$appid_rows" | awk 'NF { count++ } END { print count + 0 }')
+    if [ "$appid_count" -gt 1 ]; then
+      echo "App ID $needle has multiple trainers; launch by key or alias:" >&2
+      printf '%s\n' "$appid_rows" | awk -F '\t' 'NF >= 4 { printf "  %s — %s", $1, $4; if ($7 != "") printf " [aliases: %s]", $7; printf "\n" }' >&2
+      exit 2
+    fi
+    ;;
+esac
+
+row=$(awk -F '\t' -v needle="$needle" '
+  NF >= 4 {
+    if ($1 == needle || $2 == needle) { print; exit }
+    n = split($7, aliases, ",")
+    for (i = 1; i <= n; i++) if (aliases[i] == needle) { print; exit }
+  }
+' "$CONFIG")
+
 [ -n "$row" ] || {
-  echo "Unknown trainer: $needle" >&2
+  echo "Unknown or unsupported trainer: $needle" >&2
   echo "Available trainers:" >&2
-  awk -F '\t' 'NF >= 4 { printf "  %s (%s) — %s\n", $1, $2, $4 }' "$CONFIG" >&2
+  awk -F '\t' 'NF >= 4 { printf "  %s (%s) — %s", $1, $2, $4; if ($7 != "") printf " [aliases: %s]", $7; printf "\n" }' "$CONFIG" >&2
   exit 2
 }
 
@@ -70,6 +150,15 @@ key=$(printf '%s\n' "$row" | awk -F '\t' '{print $1}')
 appid=$(printf '%s\n' "$row" | awk -F '\t' '{print $2}')
 exe=$(printf '%s\n' "$row" | awk -F '\t' '{print $3}')
 name=$(printf '%s\n' "$row" | awk -F '\t' '{print $4}')
+status=$(printf '%s\n' "$row" | awk -F '\t' '{print ($5 == "" ? "available" : $5)}')
+source_page=$(printf '%s\n' "$row" | awk -F '\t' '{print $6}')
+flags=$(printf '%s\n' "$row" | awk -F '\t' '{print $8}')
+
+[ "$status" = "available" ] || {
+  echo "Trainer exists in registry but is not launchable: $name ($status)" >&2
+  [ -n "$source_page" ] && echo "Source: $source_page" >&2
+  exit 3
+}
 
 [ -f "$exe" ] || {
   echo "Trainer executable missing: $exe" >&2
@@ -98,6 +187,38 @@ EOF
 cat >&2 <<EOF
 [steam-trainer] launching $name inside appid $appid prefix
 [steam-trainer] start the game first if the trainer says it cannot find the game process
+[steam-trainer] offline/single-player only; never use with multiplayer or anti-cheat
 EOF
+
+case ",$flags," in
+  *,online_risk,*)
+    cat >&2 <<EOF
+[steam-trainer] warning: this title has online/anti-cheat risk. Use only in offline/single-player modes.
+EOF
+    ;;
+esac
+
 cd "$HOME"
-exec protontricks-launch --appid "$appid" "$exe"
+
+desktop="${DG_STEAM_TRAINER_DESKTOP:-trainer_$appid,1024x768}"
+case "$desktop" in
+  ""|0|false|off|none)
+    exec protontricks-launch --appid "$appid" "$exe"
+    ;;
+esac
+
+winebin=$(find_proton_wine "$appid")
+[ -n "$winebin" ] || {
+  cat >&2 <<EOF
+Could not find Proton's wine binary for $name (appid $appid).
+
+Set DG_STEAM_TRAINER_WINE to the Proton wine path, for example:
+  DG_STEAM_TRAINER_WINE="$STEAM_ROOT/compatibilitytools.d/<tool>/files/bin/wine"
+
+Or disable the virtual desktop fallback with:
+  DG_STEAM_TRAINER_DESKTOP=none $(basename "$0") $key
+EOF
+  exit 4
+}
+
+exec env WINEPREFIX="$prefix" "$winebin" explorer "/desktop=$desktop" "$exe"
