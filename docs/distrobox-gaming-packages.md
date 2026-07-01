@@ -219,6 +219,12 @@ Keep the NVIDIA lib32 fix per game through `steam_lib32_nvidia`; do not restore 
 global Steam `LD_LIBRARY_PATH`, `VK_ICD_FILENAMES`, or gamescope wrapper for
 these titles.
 
+WRC 4 has a separate display-settings trap: its first-run configuration app can
+select a high refresh rate such as 240 Hz. In the tested setup that produced a
+black game window with audio still playing behind it. Open the WRC 4 video
+settings/configuration app and choose **60 Hz**; the working local config has
+`RefreshRate=60`.
+
 ---
 
 ## Flatpak findings
