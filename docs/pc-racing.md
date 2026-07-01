@@ -287,21 +287,49 @@ original copy-protected retail media does not run, while CrossOver reports a
 DRM-free/budget edition running well with DXVK. This repo uses the local repack
 source and does not attempt to support protected retail media.
 
-Current status: playable. The game registry is forced to `2880x2160` (4:3
-within 4K), and gamescope uses the same 4:3 nested resolution inside the
-configured `3840x2160` monitor with `fit` scaling and NIS filtering. This
-avoids the horizontal stretch from a 16:9 internal output and the black
-screen seen when the nested display was reduced to `640x480`. If the
-2004-era engine refuses to render at `2880x2160`, fall back to `1920x1440`
-in `pc_racing.yml` (both `gamescope_game_*` and the registry values);
-gamescope still scales the 4:3 nested display onto the 4K monitor. The
-image is not perfectly centered on the monitor, but it is usable.
+Current status: playable widescreen. The previous stable baseline was
+`2880x2160` (4:3 within 4K) through gamescope. A `1920x1440` fallback test on
+2026-06-30 opened as a black fullscreen and stuck, so do not use it as a safe
+fallback.
+
+The working setup uses AuToMaNiAk005's PCGamingWiki CMR04 Widescreen Fix at
+`16x9/Low`, which patches one byte pattern in `cmr4.exe` to correct the 3D
+aspect while leaving the HUD stretched. Managed settings are:
+
+```text
+gamescope nested/output: 3840x2160 -> 3840x2160
+CMR04 registry: Width=3840, Height=2160
+dgVoodoo DirectX Resolution: h:3840, v:2160
+```
+
+Backup from the first live test:
+
+```text
+{{ dg_box_home }}/backups/cmr04-widescreen-test-20260630-1803
+```
+
+If the widescreen patch regresses, restore `cmr4.exe`, `dgVoodoo.conf`,
+`system.reg`, and the generated launcher from that backup or rerun the role after
+reverting `pc_racing.yml` to the 2880x2160 4:3 baseline. Do not change graphics
+settings in-game after applying the widescreen fix; change resolution only
+through dgVoodoo/config management. In testing, opening Advanced Graphics showed
+modes only up to `2048x1536`; after interacting with that menu, CMR04 rewrote
+the registry to `2048x1536` and hung. If that happens, kill
+`cmr4.exe`/gamescope/Wine and rerun the role to restore `Width=3840`,
+`Height=2160`. The dgVoodoo config adds `3840x2160@60` to
+`ExtraEnumeratedResolutions`, but do not rely on the in-game menu to manage
+widescreen mode.
 
 Controller status: analog driving works. Xidi is configured as a
 keyboard-emulation layer for CMR04 because selecting the Xidi joystick in-game
 allowed menu navigation but did not reliably bind in-race actions. The mapper
 sends d-pad and left stick to arrow keys, RT to accelerate, LT to brake,
 A/Start to confirm, B/Back to cancel, X to Space, and Y to C.
+
+CMR04 is not a .NET game. If Wine shows a Mono/.NET installer dialog for this
+prefix, treat it as prefix-initialization noise and dismiss/kill it rather than
+installing Mono. The launcher sets `mscoree=d` in `WINEDLLOVERRIDES` to suppress
+that dialog for this game.
 
 ## OutRun 2006
 

@@ -1,0 +1,71 @@
+---
+- name: Check whether Steam is running
+  ansible.builtin.shell: >-
+    pgrep -af
+    '[/]Steam/(steam\.sh|ubuntu12_|steamrt)|[s]teamwebhelper|[s]team-runtime-launcher-service'
+  register: _steam_lib32_nvidia_steam_running
+  changed_when: false
+  failed_when: false
+
+- name: Stop Steam before editing launch options
+  ansible.builtin.shell: >-
+    pkill -f
+    '[/]Steam/(steam\.sh|ubuntu12_|steamrt)|[s]teamwebhelper|[s]team-runtime-launcher-service'
+  changed_when: true
+  when:
+    - dg_steam_lib32_nvidia_localconfig | length > 0
+    - dg_steam_lib32_nvidia_stop_steam | bool
+    - _steam_lib32_nvidia_steam_running.rc == 0
+
+- name: Refuse to edit launch options while Steam is running
+  ansible.builtin.fail:
+    msg: >-
+      Steam is running. Close it first or set dg_steam_lib32_nvidia_stop_steam=true
+      before editing {{ dg_steam_lib32_nvidia_localconfig }}.
+  when:
+    - dg_steam_lib32_nvidia_localconfig | length > 0
+    - not (dg_steam_lib32_nvidia_stop_steam | bool)
+    - _steam_lib32_nvidia_steam_running.rc == 0
+
+- name: Read active NVIDIA driver version
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sh -lc
+    'nvidia-smi --query-gpu=driver_version --format=csv,noheader | head -n1 | tr -d "[:space:]"'
+  register: _steam_lib32_nvidia_driver_version
+  changed_when: false
+  when:
+    - dg_steam_lib32_nvidia_localconfig | length > 0
+    - dg_nvidia_lib32_workaround_enabled | bool
+
+- name: Verify extracted 32-bit NVIDIA runtime matches active driver
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -e
+      ver="{{ _steam_lib32_nvidia_driver_version.stdout | trim }}"
+      test -f "{{ dg_nvidia_lib32_extract_dir }}/.dg-version"
+      grep -qx "$ver" "{{ dg_nvidia_lib32_extract_dir }}/.dg-version"
+      file "{{ dg_nvidia_lib32_lib_dir }}/libnvidia-glvkspirv.so.${ver}" | grep -q "ELF 32-bit"
+      file "{{ dg_nvidia_lib32_lib_dir }}/libGLX_nvidia.so.${ver}" | grep -q "ELF 32-bit"
+    '
+  changed_when: false
+  when:
+    - dg_steam_lib32_nvidia_localconfig | length > 0
+    - dg_nvidia_lib32_workaround_enabled | bool
+
+- name: Configure Steam launch options for 32-bit NVIDIA Proton games
+  ansible.builtin.command: >-
+    {{ ansible_playbook_python }} {{ dg_project_root }}/scripts/set-steam-launch-options.py
+    --localconfig {{ dg_steam_lib32_nvidia_localconfig | quote }}
+    {% for appid in dg_steam_lib32_nvidia_appids.keys() %}
+    --set {{ appid | quote }} {{ dg_steam_lib32_nvidia_launch_options_by_appid.get(appid, dg_steam_lib32_nvidia_launch_option) | quote }}
+    {% endfor %}
+  register: _steam_lib32_nvidia_launch_options
+  changed_when: "'changed: true' in _steam_lib32_nvidia_launch_options.stdout"
+  when: dg_steam_lib32_nvidia_localconfig | length > 0
+
+- name: Report launch option status
+  ansible.builtin.debug:
+    msg: >-
+      Launch options were not edited. Set dg_steam_lib32_nvidia_localconfig to
+      your Steam userdata localconfig.vdf to manage 32-bit NVIDIA Proton games.
+  when: dg_steam_lib32_nvidia_localconfig | length == 0

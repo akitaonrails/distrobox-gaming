@@ -23,6 +23,7 @@
     - { role: pcsx2_textures,            tags: [pcsx2_textures, never] }
     - { role: install_pc_racing,         tags: [pc_racing, never] }
     - { role: metal_gear_master_collection, tags: [metal_gear_master_collection, never] }
+    - { role: steam_lib32_nvidia,        tags: [steam_lib32_nvidia, never] }
     - { role: steam_trainers,            tags: [steam_trainers, never] }
     - { role: install_sonic_p06,         tags: [sonic_p06, never] }
     - { role: install_unleashed_recomp,  tags: [unleashed_recomp, never] }

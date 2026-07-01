@@ -1,6 +1,9 @@
-# Host-side desktop launchers for emulators installed in the box.
-# Each entry renders a .desktop file that runs the emulator through
-# distrobox-enter with NVIDIA GPU env vars injected.
+# Host-side desktop launchers for apps installed in the box.
+# Each entry renders a .desktop file that runs the app through
+# distrobox-enter. Most launchers inherit dg_gpu_env so standalone
+# emulators prefer the NVIDIA ICD. Steam is deliberately excluded from
+# that forced ICD path because pressure-vessel rewrites VK_ICD_FILENAMES
+# into its app container and can strand Proton with no WSI-capable ICD.
 
 dg_emulator_launchers:
   - name: gaming-es-de
@@ -80,6 +83,11 @@ dg_emulator_launchers:
   - name: gaming-steam
     display_name: "Steam (on {{ dg_box_name }})"
     exec: steam
+    # Do not force GPU env for Steam itself: global LD_LIBRARY_PATH changes can
+    # crash the 32-bit Steam updater/client, and forcing VK_ICD_FILENAMES breaks
+    # Proton under pressure-vessel. Apply game-specific overrides through Steam
+    # launch options or dedicated wrappers instead.
+    gpu_env: ""
     icon: steam
     comment: "Steam game launcher"
     wm_class: Steam

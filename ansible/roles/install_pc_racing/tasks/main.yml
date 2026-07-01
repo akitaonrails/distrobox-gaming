@@ -830,6 +830,58 @@
   loop_control:
     label: "{{ item.0.name }} / {{ item.1.name }}"
 
+- name: Apply PC racing binary replacements
+  ansible.builtin.shell: |
+    {{ dg_in_box }} python3 - <<'PY'
+    from pathlib import Path
+
+    path = Path(r'''{{ item.0.installed_path | default(dg_pc_racing_install_root ~ "/" ~ item.0.slug) }}/{{ item.1.file }}''')
+    find = bytes.fromhex('''{{ item.1.find_hex }}''')
+    replace = bytes.fromhex('''{{ item.1.replace_hex }}''')
+    max_count = int('''{{ item.1.count | default(1) }}''')
+
+    data = path.read_bytes()
+    if find not in data:
+        if replace in data:
+            raise SystemExit(0)
+        raise SystemExit(f"pattern not found in {path}: {{ item.1.name | default(item.1.file) }}")
+
+    if data.count(find) < max_count:
+        raise SystemExit(f"expected at least {max_count} pattern matches in {path}, found {data.count(find)}")
+
+    path.write_bytes(data.replace(find, replace, max_count))
+    print("binary-replaced {{ item.0.name }} {{ item.1.file }} {{ item.1.name | default('') }}")
+    PY
+  register: _pc_racing_binary_replacements
+  changed_when: "'binary-replaced ' in _pc_racing_binary_replacements.stdout"
+  loop: "{{ _dg_pc_racing_games_selected | subelements('binary_replacements', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }} / {{ item.1.file }} {{ item.1.name | default('') }}"
+
+- name: Apply PC racing text replacements
+  ansible.builtin.shell: |
+    {{ dg_in_box }} python3 - <<'PY'
+    from pathlib import Path
+
+    path = Path(r'''{{ item.0.installed_path | default(dg_pc_racing_install_root ~ "/" ~ item.0.slug) }}/{{ item.1.file }}''')
+    find = r'''{{ item.1.find }}'''
+    replace = r'''{{ item.1.replace }}'''
+
+    text = path.read_text()
+    if find not in text:
+        if replace in text:
+            raise SystemExit(0)
+        raise SystemExit(f"text pattern not found in {path}: {{ item.1.name | default(item.1.file) }}")
+
+    path.write_text(text.replace(find, replace, int('''{{ item.1.count | default(1) }}''')))
+    print("text-replaced {{ item.0.name }} {{ item.1.file }} {{ item.1.name | default('') }}")
+    PY
+  register: _pc_racing_text_replacements
+  changed_when: "'text-replaced ' in _pc_racing_text_replacements.stdout"
+  loop: "{{ _dg_pc_racing_games_selected | subelements('text_replacements', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }} / {{ item.1.file }} {{ item.1.name | default('') }}"
+
 - name: Configure PC racing game managed text blocks
   ansible.builtin.blockinfile:
     path: "{{ item.0.installed_path | default(dg_pc_racing_install_root ~ '/' ~ item.0.slug) }}/{{ item.1.file }}"

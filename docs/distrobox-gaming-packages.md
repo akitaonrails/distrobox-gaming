@@ -85,7 +85,66 @@ unsets `LD_LIBRARY_PATH`. Do not add broad host paths here: keep it limited to
 the extracted lib32 NVIDIA directory, otherwise pressure-vessel helper programs
 can pick up incompatible libraries.
 
-If a 32-bit Proton game starts, compiles shaders, and immediately exits, check:
+### Proper way to fix 32-bit Steam/Proton games on NVIDIA
+
+When an old 32-bit Windows Steam game fails under Proton, do not start by
+resetting prefixes, changing Proton versions repeatedly, or adding global Steam
+environment variables. Use this order:
+
+1. **Capture evidence first.** Enable a per-game Proton log or inspect the Steam
+   logs. The NVIDIA lib32 failure usually includes one of these symptoms:
+
+   ```text
+   The NVIDIA driver was unable to open 'libnvidia-glvkspirv.so.<version>'
+   DxvkInstance::createInstance: Failed to create Vulkan instance
+   wine_vkCreateInstance Failed to create instance
+   ```
+
+2. **Verify the container lib32 NVIDIA bind.** In this distrobox, `--nvidia` can
+   accidentally place 64-bit NVIDIA libraries under `/usr/lib32`. Check both the
+   active bind and the extracted workaround:
+
+   ```sh
+   file /usr/lib32/libGLX_nvidia.so.0
+   file {{ dg_nvidia_lib32_lib_dir }}/libGLX_nvidia.so.$(nvidia-smi --query-gpu=driver_version --format=csv,noheader | tr -d '[:space:]')
+   file {{ dg_nvidia_lib32_lib_dir }}/libnvidia-glvkspirv.so.$(nvidia-smi --query-gpu=driver_version --format=csv,noheader | tr -d '[:space:]')
+   ```
+
+   The extracted files must be `ELF 32-bit` and must match the active driver
+   version. If they are stale, refresh the extracted `lib32-nvidia-utils` package
+   before changing game settings.
+
+3. **Apply the fix per game, not globally.** Add the AppID to
+   `dg_steam_lib32_nvidia_appids` in
+   `ansible/group_vars/all/steam_lib32_nvidia.yml`, and use the default launch
+   option unless that game also needs extra arguments:
+
+   ```text
+   LD_LIBRARY_PATH={{ dg_nvidia_steam_runtime_ld_library_path }} %command%
+   ```
+
+   Use `dg_steam_lib32_nvidia_launch_options_by_appid` for one-off additions
+   such as gamescope or launcher bypass flags. Do **not** put this
+   `LD_LIBRARY_PATH`, `VK_ICD_FILENAMES`, or gamescope wrapper on the global
+   Steam desktop launcher; Steam's 32-bit updater/client and unrelated games can
+   break.
+
+4. **Edit Steam config only while Steam is stopped.** The role refuses live
+   edits by default. Run it with the local userdata path after closing Steam, or
+   explicitly allow the role to stop Steam:
+
+   ```sh
+   ansible-playbook site.yml --tags steam_lib32_nvidia \
+     -e dg_steam_lib32_nvidia_localconfig=<Steam userdata>/config/localconfig.vdf
+   ```
+
+5. **Only then debug game-specific launchers/configs.** If DXVK now creates a
+   device and the game opens or reaches its launcher, remaining failures are
+   usually game-specific: missing config files, a .NET launcher, fullscreen
+   behavior, controller mapping, or mod tooling. Keep those as separate per-game
+   overrides instead of broad Proton/prefix churn.
+
+Older quick checks for this failure are still useful:
 
 ```sh
 file /usr/lib32/libGLX_nvidia.so.0
@@ -98,16 +157,55 @@ The extracted package version must match the host driver reported by
 ### Sonic Adventure DX notes
 
 Sonic Adventure DX is a 32-bit D3D9 Steam game. It needs the 32-bit NVIDIA
-workaround above and should run in windowed mode under Wine/Proton. If the game
-crashes after DXVK creates the NVIDIA device, inspect
+workaround above and should run in windowed mode under Wine/Proton. For the
+local 4K display, set the game config to 3840x2160 windowed. Do not wrap SADX in
+gamescope: it produced a fullscreen green screen with audio still playing in the
+background, the same class of presentation failure seen with some other Wine +
+gamescope paths.
+
+If the game crashes after DXVK creates the NVIDIA device, inspect
 `Sonic Adventure DX/system_config.xml` and set:
 
 ```xml
+<adapter ... width="3840" height="2160" refresh="60" ... />
 <custom_gfx_options AA="0" v_sync="1" fxaa="1" windowed="1" />
+```
+
+The local SADX Steam launch option should be the default 32-bit NVIDIA wrapper,
+with no gamescope or extra flags:
+
+```text
+LD_LIBRARY_PATH={{ dg_nvidia_steam_runtime_ld_library_path }} %command%
 ```
 
 The official Steam configure launcher may also require the legacy SEGA uninstall
 registry key before it saves configuration.
+
+### Sonic Adventure 2 notes
+
+Sonic Adventure 2 is also a 32-bit D3D9 Steam game, so keep it in the same
+per-game 32-bit NVIDIA launch-option list as Sonic Adventure DX, Sonic CD, and
+Sonic Mania. Its Steam entry starts the .NET `Launcher.exe`; if Proton shows a
+`System.DllNotFoundException` for `UIAutomationCore.dll`, treat that as a
+separate launcher issue rather than another NVIDIA runtime failure.
+
+For vanilla SA2, prefer bypassing the launcher instead of installing extra
+Windows components into the prefix. Seed these files first:
+
+```text
+Sonic Adventure 2/Config/UserConfig.cfg
+Sonic Adventure 2/Config/Keyboard.cfg
+```
+
+Then launch with `-q` after `%command%`. The local Ansible launch-option
+override combines both requirements:
+
+```text
+LD_LIBRARY_PATH={{ dg_nvidia_steam_runtime_ld_library_path }} %command% -q
+```
+
+Avoid resetting the prefix or installing `.NET`/`uiautomationcore` unless the
+stock launcher or SA Mod Manager is specifically required.
 
 ---
 

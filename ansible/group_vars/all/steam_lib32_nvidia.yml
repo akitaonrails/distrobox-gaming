@@ -1,0 +1,39 @@
+# Steam Runtime workaround for 32-bit Windows games under Proton on NVIDIA.
+#
+# Distrobox --nvidia can bind host 64-bit NVIDIA libraries over /usr/lib32,
+# which breaks old 32-bit D3D/DXVK games with errors such as:
+#   The NVIDIA driver was unable to open 'libnvidia-glvkspirv.so.<version>'
+# Keep this as a per-game launch option instead of a global Steam launcher env:
+# Steam's own 32-bit updater/client also uses LD_LIBRARY_PATH and can be
+# destabilized by global overrides.
+
+# Empty by default because Steam userdata IDs are account-specific. For this
+# machine pass the user-local Steam path, for example:
+#   <Steam userdata>/<account-id>/config/localconfig.vdf
+dg_steam_lib32_nvidia_localconfig: ""
+
+# The role refuses to edit Steam localconfig while Steam is running. Stop Steam
+# first, or set this true for a local one-shot run.
+dg_steam_lib32_nvidia_stop_steam: false
+
+dg_steam_lib32_nvidia_launch_option: >-
+  LD_LIBRARY_PATH={{ dg_nvidia_steam_runtime_ld_library_path }} %command%
+
+# Per-app launch option overrides for games that need the same 32-bit NVIDIA
+# runtime path plus additional command-line arguments.
+dg_steam_lib32_nvidia_launch_options_by_appid:
+  # Bypass the .NET WinForms launcher once Config/UserConfig.cfg and
+  # Config/Keyboard.cfg exist. The launcher can fail under Proton with a
+  # UIAutomationCore.dll / System.Windows.Forms error even when the game works.
+  "213610": >-
+    LD_LIBRARY_PATH={{ dg_nvidia_steam_runtime_ld_library_path }} %command% -q
+
+# Known local 32-bit Sonic games affected by broken /usr/lib32 NVIDIA binds.
+# Generations is omitted because Sonic X Shadow Generations covers it locally.
+# Sonic Adventure 2 still has a separate .NET launcher issue, but the game
+# executable is also 32-bit D3D9 and should use the same NVIDIA runtime fix.
+dg_steam_lib32_nvidia_appids:
+  "584400": "Sonic Mania"
+  "71250": "Sonic Adventure DX"
+  "213610": "Sonic Adventure 2"
+  "200940": "Sonic CD"

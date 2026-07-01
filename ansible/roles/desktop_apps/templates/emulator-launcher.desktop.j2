@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name={{ launcher.display_name }}
-Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_gpu_env }} {{ launcher.exec }}
+Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ launcher.gpu_env | default(dg_gpu_env) }} {{ launcher.exec }}
 Terminal=false
 Type=Application
 Icon={{ launcher.icon }}
