@@ -25,9 +25,13 @@ role converts it to `baserom.us.z64` and verifies the canonical US SHA1:
 
 After building, the role installs:
 
-- Render96 DynOS model pack v3.2 into `dynos/packs/`, checksum-pinned with
-  SHA256 `d95ef25a694b1cd2e82785418aebf2aa8fd3a6b394b350fe51971474d19664b2`.
+- Render96 DynOS model pack v3.25 into `dynos/packs/`, checksum-pinned with
+  SHA256 `22eea6dafcc0a87659d60513eb6a6b0f4ea0acbc6645a6b1b445de9e5812e6df`.
 - Render96 HD texture pack tag `1.2.1` into `res/gfx/`.
+
+The newer Render96 HD Texture Pack `1.3` release is aimed at the CoopDX
+`textures/` layout, so this role keeps the known-good Render96ex `res/gfx/`
+texture source until the Render96ex workflow changes.
 
 Render96ex is built with `TEXTURE_FIX=1`, which is needed for the Render96
 model and texture workflow.

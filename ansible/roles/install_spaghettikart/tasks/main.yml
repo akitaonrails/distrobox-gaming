@@ -8,6 +8,7 @@
     - "{{ dg_spaghettikart_root }}"
     - "{{ dg_spaghettikart_cache_dir }}"
     - "{{ dg_spaghettikart_install_dir }}"
+    - "{{ dg_spaghettikart_install_dir }}/mods"
     - "{{ dg_box_home }}/bin"
 
 - name: Install SpaghettiKart build/runtime dependencies inside box
@@ -22,6 +23,13 @@
     url: "{{ dg_spaghettikart_asset_url }}"
     dest: "{{ dg_spaghettikart_cache_dir }}/{{ dg_spaghettikart_asset_name }}"
     checksum: "sha256:{{ dg_spaghettikart_asset_sha256 }}"
+    mode: "0644"
+
+- name: Download MK64 Reloaded HD pack for SpaghettiKart
+  ansible.builtin.get_url:
+    url: "{{ dg_spaghettikart_hd_pack_url }}"
+    dest: "{{ dg_spaghettikart_cache_dir }}/{{ dg_spaghettikart_hd_pack_name }}"
+    checksum: "sha256:{{ dg_spaghettikart_hd_pack_sha256 }}"
     mode: "0644"
 
 - name: Check out SpaghettiKart source for asset extraction
@@ -126,6 +134,26 @@
     '
   register: _spaghettikart_install
   changed_when: "'installed-spaghettikart' in _spaghettikart_install.stdout"
+
+- name: Install MK64 Reloaded HD pack for SpaghettiKart
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      mods_dir="{{ dg_spaghettikart_install_dir }}/mods"
+      ref_file="$mods_dir/.dg-mk64-reloaded-ref"
+      if [ -s "$mods_dir/{{ dg_spaghettikart_hd_pack_name }}" ] &&
+         [ -f "$ref_file" ] &&
+         grep -qx "{{ dg_spaghettikart_hd_pack_id }}" "$ref_file"; then
+        exit 0
+      fi
+
+      mkdir -p "$mods_dir"
+      install -m 0644 "{{ dg_spaghettikart_cache_dir }}/{{ dg_spaghettikart_hd_pack_name }}" "$mods_dir/{{ dg_spaghettikart_hd_pack_name }}"
+      printf "%s\n" "{{ dg_spaghettikart_hd_pack_id }}" > "$ref_file"
+      printf "%s\n" "installed-mk64-reloaded {{ dg_spaghettikart_hd_pack_name }}"
+    '
+  register: _spaghettikart_hd_pack
+  changed_when: "'installed-mk64-reloaded' in _spaghettikart_hd_pack.stdout"
 
 - name: Install SpaghettiKart launcher wrapper
   ansible.builtin.template:

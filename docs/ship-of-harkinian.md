@@ -10,6 +10,8 @@ Ship of Harkinian, rather than building from source or using AUR packages.
 - Tag commit: `cb71e22a79bc5d1f688fa881795bbd93094895fc`
 - Asset: `SoH-Ackbar-Delta-Linux.zip`
 - Asset SHA256: `f81cde8052142d6abbbaaffa70699d6748e4cde3f158be8f268c3aab338ee315`
+- HD pack: `oot-reloaded-v11.0.0-soh-o2r-hd.7z`
+- HD pack SHA256: `a6a551e880739de7f5313888f6cf4eea2eb9d2f04274697fe8ad524ea3c30161`
 
 ## Install
 
@@ -47,4 +49,8 @@ SHA1 before launching:
 - Install directory: `{{ dg_ship_of_harkinian_install_dir }}`
 - AppImage: `{{ dg_ship_of_harkinian_install_dir }}/soh.appimage`
 - Verified ROM copy: `{{ dg_ship_of_harkinian_install_dir }}/{{ dg_ship_of_harkinian_rom_name }}`
+- HD mod: `{{ dg_ship_of_harkinian_install_dir }}/mods/OoT_Reloaded_v11.0.0_HD.o2r`
 - Wrapper: `{{ dg_ship_of_harkinian_bin }}`
+
+OoT Reloaded uses alternate assets. Enable **Use Alternate Assets** from the SoH
+menu, or press `Tab`, if the HD textures are not visible after launch.

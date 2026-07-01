@@ -8,6 +8,7 @@
     - "{{ dg_two_ship2harkinian_root }}"
     - "{{ dg_two_ship2harkinian_cache_dir }}"
     - "{{ dg_two_ship2harkinian_install_dir }}"
+    - "{{ dg_two_ship2harkinian_install_dir }}/mods"
     - "{{ dg_box_home }}/bin"
 
 - name: Install 2Ship2Harkinian runtime dependencies inside box
@@ -22,6 +23,13 @@
     url: "{{ dg_two_ship2harkinian_asset_url }}"
     dest: "{{ dg_two_ship2harkinian_cache_dir }}/{{ dg_two_ship2harkinian_asset_name }}"
     checksum: "sha256:{{ dg_two_ship2harkinian_asset_sha256 }}"
+    mode: "0644"
+
+- name: Download MM Reloaded HD pack for 2Ship2Harkinian
+  ansible.builtin.get_url:
+    url: "{{ dg_two_ship2harkinian_hd_pack_url }}"
+    dest: "{{ dg_two_ship2harkinian_cache_dir }}/{{ dg_two_ship2harkinian_hd_pack_name }}"
+    checksum: "sha256:{{ dg_two_ship2harkinian_hd_pack_sha256 }}"
     mode: "0644"
 
 - name: Install 2Ship2Harkinian AppImage release
@@ -86,6 +94,30 @@
     PY
   register: _two_ship2harkinian_rom
   changed_when: "'prepared-mm-rom' in _two_ship2harkinian_rom.stdout"
+
+- name: Install MM Reloaded HD pack for 2Ship2Harkinian
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      mods_dir="{{ dg_two_ship2harkinian_install_dir }}/mods"
+      ref_file="$mods_dir/.dg-mm-reloaded-ref"
+      if [ -s "$mods_dir/{{ dg_two_ship2harkinian_hd_pack_o2r_name }}" ] &&
+         [ -f "$ref_file" ] &&
+         grep -qx "{{ dg_two_ship2harkinian_hd_pack_id }}" "$ref_file"; then
+        exit 0
+      fi
+
+      tmp_dir="{{ dg_two_ship2harkinian_cache_dir }}/mm-reloaded-extract"
+      rm -rf "$tmp_dir"
+      mkdir -p "$tmp_dir" "$mods_dir"
+      7z x -y -o"$tmp_dir" "{{ dg_two_ship2harkinian_cache_dir }}/{{ dg_two_ship2harkinian_hd_pack_name }}" >/dev/null
+      install -m 0644 "$tmp_dir/{{ dg_two_ship2harkinian_hd_pack_o2r_name }}" "$mods_dir/{{ dg_two_ship2harkinian_hd_pack_o2r_name }}"
+      printf "%s\n" "{{ dg_two_ship2harkinian_hd_pack_id }}" > "$ref_file"
+      rm -rf "$tmp_dir"
+      printf "%s\n" "installed-mm-reloaded {{ dg_two_ship2harkinian_hd_pack_o2r_name }}"
+    '
+  register: _two_ship2harkinian_hd_pack
+  changed_when: "'installed-mm-reloaded' in _two_ship2harkinian_hd_pack.stdout"
 
 - name: Install 2Ship2Harkinian launcher wrapper
   ansible.builtin.template:

@@ -48,9 +48,18 @@ Installed layout:
 ```text
 {{ dg_box_home }}/tools/spaghettikart/current/spaghetti.appimage
 {{ dg_box_home }}/tools/spaghettikart/current/mk64.o2r
+{{ dg_box_home }}/tools/spaghettikart/current/mods/mk64-reloaded-v2026.04.03-sk-hd.o2r
 {{ dg_box_home }}/tools/spaghettikart/current/config.yml
 {{ dg_box_home }}/tools/spaghettikart/current/gamecontrollerdb.txt
 {{ dg_box_home }}/bin/spaghettikart
+```
+
+The role also installs MK64 Reloaded for SpaghettiKart as a checksum-pinned HD
+`.o2r` mod:
+
+```text
+mk64-reloaded-v2026.04.03-sk-hd.o2r
+SHA256 98d852481dbbd1ca378b79ca2146486848118879da9aa4612769eaaee6dba685
 ```
 
 The desktop launcher is `gaming-spaghettikart.desktop` and sets `Path=` to the

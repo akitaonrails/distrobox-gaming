@@ -11,6 +11,11 @@ dg_spaghettikart_git_ref: 6f5e8d514efb60856ccd01a6669e67d0eb9c6858
 dg_spaghettikart_torch_ref: 5773373b3620e4a6bc6c92fdc4690d66741c086d
 dg_spaghettikart_libultraship_ref: 5e33d3e7cd0396f847923cd6c471eaf324e90351
 
+dg_spaghettikart_hd_pack_version: v2026.04.03
+dg_spaghettikart_hd_pack_name: mk64-reloaded-v2026.04.03-sk-hd.o2r
+dg_spaghettikart_hd_pack_url: "https://github.com/GhostlyDark/MK64-Reloaded/releases/download/{{ dg_spaghettikart_hd_pack_version }}/{{ dg_spaghettikart_hd_pack_name }}"
+dg_spaghettikart_hd_pack_sha256: 98d852481dbbd1ca378b79ca2146486848118879da9aa4612769eaaee6dba685
+
 dg_spaghettikart_root: "{{ dg_box_home }}/tools/spaghettikart"
 dg_spaghettikart_source_dir: "{{ dg_spaghettikart_root }}/source"
 dg_spaghettikart_build_dir: "{{ dg_spaghettikart_source_dir }}/build-cmake"
@@ -21,6 +26,7 @@ dg_spaghettikart_bin: "{{ dg_box_home }}/bin/spaghettikart"
 dg_spaghettikart_rom_source: "{{ dg_rom_mid_root }}/n64/Mario Kart 64 (USA).n64"
 dg_spaghettikart_rom_sha1: 579c48e211ae952530ffc8738709f078d5dd215e
 dg_spaghettikart_install_id: "{{ dg_spaghettikart_version }}-{{ dg_spaghettikart_git_ref }}-{{ dg_spaghettikart_asset_sha256 }}-{{ dg_spaghettikart_rom_sha1 }}"
+dg_spaghettikart_hd_pack_id: "{{ dg_spaghettikart_hd_pack_version }}-{{ dg_spaghettikart_hd_pack_sha256 }}"
 
 dg_spaghettikart_pacman_packages:
   - base-devel

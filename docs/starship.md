@@ -51,3 +51,11 @@ before launching:
 - AppImage: `{{ dg_starship_install_dir }}/{{ dg_starship_appimage_name }}`
 - Verified ROM copy: `{{ dg_starship_install_dir }}/{{ dg_starship_rom_name }}`
 - Wrapper: `{{ dg_starship_bin }}`
+
+## Optional HD packs
+
+Starship supports `.o2r`/`.otr` mods in `{{ dg_starship_install_dir }}/mods/`,
+but the only current visual overhaul found during review was LR2EB Preview 2,
+which is explicitly WIP, has known visual issues, and can cause large CPU hits
+with `ast_corneria.o2r`. It is not installed by default; add it as an opt-in pack
+only after accepting those caveats.

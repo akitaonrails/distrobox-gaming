@@ -3,15 +3,15 @@
 dg_render96ex_repo_url: https://github.com/Render96/Render96ex.git
 dg_render96ex_git_ref: cd02b8886e0a0498c23b0c1f1e58f0b7c70ccc66
 
-dg_render96ex_model_pack_url: https://github.com/Render96/ModelPack/releases/download/3.2/Render96_DynOs_v3.2.7z
-dg_render96ex_model_pack_name: Render96_DynOs_v3.2.7z
-dg_render96ex_model_pack_sha256: d95ef25a694b1cd2e82785418aebf2aa8fd3a6b394b350fe51971474d19664b2
+dg_render96ex_model_pack_url: https://github.com/Render96/ModelPack/releases/download/3.25/Render96_DynOs_v3.25.7z
+dg_render96ex_model_pack_name: Render96_DynOs_v3.25.7z
+dg_render96ex_model_pack_sha256: 22eea6dafcc0a87659d60513eb6a6b0f4ea0acbc6645a6b1b445de9e5812e6df
 dg_render96ex_texture_pack_url: https://github.com/pokeheadroom/RENDER96-HD-TEXTURE-PACK.git
 dg_render96ex_texture_pack_ref: d67da21616b489b3829753dbc517e2ec8c606ef5
 
 dg_render96ex_make_flags: TEXTURE_FIX=1
 dg_render96ex_build_id: "{{ dg_render96ex_git_ref }}-texturefix-1"
-dg_render96ex_asset_id: "modelpack-3.2-{{ dg_render96ex_model_pack_sha256 }}-textures-{{ dg_render96ex_texture_pack_ref }}"
+dg_render96ex_asset_id: "modelpack-3.25-{{ dg_render96ex_model_pack_sha256 }}-textures-{{ dg_render96ex_texture_pack_ref }}"
 dg_render96ex_install_id: "{{ dg_render96ex_build_id }}-{{ dg_render96ex_asset_id }}"
 
 dg_render96ex_root: "{{ dg_box_home }}/tools/render96ex"

@@ -9,6 +9,12 @@ dg_two_ship2harkinian_asset_sha256: c97fc9440f5584f350c911ec7385778394aa62f651c6
 dg_two_ship2harkinian_repo_url: https://github.com/HarbourMasters/2ship2harkinian.git
 dg_two_ship2harkinian_git_ref: acfd617302ebb74e63f26f0049b53400a644c8e8
 
+dg_two_ship2harkinian_hd_pack_version: v11.0.2
+dg_two_ship2harkinian_hd_pack_name: mm-reloaded-v11.0.2-2ship-o2r-hd.7z
+dg_two_ship2harkinian_hd_pack_url: "https://github.com/GhostlyDark/MM-Reloaded-2S2H/releases/download/{{ dg_two_ship2harkinian_hd_pack_version }}/{{ dg_two_ship2harkinian_hd_pack_name }}"
+dg_two_ship2harkinian_hd_pack_sha256: 0193334ea87621cf733503af66a719cb3c3e7dfc15505f0f365070095de54215
+dg_two_ship2harkinian_hd_pack_o2r_name: MM_Reloaded_v11.0.2_HD.o2r
+
 dg_two_ship2harkinian_root: "{{ dg_box_home }}/tools/2ship2harkinian"
 dg_two_ship2harkinian_install_dir: "{{ dg_two_ship2harkinian_root }}/current"
 dg_two_ship2harkinian_cache_dir: "{{ dg_two_ship2harkinian_root }}/cache"
@@ -24,8 +30,10 @@ dg_two_ship2harkinian_rom_sha1: d6133ace5afaa0882cf214cf88daba39e266c078
 
 dg_two_ship2harkinian_install_id: "{{ dg_two_ship2harkinian_version }}-{{ dg_two_ship2harkinian_git_ref }}-{{ dg_two_ship2harkinian_asset_sha256 }}"
 dg_two_ship2harkinian_rom_id: "{{ dg_two_ship2harkinian_rom_sha1 }}"
+dg_two_ship2harkinian_hd_pack_id: "{{ dg_two_ship2harkinian_hd_pack_version }}-{{ dg_two_ship2harkinian_hd_pack_sha256 }}"
 
 dg_two_ship2harkinian_pacman_packages:
   - unzip
+  - p7zip
   - fuse2
   - zenity
