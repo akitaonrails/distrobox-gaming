@@ -1,0 +1,9 @@
+---
+- name: Install or update Ship of Harkinian
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_ship_of_harkinian
+    - desktop_apps
+    - { role: verify, tags: [verify] }

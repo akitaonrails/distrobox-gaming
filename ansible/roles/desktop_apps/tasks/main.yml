@@ -56,6 +56,12 @@
     dest: "{{ dg_desktop_render_dir }}/gaming-spaghettikart.desktop"
     mode: "0644"
 
+- name: Render Ship of Harkinian desktop entry
+  ansible.builtin.template:
+    src: gaming-ship-of-harkinian.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-ship-of-harkinian.desktop"
+    mode: "0644"
+
 - name: Render Dusk desktop entry
   ansible.builtin.template:
     src: gaming-dusk.desktop.j2

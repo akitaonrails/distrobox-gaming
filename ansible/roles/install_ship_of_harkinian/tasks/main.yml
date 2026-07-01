@@ -1,0 +1,93 @@
+---
+- name: Create Ship of Harkinian directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_ship_of_harkinian_root }}"
+    - "{{ dg_ship_of_harkinian_cache_dir }}"
+    - "{{ dg_ship_of_harkinian_install_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Install Ship of Harkinian runtime dependencies inside box
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sudo pacman -S --needed --noconfirm
+    {{ dg_ship_of_harkinian_pacman_packages | join(' ') }}
+  register: _ship_of_harkinian_pacman
+  changed_when: "'installing' in _ship_of_harkinian_pacman.stdout or 'upgrading' in _ship_of_harkinian_pacman.stdout"
+
+- name: Download pinned Ship of Harkinian release ZIP
+  ansible.builtin.get_url:
+    url: "{{ dg_ship_of_harkinian_asset_url }}"
+    dest: "{{ dg_ship_of_harkinian_cache_dir }}/{{ dg_ship_of_harkinian_asset_name }}"
+    checksum: "sha256:{{ dg_ship_of_harkinian_asset_sha256 }}"
+    mode: "0644"
+
+- name: Install Ship of Harkinian AppImage release
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      if [ -x "{{ dg_ship_of_harkinian_install_dir }}/soh.appimage" ] &&
+         [ -f "{{ dg_ship_of_harkinian_install_dir }}/.dg-installed-ref" ] &&
+         grep -qx "{{ dg_ship_of_harkinian_install_id }}" "{{ dg_ship_of_harkinian_install_dir }}/.dg-installed-ref"; then
+        exit 0
+      fi
+
+      rm -rf "{{ dg_ship_of_harkinian_install_dir }}"
+      mkdir -p "{{ dg_ship_of_harkinian_install_dir }}"
+      unzip -q "{{ dg_ship_of_harkinian_cache_dir }}/{{ dg_ship_of_harkinian_asset_name }}" -d "{{ dg_ship_of_harkinian_install_dir }}"
+      chmod 0755 "{{ dg_ship_of_harkinian_install_dir }}/soh.appimage"
+      printf "%s\n" "{{ dg_ship_of_harkinian_install_id }}" > "{{ dg_ship_of_harkinian_install_dir }}/.dg-installed-ref"
+      printf "%s\n" "installed-ship-of-harkinian {{ dg_ship_of_harkinian_install_dir }}"
+    '
+  register: _ship_of_harkinian_install
+  changed_when: "'installed-ship-of-harkinian' in _ship_of_harkinian_install.stdout"
+
+- name: Prepare verified Ocarina of Time USA Rev B ROM for Ship of Harkinian
+  ansible.builtin.shell: |
+    python3 - <<'PY'
+    from pathlib import Path
+    import hashlib
+
+    src = Path(r'''{{ dg_ship_of_harkinian_rom_source }}''')
+    dst = Path(r'''{{ dg_ship_of_harkinian_install_dir }}/{{ dg_ship_of_harkinian_rom_name }}''')
+    ref = Path(r'''{{ dg_ship_of_harkinian_install_dir }}/.dg-rom-ref''')
+    expected = '''{{ dg_ship_of_harkinian_rom_sha1 }}'''
+
+    data = src.read_bytes()
+    magic = data[:4]
+    if magic == bytes.fromhex('80371240'):
+        z64 = data
+    elif magic == bytes.fromhex('37804012'):
+        z64 = b''.join(
+            (data[i + 1:i + 2] + data[i:i + 1]) if i + 1 < len(data) else data[i:i + 1]
+            for i in range(0, len(data), 2)
+        )
+    elif magic == bytes.fromhex('40123780'):
+        z64 = b''.join(
+            data[i:i + 4][::-1] if len(data[i:i + 4]) == 4 else data[i:i + 4]
+            for i in range(0, len(data), 4)
+        )
+    else:
+        raise SystemExit(f'unsupported N64 ROM byte order for {src}: magic={magic.hex()}')
+
+    actual = hashlib.sha1(z64).hexdigest()
+    if actual != expected:
+        raise SystemExit(f'wrong Ocarina of Time USA Rev B ROM SHA1 for {src}: {actual} != {expected}')
+
+    if dst.exists() and dst.read_bytes() == z64 and ref.exists() and ref.read_text().strip() == expected:
+        raise SystemExit(0)
+
+    dst.write_bytes(z64)
+    ref.write_text(expected + '\n')
+    print(f'prepared-oot-rom {dst}')
+    PY
+  register: _ship_of_harkinian_rom
+  changed_when: "'prepared-oot-rom' in _ship_of_harkinian_rom.stdout"
+
+- name: Install Ship of Harkinian launcher wrapper
+  ansible.builtin.template:
+    src: ship-of-harkinian.sh.j2
+    dest: "{{ dg_ship_of_harkinian_bin }}"
+    mode: "0755"
