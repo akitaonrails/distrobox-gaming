@@ -1,0 +1,39 @@
+# Render96ex native Linux Super Mario 64 PC port with Render96 assets.
+
+dg_render96ex_repo_url: https://github.com/Render96/Render96ex.git
+dg_render96ex_git_ref: cd02b8886e0a0498c23b0c1f1e58f0b7c70ccc66
+
+dg_render96ex_model_pack_url: https://github.com/Render96/ModelPack/releases/download/3.2/Render96_DynOs_v3.2.7z
+dg_render96ex_model_pack_name: Render96_DynOs_v3.2.7z
+dg_render96ex_model_pack_sha256: d95ef25a694b1cd2e82785418aebf2aa8fd3a6b394b350fe51971474d19664b2
+dg_render96ex_texture_pack_url: https://github.com/pokeheadroom/RENDER96-HD-TEXTURE-PACK.git
+dg_render96ex_texture_pack_ref: d67da21616b489b3829753dbc517e2ec8c606ef5
+
+dg_render96ex_make_flags: TEXTURE_FIX=1
+dg_render96ex_build_id: "{{ dg_render96ex_git_ref }}-texturefix-1"
+dg_render96ex_asset_id: "modelpack-3.2-{{ dg_render96ex_model_pack_sha256 }}-textures-{{ dg_render96ex_texture_pack_ref }}"
+dg_render96ex_install_id: "{{ dg_render96ex_build_id }}-{{ dg_render96ex_asset_id }}"
+
+dg_render96ex_root: "{{ dg_box_home }}/tools/render96ex"
+dg_render96ex_source_dir: "{{ dg_render96ex_root }}/source"
+dg_render96ex_install_dir: "{{ dg_render96ex_root }}/current"
+dg_render96ex_cache_dir: "{{ dg_render96ex_root }}/cache"
+dg_render96ex_texture_source_dir: "{{ dg_render96ex_root }}/texture-pack"
+dg_render96ex_bin: "{{ dg_box_home }}/bin/render96ex"
+
+# Local ROM is byte-swapped (.n64 / v64 order). The role converts it to
+# baserom.us.z64 and verifies the canonical US SHA1 before building.
+dg_render96ex_rom_source: "{{ dg_rom_mid_root }}/n64/Super Mario 64 (USA).n64"
+dg_render96ex_baserom_sha1: 9bef1128717f958171a4afac3ed78ee2bb4e86ce
+
+dg_render96ex_pacman_packages:
+  - base-devel
+  - git
+  - python
+  - sdl2
+  - glew
+  - glu
+  - libglvnd
+  - libusb
+  - audiofile
+  - p7zip

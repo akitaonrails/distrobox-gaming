@@ -1,9 +1,9 @@
 ---
-- name: Install or update Super Mario 64 Plus
+- name: Install or update Render96ex
   hosts: localhost
   connection: local
   gather_facts: true
   roles:
-    - install_sm64plus
+    - install_render96ex
     - desktop_apps
     - { role: verify, tags: [verify] }

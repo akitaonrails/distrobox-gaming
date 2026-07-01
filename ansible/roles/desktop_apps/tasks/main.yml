@@ -43,10 +43,10 @@
     dest: "{{ dg_desktop_render_dir }}/gaming-sonic-p06.desktop"
     mode: "0644"
 
-- name: Render Super Mario 64 Plus desktop entry
+- name: Render Render96ex desktop entry
   ansible.builtin.template:
-    src: gaming-sm64plus.desktop.j2
-    dest: "{{ dg_desktop_render_dir }}/gaming-sm64plus.desktop"
+    src: gaming-render96ex.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-render96ex.desktop"
     mode: "0644"
 
 - name: Render Dusk desktop entry
@@ -54,6 +54,20 @@
     src: gaming-dusk.desktop.j2
     dest: "{{ dg_desktop_render_dir }}/gaming-dusk.desktop"
     mode: "0644"
+
+- name: Remove obsolete rendered desktop entries
+  ansible.builtin.file:
+    path: "{{ dg_desktop_render_dir }}/{{ item }}"
+    state: absent
+  loop:
+    - gaming-sm64plus.desktop
+
+- name: Remove obsolete host desktop entries
+  ansible.builtin.file:
+    path: "{{ dg_host_applications_dir }}/{{ item }}"
+    state: absent
+  loop:
+    - gaming-sm64plus.desktop
 
 - name: Check if desktop-file-validate is available
   ansible.builtin.command: "which desktop-file-validate"
@@ -78,12 +92,10 @@
   when: _dfv_check.rc == 0
 
 - name: Install rendered desktop files into host applications dir
-  # Runs scripts/install-host-launchers.sh, which symlinks every
-  # rendered entry into dg_host_applications_dir and removes stale
-  # symlinks whose source was deleted from rendered/. Skips entries
-  # whose target binary isn't installed in the configured box. The
-  # script is idempotent — only emits "installed"/"removed stale"
-  # for actual filesystem changes.
+  # Runs scripts/install-host-launchers.sh, which copies each installable
+  # rendered entry into dg_host_applications_dir. Entries whose target binary
+  # is missing are removed if their rendered source still exists; deleted
+  # historical launchers should be listed in the obsolete cleanup tasks above.
   ansible.builtin.command:
     cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
   environment:
@@ -91,5 +103,5 @@
     DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
   register: _host_launchers
   changed_when: >-
-    'installed ' in _host_launchers.stdout or
-    'removed stale ' in _host_launchers.stdout
+    '[host-launchers] installed ' in _host_launchers.stdout or
+    '[host-launchers] removed stale ' in _host_launchers.stdout
