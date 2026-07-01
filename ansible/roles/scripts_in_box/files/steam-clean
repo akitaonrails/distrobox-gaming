@@ -1,0 +1,55 @@
+#!/usr/bin/env sh
+set -eu
+
+log() {
+  printf '[steam-clean] %s\n' "$*"
+}
+
+uid="$(id -u)"
+
+log 'stopping Steam processes'
+for proc in \
+  steam \
+  steamwebhelper \
+  steam-runtime-supervisor \
+  steam-runtime-launch-client \
+  pressure-vessel-adverb \
+  pressure-vessel-wrap \
+  reaper \
+  gameoverlayui; do
+  pkill -TERM -u "$uid" -x "$proc" 2>/dev/null || true
+done
+
+sleep 2
+
+for proc in \
+  steam \
+  steamwebhelper \
+  steam-runtime-supervisor \
+  steam-runtime-launch-client \
+  pressure-vessel-adverb \
+  pressure-vessel-wrap \
+  reaper \
+  gameoverlayui; do
+  pkill -KILL -u "$uid" -x "$proc" 2>/dev/null || true
+done
+
+log 'removing stale Steam PID, socket, and dump files'
+rm -f \
+  "$HOME/.steam/steam.pid" \
+  "$HOME/.steam/root/steam.pid" \
+  "$HOME/.local/share/Steam/steam.pid" \
+  "$HOME/.local/share/Steam/.crash" \
+  "$HOME/.local/share/Steam/steam.pipe" \
+  "$HOME/.local/share/Steam/steam.token" \
+  2>/dev/null || true
+
+rm -rf \
+  "/tmp/steam-$uid" \
+  "/tmp/.steam-$uid" \
+  "/tmp/steam_chrome_shmem_$uid" \
+  "$HOME/.local/share/Steam/dumps" \
+  2>/dev/null || true
+
+log 'starting Steam'
+exec "$HOME/bin/steam-launch" "$@"

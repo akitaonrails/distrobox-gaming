@@ -31,3 +31,15 @@
     src: retroarch-snes
     dest: "{{ dg_box_home }}/bin/retroarch-snes"
     mode: "0755"
+
+- name: Deploy Steam clean launcher
+  ansible.builtin.copy:
+    src: steam-clean
+    dest: "{{ dg_box_home }}/bin/steam-clean"
+    mode: "0755"
+
+- name: Deploy Steam runtime environment launcher
+  ansible.builtin.copy:
+    src: steam-launch
+    dest: "{{ dg_box_home }}/bin/steam-launch"
+    mode: "0755"

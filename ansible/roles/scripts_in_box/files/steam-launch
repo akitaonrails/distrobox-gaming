@@ -1,0 +1,47 @@
+#!/usr/bin/env sh
+set -eu
+
+log() {
+  printf '[steam-launch] %s\n' "$*" >&2
+}
+
+uid="$(id -u)"
+host_runtime="/run/host/run/user/$uid"
+container_runtime="/run/user/$uid"
+
+# Distrobox exposes the host user runtime under /run/host/run/user/$uid. In
+# this box, /run/user/$uid exists but often lacks the session bus. Steam's
+# pressure-vessel runtime then tries to bind a nonexistent /run/user/$uid/bus,
+# causing DBus failures and broken Vulkan/GL probing. Point Steam at the
+# host-mounted runtime when it has the real session bus.
+if [ -S "$host_runtime/bus" ]; then
+  export XDG_RUNTIME_DIR="$host_runtime"
+  export DBUS_SESSION_BUS_ADDRESS="unix:path=$host_runtime/bus"
+elif [ -n "${XDG_RUNTIME_DIR:-}" ] && [ -S "$XDG_RUNTIME_DIR/bus" ]; then
+  export DBUS_SESSION_BUS_ADDRESS="unix:path=$XDG_RUNTIME_DIR/bus"
+elif [ -S "$container_runtime/bus" ]; then
+  export XDG_RUNTIME_DIR="$container_runtime"
+  export DBUS_SESSION_BUS_ADDRESS="unix:path=$container_runtime/bus"
+else
+  log "warning: no session bus found in $host_runtime or $container_runtime"
+fi
+
+if [ "${1:-}" = "--diagnose" ]; then
+  printf 'XDG_RUNTIME_DIR=%s\n' "${XDG_RUNTIME_DIR:-}"
+  printf 'DBUS_SESSION_BUS_ADDRESS=%s\n' "${DBUS_SESSION_BUS_ADDRESS:-}"
+  if [ -n "${XDG_RUNTIME_DIR:-}" ] && [ -S "$XDG_RUNTIME_DIR/bus" ]; then
+    printf 'session_bus=ok\n'
+  else
+    printf 'session_bus=missing\n'
+  fi
+  if command -v dbus-send >/dev/null 2>&1; then
+    dbus-send --session --dest=org.freedesktop.DBus --type=method_call --print-reply \
+      / org.freedesktop.DBus.ListNames >/dev/null 2>&1 && printf 'dbus_send=ok\n' || printf 'dbus_send=failed\n'
+  fi
+  if command -v vulkaninfo >/dev/null 2>&1; then
+    vulkaninfo --summary 2>&1 | grep -E 'VK_KHR_(surface|xlib_surface|xcb_surface|wayland_surface)|deviceName|driverName' | head -20 || true
+  fi
+  exit 0
+fi
+
+exec steam "$@"

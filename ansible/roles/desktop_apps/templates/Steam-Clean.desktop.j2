@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Name=Steam (clean state)
+Comment=Stop stuck Steam, clean stale runtime files, then launch Steam in {{ dg_box_name }}
+Exec=kitty --hold -T "Steam clean" /usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_box_home }}/bin/steam-clean
+Terminal=false
+Type=Application
+Icon=steam
+Categories=Game;
+StartupNotify=true
+StartupWMClass=Steam;
