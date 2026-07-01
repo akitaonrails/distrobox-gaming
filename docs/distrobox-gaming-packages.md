@@ -207,6 +207,18 @@ LD_LIBRARY_PATH={{ dg_nvidia_steam_runtime_ld_library_path }} %command% -q
 Avoid resetting the prefix or installing `.NET`/`uiautomationcore` unless the
 stock launcher or SA Mod Manager is specifically required.
 
+### WRC 4 / WRC 5 notes
+
+WRC 4 (`256330`) and WRC 5 (`354160`) are also old 32-bit D3D titles. After
+repairing prefixes that contained stale symlinks to removed Proton builds, both
+still failed at 32-bit DXVK Vulkan initialization until the same per-game
+`LD_LIBRARY_PATH={{ dg_nvidia_steam_runtime_ld_library_path }} %command%`
+workaround was applied.
+
+Keep the NVIDIA lib32 fix per game through `steam_lib32_nvidia`; do not restore a
+global Steam `LD_LIBRARY_PATH`, `VK_ICD_FILENAMES`, or gamescope wrapper for
+these titles.
+
 ---
 
 ## Flatpak findings

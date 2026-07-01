@@ -28,7 +28,7 @@ dg_steam_lib32_nvidia_launch_options_by_appid:
   "213610": >-
     LD_LIBRARY_PATH={{ dg_nvidia_steam_runtime_ld_library_path }} %command% -q
 
-# Known local 32-bit Sonic games affected by broken /usr/lib32 NVIDIA binds.
+# Known local 32-bit games affected by broken /usr/lib32 NVIDIA binds.
 # Generations is omitted because Sonic X Shadow Generations covers it locally.
 # Sonic Adventure 2 still has a separate .NET launcher issue, but the game
 # executable is also 32-bit D3D9 and should use the same NVIDIA runtime fix.
@@ -37,3 +37,5 @@ dg_steam_lib32_nvidia_appids:
   "71250": "Sonic Adventure DX"
   "213610": "Sonic Adventure 2"
   "200940": "Sonic CD"
+  "256330": "WRC 4 FIA World Rally Championship"
+  "354160": "WRC 5 FIA World Rally Championship"
