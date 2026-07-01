@@ -1,0 +1,9 @@
+---
+- name: Install or update Super Mario 64 Plus
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_sm64plus
+    - desktop_apps
+    - { role: verify, tags: [verify] }

@@ -43,6 +43,12 @@
     dest: "{{ dg_desktop_render_dir }}/gaming-sonic-p06.desktop"
     mode: "0644"
 
+- name: Render Super Mario 64 Plus desktop entry
+  ansible.builtin.template:
+    src: gaming-sm64plus.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-sm64plus.desktop"
+    mode: "0644"
+
 - name: Render Dusk desktop entry
   ansible.builtin.template:
     src: gaming-dusk.desktop.j2

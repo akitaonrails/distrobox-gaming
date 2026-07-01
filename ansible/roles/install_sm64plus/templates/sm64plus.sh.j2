@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+set -eu
+cd "{{ dg_sm64plus_install_dir }}"
+exec "{{ dg_sm64plus_install_dir }}/sm64.us" "{{ dg_sm64plus_install_dir }}/gfx" "$@"

@@ -1,0 +1,28 @@
+# Super Mario 64 Plus native Linux PC port.
+
+dg_sm64plus_repo_url: https://github.com/MorsGames/sm64plus.git
+# Pin upstream for reproducible rebuilds instead of tracking master blindly.
+dg_sm64plus_git_ref: 44fccee2fc4bd4768ae4eff1e5c47b21abe5d85d
+dg_sm64plus_linux_opengl_patch_url: https://patch-diff.githubusercontent.com/raw/MorsGames/sm64plus/pull/134.patch
+dg_sm64plus_build_id: "{{ dg_sm64plus_git_ref }}-linux-opengl-pr134"
+
+dg_sm64plus_root: "{{ dg_box_home }}/tools/sm64plus"
+dg_sm64plus_source_dir: "{{ dg_sm64plus_root }}/source"
+dg_sm64plus_install_dir: "{{ dg_sm64plus_root }}/current"
+dg_sm64plus_patch_dir: "{{ dg_sm64plus_root }}/patches"
+dg_sm64plus_bin: "{{ dg_box_home }}/bin/sm64plus"
+
+# This local ROM is byte-swapped (.n64 / v64 order). The role converts it to
+# baserom.us.z64 and verifies the canonical US SHA1 before building.
+dg_sm64plus_rom_source: "{{ dg_rom_mid_root }}/n64/Super Mario 64 (USA).n64"
+dg_sm64plus_baserom_sha1: 9bef1128717f958171a4afac3ed78ee2bb4e86ce
+
+dg_sm64plus_pacman_packages:
+  - base-devel
+  - git
+  - python
+  - pkgconf
+  - sdl2
+  - glew
+  - libusb
+  - imagemagick

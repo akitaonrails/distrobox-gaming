@@ -21,6 +21,7 @@ dg_external_usb_games_root: ""
 
 dg_emudeck_root: "{{ dg_external_games_root }}/EmuDeck"
 dg_rom_root: "{{ dg_emudeck_root }}/roms"
+dg_rom_mid_root: "{{ dg_emudeck_root }}/roms_mid"
 dg_rom_heavy_root: "{{ dg_emudeck_root }}/roms_heavy"
 dg_rom_rare_root: "{{ dg_emudeck_root }}/roms_rare"
 dg_bios_root: "{{ dg_emudeck_root }}/Emulation/bios"
