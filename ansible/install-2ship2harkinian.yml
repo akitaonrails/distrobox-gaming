@@ -1,0 +1,9 @@
+---
+- name: Install or update 2Ship2Harkinian
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_2ship2harkinian
+    - desktop_apps
+    - { role: verify, tags: [verify] }
