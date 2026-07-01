@@ -331,6 +331,46 @@ prefix, treat it as prefix-initialization noise and dismiss/kill it rather than
 installing Mono. The launcher sets `mscoree=d` in `WINEDLLOVERRIDES` to suppress
 that dialog for this game.
 
+## Colin McRae Rally 2005
+
+Current status: not automated; treat the PC version as not feasible on the
+current Wine/distrobox stack. Use the PS2/PCSX2 entry for this title unless a
+new Wine runner, executable build, or game-specific Wine patch appears.
+
+The local PC sources are the DRM-free GOG installer set. The two available local
+folders were checksum-compared on 2026-06-30 and contain byte-identical
+`setup_colin2005.exe`, `setup_colin2005-1.bin`, and `setup_colin2005-2.bin`
+files, so the `DRM-Free` folder is not a distinct CD Projekt/Polish/Hungarian
+build to test.
+
+Previously tested and reverted paths include `innoextract` from the GOG
+installer, a clean 32-bit prefix with Wine 9.19-staging, XP SP3 mode, DXVK,
+Wine virtual desktop, disabled XVidMode/XRandR, and launch arguments such as
+`WIDESCREENDISPLAY`, `NOVIDEOMEMORYCHECK`, and `NOVIDEO`. Those attempts either
+hit Wine display-mode/XVidMode problems, a DXVK Vulkan-instance failure, or the
+stable CMR2005 crash signature:
+
+```text
+wine: Unhandled page fault on read access to 00000010 at address 0041DA27
+```
+
+The 2026-06-30 follow-up tried the only new online leads that differed from the
+old dead-end:
+
+- WineD3D/no-DXVK in a fresh prefix, to avoid the prior DXVK Vulkan-instance
+  failure. Running through an explicit Wine virtual desktop still reproduced the
+  `0041DA27` crash.
+- Running the real GOG installer instead of extracting it with `innoextract`,
+  because the GOG/PCGamingWiki Windows fix mentions reinstalling through the
+  original installer and preserving the `SG` folder. Under Wine this installer
+  hung badly enough that the distrobox had to be force-stopped; the scratch
+  install/prefix were removed afterward.
+
+Do not re-add CMR2005 to `pc_racing.yml` from these paths. A future attempt
+needs a genuinely new variable: a different DRM-free executable/build, an exact
+verified Lutris/Bottles recipe with a specific runner/DLL stack, a Wine patch for
+the `0041DA27` crash, or a Windows VM/container path outside Wine.
+
 ## OutRun 2006
 
 OutRun 2006 uses the Inno Setup repack source under
