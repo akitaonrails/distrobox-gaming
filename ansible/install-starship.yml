@@ -1,0 +1,9 @@
+---
+- name: Install or update Starship
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_starship
+    - desktop_apps
+    - { role: verify, tags: [verify] }

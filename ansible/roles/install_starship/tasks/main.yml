@@ -1,0 +1,97 @@
+---
+- name: Create Starship directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_starship_root }}"
+    - "{{ dg_starship_cache_dir }}"
+    - "{{ dg_starship_install_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Install Starship runtime dependencies inside box
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sudo pacman -S --needed --noconfirm
+    {{ dg_starship_pacman_packages | join(' ') }}
+  register: _starship_pacman
+  changed_when: "'installing' in _starship_pacman.stdout or 'upgrading' in _starship_pacman.stdout"
+
+- name: Download pinned Starship release ZIP
+  ansible.builtin.get_url:
+    url: "{{ dg_starship_asset_url }}"
+    dest: "{{ dg_starship_cache_dir }}/{{ dg_starship_asset_name }}"
+    checksum: "sha256:{{ dg_starship_asset_sha256 }}"
+    mode: "0644"
+
+- name: Install Starship AppImage release
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      if [ -x "{{ dg_starship_install_dir }}/{{ dg_starship_appimage_name }}" ] &&
+         [ -f "{{ dg_starship_install_dir }}/.dg-installed-ref" ] &&
+         grep -qx "{{ dg_starship_install_id }}" "{{ dg_starship_install_dir }}/.dg-installed-ref"; then
+        exit 0
+      fi
+
+      rm -rf "{{ dg_starship_install_dir }}"
+      mkdir -p "{{ dg_starship_install_dir }}"
+      unzip -q "{{ dg_starship_cache_dir }}/{{ dg_starship_asset_name }}" -d "{{ dg_starship_install_dir }}"
+      test -f "{{ dg_starship_install_dir }}/{{ dg_starship_appimage_name }}"
+      chmod 0755 "{{ dg_starship_install_dir }}/{{ dg_starship_appimage_name }}"
+      printf "%s\n" "{{ dg_starship_install_id }}" > "{{ dg_starship_install_dir }}/.dg-installed-ref"
+      printf "%s\n" "installed-starship {{ dg_starship_install_dir }}"
+    '
+  register: _starship_install
+  changed_when: "'installed-starship' in _starship_install.stdout"
+
+- name: Prepare verified Star Fox 64 USA Rev A ROM for Starship
+  ansible.builtin.shell: |
+    python3 - <<'PY'
+    from pathlib import Path
+    import hashlib
+
+    src = Path(r'''{{ dg_starship_rom_source }}''')
+    dst = Path(r'''{{ dg_starship_install_dir }}/{{ dg_starship_rom_name }}''')
+    ref = Path(r'''{{ dg_starship_install_dir }}/.dg-rom-ref''')
+    expected = '''{{ dg_starship_rom_sha1 }}'''
+
+    if not src.exists():
+        raise SystemExit(f'Starship ROM not found at {src}; set dg_starship_rom_source to a supported Star Fox 64 / Lylat Wars ROM')
+
+    data = src.read_bytes()
+    magic = data[:4]
+    if magic == bytes.fromhex('80371240'):
+        z64 = data
+    elif magic == bytes.fromhex('37804012'):
+        z64 = b''.join(
+            (data[i + 1:i + 2] + data[i:i + 1]) if i + 1 < len(data) else data[i:i + 1]
+            for i in range(0, len(data), 2)
+        )
+    elif magic == bytes.fromhex('40123780'):
+        z64 = b''.join(
+            data[i:i + 4][::-1] if len(data[i:i + 4]) == 4 else data[i:i + 4]
+            for i in range(0, len(data), 4)
+        )
+    else:
+        raise SystemExit(f'unsupported N64 ROM byte order for {src}: magic={magic.hex()}')
+
+    actual = hashlib.sha1(z64).hexdigest()
+    if actual != expected:
+        raise SystemExit(f'wrong Star Fox 64 USA Rev A ROM SHA1 for {src}: {actual} != {expected}')
+
+    if dst.exists() and dst.read_bytes() == z64 and ref.exists() and ref.read_text().strip() == expected:
+        raise SystemExit(0)
+
+    dst.write_bytes(z64)
+    ref.write_text(expected + '\n')
+    print(f'prepared-starship-rom {dst}')
+    PY
+  register: _starship_rom
+  changed_when: "'prepared-starship-rom' in _starship_rom.stdout"
+
+- name: Install Starship launcher wrapper
+  ansible.builtin.template:
+    src: starship.sh.j2
+    dest: "{{ dg_starship_bin }}"
+    mode: "0755"

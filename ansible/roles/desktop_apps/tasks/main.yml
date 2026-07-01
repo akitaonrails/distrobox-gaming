@@ -68,6 +68,12 @@
     dest: "{{ dg_desktop_render_dir }}/gaming-2ship2harkinian.desktop"
     mode: "0644"
 
+- name: Render Starship desktop entry
+  ansible.builtin.template:
+    src: gaming-starship.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-starship.desktop"
+    mode: "0644"
+
 - name: Render Dusk desktop entry
   ansible.builtin.template:
     src: gaming-dusk.desktop.j2

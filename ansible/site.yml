@@ -29,6 +29,7 @@
     - { role: install_spaghettikart,     tags: [spaghettikart, never] }
     - { role: install_ship_of_harkinian, tags: [ship_of_harkinian, never] }
     - { role: install_2ship2harkinian,   tags: [two_ship2harkinian, never] }
+    - { role: install_starship,          tags: [starship, never] }
     - { role: install_sonic_p06,         tags: [sonic_p06, never] }
     - { role: install_unleashed_recomp,  tags: [unleashed_recomp, never] }
     - { role: desktop_apps,              tags: [configure, desktop, reset_configs] }

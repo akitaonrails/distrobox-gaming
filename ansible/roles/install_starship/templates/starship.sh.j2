@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+set -eu
+cd "{{ dg_starship_install_dir }}"
+exec "{{ dg_starship_install_dir }}/{{ dg_starship_appimage_name }}" "$@"

@@ -1,0 +1,32 @@
+# Starship native Linux Star Fox 64 PC port.
+
+dg_starship_version: "v2.0.0"
+dg_starship_release_name: "Starship - Barnard Alfa"
+dg_starship_asset_name: Starship-Barnard-Alfa-Linux.zip
+dg_starship_asset_url: "https://github.com/HarbourMasters/Starship/releases/download/{{ dg_starship_version }}/{{ dg_starship_asset_name }}"
+dg_starship_asset_sha256: 85dd03d3ad8abd881aa3aa2b49ded336627b44b8ac8333e3c41b5bf7c4336289
+
+dg_starship_repo_url: https://github.com/HarbourMasters/Starship.git
+dg_starship_git_ref: cb19785b51698185a688e17ba1a34c7889195bdb
+
+dg_starship_root: "{{ dg_box_home }}/tools/starship"
+dg_starship_install_dir: "{{ dg_starship_root }}/current"
+dg_starship_cache_dir: "{{ dg_starship_root }}/cache"
+dg_starship_bin: "{{ dg_box_home }}/bin/starship"
+dg_starship_appimage_name: starship.appimage
+
+# Local ROM is byte-swapped (.n64 / v64 order). The role converts it to a
+# canonical big-endian z64 copy in the install directory and verifies the
+# Star Fox 64 USA Rev A SHA1 before launch. Override this path if your ROM set
+# uses a different filename or region/revision supported by Starship.
+dg_starship_rom_source: "{{ dg_rom_mid_root }}/n64/Star Fox 64 (USA) (Rev A).n64"
+dg_starship_rom_name: starfox64.z64
+dg_starship_rom_sha1: 09f0d105f476b00efa5303a3ebc42e60a7753b7a
+
+dg_starship_install_id: "{{ dg_starship_version }}-{{ dg_starship_git_ref }}-{{ dg_starship_asset_sha256 }}"
+dg_starship_rom_id: "{{ dg_starship_rom_sha1 }}"
+
+dg_starship_pacman_packages:
+  - unzip
+  - fuse2
+  - zenity
