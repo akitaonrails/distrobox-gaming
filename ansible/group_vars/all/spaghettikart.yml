@@ -1,0 +1,45 @@
+# SpaghettiKart / Alfredo native Linux Mario Kart 64 PC port.
+
+dg_spaghettikart_version: "0.9.9.1"
+dg_spaghettikart_release_name: "Alfredo Alfa 0.9.9.1"
+dg_spaghettikart_asset_name: Spaghettify-Alfredo-Alfa-1-Linux-Old.zip
+dg_spaghettikart_asset_url: "https://github.com/HarbourMasters/SpaghettiKart/releases/download/{{ dg_spaghettikart_version }}/{{ dg_spaghettikart_asset_name }}"
+dg_spaghettikart_asset_sha256: fbdff87766f409067e8663032319f59d64e8d43bd872a3c47bb7218199d965b7
+
+dg_spaghettikart_repo_url: https://github.com/HarbourMasters/SpaghettiKart.git
+dg_spaghettikart_git_ref: 6f5e8d514efb60856ccd01a6669e67d0eb9c6858
+dg_spaghettikart_torch_ref: 5773373b3620e4a6bc6c92fdc4690d66741c086d
+dg_spaghettikart_libultraship_ref: 5e33d3e7cd0396f847923cd6c471eaf324e90351
+
+dg_spaghettikart_root: "{{ dg_box_home }}/tools/spaghettikart"
+dg_spaghettikart_source_dir: "{{ dg_spaghettikart_root }}/source"
+dg_spaghettikart_build_dir: "{{ dg_spaghettikart_source_dir }}/build-cmake"
+dg_spaghettikart_install_dir: "{{ dg_spaghettikart_root }}/current"
+dg_spaghettikart_cache_dir: "{{ dg_spaghettikart_root }}/cache"
+dg_spaghettikart_bin: "{{ dg_box_home }}/bin/spaghettikart"
+
+dg_spaghettikart_rom_source: "{{ dg_rom_mid_root }}/n64/Mario Kart 64 (USA).n64"
+dg_spaghettikart_rom_sha1: 579c48e211ae952530ffc8738709f078d5dd215e
+dg_spaghettikart_install_id: "{{ dg_spaghettikart_version }}-{{ dg_spaghettikart_git_ref }}-{{ dg_spaghettikart_asset_sha256 }}-{{ dg_spaghettikart_rom_sha1 }}"
+
+dg_spaghettikart_pacman_packages:
+  - base-devel
+  - gcc
+  - git
+  - cmake
+  - ninja
+  - lsb-release
+  - sdl2
+  - libpng
+  - libzip
+  - nlohmann-json
+  - tinyxml2
+  - spdlog
+  - sdl2_net
+  - boost
+  - libogg
+  - libvorbis
+  - python
+  - unzip
+  - fuse2
+  - zenity

@@ -26,6 +26,7 @@
     - { role: steam_lib32_nvidia,        tags: [steam_lib32_nvidia, never] }
     - { role: steam_trainers,            tags: [steam_trainers, never] }
     - { role: install_render96ex,        tags: [render96ex, never] }
+    - { role: install_spaghettikart,     tags: [spaghettikart, never] }
     - { role: install_sonic_p06,         tags: [sonic_p06, never] }
     - { role: install_unleashed_recomp,  tags: [unleashed_recomp, never] }
     - { role: desktop_apps,              tags: [configure, desktop, reset_configs] }

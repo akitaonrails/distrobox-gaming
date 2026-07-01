@@ -50,6 +50,12 @@
     dest: "{{ dg_desktop_render_dir }}/gaming-render96ex.desktop"
     mode: "0644"
 
+- name: Render SpaghettiKart desktop entry
+  ansible.builtin.template:
+    src: gaming-spaghettikart.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-spaghettikart.desktop"
+    mode: "0644"
+
 - name: Render Dusk desktop entry
   ansible.builtin.template:
     src: gaming-dusk.desktop.j2
