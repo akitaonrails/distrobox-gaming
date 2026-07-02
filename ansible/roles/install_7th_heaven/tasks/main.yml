@@ -80,6 +80,92 @@
         | ternary(_7th_heaven_visible_apps.stdout_lines, ['No supported Final Fantasy VII Steam apps detected.'])
       }}
 
+- name: Detect installed FFNx configuration files
+  ansible.builtin.shell: |
+    python3 - {{ dg_7th_heaven_steam_roots | to_json | quote }} {{ dg_7th_heaven_supported_ffvii_apps | to_json | quote }} <<'PY'
+    import json
+    import re
+    import sys
+    from pathlib import Path
+
+    steam_roots = [Path(path) for path in json.loads(sys.argv[1])]
+    apps = json.loads(sys.argv[2])
+
+    def vdf_value(line, key):
+        match = re.search(r'"' + re.escape(key) + r'"\s+"(.*)"', line)
+        return match.group(1).replace('\\\\', '\\') if match else None
+
+    def steam_libraries():
+        roots = []
+        for steam in steam_roots:
+            vdf = steam / "steamapps/libraryfolders.vdf"
+            if not vdf.exists():
+                continue
+            roots.append(steam)
+            for line in vdf.read_text(encoding="utf-8", errors="ignore").splitlines():
+                path = vdf_value(line, "path")
+                if path:
+                    roots.append(Path(path))
+        deduped, seen = [], set()
+        for root in roots:
+            key = str(root)
+            if key not in seen:
+                seen.add(key)
+                deduped.append(root)
+        return deduped
+
+    def manifest_installdir(manifest):
+        for line in manifest.read_text(encoding="utf-8", errors="ignore").splitlines():
+            value = vdf_value(line, "installdir")
+            if value:
+                return value
+        return None
+
+    seen = set()
+    for library in steam_libraries():
+        for app in apps:
+            manifest = library / "steamapps" / f"appmanifest_{app['appid']}.acf"
+            if not manifest.exists():
+                continue
+            installdir = manifest_installdir(manifest)
+            if not installdir:
+                continue
+            config = library / "steamapps/common" / installdir / "ff7/workingdir/FFNx.toml"
+            key = str(config)
+            if config.exists() and key not in seen:
+                seen.add(key)
+                print(config)
+    PY
+  register: _7th_heaven_ffnx_configs
+  changed_when: false
+  failed_when: false
+
+- name: Force FFNx renderer backend for Proton
+  ansible.builtin.lineinfile:
+    path: "{{ item }}"
+    regexp: '^renderer_backend\s*='
+    line: "renderer_backend = {{ dg_7th_heaven_ffnx_renderer_backend }}"
+    backup: true
+  loop: "{{ _7th_heaven_ffnx_configs.stdout_lines | default([]) }}"
+  when:
+    - dg_7th_heaven_ffnx_renderer_backend is defined
+    - (dg_7th_heaven_ffnx_renderer_backend | string | length) > 0
+
+- name: Check for installed 7th Heaven directory
+  ansible.builtin.stat:
+    path: "{{ dg_7th_heaven_installed_dir }}"
+  register: _7th_heaven_installed_dir
+
+- name: Apply 7th Heaven manager DXVK UI workaround
+  ansible.builtin.copy:
+    dest: "{{ dg_7th_heaven_installed_dir }}/dxvk.conf"
+    content: |
+      d3d9.shaderModel = {{ dg_7th_heaven_manager_dxvk_shader_model }}
+    mode: "0644"
+  when:
+    - _7th_heaven_installed_dir.stat.isdir | default(false)
+    - dg_7th_heaven_manager_dxvk_shader_model is defined
+
 - name: Warn about missing Proton prefixes for detected FFVII apps
   ansible.builtin.debug:
     msg: "WARNING: Steam compatdata prefix is missing for appid {{ item.split('\t')[1] }}; launch Final Fantasy VII once from Steam before running MateriaForge."

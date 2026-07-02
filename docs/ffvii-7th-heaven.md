@@ -9,6 +9,13 @@ Steam app ID `3837340`, and the `7th Heaven Mod Manager (on gaming)` desktop
 launcher was confirmed to open the manager after the wrapper was fixed to launch
 from the 7th Heaven install directory.
 
+Launching FFVII from 7th Heaven initially produced a black game window. The
+FFNx log showed `renderer_backend = 0` auto-selecting D3D12 and then crashing in
+DXGI/NVAPI under Proton. The local FFNx config was backed up to
+`FFNx.toml.bak-renderer-auto-20260702` and changed to `renderer_backend = 5`
+to force Vulkan. The Ansible role reapplies this override whenever an installed
+`ff7/workingdir/FFNx.toml` is present.
+
 ## Supported Steam app IDs
 
 - `3837340` — current FFVII classic / 2026 Steam app. This is preferred by the
@@ -74,6 +81,49 @@ host or repo working directories. If Proton/Pressure Vessel logs show a failure
 like `bwrap: Can't chdir to /run/host/...`, ensure the distrobox-gaming wrapper
 is current: it changes into the MateriaForge release directory before install
 and into the 7th Heaven install directory before `launch` or `launch-game`.
+
+### Black window on launch (32-bit NVIDIA userspace)
+
+If launching FFVII through 7th Heaven opens a black window while vanilla
+FFVII from Steam works, check `ff7/workingdir/FFNx.log` for:
+
+```
+BGFX Init error: vkCreateInstance failed -9: VK_ERROR_INCOMPATIBLE_DRIVER.
+BGFX Init error: Unable to create DXGI factory.
+```
+
+Root cause: vanilla Steam launches `FFVII.exe` (64-bit), but 7th Heaven
+launches the classic `ff7_en.exe` (32-bit) with FFNx injected. distrobox
+`--nvidia` bind-mounts the host's **64-bit** NVIDIA driver files over the
+box's `/usr/lib32` at every container start (the host has no lib32 NVIDIA
+userspace). pressure-vessel classifies those impostors by their actual ELF
+class, so its i386 override set ends up with no NVIDIA Vulkan driver at
+all — every FFNx backend (D3D12, D3D11, Vulkan, OpenGL) needs 32-bit GPU
+userspace, so all fail identically.
+
+Fix: `bootstrap_packages/tasks/repair-lib32-nvidia.yml` unmounts the
+impostor binds and symlinks the extracted `lib32-nvidia-utils` libraries
+(the `dg_nvidia_lib32_*` workaround) into `/usr/lib32`. The binds come
+back on every container restart, so re-run after restarting the box:
+
+```sh
+ansible-playbook reset-configs.yml --tags gpu
+```
+
+Note: `renderer_backend = 5` (Vulkan) in `FFNx.toml` is still the right
+renderer — even with working 32-bit Vulkan, the auto backend picks D3D12
+whose 32-bit vkd3d path crashes in `bgfx::Dxgi::init`. 7th Heaven
+re-applies its GameDriver copy of `FFNx.toml` (in
+`7thWorkshop/GameDriver/`) over `ff7/workingdir/FFNx.toml` on every
+launch, so renderer changes must be made in 7th Heaven's Settings > Game
+Driver (or in both files), not just the workingdir copy.
+
+Stale pressure-vessel runtime copies can mask the repair after fixing
+`/usr/lib32` — clear them with:
+
+```sh
+rm -rf "<STEAM library>/steamapps/common/SteamLinuxRuntime_sniper/var/tmp-"*
+```
 
 ## Caveats
 

@@ -225,6 +225,16 @@ preflight() {
 launch_7th() {
   launcher=$(ffvii_state path)
   cd "$(dirname "$launcher")"
+  export PROTON_DISABLE_NVAPI="${PROTON_DISABLE_NVAPI:-1}"
+  export DXVK_HDR="${DXVK_HDR:-0}"
+  export WINEDLLOVERRIDES="${WINEDLLOVERRIDES:-dinput=n,b}"
+  # ff7_en.exe is 32-bit. It needs a real 32-bit NVIDIA userspace at
+  # /usr/lib32 inside the box or FFNx dies at vkCreateInstance /
+  # "Unable to create DXGI factory" (black window). distrobox --nvidia
+  # re-binds 64-bit impostors there on every container start; the
+  # bootstrap_packages/repair-lib32-nvidia task fixes it. If FFVII
+  # black-windows after a box restart, run:
+  #   ansible-playbook reset-configs.yml --tags gpu
   exec "$launcher" "$@"
 }
 

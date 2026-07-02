@@ -1,0 +1,66 @@
+---
+# Repair /usr/lib32 NVIDIA libraries inside the box.
+#
+# distrobox --nvidia bind-mounts the HOST's 64-bit NVIDIA driver files
+# read-only onto the box's /usr/lib32/lib*nvidia*/libcuda* paths at every
+# container start (the host has no lib32 NVIDIA userspace, so distrobox
+# blindly reuses the 64-bit files). Consequences for 32-bit Windows
+# games under Proton:
+#   - pressure-vessel's graphics capture classifies the impostors by
+#     actual ELF class, so the i386 override set ends up with NO NVIDIA
+#     Vulkan driver at all
+#   - 32-bit vkCreateInstance fails with VK_ERROR_INCOMPATIBLE_DRIVER
+#   - DXVK/vkd3d/BGFX can't create a DXGI factory -> black window
+#     (this is what broke FFVII via 7th Heaven; vanilla FFVII.exe is
+#     64-bit which is why it worked from Steam)
+#
+# Repair: unmount the impostor binds and symlink the extracted
+# lib32-nvidia-utils libraries (managed above in this role) into
+# /usr/lib32. MUST re-run after every container restart because the
+# binds come back — run `ansible-playbook reset-configs.yml --tags gpu`
+# (or any site.yml run) after restarting the box.
+
+- name: Check whether /usr/lib32 NVIDIA libs are 64-bit impostors
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -c '
+      f=$(readlink -f /usr/lib32/libGLX_nvidia.so.0 2>/dev/null) || exit 1
+      head -c 5 "$f" | od -A n -t x1 | grep -q "7f 45 4c 46 01"
+    '
+  register: _lib32_glx_class
+  changed_when: false
+  failed_when: false
+
+- name: Repair /usr/lib32 NVIDIA libraries (unmount 64-bit binds, symlink 32-bit extract)
+  when: _lib32_glx_class.rc != 0
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sudo sh -c '
+      set -e
+      EXTRACT="{{ dg_nvidia_lib32_lib_dir }}"
+      test -d "$EXTRACT" || { echo "extract dir missing: $EXTRACT" >&2; exit 1; }
+      umounted=0
+      for target in $(mount | grep -oE "/usr/lib32/lib[^ ]*" | grep -iE "nvidia|cuda|nvcuvid|nvoptix" | sort -u); do
+        umount "$target" 2>/dev/null && umounted=$((umounted+1)) || true
+      done
+      linked=0
+      for f in "$EXTRACT"/lib*; do
+        ln -sf "$f" "/usr/lib32/$(basename "$f")" && linked=$((linked+1))
+      done
+      for sub in gbm vdpau; do
+        [ -d "$EXTRACT/$sub" ] || continue
+        mkdir -p "/usr/lib32/$sub"
+        for f in "$EXTRACT/$sub"/*; do
+          ln -sf "$f" "/usr/lib32/$sub/$(basename "$f")" 2>/dev/null || true
+        done
+      done
+      echo "lib32-nvidia-repair: umounted=$umounted linked=$linked"
+    '
+  register: _lib32_repair
+  changed_when: "'linked=' in _lib32_repair.stdout"
+
+- name: Verify /usr/lib32 NVIDIA GLX driver is 32-bit
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -c '
+      f=$(readlink -f /usr/lib32/libGLX_nvidia.so.0) &&
+      head -c 5 "$f" | od -A n -t x1 | grep -q "7f 45 4c 46 01"
+    '
+  changed_when: false

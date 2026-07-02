@@ -13,6 +13,14 @@ dg_7th_heaven_release_dir: "{{ dg_7th_heaven_releases_dir }}/{{ dg_7th_heaven_re
 dg_7th_heaven_extracted_marker: "{{ dg_7th_heaven_release_dir }}/.extracted-{{ dg_7th_heaven_release_archive }}-{{ dg_7th_heaven_release_sha256 }}"
 dg_7th_heaven_current: "{{ dg_7th_heaven_root }}/current"
 dg_7th_heaven_install_root: "{{ dg_7th_heaven_root }}"
+dg_7th_heaven_installed_dir: "{{ dg_7th_heaven_install_root }}/7th Heaven"
+
+# FFNx auto-selects D3D12 on NVIDIA here, which crashes under Proton/Pressure
+# Vessel with a black FFVII window and a DXGI/NVAPI access violation. Force
+# Vulkan, but do not force VK_ICD_FILENAMES through Pressure Vessel; doing so can
+# strand Proton without a WSI-capable ICD.
+dg_7th_heaven_ffnx_renderer_backend: 5
+dg_7th_heaven_manager_dxvk_shader_model: 1
 
 dg_7th_heaven_bin: "{{ dg_box_home }}/bin/7th-heaven"
 dg_7th_heaven_host_bin_dir: "{{ ansible_facts.env.HOME }}/.local/bin"

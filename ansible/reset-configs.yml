@@ -8,11 +8,25 @@
 #   ansible-playbook playbooks/reset-configs.yml --tags configs # reset only emulator INIs
 #   ansible-playbook playbooks/reset-configs.yml --tags desktop # reset only desktop entries
 #   ansible-playbook reset-configs.yml --tags shell   # reset only zshrc/starship
+#   ansible-playbook reset-configs.yml --tags gpu     # repair /usr/lib32 NVIDIA libs
 
 - name: Reset emulator configs to defaults
   hosts: localhost
   connection: local
   gather_facts: true
+  pre_tasks:
+    # distrobox --nvidia re-binds 64-bit NVIDIA libs over /usr/lib32 at
+    # every container start, breaking 32-bit Vulkan (black window in
+    # FFVII via 7th Heaven and any 32-bit Proton game). Re-run after
+    # restarting the box: ansible-playbook reset-configs.yml --tags gpu
+    - name: Repair /usr/lib32 NVIDIA libraries
+      ansible.builtin.include_role:
+        name: bootstrap_packages
+        tasks_from: repair-lib32-nvidia
+        apply:
+          tags: [gpu]
+      when: dg_nvidia_lib32_workaround_enabled | bool
+      tags: [gpu]
   roles:
     - { role: link_storage,    tags: [storage] }
     - { role: seed_configs,    tags: [configs] }

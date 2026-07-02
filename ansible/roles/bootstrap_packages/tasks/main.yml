@@ -188,6 +188,14 @@
         - _nvidia_ver.stdout | trim | length > 0
         - _nvidia_lib32_extract_check.rc | default(1) != 0
 
+- name: Repair /usr/lib32 NVIDIA libraries
+  ansible.builtin.include_tasks:
+    file: repair-lib32-nvidia.yml
+    apply:
+      tags: [gpu]
+  when: dg_nvidia_lib32_workaround_enabled | bool
+  tags: [gpu]
+
 - name: Full system upgrade
   ansible.builtin.shell: "{{ dg_in_box }} sudo pacman -Syu --noconfirm"
   register: _upgrade
