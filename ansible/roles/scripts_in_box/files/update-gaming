@@ -9,7 +9,7 @@
 #   distrobox enter gaming -- ~/bin/update-gaming
 #
 # Or from the host:
-#   distrobox enter gaming -- /mnt/data/distrobox/gaming/bin/update-gaming
+#   distrobox enter gaming -- "$HOME/bin/update-gaming"
 #
 # Options:
 #   --dry-run     Show what would be updated without changing anything
