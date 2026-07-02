@@ -95,3 +95,9 @@
     src: starship.sh.j2
     dest: "{{ dg_starship_bin }}"
     mode: "0755"
+
+- name: Remove legacy Starship launcher that shadows prompt binary
+  ansible.builtin.file:
+    path: "{{ dg_starship_legacy_bin }}"
+    state: absent
+  when: dg_starship_legacy_bin != dg_starship_bin

@@ -12,7 +12,11 @@ dg_starship_git_ref: cb19785b51698185a688e17ba1a34c7889195bdb
 dg_starship_root: "{{ dg_box_home }}/tools/starship"
 dg_starship_install_dir: "{{ dg_starship_root }}/current"
 dg_starship_cache_dir: "{{ dg_starship_root }}/cache"
-dg_starship_bin: "{{ dg_box_home }}/bin/starship"
+# Do not use {{ dg_box_home }}/bin/starship: the shell prompt also uses a
+# binary named `starship`, and shadowing it makes `.zshrc` launch Star Fox 64
+# when entering the distrobox.
+dg_starship_bin: "{{ dg_box_home }}/bin/starship-fox64"
+dg_starship_legacy_bin: "{{ dg_box_home }}/bin/starship"
 dg_starship_appimage_name: starship.appimage
 
 # Local ROM is byte-swapped (.n64 / v64 order). The role converts it to a
