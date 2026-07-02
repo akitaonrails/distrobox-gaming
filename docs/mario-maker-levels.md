@@ -75,6 +75,32 @@ What survives, mapped for a future attempt:
   Maker Save Collection" thread ships ready-made saves with all
   official event/staff courses preserved.
 
+### Pipeline state (2026-07-02)
+
+Everything is proven except the final payload fetch:
+
+- SMM1 save created (`mlc01/usr/save/00050000/1018dd00/user/80000001`),
+  8BitDo profile captured into `seed_configs/files/cemu/`.
+- `cemu-smm@3.0.3` (last Node-compatible release) loads on Node 26;
+  `save.addCourseFromFs(courseDir)` handles slot assignment, order
+  table, and save.dat CRC. Installed under
+  `<dg_box_home>/tools/smm1-levels/injector/`.
+- `ashdec` built from NinjaCheetah/ASH0-tools (course payloads are
+  ASH0-compressed).
+- `sample-levels.py` samples the bobac metadata API and ranks by
+  stars (no global top endpoint exists): 120 candidates at
+  `tools/smm1-levels/candidates.json`, star range 86..6 —
+  best-of-random, since the truly famous 10k-star levels can't be
+  found without a sorted index.
+- **Blocked on**: web.archive.org rate-limiting this IP (heavy probing
+  burned the quota; bans appear to last hours). Next session: fetch
+  one payload via `web.archive.org/web/2021if_/<candidate url>`,
+  identify the post-ASH structure (single .cdt vs bundle), finish the
+  course-folder assembly step, run `inject.js`.
+- Also viable: Pretendo Network has SMM1 Course World partially
+  revived and working in Cemu (2026) — live in-game browsing,
+  complements offline injection.
+
 ## Layout
 
 - Tools (box): `<dg_box_home>/tools/smm2-levels/` — fetch script,
