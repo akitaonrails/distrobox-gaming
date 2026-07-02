@@ -1,0 +1,253 @@
+#!/usr/bin/env sh
+set -eu
+
+materiaforge={{ dg_7th_heaven_executable | quote }}
+materiaforge_root={{ dg_7th_heaven_current | quote }}
+default_install_root={{ dg_7th_heaven_install_root | quote }}
+install_root="${DG_7TH_HEAVEN_INSTALL_ROOT:-$default_install_root}"
+steam_roots_json={{ dg_7th_heaven_steam_roots | to_json | quote }}
+
+usage() {
+  cat <<EOF
+Usage:
+  $(basename "$0")                 # launch MateriaForge GUI
+  $(basename "$0") install         # preflight, then launch MateriaForge GUI
+  $(basename "$0") launch [args...] # launch installed 7th Heaven, preferring 2026
+  $(basename "$0") launch-game      # launch FFVII through 7th Heaven, then quit manager
+  $(basename "$0") path            # print preferred installed 7th Heaven launcher
+  $(basename "$0") list            # print detected FFVII Steam apps
+  $(basename "$0") status          # print Steam and launcher state
+EOF
+}
+
+run_materiaforge() {
+  if [ -x "$materiaforge" ]; then
+    exec "$materiaforge" "$@"
+  fi
+
+  found=$(find "$materiaforge_root" -maxdepth 3 -type f -name 'MateriaForge*' -perm -111 2>/dev/null | sort | head -n 1 || true)
+  if [ -n "$found" ]; then
+    exec "$found" "$@"
+  fi
+
+  printf '%s\n' "ERROR: MateriaForge is not installed at $materiaforge_root" >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-7th-heaven.yml" >&2
+  exit 1
+}
+
+ffvii_state() {
+  python3 - "$steam_roots_json" "$install_root" "$@" <<'PY'
+import json
+import re
+import shlex
+import sys
+from pathlib import Path
+
+steam_roots = [Path(path) for path in json.loads(sys.argv[1])]
+install_root = Path(sys.argv[2])
+command = sys.argv[3] if len(sys.argv) > 3 else "list"
+
+apps = [
+{% for app in dg_7th_heaven_supported_ffvii_apps %}
+    {"key": {{ app.key | to_json }}, "appid": {{ app.appid | to_json }}, "name": {{ app.name | to_json }}, "executable": {{ app.executable | to_json }}, "launcher_name": {{ app.launcher_name | to_json }}},
+{% endfor %}
+]
+
+def vdf_value(line, key):
+    match = re.search(r'"' + re.escape(key) + r'"\s+"(.*)"', line)
+    return match.group(1).replace('\\\\', '\\') if match else None
+
+def steam_libraries():
+    roots = []
+    for steam in steam_roots:
+        vdf = steam / "steamapps/libraryfolders.vdf"
+        if not vdf.exists():
+            continue
+        roots.append(steam)
+        for line in vdf.read_text(encoding="utf-8", errors="ignore").splitlines():
+            path = vdf_value(line, "path")
+            if path:
+                roots.append(Path(path))
+    deduped, seen = [], set()
+    for root in roots:
+        key = str(root)
+        if key not in seen:
+            seen.add(key)
+            deduped.append(root)
+    return deduped
+
+def manifest_installdir(manifest):
+    for line in manifest.read_text(encoding="utf-8", errors="ignore").splitlines():
+        value = vdf_value(line, "installdir")
+        if value:
+            return value
+    return None
+
+def detect_app(app):
+    for library in steam_libraries():
+        manifest = library / "steamapps" / f"appmanifest_{app['appid']}.acf"
+        if not manifest.exists():
+            continue
+        installdir = manifest_installdir(manifest)
+        game_root = library / "steamapps/common" / installdir if installdir else None
+        exe = game_root / app["executable"] if game_root else None
+        prefix = library / "steamapps/compatdata" / app["appid"] / "pfx"
+        return {"app": app, "library": library, "manifest": manifest, "game_root": game_root, "exe": exe, "exe_exists": bool(exe and exe.exists()), "prefix": prefix, "prefix_exists": prefix.exists()}
+    return {"app": app, "library": None, "manifest": None, "game_root": None, "exe": None, "exe_exists": False, "prefix": None, "prefix_exists": False}
+
+def desktop_exec_launchers(name):
+    launchers = []
+    for desktop_dir in [Path.home() / ".local/share/applications", Path.home() / "Desktop"]:
+        if not desktop_dir.exists():
+            continue
+        for desktop in desktop_dir.glob("*.desktop"):
+            try:
+                lines = desktop.read_text(encoding="utf-8", errors="ignore").splitlines()
+            except OSError:
+                continue
+            for line in lines:
+                if not line.startswith("Exec="):
+                    continue
+                try:
+                    parts = shlex.split(line.removeprefix("Exec="))
+                except ValueError:
+                    continue
+                for part in parts:
+                    candidate = Path(part)
+                    if candidate.name == name and candidate.exists():
+                        launchers.append(candidate)
+    return launchers
+
+def launcher_candidates():
+    candidates = []
+    for app in apps:
+        name = app["launcher_name"]
+        candidates.extend([
+            install_root / "7th Heaven" / name,
+            install_root / name,
+        ])
+        if install_root.exists():
+            try:
+                candidates.extend(path for path in install_root.rglob(name) if path.is_file())
+            except OSError:
+                pass
+        candidates.extend(desktop_exec_launchers(name))
+
+    deduped, seen = [], set()
+    for candidate in candidates:
+        key = str(candidate)
+        if key not in seen:
+            seen.add(key)
+            deduped.append(candidate)
+    return deduped
+
+def expected_launcher_paths():
+    return [install_root / "7th Heaven" / app["launcher_name"] for app in apps]
+
+def preferred_launcher():
+    for candidate in launcher_candidates():
+        if candidate.exists():
+            return candidate
+    return None
+
+detections = [detect_app(app) for app in apps]
+
+if command == "path":
+    launcher = preferred_launcher()
+    if launcher:
+        print(launcher)
+        raise SystemExit(0)
+    print("No installed 7th Heaven launcher found under the configured install root or desktop entries.", file=sys.stderr)
+    print("Configured install root: " + str(install_root), file=sys.stderr)
+    print("Set DG_7TH_HEAVEN_INSTALL_ROOT if MateriaForge installed 7th Heaven somewhere else.", file=sys.stderr)
+    raise SystemExit(1)
+
+if command == "list":
+    for item in detections:
+        if not item["manifest"]:
+            continue
+        app = item["app"]
+        print("\t".join([
+            app["key"], app["appid"], app["name"],
+            "game=" + (str(item["game_root"]) if item["game_root"] else "unknown"),
+            "exe=" + ("present" if item["exe_exists"] else "missing"),
+            "prefix=" + ("present" if item["prefix_exists"] else "missing"),
+        ]))
+    raise SystemExit(0)
+
+if command == "status":
+    print("Steam roots checked:")
+    for steam_root in steam_roots:
+        vdf = steam_root / "steamapps/libraryfolders.vdf"
+        print(f"- {steam_root}: libraryfolders.vdf={'present' if vdf.exists() else 'missing'}")
+    print(f"7th Heaven install root: {install_root}")
+    print("Supported FFVII apps:")
+    any_manifest = False
+    for item in detections:
+        app = item["app"]
+        any_manifest = any_manifest or bool(item["manifest"])
+        print(f"- {app['name']} appid {app['appid']}: manifest={'present' if item['manifest'] else 'missing'}, game={item['game_root'] or 'unknown'}, exe={'present' if item['exe_exists'] else 'missing'}, prefix={'present' if item['prefix_exists'] else 'missing'}")
+    if not any_manifest:
+        print("  No supported FFVII Steam app manifests detected.")
+    print("Installed 7th Heaven launchers:")
+    any_launcher = False
+    for candidate in expected_launcher_paths():
+        exists = candidate.exists()
+        any_launcher = any_launcher or exists
+        print(f"- expected {candidate}: {'present' if exists else 'missing'}")
+    discovered = [candidate for candidate in launcher_candidates() if candidate.exists()]
+    for candidate in discovered:
+        if candidate not in expected_launcher_paths():
+            any_launcher = True
+            print(f"- discovered {candidate}: present")
+    if not any_launcher:
+        print("  Run MateriaForge interactively to install/configure 7th Heaven.")
+        print("  Use the default destination shown by this wrapper, or set DG_7TH_HEAVEN_INSTALL_ROOT to the destination you chose.")
+    raise SystemExit(0)
+
+print(f"Unknown state command: {command}", file=sys.stderr)
+raise SystemExit(2)
+PY
+}
+
+preflight() {
+  printf '%s\n' "MateriaForge will install/configure Windows 7th Heaven interactively."
+  printf '%s\n' "Recommended 7th Heaven destination for wrapper/desktop integration: $install_root"
+  printf '%s\n' "If you choose a different destination, set DG_7TH_HEAVEN_INSTALL_ROOT to that path before using launch/status."
+  printf '%s\n' "The playbook only installs MateriaForge/wrappers; MateriaForge itself may patch the selected game, Proton prefix, and Steam config after you confirm its prompts."
+  printf '%s\n' "Launch Final Fantasy VII once in Steam first so Proton creates compatdata."
+  printf '%s\n' "On first MateriaForge launch, click Save when prompted; do not use Reset Defaults."
+  ffvii_state status || true
+}
+
+launch_7th() {
+  launcher=$(ffvii_state path)
+  exec "$launcher" "$@"
+}
+
+case "${1:-}" in
+  -h|--help)
+    usage
+    ;;
+  "")
+    run_materiaforge
+    ;;
+  install)
+    preflight
+    run_materiaforge
+    ;;
+  launch)
+    shift
+    launch_7th "$@"
+    ;;
+  launch-game)
+    launch_7th /launch /quit
+    ;;
+  path|list|status)
+    ffvii_state "$1"
+    ;;
+  *)
+    usage >&2
+    exit 2
+    ;;
+esac

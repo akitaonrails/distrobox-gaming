@@ -1,0 +1,45 @@
+# MateriaForge bootstraps the Windows 7th Heaven mod manager on Linux.
+
+dg_7th_heaven_version: 0.4.1
+dg_7th_heaven_release_tag: "{{ dg_7th_heaven_version }}"
+dg_7th_heaven_release_archive: "MateriaForge-v{{ dg_7th_heaven_version }}-0.zip"
+dg_7th_heaven_release_url: "https://github.com/dotaxis/MateriaForge-rs/releases/download/{{ dg_7th_heaven_release_tag }}/{{ dg_7th_heaven_release_archive }}"
+dg_7th_heaven_release_sha256: 80c31802f7725aa6fef637aaa9fd722ecc9f5d3113f51aa64412b981f6cb1832
+
+dg_7th_heaven_root: "{{ dg_box_home }}/tools/7th-heaven"
+dg_7th_heaven_cache_dir: "{{ dg_7th_heaven_root }}/downloads"
+dg_7th_heaven_releases_dir: "{{ dg_7th_heaven_root }}/releases"
+dg_7th_heaven_release_dir: "{{ dg_7th_heaven_releases_dir }}/{{ dg_7th_heaven_release_tag }}"
+dg_7th_heaven_extracted_marker: "{{ dg_7th_heaven_release_dir }}/.extracted-{{ dg_7th_heaven_release_archive }}-{{ dg_7th_heaven_release_sha256 }}"
+dg_7th_heaven_current: "{{ dg_7th_heaven_root }}/current"
+dg_7th_heaven_install_root: "{{ dg_7th_heaven_root }}"
+
+dg_7th_heaven_bin: "{{ dg_box_home }}/bin/7th-heaven"
+dg_7th_heaven_host_bin_dir: "{{ ansible_facts.env.HOME }}/.local/bin"
+dg_7th_heaven_host_launcher: "{{ dg_7th_heaven_host_bin_dir }}/dg-7th-heaven"
+dg_7th_heaven_bash_completion_dir: "{{ ansible_facts.env.HOME }}/.local/share/bash-completion/completions"
+dg_7th_heaven_zsh_completion_dir: "{{ ansible_facts.env.HOME }}/.local/share/zsh/site-functions"
+
+dg_7th_heaven_steam_root: "{{ dg_box_home }}/.local/share/Steam"
+dg_7th_heaven_steam_roots:
+  - "{{ dg_box_home }}/.local/share/Steam"
+  - "{{ dg_box_home }}/.steam/root"
+  - "{{ dg_box_home }}/.steam/steam"
+dg_7th_heaven_app_dir: "{{ dg_7th_heaven_current }}"
+dg_7th_heaven_executable: "{{ dg_7th_heaven_app_dir }}/MateriaForge"
+
+dg_7th_heaven_supported_ffvii_apps:
+  - key: ffvii-2026
+    name: FINAL FANTASY VII Steam Edition
+    appid: "3837340"
+    branch: current
+    executable: FFVII.exe
+    launcher_name: Launch 7th Heaven (2026)
+  - key: ffvii-2013
+    name: FINAL FANTASY VII
+    appid: "39140"
+    branch: legacy
+    executable: ff7_en.exe
+    launcher_name: Launch 7th Heaven (2013)
+
+dg_7th_heaven_supported_appids: "{{ dg_7th_heaven_supported_ffvii_apps | map(attribute='appid') | list }}"

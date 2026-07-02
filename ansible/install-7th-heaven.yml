@@ -1,0 +1,9 @@
+---
+- name: Install or update MateriaForge / 7th Heaven support
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_7th_heaven
+    - { role: desktop_apps, tags: [desktop] }
+    - { role: verify, tags: [verify] }

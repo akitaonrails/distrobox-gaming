@@ -32,6 +32,7 @@
     - { role: install_starship,          tags: [starship, never] }
     - { role: install_sonic_p06,         tags: [sonic_p06, never] }
     - { role: install_unleashed_recomp,  tags: [unleashed_recomp, never] }
+    - { role: install_7th_heaven,        tags: [seven_heaven, "7th_heaven", materiaforge, ffvii_7th_heaven, never] }
     - { role: desktop_apps,              tags: [configure, desktop, reset_configs] }
     - { role: configure_esde,            tags: [configure, esde, reset_configs] }
     - { role: shell_config,              tags: [configure, shell, reset_configs] }

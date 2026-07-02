@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+# Host launcher for MateriaForge / 7th Heaven managed by distrobox-gaming.
+set -eu
+
+BOX_NAME={{ dg_box_name | quote }}
+IN_BOX_WRAPPER={{ dg_7th_heaven_bin | quote }}
+
+exec distrobox-enter -n "$BOX_NAME" -- "$IN_BOX_WRAPPER" "$@"

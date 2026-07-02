@@ -1,0 +1,89 @@
+---
+- name: Create MateriaForge and 7th Heaven directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_7th_heaven_root }}"
+    - "{{ dg_7th_heaven_cache_dir }}"
+    - "{{ dg_7th_heaven_releases_dir }}"
+    - "{{ dg_7th_heaven_release_dir }}"
+    - "{{ dg_box_home }}/bin"
+    - "{{ dg_7th_heaven_host_bin_dir }}"
+    - "{{ dg_7th_heaven_bash_completion_dir }}"
+    - "{{ dg_7th_heaven_zsh_completion_dir }}"
+
+- name: Download MateriaForge release
+  ansible.builtin.get_url:
+    url: "{{ dg_7th_heaven_release_url }}"
+    dest: "{{ dg_7th_heaven_cache_dir }}/{{ dg_7th_heaven_release_archive }}"
+    checksum: "sha256:{{ dg_7th_heaven_release_sha256 }}"
+    mode: "0644"
+
+- name: Extract MateriaForge release
+  ansible.builtin.unarchive:
+    src: "{{ dg_7th_heaven_cache_dir }}/{{ dg_7th_heaven_release_archive }}"
+    dest: "{{ dg_7th_heaven_release_dir }}"
+    remote_src: true
+    creates: "{{ dg_7th_heaven_extracted_marker }}"
+
+- name: Mark MateriaForge release extracted
+  ansible.builtin.copy:
+    dest: "{{ dg_7th_heaven_extracted_marker }}"
+    content: "{{ dg_7th_heaven_release_sha256 }}\n"
+    force: false
+    mode: "0644"
+
+- name: Link current MateriaForge release
+  ansible.builtin.file:
+    src: "{{ dg_7th_heaven_release_dir }}"
+    dest: "{{ dg_7th_heaven_current }}"
+    state: link
+    force: true
+
+- name: Deploy 7th Heaven box wrapper
+  ansible.builtin.template:
+    src: 7th-heaven.sh.j2
+    dest: "{{ dg_7th_heaven_bin }}"
+    mode: "0755"
+
+- name: Install host dg-7th-heaven launcher
+  ansible.builtin.template:
+    src: dg-7th-heaven.j2
+    dest: "{{ dg_7th_heaven_host_launcher }}"
+    mode: "0755"
+
+- name: Verify Steam library metadata is visible to MateriaForge
+  ansible.builtin.stat:
+    path: "{{ item }}/steamapps/libraryfolders.vdf"
+  loop: "{{ dg_7th_heaven_steam_roots }}"
+  register: _7th_heaven_steam_libraryfolders_results
+
+- name: Warn if Steam library metadata is missing
+  ansible.builtin.debug:
+    msg: "WARNING: Steam libraryfolders.vdf is missing from all checked Steam roots: {{ dg_7th_heaven_steam_roots | join(', ') }}. Launch Steam in the box before using MateriaForge."
+  when: (_7th_heaven_steam_libraryfolders_results.results | default([]) | selectattr('stat.exists') | list | length) == 0
+
+- name: Detect supported Final Fantasy VII Steam apps visible to MateriaForge
+  ansible.builtin.shell: |
+    {{ dg_in_box }} {{ dg_7th_heaven_bin | quote }} list
+  register: _7th_heaven_visible_apps
+  changed_when: false
+  failed_when: false
+
+- name: Report supported Final Fantasy VII apps visible to MateriaForge
+  ansible.builtin.debug:
+    msg: >-
+      {{
+        ((_7th_heaven_visible_apps.stdout_lines | default([])) | length > 0)
+        | ternary(_7th_heaven_visible_apps.stdout_lines, ['No supported Final Fantasy VII Steam apps detected.'])
+      }}
+
+- name: Warn about missing Proton prefixes for detected FFVII apps
+  ansible.builtin.debug:
+    msg: "WARNING: Steam compatdata prefix is missing for appid {{ item.split('\t')[1] }}; launch Final Fantasy VII once from Steam before running MateriaForge."
+  loop: "{{ _7th_heaven_visible_apps.stdout_lines | default([]) }}"
+  when:
+    - item | length > 0
+    - "'prefix=missing' in item"
