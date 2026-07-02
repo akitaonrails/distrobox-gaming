@@ -279,6 +279,50 @@
     that: _root_owned.stdout_lines | length == 0
     fail_msg: "Root-owned files found: {{ _root_owned.stdout_lines }}"
 
+# Opt-in launcher integrity: these roles are `never`-tagged in
+# site.yml, so their payloads only exist when explicitly installed.
+# For each one that IS present on disk, assert the launcher wrapper
+# exists and is executable — the failure mode this catches is a
+# half-finished install or a wrapper deleted/renamed out from under
+# its desktop entry (e.g. the starship -> starship-fox64 rename).
+- name: Stat opt-in launcher payloads
+  ansible.builtin.stat:
+    path: "{{ item.payload }}"
+  loop:
+    - { name: Render96ex, payload: "{{ dg_render96ex_install_dir }}/sm64.us.f3dex2e", wrapper: "{{ dg_render96ex_bin }}" }
+    - { name: SpaghettiKart, payload: "{{ dg_spaghettikart_install_dir }}/mk64.o2r", wrapper: "{{ dg_spaghettikart_bin }}" }
+    - { name: Ship of Harkinian, payload: "{{ dg_ship_of_harkinian_install_dir }}/soh.appimage", wrapper: "{{ dg_ship_of_harkinian_bin }}" }
+    - { name: 2Ship2Harkinian, payload: "{{ dg_two_ship2harkinian_install_dir }}/{{ dg_two_ship2harkinian_appimage_name }}", wrapper: "{{ dg_two_ship2harkinian_bin }}" }
+    - { name: Starship, payload: "{{ dg_starship_install_dir }}/{{ dg_starship_appimage_name }}", wrapper: "{{ dg_starship_bin }}" }
+    - { name: 7th Heaven, payload: "{{ dg_7th_heaven_current }}", wrapper: "{{ dg_7th_heaven_bin }}" }
+    - { name: Steam trainers, payload: "{{ dg_steam_trainers_config }}", wrapper: "{{ dg_steam_trainers_wrapper_bin }}" }
+  loop_control:
+    label: "{{ item.name }}"
+  register: _optin_payloads
+
+- name: Stat opt-in launcher wrappers
+  ansible.builtin.stat:
+    path: "{{ item.item.wrapper }}"
+  loop: "{{ _optin_payloads.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when: item.stat.exists
+  register: _optin_wrappers
+
+- name: Assert installed opt-in launchers have executable wrappers
+  ansible.builtin.assert:
+    that:
+      - item.stat.exists
+      - item.stat.executable
+    fail_msg: >-
+      {{ item.item.item.name }} payload is installed but its launcher
+      wrapper is missing or not executable: {{ item.item.item.wrapper }}
+    quiet: true
+  loop: "{{ _optin_wrappers.results }}"
+  loop_control:
+    label: "{{ item.item.item.name }}"
+  when: item is not skipped
+
 - name: Verification completed
   ansible.builtin.debug:
     msg: "All verification checks passed"
