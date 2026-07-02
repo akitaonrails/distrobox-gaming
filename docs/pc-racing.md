@@ -182,18 +182,17 @@ regardless of what the installer prompts for).
 `{{ dg_pc_racing_cache_root }}/silentpatch_cmr2.zip`, which adds widescreen
 rendering and several stability fixes. `SPCMR2.ini` is managed:
 `Region=AMERICA` matches the US media in `CountrySpecific/USA`, and the
-widescreen target is `2560x1440` (SilentPatch's ceiling for this build).
+widescreen target is `3840x2160` — native panel resolution.
 `Window=0`/`Borderless=0` keeps the game in fullscreen mode inside the Wine
-virtual desktop; the in-game graphics picker still exposes 4K and the user can
-select it at runtime if they prefer.
+virtual desktop.
 
 **Wine virtual desktop is mandatory.** Without `wine explorer /desktop=...`,
 CMR2's intro video plays but the 3D menu surface never composites to the
 window — symptom: audio works, screen freezes on the last video frame. This
 was tracked down through patrickmin.com/linux/tip.php?name=cmr2 after a long
 detour through unrelated host-stack regressions. The catalog wires this up via
-`wine_desktop: { name: cmr2, width: 2560, height: 1440 }`, which the launcher
-template renders as `wine explorer /desktop=cmr2,2560x1440 CMR2.exe`.
+`wine_desktop: { name: cmr2, width: 3840, height: 2160 }`, which the launcher
+template renders as `wine explorer /desktop=cmr2,3840x2160 CMR2.exe`.
 
 **Gamescope is disabled.** Wrapping the wine virtual desktop in gamescope
 produces a solid green/red/pink screen at runtime (the same Xwayland →
@@ -203,7 +202,7 @@ fullscreen the wine X11 window:
 
 ```text
 host_pre_launch_commands:
-  - hyprctl keyword windowrulev2 'fullscreen, title:^cmr2$' >/dev/null
+  - hyprctl keyword windowrule 'fullscreen, title:^cmr2.*' >/dev/null
 host_post_launch_commands:
   - hyprctl reload >/dev/null 2>&1
 ```
@@ -213,8 +212,16 @@ This is rendered into a separate host-side wrapper at
 points at. The wrapper applies the windowrule, calls `distrobox-enter` into
 the box-side launcher, and on exit runs `hyprctl reload` to restore the
 original config (which removes the temporary windowrule keyword override).
-The user's monitor scale is honored — Hyprland handles the upscale from the
-1440p X11 surface to physical pixels.
+**Resolution must be in PHYSICAL pixels (fixed 2026-07-02).** Omarchy sets
+`xwayland:force_zero_scaling`, so XWayland surfaces map 1:1 to panel pixels
+regardless of the monitor's scale=1.5. The original 1440p wine desktop
+covered only 2560x1440 of the 4K panel with black elsewhere — and because
+the monitor's *logical* size at scale 1.5 is coincidentally exactly
+2560x1440, the wrong "Hyprland will upscale it" assumption looked plausible.
+Sizing the wine desktop and `SPCMR2.ini` at native 3840x2160 removes all
+scaling. Two more rot fixes from the same session: Wine now titles the
+virtual desktop window `cmr2 - Wine Desktop` (the old `^cmr2$` regex never
+matched), and `windowrulev2` is deprecated in current Hyprland.
 
 **Wine pin.** CMR2 broke during the May 2026 host upgrade window (wine 11.8 →
 11.9, mesa 26.0.5 → .6, NVIDIA 595.58 → .71, libdrm 2.4.131 → .133,
