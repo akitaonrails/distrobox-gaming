@@ -4,6 +4,11 @@ Use MateriaForge for the Linux route. 7th Heaven itself is still the Windows mod
 manager; MateriaForge downloads and configures it for Proton/Linux and replaces
 the deprecated 7thDeck workflow.
 
+Status: MateriaForge `0.4.1` successfully installed 7th Heaven for the current
+Steam app ID `3837340`, and the `7th Heaven Mod Manager (on gaming)` desktop
+launcher was confirmed to open the manager after the wrapper was fixed to launch
+from the 7th Heaven install directory.
+
 ## Supported Steam app IDs
 
 - `3837340` — current FFVII classic / 2026 Steam app. This is preferred by the
@@ -61,6 +66,14 @@ The desktop menu has two entries after `install-7th-heaven.yml` or
 - `7th Heaven Mod Manager (on gaming)` opens the 7th Heaven manager.
 - `Final Fantasy VII - 7th Heaven (on gaming)` launches FFVII through 7th
   Heaven with `/launch /quit`.
+
+## Troubleshooting notes
+
+MateriaForge and its generated 7th Heaven launcher must not inherit arbitrary
+host or repo working directories. If Proton/Pressure Vessel logs show a failure
+like `bwrap: Can't chdir to /run/host/...`, ensure the distrobox-gaming wrapper
+is current: it changes into the MateriaForge release directory before install
+and into the 7th Heaven install directory before `launch` or `launch-game`.
 
 ## Caveats
 
