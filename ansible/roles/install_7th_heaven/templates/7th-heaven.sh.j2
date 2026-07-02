@@ -224,6 +224,7 @@ preflight() {
 
 launch_7th() {
   launcher=$(ffvii_state path)
+  cd "$(dirname "$launcher")"
   exec "$launcher" "$@"
 }
 
