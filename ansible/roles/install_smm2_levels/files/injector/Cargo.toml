@@ -1,0 +1,9 @@
+[package]
+name = "smm2-inject"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+smmdb-lib = { git = "https://github.com/Tarnadas/smmdb-lib.git", features = ["save"], package = "smmdb" }
+async-std = { version = "1", features = ["attributes"] }
+anyhow = "1"

@@ -1,0 +1,81 @@
+---
+# Inject the most-liked SMM2 courses into Eden's save for offline play.
+# See group_vars/all/smm2_levels.yml for the pipeline description.
+
+- name: Assert SMM2 save exists (game must run once in Eden first)
+  ansible.builtin.stat:
+    path: "{{ dg_smm2_save_dir }}/save.dat"
+  register: _smm2_save
+
+- name: Fail with guidance when the save is missing
+  ansible.builtin.fail:
+    msg: >-
+      No SMM2 save at {{ dg_smm2_save_dir }}. Launch Super Mario Maker 2
+      once in Eden (reaching the title screen is enough) and re-run. If
+      the path is wrong, set dg_smm2_eden_profile to your Eden profile
+      UUID (see group_vars/all/smm2_levels.yml).
+  when: not _smm2_save.stat.exists
+
+- name: Create smm2-levels tool directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_smm2_levels_root }}"
+    - "{{ dg_smm2_levels_courses_dir }}"
+    - "{{ dg_smm2_levels_injector_dir }}/src"
+
+- name: Deploy fetch script
+  ansible.builtin.copy:
+    src: fetch-popular.py
+    dest: "{{ dg_smm2_levels_root }}/fetch-popular.py"
+    mode: "0755"
+
+- name: Deploy injector sources
+  ansible.builtin.copy:
+    src: "injector/{{ item }}"
+    dest: "{{ dg_smm2_levels_injector_dir }}/{{ item }}"
+    mode: "0644"
+  loop:
+    - Cargo.toml
+    - src/main.rs
+
+- name: Build injector (host cargo)
+  ansible.builtin.shell: |
+    cd "{{ dg_smm2_levels_injector_dir }}"
+    cargo build --release 2>&1 | tail -1
+    test -x target/release/smm2-inject
+  register: _smm2_build
+  changed_when: "'Compiling' in _smm2_build.stdout or 'Finished' in _smm2_build.stdout"
+
+- name: Fetch top-liked version-compatible courses
+  ansible.builtin.command:
+    argv:
+      - python3
+      - "{{ dg_smm2_levels_root }}/fetch-popular.py"
+      - --dest
+      - "{{ dg_smm2_levels_courses_dir }}"
+      - --count
+      - "{{ dg_smm2_levels_count }}"
+      - --max-uploaded
+      - "{{ dg_smm2_levels_max_uploaded }}"
+    creates: "{{ dg_smm2_levels_courses_dir }}/001.bcd"
+
+- name: Back up pristine save before first injection
+  ansible.builtin.copy:
+    src: "{{ dg_smm2_save_dir }}/"
+    dest: "{{ dg_smm2_save_dir }}.bak-pre-inject/"
+    remote_src: true
+    mode: preserve
+    force: false
+
+- name: Inject courses into SMM2 save
+  ansible.builtin.shell: |
+    pgrep -x eden >/dev/null && {
+      echo "Eden is running — close it before injecting" >&2; exit 3;
+    }
+    "{{ dg_smm2_levels_injector_dir }}/target/release/smm2-inject" \
+      "{{ dg_smm2_save_dir }}" "{{ dg_smm2_levels_courses_dir }}"
+  register: _smm2_inject
+  changed_when: "'done:' in _smm2_inject.stdout"

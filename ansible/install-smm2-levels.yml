@@ -1,0 +1,7 @@
+---
+- name: Inject popular SMM2 levels for offline play
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_smm2_levels

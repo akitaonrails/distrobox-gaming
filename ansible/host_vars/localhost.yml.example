@@ -59,3 +59,8 @@
 # honors the DG_7TH_HEAVEN_INSTALL_ROOT env var at runtime if you
 # installed 7th Heaven somewhere else interactively.
 # dg_7th_heaven_install_root: "{{ dg_box_home }}/tools/7th-heaven"
+#
+# SMM2 offline levels (opt-in role install_smm2_levels). Profile UUID is
+# machine-specific: ls <eden>/nand/user/save/0000000000000000/.
+# dg_smm2_eden_profile: <YOUR-EDEN-PROFILE-UUID>
+# dg_smm2_levels_max_uploaded: "2019-10-01"   # "" once game updated to 3.x
