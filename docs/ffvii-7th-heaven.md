@@ -55,11 +55,18 @@ dg-7th-heaven launch-game  # pass /launch /quit to 7th Heaven
 
 Inside the box, the same commands are available as `7th-heaven`.
 
+The desktop menu has two entries after `install-7th-heaven.yml` or
+`site.yml --tags desktop` renders launchers:
+
+- `7th Heaven Mod Manager (on gaming)` opens the 7th Heaven manager.
+- `Final Fantasy VII - 7th Heaven (on gaming)` launches FFVII through 7th
+  Heaven with `/launch /quit`.
+
 ## Caveats
 
 - The playbook only prepares MateriaForge/wrappers. 7th Heaven installation and
   game configuration remain interactive in MateriaForge.
-- The desktop entry launches the installed 7th Heaven launcher. It will not open
+- The desktop entries launch installed 7th Heaven wrappers. They will not open
   MateriaForge itself if you have not completed the interactive install yet; use
   `dg-7th-heaven install` first.
 - If `status` shows `prefix=missing`, launch Final Fantasy VII once from Steam.
