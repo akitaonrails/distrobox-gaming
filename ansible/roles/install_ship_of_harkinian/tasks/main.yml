@@ -53,46 +53,14 @@
   changed_when: "'installed-ship-of-harkinian' in _ship_of_harkinian_install.stdout"
 
 - name: Prepare verified Ocarina of Time USA Rev B ROM for Ship of Harkinian
-  ansible.builtin.shell: |
-    python3 - <<'PY'
-    from pathlib import Path
-    import hashlib
-
-    src = Path(r'''{{ dg_ship_of_harkinian_rom_source }}''')
-    dst = Path(r'''{{ dg_ship_of_harkinian_install_dir }}/{{ dg_ship_of_harkinian_rom_name }}''')
-    ref = Path(r'''{{ dg_ship_of_harkinian_install_dir }}/.dg-rom-ref''')
-    expected = '''{{ dg_ship_of_harkinian_rom_sha1 }}'''
-
-    data = src.read_bytes()
-    magic = data[:4]
-    if magic == bytes.fromhex('80371240'):
-        z64 = data
-    elif magic == bytes.fromhex('37804012'):
-        z64 = b''.join(
-            (data[i + 1:i + 2] + data[i:i + 1]) if i + 1 < len(data) else data[i:i + 1]
-            for i in range(0, len(data), 2)
-        )
-    elif magic == bytes.fromhex('40123780'):
-        z64 = b''.join(
-            data[i:i + 4][::-1] if len(data[i:i + 4]) == 4 else data[i:i + 4]
-            for i in range(0, len(data), 4)
-        )
-    else:
-        raise SystemExit(f'unsupported N64 ROM byte order for {src}: magic={magic.hex()}')
-
-    actual = hashlib.sha1(z64).hexdigest()
-    if actual != expected:
-        raise SystemExit(f'wrong Ocarina of Time USA Rev B ROM SHA1 for {src}: {actual} != {expected}')
-
-    if dst.exists() and dst.read_bytes() == z64 and ref.exists() and ref.read_text().strip() == expected:
-        raise SystemExit(0)
-
-    dst.write_bytes(z64)
-    ref.write_text(expected + '\n')
-    print(f'prepared-oot-rom {dst}')
-    PY
-  register: _ship_of_harkinian_rom
-  changed_when: "'prepared-oot-rom' in _ship_of_harkinian_rom.stdout"
+  ansible.builtin.include_role:
+    name: n64_rom_prepare
+  vars:
+    n64_rom_label: Ocarina of Time USA Rev B
+    n64_rom_src: "{{ dg_ship_of_harkinian_rom_source }}"
+    n64_rom_dst: "{{ dg_ship_of_harkinian_install_dir }}/{{ dg_ship_of_harkinian_rom_name }}"
+    n64_rom_sha1: "{{ dg_ship_of_harkinian_rom_sha1 }}"
+    n64_rom_ref: "{{ dg_ship_of_harkinian_install_dir }}/.dg-rom-ref"
 
 - name: Install OoT Reloaded HD pack for Ship of Harkinian
   ansible.builtin.shell: |

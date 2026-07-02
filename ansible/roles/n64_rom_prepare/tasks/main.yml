@@ -1,0 +1,71 @@
+---
+# Shared N64 ROM preparation for the native PC port roles
+# (Render96ex, SpaghettiKart, Ship of Harkinian, 2Ship2Harkinian,
+# Starship). Converts a user-supplied ROM to big-endian .z64 byte
+# order, verifies its SHA1 against the port's expected dump, and
+# installs it at the destination — idempotently.
+#
+# This logic used to be copy-pasted into all five roles; the
+# byte-order conversion is exactly the kind of subtle code that
+# drifts silently across copies, so it lives here once now.
+#
+# Invoke via include_role with:
+#   n64_rom_label  human name used in messages ("Star Fox 64 USA Rev A")
+#   n64_rom_src    user-supplied ROM path (.z64/.n64/.v64 accepted)
+#   n64_rom_dst    destination path for the converted .z64
+#   n64_rom_sha1   expected SHA1 of the big-endian ROM
+#   n64_rom_ref    OPTIONAL marker file recording the installed SHA1;
+#                  when set it participates in the idempotence check
+
+- name: "Prepare verified {{ n64_rom_label }} ROM"
+  ansible.builtin.shell: |
+    python3 - <<'PY'
+    from pathlib import Path
+    import hashlib
+
+    label = '''{{ n64_rom_label }}'''
+    src = Path(r'''{{ n64_rom_src }}''')
+    dst = Path(r'''{{ n64_rom_dst }}''')
+    expected = '''{{ n64_rom_sha1 }}'''
+    ref_s = r'''{{ n64_rom_ref | default('') }}'''
+    ref = Path(ref_s) if ref_s else None
+
+    if not src.exists():
+        raise SystemExit(
+            f'{label} ROM not found at {src}; '
+            "point the port's *_rom_source variable at a supported dump"
+        )
+
+    data = src.read_bytes()
+    magic = data[:4]
+    if magic == bytes.fromhex('80371240'):        # .z64 big-endian
+        z64 = data
+    elif magic == bytes.fromhex('37804012'):      # .v64 byte-swapped
+        z64 = b''.join(
+            (data[i + 1:i + 2] + data[i:i + 1]) if i + 1 < len(data) else data[i:i + 1]
+            for i in range(0, len(data), 2)
+        )
+    elif magic == bytes.fromhex('40123780'):      # .n64 little-endian
+        z64 = b''.join(
+            data[i:i + 4][::-1] if len(data[i:i + 4]) == 4 else data[i:i + 4]
+            for i in range(0, len(data), 4)
+        )
+    else:
+        raise SystemExit(f'unsupported N64 ROM byte order for {src}: magic={magic.hex()}')
+
+    actual = hashlib.sha1(z64).hexdigest()
+    if actual != expected:
+        raise SystemExit(f'wrong {label} ROM SHA1 for {src}: {actual} != {expected}')
+
+    if dst.exists() and dst.read_bytes() == z64 and (
+        ref is None or (ref.exists() and ref.read_text().strip() == expected)
+    ):
+        raise SystemExit(0)
+
+    dst.write_bytes(z64)
+    if ref is not None:
+        ref.write_text(expected + '\n')
+    print(f'prepared-n64-rom {dst}')
+    PY
+  register: _n64_rom_prepare
+  changed_when: "'prepared-n64-rom' in _n64_rom_prepare.stdout"
