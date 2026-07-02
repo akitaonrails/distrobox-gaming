@@ -171,10 +171,13 @@ usable gamepad. Disabling Steam Input for the game fixed detection. Keep this as
 the known-good baseline for this title unless a future Steam Input update
 changes the behavior.
 
-### art of rally unresolved
+### art of rally: use the Windows build under Proton
 
-art of rally (`550320`) is a native Linux Unity/Rewired game and remains
-unresolved. Evidence gathered so far:
+art of rally (`550320`) controller input is RESOLVED (2026-07-02): force the
+Windows build under Proton (`proton-cachyos` via CompatToolMapping). The
+native Linux Unity/Rewired build never recognizes gamepads on this stack.
+Evidence gathered during the failed native attempts, kept so nobody repeats
+them:
 
 - Steam sees the 8BitDo controller and can load either Art's controller profile
   or `controller_base/empty.vdf` when Steam Input is disabled.
@@ -206,9 +209,10 @@ Switched to the Windows build on 2026-07-02:
   with Steam stopped, with timestamped backups).
 - On next Steam start the Windows depot downloads over the install dir.
 
-Do not resume native Rewired/libudev tweaks; if the Proton build ever
-misbehaves, start from Steam Input state and ProtonDB reports, not from
-the native stack.
+Confirmed working: the 8BitDo Ultimate 2 (XInput mode) is detected and
+playable in the Proton build. Do not resume native Rewired/libudev tweaks;
+if the Proton build ever misbehaves, start from Steam Input state and
+ProtonDB reports, not from the native stack.
 
 ### Sonic Adventure DX notes
 
