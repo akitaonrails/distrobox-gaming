@@ -1,5 +1,9 @@
 # Required external assets
 
+> Tool/installer downloads (what auto-downloads vs what you must
+> fetch) are inventoried in [external-installers.md](external-installers.md).
+> This page covers the game-asset side: layouts and per-file detail.
+
 Paths + filenames that the Ansible roles expect to find for mods,
 texture packs, cheat DBs, and DLC PKGs. None of these are shipped with
 the repo — legal distribution rules — so copy them onto your NAS /
