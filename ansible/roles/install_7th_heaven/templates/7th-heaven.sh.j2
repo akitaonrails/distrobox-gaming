@@ -22,11 +22,13 @@ EOF
 
 run_materiaforge() {
   if [ -x "$materiaforge" ]; then
+    cd "$materiaforge_root"
     exec "$materiaforge" "$@"
   fi
 
   found=$(find "$materiaforge_root" -maxdepth 3 -type f -name 'MateriaForge*' -perm -111 2>/dev/null | sort | head -n 1 || true)
   if [ -n "$found" ]; then
+    cd "$(dirname "$found")"
     exec "$found" "$@"
   fi
 
