@@ -61,8 +61,8 @@
     mode: "0755"
 
 - name: Install cheat-engine wrapper
-  ansible.builtin.copy:
-    src: cheat-engine
+  ansible.builtin.template:
+    src: cheat-engine.j2
     dest: "{{ dg_cheatengine_wrapper_bin }}"
     mode: "0755"
     backup: true

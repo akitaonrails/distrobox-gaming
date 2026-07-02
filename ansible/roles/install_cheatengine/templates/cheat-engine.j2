@@ -23,7 +23,7 @@
 set -eu
 
 # ───────────────────────── native-Linux CE config ─────────────────────────
-CE_DIR_DEFAULT="${HOME}/tools/cheat-engine/CheatEngineLinux766-4"
+CE_DIR_DEFAULT="{{ dg_cheatengine_dir }}"
 CE_DIR="${DG_CHEATENGINE_DIR:-$CE_DIR_DEFAULT}"
 CE_EXE="$CE_DIR/cheatengine-x86_64"
 
@@ -35,7 +35,7 @@ CE_PROTON_REL="${DG_CHEATENGINE_PROTON_REL:-drive_c/Program Files/Cheat Engine/C
 
 # Windows installer source — used by --proton-install. Defaults match
 # the dg_cheatengine_* layout in ansible/group_vars/all/cheatengine.yml.
-CE_WIN_INSTALLER_DEFAULT="/mnt/terachad/Emulators/ROMS_FINAL/PC/CheatEngine/CheatEngine76.exe"
+CE_WIN_INSTALLER_DEFAULT="{{ dg_cheatengine_win_installer }}"
 CE_WIN_INSTALLER="${DG_CHEATENGINE_WIN_INSTALLER:-$CE_WIN_INSTALLER_DEFAULT}"
 
 usage() {

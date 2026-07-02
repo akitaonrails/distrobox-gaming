@@ -33,3 +33,8 @@ dg_cheatengine_dir: "{{ dg_cheatengine_install_root }}/{{ dg_cheatengine_linux_a
 dg_cheatengine_exe: "{{ dg_cheatengine_dir }}/cheatengine-x86_64"
 
 dg_cheatengine_wrapper_bin: "{{ dg_box_home }}/bin/cheat-engine"
+
+# Windows CE Inno installer used by `cheat-engine --proton-install`.
+# Derived from the same source dir as the Linux zip; override here or
+# at runtime via DG_CHEATENGINE_WIN_INSTALLER.
+dg_cheatengine_win_installer: "{{ dg_cheatengine_source_dir }}/CheatEngine76.exe"
