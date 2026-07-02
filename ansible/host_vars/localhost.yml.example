@@ -42,3 +42,20 @@
 # dg_external_usb_games_root: /run/media/me/STEAM
 # dg_mgs_master_steam_library_root: "{{ dg_external_usb_games_root }}"
 # dg_mgs_master_steam_localconfig: /home/me/.local/share/Steam/userdata/<steamid>/config/localconfig.vdf
+#
+# shadPS4 DLC/addon install dir (kept OUTSIDE the PS4 game tree so
+# ES-DE's .bin scan doesn't pick up addon files as fake games).
+# dg_shadps4_addon_install_dir: "{{ dg_emudeck_root }}/roms_rare/ps4-addons"
+#
+# ES-DE scraped-media root (media-symlinks task bridges EmuDeck/Skraper
+# art into it; see roles/configure_esde/tasks/media-symlinks.yml).
+# dg_esde_media_dir: "{{ dg_box_home }}/ES-DE/downloaded_media"
+#
+# Steam localconfig.vdf for the lib32-NVIDIA launch-option role.
+# Account-specific — find yours under Steam userdata/<steamid>/config/.
+# dg_steam_lib32_nvidia_localconfig: /path/to/Steam/userdata/<steamid>/config/localconfig.vdf
+#
+# 7th Heaven / MateriaForge install root. The 7th-heaven wrapper also
+# honors the DG_7TH_HEAVEN_INSTALL_ROOT env var at runtime if you
+# installed 7th Heaven somewhere else interactively.
+# dg_7th_heaven_install_root: "{{ dg_box_home }}/tools/7th-heaven"

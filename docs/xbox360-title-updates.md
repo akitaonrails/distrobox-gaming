@@ -1,5 +1,9 @@
 # Xbox 360 Title Updates for Xenia
 
+> **Paths:** commands below show this maintainer's defaults
+> (`/mnt/terachad`, `/mnt/data`). Every root is a `dg_*` variable —
+> see `ansible/host_vars/localhost.yml.example` for the override points.
+
 Xbox 360 games often require one or more **Title Updates** (TUs) to
 boot under Xenia. A game asks Xenia for an asset under the `update:`
 virtual device; without the TU staged in the content tree, Xenia

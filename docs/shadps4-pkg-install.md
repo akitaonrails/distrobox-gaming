@@ -1,5 +1,9 @@
 # Installing PS4 PKGs into shadPS4
 
+> **Paths:** commands below show this maintainer's defaults
+> (`/mnt/terachad`, `/mnt/data`). Every root is a `dg_*` variable —
+> see `ansible/host_vars/localhost.yml.example` for the override points.
+
 shadPS4's QtLauncher Manager does not expose an "Install Package" button
 in this build, so PKG installs have to be driven from the CLI inside the
 gaming distrobox. There are two CLI tools available; one of them is
