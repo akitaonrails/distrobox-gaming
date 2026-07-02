@@ -100,16 +100,18 @@ dg_pc_racing_games:
     # Referenced fix: https://www.patrickmin.com/linux/tip.php?name=cmr2
     wine_desktop:
       name: cmr2
-      # PHYSICAL pixels, not logical: Omarchy sets
-      # xwayland:force_zero_scaling, so XWayland surfaces map 1:1 to
-      # panel pixels regardless of the monitor's scale=1.5. A 1440p
-      # desktop therefore covered only 2560x1440 of the 4K panel with
-      # black around it (the monitor's LOGICAL size is coincidentally
-      # also 2560x1440, which hid the bug in the original design that
-      # expected Hyprland to upscale). Full 3840x2160 desktop + picking
-      # 2160p in the game's Display Mode menu = native 4K, no scaling.
-      width: 3840
-      height: 2160
+      # 1440p render + Hyprland 1.5x upscale to the 4K panel. Native 4K
+      # was tried first (commit 8110a9e) but the game's WineD3D path
+      # drops to low fps at 2160p, so render at SilentPatch's 1440p
+      # sweet spot and stretch. The stretch only works because the host
+      # wrapper disables xwayland:force_zero_scaling for the session
+      # (see host_pre_launch_commands below): with zero-scaling ON,
+      # XWayland surfaces map 1:1 to PHYSICAL pixels and a 1440p
+      # desktop covers 2/3 of the panel with black bars; with it OFF,
+      # 2560x1440 equals the monitor's LOGICAL size at scale=1.5 and
+      # Hyprland scales it to full panel.
+      width: 2560
+      height: 1440
     # Wrap the gameplay session with a host-side Hyprland windowrule so
     # the wine virtual desktop (title "cmr2") opens fullscreen on the
     # current monitor. Honors whatever scale the user has configured —
@@ -122,7 +124,12 @@ dg_pc_racing_games:
     # format change), and windowrulev2 is deprecated in current
     # Hyprland — plain windowrule with a prefix match.
     host_pre_launch_commands:
-      - hyprctl keyword windowrule 'fullscreen, title:^cmr2.*' >/dev/null
+      # Session-scoped: hyprctl reload in post restores omarchy's
+      # force_zero_scaling=true (other XWayland apps render blurry
+      # while the game runs — acceptable during a gameplay session).
+      # NEVER touch monitor scale here.
+      - hyprctl keyword xwayland:force_zero_scaling false >/dev/null
+      - hyprctl keyword windowrule 'fullscreen on, match:title ^cmr2.*' >/dev/null
     host_post_launch_commands:
       - hyprctl reload >/dev/null 2>&1
     # Defensive pin: this game broke during the May 2026 host upgrade
@@ -150,16 +157,14 @@ dg_pc_racing_games:
       - file: "SPCMR2.ini"
         key: Borderless
         value: "0"
-      # Native panel resolution — matches the wine_desktop above.
-      # With xwayland:force_zero_scaling these are PHYSICAL pixels;
-      # 2560x1440 left a third of the 4K panel black (see wine_desktop
-      # comment). D3D7 at 4K is trivial for this GPU.
+      # 1440p — matches wine_desktop; Hyprland stretches to the panel
+      # (see wine_desktop comment). 4K rendered too slowly in-game.
       - file: "SPCMR2.ini"
         key: Width
-        value: "3840"
+        value: "2560"
       - file: "SPCMR2.ini"
         key: Height
-        value: "2160"
+        value: "1440"
     winebus_registry:
       - name: Map Controllers
         value: 1
