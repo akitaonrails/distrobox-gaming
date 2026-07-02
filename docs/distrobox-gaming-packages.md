@@ -154,6 +154,48 @@ grep -i 'DxvkInstance::createInstance' ~/steam-<appid>.log
 The extracted package version must match the host driver reported by
 `nvidia-smi --query-gpu=driver_version --format=csv,noheader`.
 
+## Native Steam controller notes
+
+The current 8BitDo Ultimate 2 Wireless Controller path is a host kernel input
+device, not something created by the distrobox. In the working XInput mode it
+appears as USB `2dc8:310b`, creates `/dev/input/js0`, uses the kernel `xpad`
+driver, and also exposes extra keyboard/mouse HID interfaces through `hidraw`.
+Steam and native games can therefore disagree about whether they should read the
+physical device directly or Steam Input's virtual controller.
+
+### Marvel Cosmic Invasion
+
+Marvel Cosmic Invasion (`2753970`) is a native Linux FNA/SDL3 game. With Steam
+Input enabled, Steam loaded a controller profile but the game did not receive a
+usable gamepad. Disabling Steam Input for the game fixed detection. Keep this as
+the known-good baseline for this title unless a future Steam Input update
+changes the behavior.
+
+### art of rally unresolved
+
+art of rally (`550320`) is a native Linux Unity/Rewired game and remains
+unresolved. Evidence gathered so far:
+
+- Steam sees the 8BitDo controller and can load either Art's controller profile
+  or `controller_base/empty.vdf` when Steam Input is disabled.
+- Marvel detects the same controller with Steam Input disabled, so the basic
+  `/dev/input` and `hidraw` permissions are not the blocker.
+- Art's `Player.log` has no useful Rewired, controller, Steam Input, or libudev
+  diagnostics.
+- Clearing `RewiredSaveData_ControllerAssignments` caused Art to regenerate a
+  clean prefs file, but it still did not create a new joystick assignment or
+  detect input.
+- Earlier Art-only changes did not fix input: `LD_LIBRARY_PATH=/usr/lib`, a
+  copied `libudev.so`, and a custom `libudev.so` shim that removed missing
+  `udev_*W` log errors.
+
+Treat Art's native Linux input stack as paused, not solved. If revisiting it,
+first remove the Art-only launch-option and local `artofrally_Data/Mono/libudev.so`
+shim if they are still present, then either test one controlled Steam Input
+gamepad-template launch or switch to the Windows build under Proton to give
+Rewired an XInput-style path. Avoid more random native Rewired/libudev tweaks
+unless new logs identify a specific failure.
+
 ### Sonic Adventure DX notes
 
 Sonic Adventure DX is a 32-bit D3D9 Steam game. It needs the 32-bit NVIDIA
