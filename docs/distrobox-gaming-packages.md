@@ -189,12 +189,26 @@ unresolved. Evidence gathered so far:
   copied `libudev.so`, and a custom `libudev.so` shim that removed missing
   `udev_*W` log errors.
 
-Treat Art's native Linux input stack as paused, not solved. If revisiting it,
-first remove the Art-only launch-option and local `artofrally_Data/Mono/libudev.so`
-shim if they are still present, then either test one controlled Steam Input
-gamepad-template launch or switch to the Windows build under Proton to give
-Rewired an XInput-style path. Avoid more random native Rewired/libudev tweaks
-unless new logs identify a specific failure.
+The native Linux input stack is a dead end: ProtonDB and the game's Steam
+community consensus is that native Rewired detects controllers but marks
+them "Is Recognized: No", and the fix is running the Windows build under
+Proton (which reportedly also roughly doubles the framerate). The ZSA
+Moonlander was ruled out as an interference source: it exposes only
+keyboard/mouse/consumer-control interfaces, no joystick-class device.
+
+Switched to the Windows build on 2026-07-02:
+
+- Removed the Art-only leftovers from the failed native experiments: the
+  `artofrally_Data/Mono/libudev.so` shim, its backups and note files, and
+  the `LD_LIBRARY_PATH=/usr/lib %command%` launch option.
+- Added a `CompatToolMapping` entry for `550320` in Steam's `config.vdf`
+  forcing `proton-cachyos-11.0-20260520-slr-x86_64_v3` (both files edited
+  with Steam stopped, with timestamped backups).
+- On next Steam start the Windows depot downloads over the install dir.
+
+Do not resume native Rewired/libudev tweaks; if the Proton build ever
+misbehaves, start from Steam Input state and ProtonDB reports, not from
+the native stack.
 
 ### Sonic Adventure DX notes
 
