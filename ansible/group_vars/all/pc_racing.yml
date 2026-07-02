@@ -100,13 +100,16 @@ dg_pc_racing_games:
     # Referenced fix: https://www.patrickmin.com/linux/tip.php?name=cmr2
     wine_desktop:
       name: cmr2
-      # Matches SilentPatch's widescreen ceiling. The in-game picker
-      # then offers 4K too (wine virtual desktop renegotiates with the
-      # X11 root). Smaller wine_desktop also makes the Hyprland
-      # fullscreen window rule cleaner — the X11 surface is exactly the
-      # game's render target with no wasted area.
-      width: 2560
-      height: 1440
+      # PHYSICAL pixels, not logical: Omarchy sets
+      # xwayland:force_zero_scaling, so XWayland surfaces map 1:1 to
+      # panel pixels regardless of the monitor's scale=1.5. A 1440p
+      # desktop therefore covered only 2560x1440 of the 4K panel with
+      # black around it (the monitor's LOGICAL size is coincidentally
+      # also 2560x1440, which hid the bug in the original design that
+      # expected Hyprland to upscale). Full 3840x2160 desktop + picking
+      # 2160p in the game's Display Mode menu = native 4K, no scaling.
+      width: 3840
+      height: 2160
     # Wrap the gameplay session with a host-side Hyprland windowrule so
     # the wine virtual desktop (title "cmr2") opens fullscreen on the
     # current monitor. Honors whatever scale the user has configured —
@@ -114,8 +117,12 @@ dg_pc_racing_games:
     # surface to physical pixels. `hyprctl reload` after the game exits
     # removes the temporary keyword override. NEVER add a monitor scale
     # override here: the user's scale=1.5 on DP-1 is intentional.
+    # Wine's virtual desktop window is titled "cmr2 - Wine Desktop"
+    # (the bare "cmr2" title regex stopped matching after a Wine title
+    # format change), and windowrulev2 is deprecated in current
+    # Hyprland — plain windowrule with a prefix match.
     host_pre_launch_commands:
-      - hyprctl keyword windowrulev2 'fullscreen, title:^cmr2$' >/dev/null
+      - hyprctl keyword windowrule 'fullscreen, title:^cmr2.*' >/dev/null
     host_post_launch_commands:
       - hyprctl reload >/dev/null 2>&1
     # Defensive pin: this game broke during the May 2026 host upgrade
@@ -143,17 +150,16 @@ dg_pc_racing_games:
       - file: "SPCMR2.ini"
         key: Borderless
         value: "0"
-      # SilentPatch widescreen ceiling — wine_desktop matches. The
-      # in-game picker still exposes 4K (wine virtual desktop renegotiates
-      # against the X11 root), so the user can pick 4K from inside the
-      # game; SPCMR2 honors that at runtime regardless of the .ini values
-      # here, which only set the initial state.
+      # Native panel resolution — matches the wine_desktop above.
+      # With xwayland:force_zero_scaling these are PHYSICAL pixels;
+      # 2560x1440 left a third of the 4K panel black (see wine_desktop
+      # comment). D3D7 at 4K is trivial for this GPU.
       - file: "SPCMR2.ini"
         key: Width
-        value: "2560"
+        value: "3840"
       - file: "SPCMR2.ini"
         key: Height
-        value: "1440"
+        value: "2160"
     winebus_registry:
       - name: Map Controllers
         value: 1
