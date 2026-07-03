@@ -189,10 +189,14 @@ the real PE is missing from its `files/lib/wine/x86_64-windows/`
 (packaging trim). Valve Proton ships it.
 
 **Fix**: per-app CompatToolMapping to a Valve Proton (`proton_11`), same
-pattern as FFVII. The cachyos default stays for everything else (FH6
-depends on it). Expect the same failure for any other Unity 6 title
-launched under the cachyos default — check the game's Unity version via
-`strings UnityPlayer.dll | grep -m1 '^6000\.'`.
+pattern as FFVII.
+
+**Follow-up (2026-07-03)**: this plus general instability tipped the
+decision to revert the account-wide default (`"0"` mapping) back to
+Valve `proton_11`. proton-cachyos remains per-app-pinned ONLY where it
+earned its keep: FH6 (`2483190`), art of rally (`550320`), and `985890`.
+If another title misbehaves under cachyos, flip that one pin — the
+default no longer spreads the risk to every game.
 
 ### art of rally: use the Windows build under Proton
 
