@@ -171,6 +171,29 @@ usable gamepad. Disabling Steam Input for the game fixed detection. Keep this as
 the known-good baseline for this title unless a future Steam Input update
 changes the behavior.
 
+### Unity 6 games fail silently under proton-cachyos
+
+Super Woden: Rally Edge (`3218630`) stopped launching after
+proton-cachyos became the account-wide default (2026-06-13): instant
+death, no window, no Unity `Player.log`. `PROTON_LOG=1` showed the
+loader failing with `STATUS_DLL_NOT_FOUND` (`c0000135`):
+
+```
+err:module:import_dll Library UIAutomationCore.DLL
+    (which is needed by UnityPlayer.dll) not found
+```
+
+Unity 6 (`6000.x`) links `UnityPlayer.dll` against `UIAutomationCore.DLL`.
+The proton-cachyos build ships only the prefix stub copies of that DLL —
+the real PE is missing from its `files/lib/wine/x86_64-windows/`
+(packaging trim). Valve Proton ships it.
+
+**Fix**: per-app CompatToolMapping to a Valve Proton (`proton_11`), same
+pattern as FFVII. The cachyos default stays for everything else (FH6
+depends on it). Expect the same failure for any other Unity 6 title
+launched under the cachyos default — check the game's Unity version via
+`strings UnityPlayer.dll | grep -m1 '^6000\.'`.
+
 ### art of rally: use the Windows build under Proton
 
 art of rally (`550320`) controller input is RESOLVED (2026-07-02): force the
