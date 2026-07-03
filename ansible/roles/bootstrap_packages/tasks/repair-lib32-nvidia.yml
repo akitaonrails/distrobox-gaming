@@ -21,10 +21,17 @@
 # (or any site.yml run) after restarting the box.
 
 - name: Check whether /usr/lib32 NVIDIA libs are 64-bit impostors
+  # Two probes, both must pass: (a) the GLX driver resolves to 32-bit
+  # ELF, and (b) NO nvidia/cuda bind mounts sit on /usr/lib32. Probe
+  # (a) alone is fooled after a container restart: the repair's old
+  # symlink survives (so libGLX reads 32-bit) while distrobox re-binds
+  # the other ~50 files with 64-bit impostors.
   ansible.builtin.shell: |
     {{ dg_in_box }} sh -c '
       f=$(readlink -f /usr/lib32/libGLX_nvidia.so.0 2>/dev/null) || exit 1
-      head -c 5 "$f" | od -A n -t x1 | grep -q "7f 45 4c 46 01"
+      head -c 5 "$f" | od -A n -t x1 | grep -q "7f 45 4c 46 01" || exit 1
+      mount | grep -E "/usr/lib32/lib[^ ]*(nvidia|cuda)" >/dev/null && exit 1
+      exit 0
     '
   register: _lib32_glx_class
   changed_when: false
