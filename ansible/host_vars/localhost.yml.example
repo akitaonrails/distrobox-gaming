@@ -64,3 +64,8 @@
 # machine-specific: ls <eden>/nand/user/save/0000000000000000/.
 # dg_smm2_eden_profile: <YOUR-EDEN-PROFILE-UUID>
 # dg_smm2_levels_max_uploaded: "2019-10-01"   # "" once game updated to 3.x
+#
+# SDL controller allow-list for the pc-racing games (comma-separated
+# 0xVID/0xPID). Add your pads' IDs (lsusb) — unlisted devices stay
+# invisible to the old games on purpose (filters phantom HID pads).
+# dg_pc_racing_gamepad_only: "0x2dc8/0x310b,0x045e/0x0b12"

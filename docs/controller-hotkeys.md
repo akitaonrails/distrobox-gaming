@@ -1,5 +1,21 @@
 # Controller Notes
 
+## Multiple controllers
+
+Two pads are used interchangeably; both pass through to the distrobox
+natively (shared /dev + udev):
+
+- 8BitDo Ultimate 2 Wireless — `2dc8:310b` (XInput mode via dongle)
+- Xbox Series X|S — `045e:0b12` (host `xone`/GIP driver via the Xbox
+  Wireless Adapter `045e:02e6`)
+
+The pc-racing games only see pads on the SDL allow-list
+(`dg_pc_racing_gamepad_only` in `group_vars/all/pc_racing.yml`) — add
+new pads there. SDL-based emulators (Dolphin, PCSX2, RetroArch, Cemu)
+see every pad without configuration, but their button *profiles* in
+this repo are captured for the 8BitDo; map the Xbox pad in each
+emulator's GUI if you want per-emulator bindings for it.
+
 PCSX2 is configured to exit emulation with `Select+Start`:
 
 ```ini

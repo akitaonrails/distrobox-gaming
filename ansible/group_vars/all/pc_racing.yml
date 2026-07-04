@@ -28,7 +28,13 @@ dg_pc_racing_gamescope_height: 2160
 dg_pc_racing_target_monitor_x: 4000
 dg_pc_racing_target_monitor_y: 619
 dg_pc_racing_gamepad_device: /dev/input/js0
-dg_pc_racing_gamepad_only: "0x2dc8/0x310b"
+# SDL allow-list (comma-separated VID/PID) for the racing games. Keeps
+# phantom pads (the 8BitDo dongle's extra keyboard/mouse interfaces,
+# idle dongles) invisible to old games while admitting every real pad
+# the user plays with:
+#   0x2dc8/0x310b  8BitDo Ultimate 2 Wireless (XInput mode via dongle)
+#   0x045e/0x0b12  Microsoft Xbox Series X|S pad (xone/GIP via Wireless Adapter)
+dg_pc_racing_gamepad_only: "0x2dc8/0x310b,0x045e/0x0b12"
 dg_pc_racing_sdl_hidapi: "0"
 dg_pc_racing_dinput_disabled_joysticks:
   - ZSA Technology Labs Moonlander Mark I
