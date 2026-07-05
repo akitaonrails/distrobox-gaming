@@ -129,6 +129,7 @@ dg_retroarch_core_options:
       - { key: bsnes_mode7_wsobj, value: '"unsafe"' }
       - { key: bsnes_video_aspectcorrection, value: '"ON"' }
 dg_retroarch_cores:
+  - melonds
   - bsnes
   - bsnes_hd_beta
   - fbneo

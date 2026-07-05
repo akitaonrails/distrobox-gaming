@@ -48,6 +48,30 @@
   loop_control:
     label: "{{ item.item }}"
 
+- name: Clear executable-stack flag on all installed cores
+  # Some buildbot cores (melonds among them) ship with an executable
+  # GNU_STACK program header. glibc 2.41+ refuses to dlopen such
+  # libraries ("cannot enable executable stack as shared object
+  # requires: Invalid argument"), so RetroArch fails to load the core
+  # and exits instantly — in ES-DE that looks like the game silently
+  # not launching. Clearing the flag is safe: it comes from asm objects
+  # missing a .note.GNU-stack marker, not a real requirement. Sweeps
+  # every core (including ones installed via RetroArch's GUI updater)
+  # so future downloads stay covered.
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -c '
+      fixed=0
+      for c in "{{ dg_retroarch_dir }}/cores"/*.so; do
+        [ -e "$c" ] || continue
+        if readelf -lW "$c" 2>/dev/null | grep -q "GNU_STACK.*RWE"; then
+          patchelf --clear-execstack "$c" && fixed=$((fixed+1))
+        fi
+      done
+      echo "execstack-cleared: $fixed"
+    '
+  register: _core_execstack
+  changed_when: "'execstack-cleared: 0' not in _core_execstack.stdout"
+
 # Assets: stamp file marks completion so re-runs skip the whole download/extract.
 
 - name: Ensure RetroArch asset directories exist
