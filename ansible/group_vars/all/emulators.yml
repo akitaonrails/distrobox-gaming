@@ -320,3 +320,14 @@ dg_dolphin_configs:
   - Profiles/GCPad/8BitDo Ultimate 2 SDL.ini
   - Profiles/Wiimote/8BitDo Ultimate 2 Classic.ini
   - Profiles/Wiimote/8BitDo Ultimate 2 Nunchuk.ini
+
+# melonDS standalone (DS). Compute renderer at 8x internal scale (the
+# modern hi-res path in melonDS 1.x; classic OpenGL and software remain
+# selectable in-app), GL present path, hybrid screen layout, filtering.
+# Real BIOS + firmware are copied box-local because melonDS writes user
+# settings INTO the firmware file — the NAS originals stay pristine.
+dg_melonds_config_dir: "{{ dg_box_home }}/.config/melonDS"
+dg_melonds_bios_files:
+  - bios7.bin
+  - bios9.bin
+  - dsfirmware.bin

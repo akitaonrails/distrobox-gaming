@@ -1,0 +1,30 @@
+---
+# melonDS standalone: seed config + local BIOS/firmware copies.
+# Seed-only-if-missing everywhere: the toml accumulates user state
+# (window geometry, joystick mapping) and melonDS mutates the
+# firmware file with user settings.
+
+- name: Ensure melonDS directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_melonds_config_dir }}"
+    - "{{ dg_melonds_config_dir }}/bios"
+
+- name: Copy DS BIOS/firmware from the BIOS root (seed only if missing)
+  ansible.builtin.copy:
+    src: "{{ dg_bios_root }}/{{ item }}"
+    dest: "{{ dg_melonds_config_dir }}/bios/{{ item }}"
+    remote_src: true
+    force: false
+    mode: "0644"
+  loop: "{{ dg_melonds_bios_files }}"
+
+- name: Seed melonDS config (seed only if missing)
+  ansible.builtin.template:
+    src: melonDS.toml.j2
+    dest: "{{ dg_melonds_config_dir }}/melonDS.toml"
+    force: false
+    mode: "0644"
