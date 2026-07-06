@@ -120,6 +120,23 @@ if n == 0:
 open(p, 'w').write(t)
 PY
 
-# NOT exec: melonDS runs as a child so the EXIT trap fires afterward to
-# stop evsieve and remove the scratch config.
-XDG_CONFIG_HOME="$scratch" melonDS -f "$@"
+# NOT exec: melonDS runs as a child so we can sync its config changes
+# back and the EXIT trap can stop evsieve + remove the scratch config.
+# `|| true` so set -e doesn't skip the sync-back when melonDS exits
+# non-zero (SIGINT quit returns 130).
+XDG_CONFIG_HOME="$scratch" melonDS -f "$@" || true
+
+# Sync in-app config changes (screen layout, window size, filtering,
+# etc.) from the scratch config back to the real one, but force
+# JoystickID back to 0 so a plain (non-wrapper) launch uses the real
+# pad at index 0. Without this, every setting changed while playing
+# via the wrapper would be lost when the scratch dir is deleted.
+if [ -f "$scratch/melonDS/melonDS.toml" ]; then
+  python3 - "$scratch/melonDS/melonDS.toml" "$REAL_CFG/melonDS.toml" <<'PY' || true
+import re, sys
+scratch_toml, real_toml = sys.argv[1], sys.argv[2]
+t = open(scratch_toml).read()
+t = re.sub(r'(\[Instance0\][^\[]*?JoystickID = )\d+', r'\g<1>0', t, count=1, flags=re.S)
+open(real_toml, 'w').write(t)
+PY
+fi
