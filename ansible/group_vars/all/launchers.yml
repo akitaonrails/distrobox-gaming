@@ -34,6 +34,13 @@ dg_emulator_launchers:
     comment: "PlayStation 2 emulator"
     wm_class: pcsx2-qt
 
+  - name: gaming-melonds
+    display_name: "melonDS (on {{ dg_box_name }})"
+    exec: melonDS
+    icon: net.kuribo64.melonDS
+    comment: "Nintendo DS emulator"
+    wm_class: melonDS
+
   - name: gaming-ppsspp
     display_name: "PPSSPP (on {{ dg_box_name }})"
     exec: PPSSPPQt
