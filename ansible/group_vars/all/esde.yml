@@ -218,7 +218,7 @@ dg_esde_systems:
     path: "{{ dg_emudeck_root }}/roms_mid/nds"
     extension: ".nds .NDS .zip .ZIP .7z .7Z"
     commands:
-      - { label: "melonDS (Standalone)", cmd: "melonDS -f %ROM%" }
+      - { label: "melonDS (Standalone)", cmd: "{{ dg_box_home }}/bin/melonds-launch %ROM%" }
       - { label: "melonDS (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/melonds_libretro.so %ROM%" }
     platform: nds
     theme: nds

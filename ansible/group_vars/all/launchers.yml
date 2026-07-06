@@ -36,7 +36,7 @@ dg_emulator_launchers:
 
   - name: gaming-melonds
     display_name: "melonDS (on {{ dg_box_name }})"
-    exec: melonDS
+    exec: "{{ dg_box_home }}/bin/melonds-launch"
     icon: net.kuribo64.melonDS
     comment: "Nintendo DS emulator"
     wm_class: melonDS

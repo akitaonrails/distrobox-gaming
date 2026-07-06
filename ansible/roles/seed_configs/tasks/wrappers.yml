@@ -28,6 +28,16 @@
     mode: "0755"
     backup: true
 
+- name: Install melonds-launch wrapper
+  # Runs melonDS with the 8BitDo left stick synthesized onto the DS
+  # d-pad via an evsieve virtual pad. Falls back to a plain launch when
+  # the pad/evsieve/uinput aren't available, so it never blocks a game.
+  ansible.builtin.copy:
+    src: wrappers/melonds-launch
+    dest: "{{ dg_box_home }}/bin/melonds-launch"
+    mode: "0755"
+    backup: true
+
 - name: Install macOS-style `open` shim
   # Cheat Engine's Patreon OAuth flow shells out to `open <url>` (and
   # so do some Electron-based apps). The distrobox ships an

@@ -60,6 +60,7 @@ dg_aur_packages:
   - eden-bin
   - cemu-bin
   - melonds-bin
+  - evsieve
   - xemu-bin
   - vita3k-bin
   - shadps4-bin
