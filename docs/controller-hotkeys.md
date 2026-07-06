@@ -1,5 +1,21 @@
 # Controller Notes
 
+## melonDS (standalone) savestates
+
+melonDS's configurable hotkey list (22 entries: pause, fast-forward,
+swap screens, reset, lid, mic, volume, solar sensor, guitar grip...)
+has **no save/load state entries** — savestates cannot be bound to the
+gamepad. This is a standalone limitation; the RetroArch core allowed it.
+
+- System menu → Save state / Load state (slots 1-8 + file), plus
+  "Undo state load".
+- Fixed keyboard shortcuts: `Shift+F1`..`F8` save, `F1`..`F8` load.
+- Savestates (`.ml1`..`.ml8`) live next to the ROM.
+- Pad workaround: map the 8BitDo Ultimate 2's back paddles to
+  `F1` / `Shift+F1` in 8BitDo Ultimate Software (the mapping is stored
+  on the pad; it types keys via the pad's extra Keyboard HID
+  interface, no Linux-side config needed).
+
 ## Multiple controllers
 
 Two pads are used interchangeably; both pass through to the distrobox
