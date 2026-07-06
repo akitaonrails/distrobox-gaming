@@ -28,6 +28,16 @@
     mode: "0755"
     backup: true
 
+- name: Install azahar-launch wrapper
+  # Runs azahar with Select+L1/R1 mapped to Quick Load/Save via an
+  # evsieve keyboard-injection hook. Falls back to plain azahar when
+  # the pad/evsieve/uinput are unavailable.
+  ansible.builtin.copy:
+    src: wrappers/azahar-launch
+    dest: "{{ dg_box_home }}/bin/azahar-launch"
+    mode: "0755"
+    backup: true
+
 - name: Install melonds-launch wrapper
   # Runs melonDS with the 8BitDo left stick synthesized onto the DS
   # d-pad via an evsieve virtual pad. Falls back to a plain launch when

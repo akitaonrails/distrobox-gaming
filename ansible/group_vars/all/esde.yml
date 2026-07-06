@@ -114,7 +114,7 @@ dg_esde_systems:
     path: "{{ dg_azahar_game_dir }}"
     extension: ".3ds .3DS .cci .CCI .cxi .CXI .app .APP .elf .ELF .cia .CIA .3dsx .3DSX"
     commands:
-      - { label: "Azahar (Standalone)", cmd: "{{ dg_azahar_bin }} %ROM%" }
+      - { label: "Azahar (Standalone)", cmd: "{{ dg_box_home }}/bin/azahar-launch %ROM%" }
     platform: n3ds
     theme: n3ds
 

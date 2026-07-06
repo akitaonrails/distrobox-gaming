@@ -101,7 +101,7 @@ dg_emulator_launchers:
 
   - name: gaming-azahar
     display_name: "Azahar (on {{ dg_box_name }})"
-    exec: azahar
+    exec: "{{ dg_box_home }}/bin/azahar-launch"
     icon: org.azahar_emu.azahar
     comment: "Nintendo 3DS emulator (Citra fork)"
     wm_class: org.azahar_emu.azahar

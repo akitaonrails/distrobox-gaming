@@ -1,0 +1,45 @@
+#!/usr/bin/env sh
+# azahar-launch — run azahar (3DS) with gamepad save/load-state combos.
+#
+#   Select + L1 -> Quick Load  (azahar shortcut F3)
+#   Select + R1 -> Quick Save  (azahar shortcut F2)
+#
+# azahar (a Citra fork) reads the gamepad via SDL and its hotkeys via
+# Qt keyboard focus. evsieve watches the real 8BitDo (no grab — azahar
+# keeps reading the pad itself, 3DS has native analog so no d-pad synth
+# is needed) and, on each combo, injects the F-key on a separate
+# virtual keyboard device so it reaches azahar's focused window.
+#
+# Unlike melonds-launch, nothing about the pad is modified and azahar's
+# own config is untouched. Falls back to a plain launch when the
+# pad/evsieve/uinput aren't available.
+#
+# Note: Select is NOT withheld (that would need grabbing + a virtual
+# pad azahar can't auto-bind by GUID), so a combo also sends a brief
+# Select+L/R to the 3DS game. Harmless for a quicksave/quickload press.
+
+set -eu
+
+plain() { exec /usr/bin/azahar "$@"; }
+
+pad_node=""
+for l in /dev/input/by-id/*8BitDo*Ultimate*event-joystick; do
+  [ -e "$l" ] && { pad_node=$(readlink -f "$l"); break; }
+done
+
+if [ -z "$pad_node" ] || ! command -v evsieve >/dev/null 2>&1 \
+   || [ ! -w /dev/uinput ]; then
+  plain "$@"
+fi
+
+# Watch the pad (no grab) and inject F3/F2 on a keyboard device when the
+# Select+L1 / Select+R1 combos fire.
+evsieve --input "$pad_node" \
+  --hook btn:select btn:tl send-key=key:f3 \
+  --hook btn:select btn:tr send-key=key:f2 \
+  --output name="azahar-keys" key:f2 key:f3 >/dev/null 2>&1 &
+evsieve_pid=$!
+trap 'kill "$evsieve_pid" 2>/dev/null || true' EXIT INT TERM HUP
+
+# NOT exec: azahar runs as a child so the trap stops evsieve on exit.
+/usr/bin/azahar "$@"
