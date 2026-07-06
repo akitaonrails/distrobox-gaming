@@ -31,7 +31,7 @@ plain() { exec melonDS -f "$@"; }
 # (the eventN number shifts every time the pad wakes; the by-id symlink
 # does not). Empty if the pad is asleep/absent.
 pad_node=""
-for l in /dev/input/by-id/usb-8BitDo_Ultimate_2_*-event-joystick; do
+for l in /dev/input/by-id/*8BitDo*Ultimate*event-joystick; do
   [ -e "$l" ] && { pad_node=$(readlink -f "$l"); break; }
 done
 
