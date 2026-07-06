@@ -128,6 +128,18 @@ dg_retroarch_core_options:
       - { key: bsnes_mode7_widescreen, value: '"16:9"' }
       - { key: bsnes_mode7_wsobj, value: '"unsafe"' }
       - { key: bsnes_video_aspectcorrection, value: '"ON"' }
+  # melonDS's hardware renderer is OpenGL-only; RetroArch's global
+  # vulkan video driver can't hand the core a GL context, so enabling
+  # the OpenGL renderer under vulkan shows a black game screen. The
+  # per-core .cfg override switches ONLY melonDS launches to glcore
+  # (RetroArch swaps video drivers at core load); everything else
+  # keeps the global vulkan driver.
+  - path: "{{ dg_retroarch_dir }}/config/melonDS/melonDS.cfg"
+    settings:
+      - { key: video_driver, value: '"glcore"' }
+  - path: "{{ dg_retroarch_dir }}/config/melonDS/melonDS.opt"
+    settings:
+      - { key: melonds_opengl_renderer, value: '"enabled"' }
 dg_retroarch_cores:
   - melonds
   - bsnes
