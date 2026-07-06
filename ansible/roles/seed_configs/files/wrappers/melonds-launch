@@ -44,7 +44,7 @@ fi
 #   1. Left stick (ABS_X/Y, +-32768, 50% threshold) -> d-pad hat, so the
 #      stick drives movement alongside the physical d-pad.
 #   2. Gamepad-friendly hotkey combos (Select is the modifier):
-#        Select+Start -> quit melonDS (SIGTERM, flushes SRAM)
+#        Select+Start -> quit melonDS (SIGINT; melonDS ignores SIGTERM)
 #        Select+L1    -> load state slot 1 (melonDS shortcut F1)
 #        Select+R1    -> save state slot 1 (melonDS shortcut Shift+F1)
 #      send-key emits the keyboard shortcuts on a SEPARATE virtual
@@ -63,7 +63,7 @@ evsieve --input "$pad_node" \
   --copy abs:y:16000~..~15999   abs:hat0y:0  \
   --copy abs:y:-15999~..~-16000 abs:hat0y:-1 \
   --copy abs:y:~-16000..-15999~ abs:hat0y:0  \
-  --hook btn:select btn:start exec-shell="pkill -TERM -x melonDS" \
+  --hook btn:select btn:start exec-shell="pkill -INT -x melonDS" \
   --hook btn:select btn:tl    send-key=key:f1 \
   --hook btn:select btn:tr    send-key=key:leftshift send-key=key:f1 \
   --withhold btn:select \
