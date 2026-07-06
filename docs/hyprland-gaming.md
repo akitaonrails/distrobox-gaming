@@ -68,6 +68,21 @@ Verified live: `melonDS` → `net.kuribo64.melonDS` opens `fullscreen=2`.
    `~/.config/hypr/gaming.conf`.
 3. `hyprctl reload` (then `hyprctl configerrors` to confirm clean).
 
+## Also fixes: game loading *behind* ES-DE / Steam
+
+A related symptom — intermittently a launched emulator (azahar, eden)
+opened *behind* ES-DE, hidden. Cause: the emulator window opened
+without requesting activation and got tiled behind ES-DE's fullscreen
+window. The same fullscreen rules resolve it: the game now opens
+fullscreen *on top* and grabs focus. Hyprland's
+`misc:focus_on_activate` is already `true` by omarchy default, which
+covers emulators that do request activation.
+
+Verified live: launching azahar over an active browser →
+`org.azahar_emu.Azahar` opens `fullscreen=2` and becomes the active
+window. (Note its real class is capital-A `Azahar`, not the lowercase
+`.desktop` value — another reason the rules match case-insensitively.)
+
 ## Notes
 
 - `fullscreen` is a *static* effect — evaluated once at window open,
