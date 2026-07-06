@@ -73,6 +73,34 @@ Relevant to the fallback rules and to adding any class-based rule:
    `melonds` never matches `net.kuribo64.melonDS`; wrap it:
    `(?i).*(melonds).*` (case-insensitive, any position).
 
+## Gotcha: Vulkan emulators + forced fullscreen at creation
+
+The `fullscreen on` rule fullscreens a window *at creation*, which
+resizes it while the app is still initializing. Some Vulkan emulators
+can't survive that — their swapchain is created against the pre-resize
+surface and fails, e.g. **standalone Dolphin** dies on ws7 with a
+"failed to create Vulkan swap chain" dialog (click OK → it quits). It
+works fine launched *manually* because then it fullscreens *itself*
+(`Dolphin.ini` `Fullscreen=True`) only after its swapchain is ready —
+a client-requested fullscreen, not a WM-forced one.
+
+Not all Vulkan emulators are affected — eden (also Vulkan) survives the
+forced fullscreen on ws7. It's app-specific to how gracefully the
+emulator recreates its swapchain on an early resize.
+
+Workarounds if you hit this on another Vulkan emulator:
+- Switch that emulator's video backend to **OpenGL** (verified to
+  survive forced fullscreen — no swapchain to race), or
+- Let it self-fullscreen and keep it off the forced-fullscreen path.
+
+**Decision for Dolphin:** GC/Wii runs through **RetroArch's Dolphin
+core** (window class `retroarch`, which fullscreens fine), not
+standalone Dolphin — so this is moot in practice. `dolphin` is left out
+of the fallback fullscreen class list in `gaming.conf` for that reason.
+Attempts to keep standalone Dolphin on Vulkan by floating it instead of
+fullscreening (so its own `Fullscreen=True` takes over) did **not** stop
+the crash on ws7 in testing; OpenGL was the only reliable fix.
+
 ## Notes
 
 - `fullscreen` is a *static* effect — evaluated once at window open,
