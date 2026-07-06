@@ -126,17 +126,28 @@ PY
 # non-zero (SIGINT quit returns 130).
 XDG_CONFIG_HOME="$scratch" melonDS -f "$@" || true
 
-# Sync in-app config changes (screen layout, window size, filtering,
-# etc.) from the scratch config back to the real one, but force
-# JoystickID back to 0 so a plain (non-wrapper) launch uses the real
-# pad at index 0. Without this, every setting changed while playing
-# via the wrapper would be lost when the scratch dir is deleted.
+# Sync only DISPLAY settings the user might change in-app (screen
+# layout, sizing, rotation, filter, gap, swap, window geometry) from
+# the scratch config back to the real one. Deliberately a whitelist:
+# melonDS rewrites [Instance0.Joystick] to all -1 when running on the
+# virtual pad, so syncing the whole file (or the input sections) would
+# wipe the user's controller mapping on every quit. Bindings and
+# JoystickID in the real config are never touched here.
 if [ -f "$scratch/melonDS/melonDS.toml" ]; then
   python3 - "$scratch/melonDS/melonDS.toml" "$REAL_CFG/melonDS.toml" <<'PY' || true
 import re, sys
 scratch_toml, real_toml = sys.argv[1], sys.argv[2]
-t = open(scratch_toml).read()
-t = re.sub(r'(\[Instance0\][^\[]*?JoystickID = )\d+', r'\g<1>0', t, count=1, flags=re.S)
-open(real_toml, 'w').write(t)
+KEYS = ("ScreenLayout", "ScreenSizing", "ScreenRotation", "ScreenFilter",
+        "ScreenGap", "ScreenSwap", "IntegerScaling", "ScreenAspectTop",
+        "ScreenAspectBot", "Geometry")
+s = open(scratch_toml).read()
+r = open(real_toml).read()
+for k in KEYS:
+    m = re.search(rf'^{k} = .*$', s, re.M)
+    if not m:
+        continue
+    r, n = re.subn(rf'^{k} = .*$', m.group(0).replace('\\', '\\\\'), r, count=1, flags=re.M)
+    # (n == 0 means the key isn't in the real config; skip rather than add)
+open(real_toml, 'w').write(r)
 PY
 fi
