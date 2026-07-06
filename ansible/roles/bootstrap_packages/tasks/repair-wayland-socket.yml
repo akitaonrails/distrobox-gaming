@@ -1,0 +1,38 @@
+---
+# Re-link the host Wayland socket(s) into the box runtime dir.
+#
+# The box has its own tmpfs at /run/user/<uid>; distrobox binds the
+# host's Wayland socket FILE into it at container start. When the host
+# compositor (Hyprland) restarts, it deletes and recreates the socket
+# on the host — the box's stale file bind vanishes and every native
+# Wayland client in the box (gamescope!) fails with "Failed to connect
+# to wayland socket". XWayland clients keep working, which makes this
+# easy to misdiagnose: gamescope-wrapped pc-racing games die while
+# emulators/ES-DE look fine.
+#
+# Fix: symlink the sockets to /run/host/run/user/<uid>/ — the
+# recursive live view of the host /run — so they always resolve to the
+# compositor's current socket, surviving Hyprland restarts. Only a
+# container restart clears the symlinks (box tmpfs), and this task
+# rides the same post-restart repair flow as the lib32 fix:
+#   ansible-playbook reset-configs.yml --tags gpu
+
+- name: Symlink host Wayland sockets into the box runtime dir
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -c '
+      host_dir="/run/host/run/user/{{ dg_host_uid }}"
+      box_dir="/run/user/{{ dg_host_uid }}"
+      linked=0
+      for s in "$host_dir"/wayland-[0-9]*; do
+        [ -S "$s" ] || continue
+        name=$(basename "$s")
+        target=$(readlink "$box_dir/$name" 2>/dev/null || true)
+        if [ "$target" != "$s" ]; then
+          ln -sfn "$s" "$box_dir/$name"
+          linked=$((linked+1))
+        fi
+      done
+      echo "wayland-sockets-linked: $linked"
+    '
+  register: _wayland_link
+  changed_when: "'wayland-sockets-linked: 0' not in _wayland_link.stdout"

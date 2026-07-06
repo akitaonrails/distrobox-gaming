@@ -27,6 +27,16 @@
           tags: [gpu]
       when: dg_nvidia_lib32_workaround_enabled | bool
       tags: [gpu]
+    # Hyprland restarts delete+recreate the host Wayland socket; the
+    # box's stale file bind vanishes and gamescope-wrapped games fail
+    # with "Failed to connect to wayland socket". Same repair cadence.
+    - name: Repair Wayland socket links in the box
+      ansible.builtin.include_role:
+        name: bootstrap_packages
+        tasks_from: repair-wayland-socket
+        apply:
+          tags: [gpu]
+      tags: [gpu]
   roles:
     - { role: link_storage,    tags: [storage] }
     - { role: seed_configs,    tags: [configs] }

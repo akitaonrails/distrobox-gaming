@@ -196,6 +196,13 @@
   when: dg_nvidia_lib32_workaround_enabled | bool
   tags: [gpu]
 
+- name: Repair Wayland socket links in the box
+  ansible.builtin.include_tasks:
+    file: repair-wayland-socket.yml
+    apply:
+      tags: [gpu]
+  tags: [gpu]
+
 - name: Full system upgrade
   ansible.builtin.shell: "{{ dg_in_box }} sudo pacman -Syu --noconfirm"
   register: _upgrade
