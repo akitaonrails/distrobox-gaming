@@ -40,7 +40,20 @@ if [ -z "$pad_node" ] || ! command -v evsieve >/dev/null 2>&1 \
   plain "$@"
 fi
 
-# Start the stick->d-pad synth on a virtual pad (background).
+# evsieve pipeline (background):
+#   1. Left stick (ABS_X/Y, +-32768, 50% threshold) -> d-pad hat, so the
+#      stick drives movement alongside the physical d-pad.
+#   2. Gamepad-friendly hotkey combos (Select is the modifier):
+#        Select+Start -> quit melonDS (SIGTERM, flushes SRAM)
+#        Select+L1    -> load state slot 1 (melonDS shortcut F1)
+#        Select+R1    -> save state slot 1 (melonDS shortcut Shift+F1)
+#      send-key emits the keyboard shortcuts on a SEPARATE virtual
+#      keyboard device (melonDS reads save/load via Qt keyboard focus,
+#      not the joystick), routed by the first --output's key filter.
+#   --withhold btn:select drops Select only when it triggers a combo,
+#   so the game never sees a stray Select press; L1/R1/Start stay
+#   fully responsive as normal DS buttons (they leak harmlessly if
+#   part of a combo, which is fine — load overwrites, quit exits).
 evsieve --input "$pad_node" \
   --copy abs:x:~15999..16000~   abs:hat0x:1  \
   --copy abs:x:16000~..~15999   abs:hat0x:0  \
@@ -50,6 +63,11 @@ evsieve --input "$pad_node" \
   --copy abs:y:16000~..~15999   abs:hat0y:0  \
   --copy abs:y:-15999~..~-16000 abs:hat0y:-1 \
   --copy abs:y:~-16000..-15999~ abs:hat0y:0  \
+  --hook btn:select btn:start exec-shell="pkill -TERM -x melonDS" \
+  --hook btn:select btn:tl    send-key=key:f1 \
+  --hook btn:select btn:tr    send-key=key:leftshift send-key=key:f1 \
+  --withhold btn:select \
+  --output name="melonDS-keys" key:f1 key:leftshift \
   --output name="$VPAD_NAME" >/dev/null 2>&1 &
 evsieve_pid=$!
 
