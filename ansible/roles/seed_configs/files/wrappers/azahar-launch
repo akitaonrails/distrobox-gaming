@@ -1,8 +1,9 @@
 #!/usr/bin/env sh
 # azahar-launch — run azahar (3DS) with gamepad save/load-state combos.
 #
-#   Select + L1 -> Quick Load  (azahar shortcut F3)
-#   Select + R1 -> Quick Save  (azahar shortcut F2)
+#   Select + L1    -> Quick Load  (azahar shortcut F3)
+#   Select + R1    -> Quick Save  (azahar shortcut F2)
+#   Select + Start -> Quit azahar (azahar shortcut Ctrl+Q)
 #
 # azahar (a Citra fork) reads the gamepad via SDL and its hotkeys via
 # Qt keyboard focus. evsieve watches the real 8BitDo (no grab — azahar
@@ -35,9 +36,10 @@ fi
 # Watch the pad (no grab) and inject F3/F2 on a keyboard device when the
 # Select+L1 / Select+R1 combos fire.
 evsieve --input "$pad_node" \
-  --hook btn:select btn:tl send-key=key:f3 \
-  --hook btn:select btn:tr send-key=key:f2 \
-  --output name="azahar-keys" key:f2 key:f3 >/dev/null 2>&1 &
+  --hook btn:select btn:tl    send-key=key:f3 \
+  --hook btn:select btn:tr    send-key=key:f2 \
+  --hook btn:select btn:start send-key=key:leftctrl send-key=key:q \
+  --output name="azahar-keys" key:f2 key:f3 key:leftctrl key:q >/dev/null 2>&1 &
 evsieve_pid=$!
 trap 'kill "$evsieve_pid" 2>/dev/null || true' EXIT INT TERM HUP
 
