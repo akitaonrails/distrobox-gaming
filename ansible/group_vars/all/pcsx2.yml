@@ -246,6 +246,12 @@ dg_pcsx2_per_game_settings:
       - { section: "EmuCore/GS", option: "UserHacks", value: "true" }
       - { section: "EmuCore/GS", option: "UserHacks_SkipDraw_Start", value: "1" }
       - { section: "EmuCore/GS", option: "UserHacks_SkipDraw_End", value: "3" }
+      # Upstream GameIndex gsHWFixes for this serial (ignored while
+      # UserHacks=true, so replicated here): halfPixelOffset 4 = Align
+      # to Native ("Fixes vertical lines and depth lines"), autoFlush 2
+      # ("Fixes sun intensity").
+      - { section: "EmuCore/GS", option: "UserHacks_HalfPixelOffset", value: "4" }
+      - { section: "EmuCore/GS", option: "UserHacks_AutoFlush", value: "2" }
 
   - serial: SLES-52636              # Colin McRae Rally 2005 — PAL, En,Fr,De,Es,It
     crc: 5D4A4D86                   # computed from ELF inside user's ISO
@@ -264,6 +270,11 @@ dg_pcsx2_per_game_settings:
       - { section: "EmuCore/GS", option: "UserHacks_CPUCLUTRender", value: "1" }
       - { section: "EmuCore/GS", option: "UserHacks_SkipDraw_Start", value: "1" }
       - { section: "EmuCore/GS", option: "UserHacks_SkipDraw_End", value: "3" }
+      # Upstream GameIndex gsHWFixes for this serial (ignored while
+      # UserHacks=true, so replicated here): halfPixelOffset 4 = Align
+      # to Native ("Fixes lines in game and FMVs") — the ~4 evenly
+      # spaced white vertical lines seen when upscaling.
+      - { section: "EmuCore/GS", option: "UserHacks_HalfPixelOffset", value: "4" }
 
   - serial: SLUS-20002              # Ridge Racer V — PS2 launch title, USA retail
     crc: 06AD9CA0
