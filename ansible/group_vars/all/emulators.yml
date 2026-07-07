@@ -51,6 +51,17 @@ dg_pcsx2_settings:
   # Enable per-game settings + cheats to actually be read from our
   # gamesettings/<SERIAL>.ini files.
   - { section: "EmuCore", option: "EnablePerGameSettings", value: "true" }
+  # Faster disc loading:
+  # - CdvdPrecache reads the whole disc image into RAM at boot. Pure
+  #   I/O optimization (no emulation-behavior change) — matters here
+  #   because ISOs live on the NAS over NFS, so in-game streaming
+  #   otherwise pays network latency per seek.
+  # - fastCDVD removes the emulated drive's seek/read latency. Rarely,
+  #   a game depends on real disc timing and breaks (freezes/skipped
+  #   FMVs); if one does, override fastCDVD=false in its
+  #   gamesettings/<SERIAL>_<CRC>.ini.
+  - { section: "EmuCore", option: "CdvdPrecache", value: "true" }
+  - { section: "EmuCore/Speedhacks", option: "fastCDVD", value: "true" }
   # Auto save state on PCSX2 quit (creates a per-game "resume" state).
   # Auto-LOAD only fires when launching the game from PCSX2-Qt's own
   # built-in game library — right-click the game → Resume, or
