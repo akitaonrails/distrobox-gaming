@@ -79,6 +79,22 @@ dg_esde_systems:
     platform: psp
     theme: psp
 
+  - name: ps3
+    fullname: Sony PlayStation 3
+    # Extracted-folder dumps: each game is a directory named
+    # "<Title>.ps3" containing PS3_GAME/USRDIR/EBOOT.BIN. ES-DE treats
+    # a directory whose name matches a listed extension as a single
+    # launchable entry, and RPCS3 boots the folder directly. Loose
+    # .pkg PSN games must be installed into dev_hdd0 via the RPCS3 GUI
+    # first (they can't be scanned/launched from here), and PS3 ISOs
+    # must be extracted to folder form — RPCS3 doesn't read them.
+    path: "{{ dg_emudeck_root }}/roms_heavy/ps3"
+    extension: ".ps3 .PS3"
+    commands:
+      - { label: "RPCS3 (Standalone)", cmd: "rpcs3 --no-gui %ROM%" }
+    platform: ps3
+    theme: ps3
+
   - name: ps4
     fullname: Sony PlayStation 4
     # Multi-game path: every <ps4_root>/CUSA_xxxxx/eboot.bin is a game.
