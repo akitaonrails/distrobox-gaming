@@ -86,6 +86,125 @@ dg_pc_racing_packages:
   - rsync
 
 dg_pc_racing_games:
+  - slug: colin-mcrae-rally-1
+    name: "Colin McRae Rally"
+    # Pre-installed portable pack (ChemicalFlood repack of the 1998 PC
+    # version): no installer — copy the folder and point the game's
+    # registry paths at it. The pack ships a reg fix targeting
+    # C:\CMRally, but the game just follows the registry, so we retarget
+    # every path key at the shared G: install drive instead.
+    install_mode: copy
+    source_dir: "{{ dg_pc_racing_source_root }}/CMRally"
+    launch_exe: "Rally.exe"
+    installed_path: "{{ dg_pc_racing_install_root }}/colin-mcrae-rally-1"
+    # Keep the pack's Windows-user helper files out of the install.
+    disabled_files:
+      - "_Colin McRae C Drive Reg Fix.reg"
+      - "_Colin McRae D Drive Reg Fix.reg"
+      - "__How To Play!!.txt"
+      - "Uninst.isu"
+    registry_values:
+      # Replicates the pack's "_Colin McRae C Drive Reg Fix.reg" with
+      # every path retargeted from C:\CMRally to the G: install dir.
+      - { key: 'HKLM\SOFTWARE\WOW6432Node\Codemasters\Rally\1.00', name: CDPath, value: 'G:\colin-mcrae-rally-1' }
+      - { key: 'HKLM\SOFTWARE\WOW6432Node\Codemasters\Rally\1.00', name: AVIPath, value: 'G:\colin-mcrae-rally-1' }
+      - { key: 'HKLM\SOFTWARE\WOW6432Node\Codemasters\Rally\1.00', name: WAVPath, value: 'G:\colin-mcrae-rally-1' }
+      - { key: 'HKLM\SOFTWARE\WOW6432Node\Codemasters\Rally\1.00', name: HDPath, value: 'G:\colin-mcrae-rally-1' }
+      - { key: 'HKLM\SOFTWARE\WOW6432Node\Codemasters\Rally\1.00', name: Language, value: 'ENGLISH' }
+      # The pack's reg fix also seeds Hardware=5 and Initialised=0, but
+      # those are game-managed state (renderer choice / first-run flag)
+      # that Rally.exe rewrites — enforcing them from Ansible would
+      # reset the game's own settings on every playbook run. They were
+      # seeded once by hand on 2026-07-09; a fresh prefix gets them
+      # from the game's first-run flow.
+      # PCGamingWiki: the game crashes when loading a stage on Win7+
+      # unless run in Windows XP compatibility mode (the pack README
+      # says the same). Per-app winver, scoped to Rally.exe only.
+      - { key: 'HKCU\Software\Wine\AppDefaults\Rally.exe', name: Version, value: 'winxp' }
+    # Presentation: rootful Xwayland. The game runs on a dedicated
+    # fullscreen X server (DISPLAY=:12) that Hyprland composites as a
+    # native Wayland surface; Xwayland's -fullscreen mode scales the
+    # game's legacy modes (640x480/800x600) to the panel by design.
+    # The empirical matrix that led here (2026-07-09):
+    #   - plain XWayland + builtin ddraw: clean render, but no upscale
+    #     (800x600 max in-game res sits small on the 4K panel).
+    #   - gamescope (all variants: exclusive, wine-desktop-inside,
+    #     SDL backend): DDraw frame trails — animation frames pile up
+    #     without erase; gamescope can't present wine's GL ddraw path.
+    #   - dgVoodoo2 (+DXVK): deterministic page fault after mode set,
+    #     same EIP regardless of resolution/refresh/AVIPath.
+    #   - wined3d renderer=vulkan: black screen under gamescope.
+    # Rootful Xwayland is the same presentation family as the clean
+    # plain-XWayland case, plus the missing upscale.
+    gamescope_enabled: false
+    host_pre_launch_commands:
+      # Dedicated rootful X server for the session; -fullscreen makes
+      # it a fullscreen Wayland surface on the active monitor and
+      # scales emulated XRandR modes to it. Torn down in post (the
+      # host wrapper runs the box launcher non-exec so the trap fires).
+      - pgrep -f "Xwayland :12" >/dev/null 2>&1 || { Xwayland :12 -fullscreen -noreset >/dev/null 2>&1 & sleep 1; }
+    host_post_launch_commands:
+      - pkill -f "Xwayland :12" >/dev/null 2>&1 || true
+    winebus_registry:
+      - name: Map Controllers
+        value: 1
+    env:
+      - name: WINEDLLOVERRIDES
+        value: "dinput=n,b"
+      # Route the game to the rootful X server started by the host
+      # wrapper (overrides the distrobox session DISPLAY).
+      - name: DISPLAY
+        value: ":12"
+    xidi:
+      # Same DirectInput-era controller situation as CMR2: wrap
+      # dinput.dll (not dinput8) and present a StandardGamepad-derived
+      # virtual DI device. Mapper copied from CMR2 (steer on X,
+      # RT/LT to Y-/Y+ for throttle/brake, d-pad+Start/Esc as keys).
+      source: "{{ dg_pc_racing_xidi_archive }}"
+      url: "{{ dg_pc_racing_xidi_url }}"
+      archive_root: "Xidi-{{ dg_pc_racing_xidi_version }}"
+      architecture: Win32
+      wrappers:
+        - dinput.dll
+      config: |
+        [Mapper]
+        Type = CMR1Gamepad
+
+        [CustomMapper:CMR1Gamepad]
+        Template = StandardGamepad
+        StickLeftX = Axis(X)
+        StickLeftY = Null
+        TriggerRT = Axis(Y, -)
+        TriggerLT = Axis(Y, +)
+        DpadUp = Keyboard(UpArrow)
+        DpadDown = Keyboard(DownArrow)
+        DpadLeft = Keyboard(LeftArrow)
+        DpadRight = Keyboard(RightArrow)
+        ButtonStart = Keyboard(Enter)
+        ButtonBack = Keyboard(Esc)
+
+        [Properties]
+        UseBuiltInProperties = yes
+        DeadzonePercentStickLeft = 5
+        DeadzonePercentStickRight = 5
+        DeadzonePercentTriggerLT = 0
+        DeadzonePercentTriggerRT = 0
+        SaturationPercentStickLeft = 100
+        SaturationPercentStickRight = 100
+        SaturationPercentTriggerLT = 100
+        SaturationPercentTriggerRT = 100
+
+        [Log]
+        Enabled = no
+        Level = 1
+
+        [Import]
+        dinput.dll = C:\Windows\system32\dinput.dll
+
+        [Workarounds]
+        ActiveVirtualControllerMask = 0x01
+    notes: "ChemicalFlood portable repack of the 1998 PC release. Rally.exe is the patched game exe (Game.exe is the untouched 1998 binary). Registry paths retargeted from the pack's C:\\CMRally to G:\\colin-mcrae-rally-1; per-app winver=winxp mirrors the pack's XP-SP3 compat-mode requirement (stage-load crash on Win7+, PCGamingWiki). dgVoodoo2 deliberately not used (PCGW: breaks Rally School intro videos in fullscreen); wined3d handles the DX6 renderer."
+
   - slug: colin-mcrae-rally-2
     name: "Colin McRae Rally 2.0"
     install_mode: installer

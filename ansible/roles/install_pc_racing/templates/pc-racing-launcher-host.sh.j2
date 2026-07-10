@@ -19,4 +19,8 @@ trap cleanup EXIT INT TERM HUP
 {{ cmd }}
 {% endfor %}
 
-exec /usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_box_home }}/bin/{{ item.slug }} "$@"
+# NOT exec: the game must run as a child so the cleanup trap fires when
+# it exits (exec replaced the shell and silently skipped host_post
+# commands — e.g. CMR2's hyprctl reload and CMR1's rootful-Xwayland
+# teardown never ran).
+/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_box_home }}/bin/{{ item.slug }} "$@"
