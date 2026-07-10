@@ -29,6 +29,18 @@ does not select the portrait monitor.
 
 ## Controller Policy
 
+### Host prerequisite: ntsync module (frame-pacing)
+
+Wine 10+ automatically uses the kernel's ntsync fast-sync driver when
+`/dev/ntsync` exists — the upstream equivalent of Proton's fsync.
+Without it every synchronization primitive round-trips through the
+wineserver process, which shows up as **choppy/sluggish framerate
+independent of resolution or detail settings** in engine-threaded
+games (DiRT 2 was the discovery case, 2026-07-10; the GPU was fine —
+DXVK on the 5090 — but pacing was broken). Persisted via
+`/etc/modules-load.d/ntsync.conf`; verify with `ls /dev/ntsync`.
+Benefits every wine game in this setup.
+
 ### Host prerequisite: 8BitDo dongle needs xpad with a dynamic id
 
 The 8BitDo Ultimate 2 Wireless dongle (`2dc8:310b`) is only a gamepad
