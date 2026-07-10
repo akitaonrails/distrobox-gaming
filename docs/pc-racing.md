@@ -240,6 +240,45 @@ The game's own "restart now" flow after changing resolution just
 exits (it expects Windows to relaunch it) — relaunch manually.
 Rendering is the DiRT 2 stack: DXVK, gamescope at 4K, native XInput.
 
+## DiRT 3 Complete Edition (parked — no working controller path)
+
+ElAmigos repack of the 2015 Complete Edition re-release (EGO 2 engine,
+GFWL stripped). Installs and renders fine, but **no controller path was
+found**; parked and its box/Ansible artifacts removed on 2026-07-10.
+NAS original stays at `ROMS_FINAL/PC/DiRT.3.Complete.Edition`; a working
+14 GB install copy remains at `/mnt/data/Games/DiRT3` for future retries.
+
+What was tried and where each wall stands:
+
+- **wine (11.12, distrobox)** — got furthest. Needs `openal` (the exe
+  hard-imports `OpenAL32.dll`; the repack skips the redist) and the
+  host `ntsync` module (else choppy). Menus, car-select and the
+  race-intro animation all work **with the keyboard**. The moment a
+  controller is active, it page-faults at the **green light** (race
+  start): the game reads raw HID (`HidP*`), a device handle closes
+  (`pdo_close`), then a `null+4` deref — frame pointer is null so no
+  backtrace. Tried: renderer `forcedx9`, vibration off, winebus
+  `DisableInput`, single pad, both pads — none avoided it.
+  wine-staging-9.19 crashes at startup instead.
+
+- **host Steam + GE-Proton11 (Steam Input)** — a *regression*. Crashes
+  **earlier**, at the "loading" screen **before the menu**, and does so
+  **even with every controller disconnected** — so this failure is
+  **not** controller-related. Trace shows GFWL `dbxLive32.dll` loaded
+  and `com_get_class_object apartment not initialised` on a worker
+  thread just before a deterministic fault at `dirt3_game+0x368c06`
+  (read of `null+8`). Steam Input never captured the pads either (the
+  game still enumerated the raw 8BitDo vendor-HID collections), but
+  that's moot since it dies with no pad at all. Bare GE-Proton outside
+  the Steam runtime fails separately (`kernel32.dll c0000135` — new
+  WOW64 needs the pressure-vessel 32-bit setup).
+
+- **Untried lever for a future attempt** — on the *wine* side only,
+  set winebus `DisableHidraw=1` + `Enable SDL=1` in the prefix so
+  dinput enumerates the controller through SDL instead of the raw-HID
+  backend that faults at the green light. This is the one plausible
+  fix not yet tested; the Proton path is a dead end.
+
 ## Colin McRae Rally (1998)
 
 Source is the ChemicalFlood portable repack at
