@@ -23,7 +23,14 @@ export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
 export SDL_JOYSTICK_HIDAPI="${SDL_JOYSTICK_HIDAPI:-{{ dg_pc_racing_sdl_hidapi }}}"
 export SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT="${SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT:-{{ dg_pc_racing_gamepad_only }}}"
 {% for env_var in item.env | default([]) -%}
+{% if env_var.force | default(false) -%}
+{# force: always override — needed for vars the session already sets
+   (e.g. DISPLAY, which distrobox exports, so the :-default form
+   silently never applies). #}
+export {{ env_var.name }}="{{ env_var.value }}"
+{% else -%}
 export {{ env_var.name }}="{{ '${' }}{{ env_var.name }}:-{{ env_var.value }}{{ '}' }}"
+{% endif -%}
 {% endfor -%}
 {% if dg_pc_racing_gamepad_device | length > 0 -%}
 if [ -e "{{ dg_pc_racing_gamepad_device }}" ]; then

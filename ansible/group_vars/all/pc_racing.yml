@@ -152,9 +152,11 @@ dg_pc_racing_games:
       - name: WINEDLLOVERRIDES
         value: "dinput=n,b"
       # Route the game to the rootful X server started by the host
-      # wrapper (overrides the distrobox session DISPLAY).
+      # wrapper. force: distrobox always sets DISPLAY, so the
+      # default-if-unset form would never apply.
       - name: DISPLAY
         value: ":12"
+        force: true
     xidi:
       # Same DirectInput-era controller situation as CMR2: wrap
       # dinput.dll (not dinput8) and present a StandardGamepad-derived
