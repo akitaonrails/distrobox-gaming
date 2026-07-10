@@ -279,51 +279,42 @@ What was tried and where each wall stands:
   backend that faults at the green light. This is the one plausible
   fix not yet tested; the Proton path is a dead end.
 
-## DiRT Rally (native Feral Linux port)
+## DiRT Rally (parked — both cracks fail)
 
-Unlike every other game on this page, DiRT Rally runs **natively** — no
-Wine. It's the Feral Interactive Linux port (GoldMaster, Steam AppID
-310560) with an ACTiVATED crack (`steam_appid.txt` + `activated.ini`) so
-it needs no running Steam client. Native OpenGL + native SDL controller
-input means the Wine/DirectInput controller crash class that blocked
-DiRT 3 simply cannot occur. The NAS also holds a Windows ISO
-(`DiRT.Rally.v1.1-RELOADED`) — ignore it; the native build is strictly
-better here.
+Two copies exist on the NAS and **neither launches** on this box; parked
+2026-07-10 like DiRT 3. Both dead ends were repack/crack problems, not
+host-config problems — the rest of the racing library works.
 
-Because it shares none of the Wine machinery, it lives in its own
-**`install_native_games`** role (not `install_pc_racing`), driven by the
-`dg_native_games` catalog in `group_vars/all/native_games.yml`. Run it
-with `ansible-playbook site.yml --tags native_games`. Adding another
-native port (Feral/Aspyr) is a data entry there.
+- **Native Feral Linux port** (`DiRT.Rally.Linux-ACTiVATED`, GoldMaster,
+  AppID 310560). The library side was fully solved: the 2016 build links
+  `libssl/libcrypto.so.1.0.0`, `libidn.so.11`, `librtmp.so.0`, openldap
+  2.4 and `libgconf-2.so.4`, none of which modern Arch ships. Harvesting
+  **only the missing sonames** (the system already has the rest) from the
+  Steam "scout" runtime (`~/.local/share/Steam/ubuntu12_32/steam-runtime`)
+  into a curated compat dir — *not* the whole runtime, which drags in an
+  old `libstdc++`/`libattr` that break `sed` and the game's own
+  `libsteam_api` — plus a system-SDL2 override under the old
+  `libSDL2-2.0.5.so` soname, gets it cleanly to `SDL2 initialised`. But
+  the game binary then **segfaults on its own main thread** in early init
+  (stripped; identical with sdl2-compat or real SDL2, gamescope or not,
+  taskset or not, and via the scout `run.sh`). A genuine 2016-binary vs
+  kernel-7.0/newest-glibc incompatibility. The scout `run.sh` is *worse*
+  than the curated approach (it discards the game's bundled libs and hits
+  a `CURL_OPENSSL_4` mismatch).
 
-Three things the role wires up, all without touching the pristine 41 GB
-NAS copy (it runs **in place** from `/mnt/terachad`, no NVMe copy):
+- **Windows RELOADED repack** (`DiRT.Rally.v1.1-RELOADED`, DX11) via host
+  Steam + Proton Experimental. Installs fine (custom GUI installer, run
+  through Steam; then copy `crack/*` over the game dir). Loads and
+  **initialises DXVK**, then quits ~2–3 s later. The RELOADED Steam-emu
+  crack fights Proton's force-injected `lsteamclient`
+  (`err:steamclient:steamclient_init_registry Failed to connect to Steam`)
+  and no combination fixed it — Steam client up or down, `lsteamclient=d`
+  to force the crack's own `steamclient.dll`, gamescope for the
+  `NtUserChangeDisplaySettings … DISPLAY2` multi-monitor mode error, or a
+  `steam_appid.txt`. Same shape as DiRT 3: the crack won't cooperate.
 
-1. **Old runtime libs** — the 2016 build links `libssl/libcrypto.so.1.0.0`
-   (openssl 1.0), `libidn.so.11`, `librtmp.so.0`, openldap 2.4 and
-   `libgconf-2.so.4`, dragged in by its bundled curl/CEF. Modern Arch
-   ships none of these. They're provided by the **Steam "scout" runtime**
-   (`~/.local/share/Steam/ubuntu12_32/steam-runtime`, appears once Steam +
-   any Steam Linux Runtime are installed); the launcher appends its
-   `amd64` + `usr` lib dirs to `LD_LIBRARY_PATH`. Path overridable via
-   `dg_native_steam_runtime`.
-
-2. **Modern controller support** — the bundled `libSDL2-2.0.5.so` (2016)
-   predates good 8BitDo/modern-pad handling. A box-local symlink
-   (`native-overrides/dirt-rally/libSDL2-2.0.5.so` → the box's system
-   SDL2) overrides the old soname, giving the full controller DB +
-   hidapi. Kept box-local so the NAS dir stays untouched.
-
-3. **Fullscreen** — hosted in gamescope at 4K, so the existing Hyprland
-   rule (`match:class .*gamescope.* → fullscreen`) fullscreens it on a
-   direct/Walker launch with no per-class config, like the Wine racers.
-   Set `gamescope_enabled: false` in the catalog to run against Xwayland
-   directly if the old GL engine ever misbehaves under gamescope.
-
-The launcher re-execs itself with a `--dg-inner` flag as gamescope's
-child: this scopes the game's `LD_LIBRARY_PATH` (including the scout
-runtime's **old libstdc++**) to the game only, so gamescope's own
-startup isn't broken by it.
+A legit Steam copy is Proton Platinum and would almost certainly just
+work; that's the path if DiRT Rally is ever revisited.
 
 ## Colin McRae Rally (1998)
 
