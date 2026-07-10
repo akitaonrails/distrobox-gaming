@@ -169,6 +169,50 @@ directory when an installer asks where to install. Games that need a fixed
 installed path, such as Colin McRae Rally 2.0, define `installed_path` and run
 from that prefix directory instead.
 
+## Colin McRae Rally (1998)
+
+Source is the ChemicalFlood portable repack at
+`{{ dg_pc_racing_source_root }}/CMRally` — no installer; `install_mode:
+copy` rsyncs it to the shared install root and the pack's `C:\CMRally`
+registry fix is replicated with every path key retargeted to
+`G:\colin-mcrae-rally-1`. `Rally.exe` is the patched game binary
+(`Game.exe` is the untouched 1998 one). Per-app `winver=winxp` mirrors
+the pack's XP-SP3 compatibility requirement (stage-load crash on Win7+,
+also documented on PCGamingWiki). Xidi wraps `dinput.dll` exactly like
+CMR2 — same DirectInput-era controller-detection problem, same mapper.
+
+**Presentation is rootful Xwayland**, unlike every other game here:
+the host wrapper starts `Xwayland :12 -fullscreen`, the game runs with
+`DISPLAY=:12`, and Hyprland composites the dedicated X server as a
+native fullscreen Wayland surface. Xwayland scales the game's legacy
+modes (max 800x600 in-game — no community hi-res patch exists) to the
+panel. Chosen after a dead-end matrix, recorded in the game's entry in
+`pc_racing.yml`:
+
+- plain XWayland renders clean but can't upscale (game sits small);
+- **every gamescope variant** (exclusive fullscreen, wine-desktop
+  inside gamescope, SDL backend) produces DDraw animation trails —
+  frames pile up without erase;
+- dgVoodoo2 (+DXVK) page-faults deterministically right after mode
+  set, independent of resolution/refresh/AVIPath;
+- wined3d `renderer=vulkan` black-screens under gamescope.
+
+Quirks to know:
+
+- While the game window is **unfocused**, wine releases the emulated
+  XRandR mode and the image shrinks to the top-left corner of the
+  rootful server. It restores on focus — normal legacy-fullscreen
+  behavior, not a bug.
+- Set the in-game resolution to 800x600 (Options → graphics) for the
+  sharpest output.
+- The role's registry idempotency check is a substring match, so a
+  value that *contains* the desired value as a prefix is wrongly
+  considered applied (bit us when AVIPath temporarily pointed at
+  `...\noavi` during debugging — the redeploy didn't restore it).
+- The host wrapper used to `exec` the box launcher, which silently
+  skipped all `host_post_launch_commands` (CMR2's `hyprctl reload`
+  included). Fixed alongside this game — the trap now fires.
+
 ## Colin McRae Rally 2.0
 
 CMR2 uses the pre-extracted US CD media at
