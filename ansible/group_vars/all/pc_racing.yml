@@ -446,6 +446,36 @@ dg_pc_racing_games:
     gamescope_output_width: "{{ dg_pc_racing_gamescope_width }}"
     gamescope_output_height: "{{ dg_pc_racing_gamescope_height }}"
 
+  - slug: dirt-3
+    name: "DiRT 3 Complete Edition"
+    # ElAmigos repack of the 2015 Complete Edition re-release (GFWL
+    # stripped). Same recipe as DiRT 2: InnoSetup/ISDone silent
+    # install, DXVK for the EGO 2 engine, gamescope 4K, native XInput.
+    # openal: the exe hard-imports OpenAL32.dll and the repack skips
+    # the redist — without it the game dies at load (import_dll error).
+    install_mode: installer
+    source_dir: "{{ dg_pc_racing_source_root }}/DiRT.3.Complete.Edition"
+    installer: "setup.exe"
+    install_args:
+      - /VERYSILENT
+      - /SUPPRESSMSGBOXES
+      - /NORESTART
+      - /SP-
+      - "/DIR=G:\\dirt-3"
+    launch_exe: "dirt3_game.exe"
+    installed_path: "{{ dg_pc_racing_install_root }}/dirt-3"
+    winebus_registry:
+      - name: Map Controllers
+        value: 1
+    winetricks_components:
+      - dxvk
+      - openal
+    gamescope_enabled: true
+    gamescope_game_width: "{{ dg_pc_racing_gamescope_width }}"
+    gamescope_game_height: "{{ dg_pc_racing_gamescope_height }}"
+    gamescope_output_width: "{{ dg_pc_racing_gamescope_width }}"
+    gamescope_output_height: "{{ dg_pc_racing_gamescope_height }}"
+
   - slug: colin-mcrae-dirt-2
     name: "Colin McRae: DiRT 2"
     # ElAmigos repack (InnoSetup + ISDone/FreeArc .bin payloads —
