@@ -29,6 +29,28 @@ does not select the portrait monitor.
 
 ## Controller Policy
 
+### Host prerequisite: 8BitDo dongle needs xpad with a dynamic id
+
+The 8BitDo Ultimate 2 Wireless dongle (`2dc8:310b`) is only a gamepad
+on this host because of two pieces of persistent config (installed
+2026-07-10 after a reboot silently broke the pad):
+
+- `/etc/modules-load.d/xpad.conf` — loads `xpad` at boot. The xone
+  package (Xbox Wireless Adapter driver) ships
+  `/usr/lib/modprobe.d/xone-blacklist.conf` (`blacklist xpad`), which
+  blocks modalias autoload; the explicit load bypasses the blacklist
+  without affecting xone.
+- `/etc/udev/rules.d/99-8bitdo-xpad.rules` — registers `2dc8 310b` in
+  `/sys/bus/usb/drivers/xpad/new_id` whenever the dongle appears
+  (this kernel's xpad has no table entry for the id).
+
+Failure signature when this is missing: the dongle enumerates with
+only its Keyboard/Mouse endpoints (d-pad even types arrow keys), the
+pad's lights show "paired", browsers/SDL list nothing, and the same
+pad works fine on Windows (as "Xbox 360 Controller"). Also note the
+pad is **never** a gamepad while plugged in via USB-C — wired it
+presents `2dc8:6013`, which nothing drives; 2.4G dongle mode only.
+
 USB gamepads are exposed through the distrobox's `/dev/input` and `/dev/hidraw`
 devices. The launcher pins SDL to the 8BitDo controller in XInput mode
 (`0x2dc8/0x310b`) and disables SDL HIDAPI to avoid duplicate keyboard, mouse,
