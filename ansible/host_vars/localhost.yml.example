@@ -69,3 +69,12 @@
 # 0xVID/0xPID). Add your pads' IDs (lsusb) — unlisted devices stay
 # invisible to the old games on purpose (filters phantom HID pads).
 # dg_pc_racing_gamepad_only: "0x2dc8/0x310b,0x045e/0x0b12"
+#
+# Native Linux game ports (role install_native_games, tag native_games).
+# 2016-era Feral ports (e.g. DiRT Rally) need the old libs shipped by the
+# Steam "scout" runtime; point this at your ubuntu12_32/steam-runtime if
+# Steam lives outside the default ~/.local/share/Steam.
+# dg_native_steam_runtime: /path/to/Steam/ubuntu12_32/steam-runtime
+# dg_native_gamescope_width: 3840
+# dg_native_gamescope_height: 2160
+# dg_native_games_selected_slugs: [dirt-rally]   # limit a run to specific slugs

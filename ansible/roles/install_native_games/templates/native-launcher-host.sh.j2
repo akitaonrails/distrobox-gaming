@@ -1,0 +1,23 @@
+#!/usr/bin/env sh
+set -eu
+
+# Host-side wrapper for {{ item.name }}.
+#
+# Runs on the host (not inside the {{ dg_box_name }} box) so compositor /
+# Hyprland / monitor tweaks can wrap the gameplay session. The actual
+# native launcher inside the box is at {{ dg_box_home }}/bin/{{ item.slug }}.
+
+cleanup() {
+{% for cmd in item.host_post_launch_commands | default([]) %}
+  {{ cmd }} 2>/dev/null || true
+{% endfor %}
+}
+trap cleanup EXIT INT TERM HUP
+
+{% for cmd in item.host_pre_launch_commands | default([]) %}
+{{ cmd }}
+{% endfor %}
+
+# NOT exec: the game must run as a child so the cleanup trap fires on
+# exit and the host_post_launch_commands actually run.
+/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_box_home }}/bin/{{ item.slug }} "$@"

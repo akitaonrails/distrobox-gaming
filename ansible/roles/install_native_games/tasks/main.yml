@@ -1,0 +1,155 @@
+---
+- name: Select native games for this run
+  ansible.builtin.set_fact:
+    _dg_native_games_selected: >-
+      {{ dg_native_games
+         if (dg_native_games_selected_slugs | length == 0)
+         else (dg_native_games | selectattr('slug', 'in', dg_native_games_selected_slugs) | list) }}
+
+- name: Assert selected native game slugs exist
+  ansible.builtin.assert:
+    that: _dg_native_games_selected | length == dg_native_games_selected_slugs | length
+    fail_msg: "Unknown native slug in dg_native_games_selected_slugs={{ dg_native_games_selected_slugs }}"
+  when: dg_native_games_selected_slugs | length > 0
+
+- name: Create native games support directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_box_home }}/bin"
+    - "{{ dg_desktop_render_dir }}"
+    - "{{ dg_native_overrides_root }}"
+
+- name: Validate native game directories
+  ansible.builtin.stat:
+    path: "{{ item.game_dir }}"
+  loop: "{{ _dg_native_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: _dg_native_sources
+
+- name: Assert native game directories exist
+  ansible.builtin.assert:
+    that: item.stat.exists and item.stat.isdir
+    fail_msg: "Missing native game directory: {{ item.item.game_dir }}"
+  loop: "{{ _dg_native_sources.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+
+- name: Assert Steam scout runtime present for games that need it
+  # The runtime provides the old libssl/libcrypto/libidn/librtmp/ldap/
+  # gconf sonames the 2016 Feral builds link. Checked via one canonical
+  # lib so the launcher can rely on it existing.
+  ansible.builtin.stat:
+    path: "{{ dg_native_steam_runtime }}/amd64/lib/x86_64-linux-gnu/libssl.so.1.0.0"
+  register: _dg_native_runtime
+  loop: "{{ _dg_native_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: item.steam_runtime | default(false) | bool
+
+- name: Fail clearly when the Steam scout runtime is missing
+  ansible.builtin.assert:
+    that: item.stat.exists
+    fail_msg: >-
+      Steam scout runtime missing at {{ dg_native_steam_runtime }} —
+      {{ item.item.name }} needs it for openssl-1.0 and friends. Install
+      Steam and any "Steam Linux Runtime", or point dg_native_steam_runtime
+      at an existing ubuntu12_32/steam-runtime.
+  loop: "{{ _dg_native_runtime.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when:
+    - item.item.steam_runtime | default(false) | bool
+    - item.stat is defined
+
+- name: Create per-game SDL2 override symlink inside box
+  # Point the game's old bundled SDL2 soname at the box's modern system
+  # SDL2 (full controller DB + hidapi), in a box-local dir so the NAS
+  # game directory stays pristine.
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      dir="{{ dg_native_overrides_root }}/{{ item.slug }}"
+      soname="{{ item.sdl2_override_soname | default("libSDL2-2.0.5.so") }}"
+      # Every sdl2 / sdl2-compat ships the stable ABI symlink; prefer an
+      # exact-soname match if one happens to exist.
+      target="/usr/lib/$soname"
+      [ -e "$target" ] || target="/usr/lib/libSDL2-2.0.so.0"
+      if [ ! -e "$target" ]; then
+        printf "%s\n" "ERROR: no system SDL2 found in box for override ($target)" >&2
+        exit 1
+      fi
+      mkdir -p "$dir"
+      current="$(readlink "$dir/$soname" 2>/dev/null || true)"
+      if [ "$current" = "$target" ]; then
+        exit 0
+      fi
+      ln -sfn "$target" "$dir/$soname"
+      printf "%s\n" "sdl2-override {{ item.slug }} $soname -> $target"
+    '
+  register: _dg_native_sdl2
+  changed_when: "'sdl2-override' in _dg_native_sdl2.stdout"
+  loop: "{{ _dg_native_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: item.sdl2_override | default(false) | bool
+
+- name: Deploy native game launcher wrappers
+  ansible.builtin.template:
+    src: native-launcher.sh.j2
+    dest: "{{ dg_box_home }}/bin/{{ item.slug }}"
+    mode: "0755"
+  loop: "{{ _dg_native_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Deploy native game host-side launcher wrappers
+  # Only games whose entry defines host_pre/post_launch_commands get a
+  # host wrapper (for compositor tweaks around the session). gamescope
+  # games don't need one — the gamescope window rule fullscreens them.
+  ansible.builtin.template:
+    src: native-launcher-host.sh.j2
+    dest: "{{ dg_box_home }}/bin/{{ item.slug }}-host"
+    mode: "0755"
+  loop: "{{ _dg_native_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - (item.host_pre_launch_commands is defined) or
+      (item.host_post_launch_commands is defined)
+
+- name: Render native game desktop entries
+  ansible.builtin.template:
+    src: native.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/native-{{ item.slug }}.desktop"
+    mode: "0644"
+  loop: "{{ _dg_native_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Install rendered native desktop files into host applications dir
+  # Same shared installer used by desktop_apps / pc_racing / azahar:
+  # symlinks rendered .desktop files into dg_host_applications_dir,
+  # prunes stale links, idempotent.
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _dg_native_host_launchers
+  changed_when: >-
+    'installed ' in _dg_native_host_launchers.stdout or
+    'removed stale ' in _dg_native_host_launchers.stdout
+
+- name: Report native game setup
+  ansible.builtin.debug:
+    msg: >-
+      Prepared {{ item.name }} (native). Launcher:
+      {{ dg_box_home }}/bin/{{ item.slug }} — run via
+      distrobox-enter -n {{ dg_box_name }} -- {{ dg_box_home }}/bin/{{ item.slug }}.
+  loop: "{{ _dg_native_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"

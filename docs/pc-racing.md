@@ -279,6 +279,52 @@ What was tried and where each wall stands:
   backend that faults at the green light. This is the one plausible
   fix not yet tested; the Proton path is a dead end.
 
+## DiRT Rally (native Feral Linux port)
+
+Unlike every other game on this page, DiRT Rally runs **natively** — no
+Wine. It's the Feral Interactive Linux port (GoldMaster, Steam AppID
+310560) with an ACTiVATED crack (`steam_appid.txt` + `activated.ini`) so
+it needs no running Steam client. Native OpenGL + native SDL controller
+input means the Wine/DirectInput controller crash class that blocked
+DiRT 3 simply cannot occur. The NAS also holds a Windows ISO
+(`DiRT.Rally.v1.1-RELOADED`) — ignore it; the native build is strictly
+better here.
+
+Because it shares none of the Wine machinery, it lives in its own
+**`install_native_games`** role (not `install_pc_racing`), driven by the
+`dg_native_games` catalog in `group_vars/all/native_games.yml`. Run it
+with `ansible-playbook site.yml --tags native_games`. Adding another
+native port (Feral/Aspyr) is a data entry there.
+
+Three things the role wires up, all without touching the pristine 41 GB
+NAS copy (it runs **in place** from `/mnt/terachad`, no NVMe copy):
+
+1. **Old runtime libs** — the 2016 build links `libssl/libcrypto.so.1.0.0`
+   (openssl 1.0), `libidn.so.11`, `librtmp.so.0`, openldap 2.4 and
+   `libgconf-2.so.4`, dragged in by its bundled curl/CEF. Modern Arch
+   ships none of these. They're provided by the **Steam "scout" runtime**
+   (`~/.local/share/Steam/ubuntu12_32/steam-runtime`, appears once Steam +
+   any Steam Linux Runtime are installed); the launcher appends its
+   `amd64` + `usr` lib dirs to `LD_LIBRARY_PATH`. Path overridable via
+   `dg_native_steam_runtime`.
+
+2. **Modern controller support** — the bundled `libSDL2-2.0.5.so` (2016)
+   predates good 8BitDo/modern-pad handling. A box-local symlink
+   (`native-overrides/dirt-rally/libSDL2-2.0.5.so` → the box's system
+   SDL2) overrides the old soname, giving the full controller DB +
+   hidapi. Kept box-local so the NAS dir stays untouched.
+
+3. **Fullscreen** — hosted in gamescope at 4K, so the existing Hyprland
+   rule (`match:class .*gamescope.* → fullscreen`) fullscreens it on a
+   direct/Walker launch with no per-class config, like the Wine racers.
+   Set `gamescope_enabled: false` in the catalog to run against Xwayland
+   directly if the old GL engine ever misbehaves under gamescope.
+
+The launcher re-execs itself with a `--dg-inner` flag as gamescope's
+child: this scopes the game's `LD_LIBRARY_PATH` (including the scout
+runtime's **old libstdc++**) to the game only, so gamescope's own
+startup isn't broken by it.
+
 ## Colin McRae Rally (1998)
 
 Source is the ChemicalFlood portable repack at
