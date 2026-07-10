@@ -137,12 +137,46 @@ dg_pc_racing_games:
     # Rootful Xwayland is the same presentation family as the clean
     # plain-XWayland case, plus the missing upscale.
     gamescope_enabled: false
+    # Gamepad strategy: keyboard emulation via evsieve (same tech as the
+    # melonDS/azahar wrappers). The DirectInput/WinMM path is dead for
+    # this game under wine: winebus enumerates the pad, but Xidi never
+    # loads (no log despite Enabled=yes) and the game registers no
+    # joystick input. Instead, play in the game's KEYBOARD mode:
+    #   - d-pad already emits arrow keys (8BitDo dongle keyboard mode)
+    #   - evsieve adds: left stick X -> Left/Right, RT -> Up (accel),
+    #     LT -> Down (brake), A -> Space (handbrake), B -> Esc
+    # This matches the original PS1 release, which was fully digital.
+    pre_launch_commands:
+      - >-
+        pad=""; for l in /dev/input/by-id/*8BitDo*Ultimate*event-joystick /dev/input/by-id/*XBOX*event-joystick /dev/input/by-id/*Microsoft*event-joystick; do
+        [ -e "$l" ] && { pad=$(readlink -f "$l"); break; }; done;
+        if [ -n "$pad" ] && command -v evsieve >/dev/null 2>&1 && [ -w /dev/uinput ]; then
+        evsieve --input "$pad"
+        --copy 'abs:x:-15999~..~-16000' key:left:1
+        --copy 'abs:x:~-16000..-15999~' key:left:0
+        --copy 'abs:x:~15999..16000~' key:right:1
+        --copy 'abs:x:16000~..~15999' key:right:0
+        --copy 'abs:rz:~127..128~' key:up:1
+        --copy 'abs:rz:128~..~127' key:up:0
+        --copy 'abs:z:~127..128~' key:down:1
+        --copy 'abs:z:128~..~127' key:down:0
+        --map btn:south key:space
+        --map btn:east key:esc
+        --output name="cmr1-keys" >/dev/null 2>&1 &
+        echo $! > /tmp/.cmr1-evsieve.pid;
+        fi
+    post_launch_commands:
+      - '[ -f /tmp/.cmr1-evsieve.pid ] && kill "$(cat /tmp/.cmr1-evsieve.pid)" 2>/dev/null; rm -f /tmp/.cmr1-evsieve.pid'
     host_pre_launch_commands:
       # Dedicated rootful X server for the session; -fullscreen makes
       # it a fullscreen Wayland surface on the active monitor and
       # scales emulated XRandR modes to it. Torn down in post (the
       # host wrapper runs the box launcher non-exec so the trap fires).
-      - pgrep -f "Xwayland :12" >/dev/null 2>&1 || { Xwayland :12 -fullscreen -noreset >/dev/null 2>&1 & sleep 1; }
+      # -geometry pins the root canvas to the game's max in-game res so
+      # menu (640x480) and race (800x600) modes both scale into ONE
+      # fixed 800x600 root: without it Xwayland locks fullscreen
+      # scaling to the first mode and the race frame gets cropped.
+      - pgrep -f "Xwayland :12" >/dev/null 2>&1 || { Xwayland :12 -geometry 800x600 -fullscreen -noreset >/dev/null 2>&1 & sleep 1; }
     host_post_launch_commands:
       - pkill -f "Xwayland :12" >/dev/null 2>&1 || true
     winebus_registry:
