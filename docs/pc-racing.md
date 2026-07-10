@@ -203,6 +203,43 @@ directory when an installer asks where to install. Games that need a fixed
 installed path, such as Colin McRae Rally 2.0, define `installed_path` and run
 from that prefix directory instead.
 
+## Colin McRae: DiRT (2007)
+
+Base install is the RELOADED disc (extracted to
+`{{ dg_pc_racing_source_root }}/DiRT-2007-RELOADED_Extracted`; the NAS
+"Dirt Rally.iso" is actually the Mastertronic retail re-release of this
+same game — misnamed, and carrying SafeDisc). The 2007 InstallShield
+wizard has no reliable silent mode: run `bin/install-colin-mcrae-dirt`
+interactively (path may stay at the default `C:\Program Files
+(x86)\Codemasters\DiRT` — `installed_path` points into the prefix).
+
+Then the patch chain, all interactive wizards, in order:
+`Crack/dirt_1_1.exe` (official 1.1, ships on the RELOADED disc) →
+`DiRt_1_2.exe` → `DiRT 1.21 Patch.exe` → `dirt1.22patch.exe` (v1.22
+officially removes the disc protection — no cracked exe needed). The
+patch exes live in `ROMS_FINAL/PC/"Colin McRae DiRT - DiRT (2007)
+Incl Patch..."/Patches`.
+
+**Race-load crash on modern CPUs**: v1.22 menus work but loading any
+race page-faults (`movl %eax, 0x2c(%edi)` with EDI=0) — EGO v1's
+worker-map init mishandles high logical-CPU counts (32 threads here).
+Pinning affinity does not help (the game reads `GetSystemInfo`, which
+ignores affinity). Fix: xatornet's CMCR-DiRT-MTFix (archived in
+`ROMS_FINAL/PC/dirt-patches/`), applied natively:
+
+1. Set the LAA/4GB flag bit on `DiRT.exe` (backup kept as `DiRT.bak`).
+2. Copy the fix's `Files/system/*.xml` worker maps into
+   `<game>/system/`.
+3. Render its `Template.xml` with `_Y_` → `12` (the fix's ceiling) to
+   `<game>/system/hardware_settings_restrictions.xml`.
+4. Delete the per-user `Documents/Codemasters/DiRT/hardwaresettings/`
+   XML cache — note this **resets in-game settings** (re-pick
+   resolution afterwards).
+
+The game's own "restart now" flow after changing resolution just
+exits (it expects Windows to relaunch it) — relaunch manually.
+Rendering is the DiRT 2 stack: DXVK, gamescope at 4K, native XInput.
+
 ## Colin McRae Rally (1998)
 
 Source is the ChemicalFlood portable repack at

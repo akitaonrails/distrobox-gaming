@@ -398,6 +398,54 @@ dg_pc_racing_games:
         ActiveVirtualControllerMask = 0x01
     notes: "Source is a pre-extracted copy of the original BIN/CUE media; the converted ISO is kept beside it. Xidi is required for the controller options page to ungrey: CMR2's DirectInput 7 controller-class detection rejects modern gamepads' partial subtype reports, so Xidi presents a virtual StandardGamepad-derived DI device and the menu re-enables analog binding rows. CMR2 only binds throttle/brake to the virtual left-stick Y axis (no native trigger axes in DI7), so the mapper sends physical RT to Y- (throttle) and physical LT to Y+ (brake) and silences physical left-stick Y to avoid accidental throttle on steering."
 
+  - slug: colin-mcrae-dirt
+    name: "Colin McRae: DiRT"
+    # 2007, EGO engine v1 (DiRT 2's predecessor), 32-bit DX9. Source is
+    # the RELOADED disc extracted from rld-dirt.iso (the NAS also has a
+    # Mastertronic retail ISO — misnamed "Dirt Rally.iso" — but that
+    # one carries SafeDisc; the RELOADED base + official patch chain is
+    # the proven path per the patch dir's README).
+    #
+    # INTERACTIVE INSTALL: 2007 InstallShield GUI, no reliable silent
+    # mode. Run bin/install-colin-mcrae-dirt and click through, setting
+    # the install path to G:\colin-mcrae-dirt (decline registration,
+    # decline the "funsta" shortcut). Then apply, in order, in the same
+    # prefix: Crack/dirt_1_1.exe (official 1.1 patch), DiRt_1_2.exe,
+    # "DiRT 1.21 Patch.exe", dirt1.22patch.exe (v1.22 removes the disc
+    # protection entirely — no cracked exe needed afterwards). Patch
+    # exes live in ROMS_FINAL/PC/"Colin McRae DiRT - DiRT (2007) Incl
+    # Patch..."/Patches.
+    #
+    # AFTER the patch chain, the CMCR-DiRT-MTFix must be applied (game
+    # page-faults loading any race on high-thread CPUs — EGO v1 worker
+    # map init chokes on 32 logical CPUs; pinning affinity does NOT
+    # help, the game reads GetSystemInfo). Applied 2026-07-10, archive
+    # in ROMS_FINAL/PC/dirt-patches/CMCR-DiRT-MTFix-Windows.zip:
+    #   1. set the LAA (4GB) flag bit on DiRT.exe (backup DiRT.bak)
+    #   2. copy Files/system/*.xml worker maps into <game>/system/
+    #   3. render Template.xml with _Y_ -> 12 (the fix's max) to
+    #      <game>/system/hardware_settings_restrictions.xml
+    #   4. delete the per-user Documents/Codemasters/DiRT/
+    #      hardwaresettings/*.xml detection cache (settings reset!)
+    install_mode: installer
+    source_dir: "{{ dg_pc_racing_source_root }}/DiRT-2007-RELOADED_Extracted"
+    installer: "setup.exe"
+    install_args: []
+    launch_exe: "DiRT.exe"
+    # The InstallShield default path was accepted during the interactive
+    # install; the game lives inside the prefix (same pattern as CMR2).
+    installed_path: "{{ dg_pc_racing_prefix_root }}/colin-mcrae-dirt/drive_c/Program Files (x86)/Codemasters/DiRT"
+    winebus_registry:
+      - name: Map Controllers
+        value: 1
+    winetricks_components:
+      - dxvk
+    gamescope_enabled: true
+    gamescope_game_width: "{{ dg_pc_racing_gamescope_width }}"
+    gamescope_game_height: "{{ dg_pc_racing_gamescope_height }}"
+    gamescope_output_width: "{{ dg_pc_racing_gamescope_width }}"
+    gamescope_output_height: "{{ dg_pc_racing_gamescope_height }}"
+
   - slug: colin-mcrae-dirt-2
     name: "Colin McRae: DiRT 2"
     # ElAmigos repack (InnoSetup + ISDone/FreeArc .bin payloads —
