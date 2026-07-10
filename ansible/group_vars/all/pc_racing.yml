@@ -150,7 +150,7 @@ dg_pc_racing_games:
         value: 1
     env:
       - name: WINEDLLOVERRIDES
-        value: "dinput=n,b"
+        value: "dinput,winmm=n,b"
       # Route the game to the rootful X server started by the host
       # wrapper. force: distrobox always sets DISPLAY, so the
       # default-if-unset form would never apply.
@@ -168,6 +168,11 @@ dg_pc_racing_games:
       architecture: Win32
       wrappers:
         - dinput.dll
+        # CMR1 enumerates joysticks through WinMM (joyGetPos era), not
+        # DirectInput — without this wrapper Xidi's keyboard mappings
+        # work (d-pad navigates menus) but the controller page lists
+        # no joystick.
+        - winmm.dll
       config: |
         [Mapper]
         Type = CMR1Gamepad
@@ -202,6 +207,7 @@ dg_pc_racing_games:
 
         [Import]
         dinput.dll = C:\Windows\system32\dinput.dll
+        winmm.dll = C:\Windows\system32\winmm.dll
 
         [Workarounds]
         ActiveVirtualControllerMask = 0x01
