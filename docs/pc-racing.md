@@ -175,43 +175,62 @@ Source is the ChemicalFlood portable repack at
 `{{ dg_pc_racing_source_root }}/CMRally` — no installer; `install_mode:
 copy` rsyncs it to the shared install root and the pack's `C:\CMRally`
 registry fix is replicated with every path key retargeted to
-`G:\colin-mcrae-rally-1`. `Rally.exe` is the patched game binary
+`G:\colin-mcrae-rally-1`. `Rally.exe` is the pack's patched game binary
 (`Game.exe` is the untouched 1998 one). Per-app `winver=winxp` mirrors
-the pack's XP-SP3 compatibility requirement (stage-load crash on Win7+,
-also documented on PCGamingWiki). Xidi wraps `dinput.dll` exactly like
-CMR2 — same DirectInput-era controller-detection problem, same mapper.
+the pack's XP-SP3 compatibility requirement. In-game resolution should
+be set to 800x600 (the game's max — no community hi-res patch exists).
 
-**Presentation is rootful Xwayland**, unlike every other game here:
-the host wrapper starts `Xwayland :12 -fullscreen`, the game runs with
-`DISPLAY=:12`, and Hyprland composites the dedicated X server as a
-native fullscreen Wayland surface. Xwayland scales the game's legacy
-modes (max 800x600 in-game — no community hi-res patch exists) to the
-panel. Chosen after a dead-end matrix, recorded in the game's entry in
-`pc_racing.yml`:
+**Presentation: rootful Xwayland with a pinned 800x600 canvas.** The
+host wrapper starts `Xwayland :12 -geometry 800x600 -fullscreen`; the
+game runs with `DISPLAY=:12` (env `force: true` — distrobox always
+sets DISPLAY, so the default-if-unset form silently never applies).
+The pinned geometry matters: without it Xwayland locks its fullscreen
+scaling to the first emulated mode (the 640x480 menus) and crops the
+800x600 race image. One fixed root canvas, both modes scale into it.
+Output is stretched to 16:9 — **4:3 letterboxing is not achievable on
+this stack**; the full dead-end matrix (gamescope trails, dgVoodoo2
+crashes under both DXVK and wined3d-d3d11, `renderer=gdi` NULL-crash,
+`renderer=vulkan` black screen, windowed rootful doesn't scale) is
+recorded in the game's entry in `pc_racing.yml`.
 
-- plain XWayland renders clean but can't upscale (game sits small);
-- **every gamescope variant** (exclusive fullscreen, wine-desktop
-  inside gamescope, SDL backend) produces DDraw animation trails —
-  frames pile up without erase;
-- dgVoodoo2 (+DXVK) page-faults deterministically right after mode
-  set, independent of resolution/refresh/AVIPath;
-- wined3d `renderer=vulkan` black-screens under gamescope.
+**Controls: keyboard-emulation bridge, not DirectInput.** The wine
+joystick path is dead for this game (winebus enumerates the pad, but
+Xidi never loads and in-game joystick assignment registers nothing).
+Instead the launcher's `pre_launch_commands` start an evsieve bridge
+(same tech as the melonDS/azahar wrappers) mapping the physical pad to
+keyboard keys, and the game is played in its **Keyboard** controller
+mode (set Controller 1 = Keyboard in-game — not Joystick):
 
-Quirks to know:
+| Pad | Key | Game action |
+| --- | --- | --- |
+| Left stick X | Left/Right | steer (digital, like the PS1 original) |
+| RT | Up | accelerate |
+| LT | Down | brake |
+| A | Space | handbrake |
+| B | Esc | back/menus |
 
-- While the game window is **unfocused**, wine releases the emulated
-  XRandR mode and the image shrinks to the top-left corner of the
-  rootful server. It restores on focus — normal legacy-fullscreen
-  behavior, not a bug.
-- Set the in-game resolution to 800x600 (Options → graphics) for the
-  sharpest output.
-- The role's registry idempotency check is a substring match, so a
-  value that *contains* the desired value as a prefix is wrongly
-  considered applied (bit us when AVIPath temporarily pointed at
-  `...\noavi` during debugging — the redeploy didn't restore it).
-- The host wrapper used to `exec` the box launcher, which silently
-  skipped all `host_post_launch_commands` (CMR2's `hyprctl reload`
-  included). Fixed alongside this game — the trap now fires.
+Both pads are accepted (first found wins): the 8BitDo Ultimate 2 on
+its 2.4G dongle, or the Xbox Series pad on the GIP wireless adapter
+(verified end-to-end in-race).
+
+Gotchas that cost real debugging:
+
+- **Pads must be awake before launch** — winebus/the bridge only see
+  devices present at startup (no udev hotplug inside the container),
+  and the bridge's pad glob is resolved once at launch.
+- **The 8BitDo plugged in via USB-C is not a gamepad**: wired, it
+  presents device id `2dc8:6013` bound to `hid-generic` (no driver),
+  and the dongle radio idles with only its keyboard/mouse endpoints.
+  2.4G dongle mode is the only mode that yields a joystick device.
+- The 8BitDo dongle's keyboard endpoint sends real arrow/Enter keys
+  from the d-pad — which masks a dead joystick path convincingly
+  (menus navigate fine while the game receives no joystick input).
+- The game's "Run Joystick Panel" settings button launches Windows'
+  `joy.cpl`; with no WM on the rootful server it destroys the game's
+  surface (black screen, music keeps playing). Don't use it.
+- Xidi wrappers remain installed (dinput+winmm) but are inert here;
+  the Xidi extraction task is marker-guarded — changing the wrapper
+  list requires removing `.dg-xidi-*` from the game dir first.
 
 ## Colin McRae Rally 2.0
 
