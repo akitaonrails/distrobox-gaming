@@ -631,6 +631,18 @@ layout from `~/.config/hypr/monitors.conf`. Antialiasing stays disabled in
 `outrun2006.ini` until DXVK is confirmed stable with the game's multisample
 mode.
 
+Tweaks extras enabled as managed `ini:` entries (2026-07-12): controller
+hot-plug (the 8BitDo dongle often wakes after launch), skip intro logos,
+the CD Switcher (change music mid-race — Back = next track, RS+Back =
+previous; full 40-track list ships in the INI), rumble
+(`VibrationMode = 1`), hidden character selection, randomized highway
+anim sets, `DrawDistanceIncrease = 4` (INI recommends 4–8; 4 avoids
+early-LOD swaps), free-cruise countdown-timer disable, and hiding the
+dead Xbox-Live sign-in text (the `DemonwareServerOverride` fan-server
+entry stays, so online still works). Deliberately left off:
+`HudToggleKey`, `FramerateLimit` above 60 (physics/anim quirks), and
+`DefaultManualTransmission`.
+
 ## Sega Rally Revo
 
 Sega Rally Revo uses the full-rip payload under

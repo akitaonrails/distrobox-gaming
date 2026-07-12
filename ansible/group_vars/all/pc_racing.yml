@@ -756,6 +756,50 @@ dg_pc_racing_games:
         key: WindowPositionY
         value: "{{ dg_pc_racing_target_monitor_y }}"
         separator: " = "
+      # --- Tweaks extras (user-selected 2026-07-12) ---
+      # QoL: pad detected after launch (8BitDo dongle wakes late), skip
+      # boot logos.
+      - file: "OutRun2006Tweaks.ini"
+        key: ControllerHotPlug
+        value: "true"
+        separator: " = "
+      - file: "OutRun2006Tweaks.ini"
+        key: SkipIntroLogos
+        value: "true"
+        separator: " = "
+      # Arcade: mid-race music switching (Back / RS+Back), rumble,
+      # hidden character select, varied roadside anims.
+      - file: "OutRun2006Tweaks.ini"
+        key: SwitcherEnable
+        value: "true"
+        separator: " = "
+      - file: "OutRun2006Tweaks.ini"
+        key: VibrationMode
+        value: "1"
+        separator: " = "
+      - file: "OutRun2006Tweaks.ini"
+        key: AllowCharacterSelection
+        value: "true"
+        separator: " = "
+      - file: "OutRun2006Tweaks.ini"
+        key: RandomHighwayAnimSets
+        value: "true"
+        separator: " = "
+      # Visual: INI recommends 4-8; 4 = fewer pop-ins without LOD swaps.
+      - file: "OutRun2006Tweaks.ini"
+        key: DrawDistanceIncrease
+        value: "4"
+        separator: " = "
+      # Gameplay/cosmetic: free cruising, hide dead Xbox-Live sign-in nag
+      # (fan server override stays active).
+      - file: "OutRun2006Tweaks.ini"
+        key: DisableCountdownTimer
+        value: "true"
+        separator: " = "
+      - file: "OutRun2006Tweaks.ini"
+        key: HideOnlineSigninText
+        value: "true"
+        separator: " = "
     notes: "Inno Setup repack installed silently to G:\\outrun-2006. OutRun2006Tweaks replaces the DRM-sensitive EXE and must load through native dinput8. The bundled SpecialK d3d9 files are backed up and disabled so prefix DXVK can provide D3D9."
 
   - slug: sega-rally-revo
