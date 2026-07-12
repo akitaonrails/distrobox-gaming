@@ -57,6 +57,21 @@ windowrule = fullscreen on, match:class (?i).*gamescope.*
 This is redundant for the ES-DE/Steam flow and can be deleted if you
 only ever launch via the frontends.
 
+There is also a per-game pattern for windows that must land on a
+specific monitor: OutRun 2006 runs borderless without gamescope, and
+XWayland's coordinate mapping pushes the mod's absolute window position
+off the layout (an "invisible" window with audio still playing). Two
+rules pin its class to the racing monitor and fullscreen it:
+
+```ini
+windowrule = monitor DP-1, match:class ^(or2006c2c\.exe)$
+windowrule = fullscreen on, match:class ^(or2006c2c\.exe)$
+```
+
+Prefer this windowrule approach over in-game absolute positioning for
+any non-gamescope wine game — compositor coordinates win under
+XWayland scaling.
+
 ## Class-matching gotchas (both cost debugging)
 
 Relevant to the fallback rules and to adding any class-based rule:

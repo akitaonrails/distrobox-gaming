@@ -41,8 +41,14 @@ dg_pc_racing_dinput_disabled_joysticks:
   - ZSA Technology Labs Moonlander Mark I System Control
   - ZSA Technology Labs Moonlander Mark I Consumer Control
   - ZSA Technology Labs Moonlander Mark I Keyboard
-  - 8BitDo Ultimate 2 Wireless Controller
-  - 8BitDo 8BitDo Ultimate 2 Wireless Controller for PC
+  # Only the dongle's phantom keyboard/mouse pseudo-joysticks. Do NOT
+  # disable the bare "8BitDo ..." names: since the host xpad fix the
+  # real gamepad enumerates under exactly
+  # "8BitDo 8BitDo Ultimate 2 Wireless Controller for PC", and disabling
+  # it hides the pad from DirectInput games (bit OutRun 2006 on
+  # 2026-07-12; XInput games never noticed).
+  - 8BitDo 8BitDo Ultimate 2 Wireless Controller for PC Keyboard
+  - 8BitDo 8BitDo Ultimate 2 Wireless Controller for PC Mouse
   - 8BitDo 8BitDo Ultimate 2 Wireless Controller for PC Keyboard
   - 8BitDo 8BitDo Ultimate 2 Wireless Controller for PC Mouse
 dg_pc_racing_winebus_registry:

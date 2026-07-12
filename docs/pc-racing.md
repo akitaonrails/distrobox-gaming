@@ -78,6 +78,17 @@ interfaces, such as the Moonlander keyboard's ABS-axis interfaces, through
 Wine's `Software\Wine\DirectInput\Joysticks` registry key. This prevents menus
 from scrolling as if a direction were held.
 
+**Pitfall (hit 2026-07-12):** since the host xpad fix, the real 8BitDo
+gamepad enumerates under the *bare* device name
+`8BitDo 8BitDo Ultimate 2 Wireless Controller for PC` — the same string
+the dongle's old phantom entries used. Only the `... Keyboard` /
+`... Mouse` suffixed names may be in the disable list; disabling the
+bare name hides the actual pad from every DirectInput game (OutRun 2006
+lost its controller this way — XInput games never noticed because they
+don't consult this key). The role only *adds* disables, so stale bare-name
+entries in existing prefixes must be removed with
+`wine reg delete "HKCU\Software\Wine\DirectInput\Joysticks" /v "<name>" /f`.
+
 For controllers, first identify whether the game is a legacy DirectInput title
 or a newer XInput-aware title. Old DirectInput racing games often misread
 modern Xbox-style trigger axes: Linux and Wine expose released triggers at the
@@ -630,6 +641,15 @@ Samsung Odyssey G8 (`DP-1`) monitor at logical `4000,619` in the Hyprland
 layout from `~/.config/hypr/monitors.conf`. Antialiasing stays disabled in
 `outrun2006.ini` until DXVK is confirmed stable with the game's multisample
 mode.
+
+**Window placement is actually owned by Hyprland windowrules now**
+(2026-07-12): XWayland's coordinate mapping multiplies the mod's absolute
+`WindowPosition` (4000,619 landed at ~6666,1031 — off the layout, an
+"invisible" window with music still playing). Two rules in
+`~/.config/hypr/gaming.conf` pin the `or2006c2c.exe` class to `DP-1` and
+fullscreen it; the INI `WindowPositionX/Y` values remain but are
+harmless. If the window ever "disappears" again, check
+`hyprctl clients` for its real coordinates before blaming the game.
 
 Tweaks extras enabled as managed `ini:` entries (2026-07-12): controller
 hot-plug (the 8BitDo dongle often wakes after launch), skip intro logos,
