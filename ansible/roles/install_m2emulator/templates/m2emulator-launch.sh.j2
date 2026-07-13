@@ -35,7 +35,28 @@ export WINEDEBUG="${WINEDEBUG:--all}"
 # relative to its CWD.
 cd "$install_dir"
 
+# Select+Start on any connected pad quits (the emulator exits on
+# Escape): evsieve watches the pads (no grab) and injects Esc on a
+# virtual keyboard when the chord fires. Same pattern as azahar-launch.
+evsieve_pid=""
+if command -v evsieve >/dev/null 2>&1 && [ -w /dev/uinput ]; then
+  pad_inputs=""
+  for l in /dev/input/by-id/*8BitDo*Ultimate*event-joystick \
+           /dev/input/by-id/*Xbox*event-joystick \
+           /dev/input/by-id/*XBOX*event-joystick; do
+    [ -e "$l" ] && pad_inputs="$pad_inputs --input $(readlink -f "$l")"
+  done
+  if [ -n "$pad_inputs" ]; then
+    # shellcheck disable=SC2086
+    evsieve $pad_inputs \
+      --hook btn:select btn:start send-key=key:esc \
+      --output name="m2emulator-exit-keys" key:esc >/dev/null 2>&1 &
+    evsieve_pid=$!
+  fi
+fi
+
 cleanup() {
+  [ -n "$evsieve_pid" ] && kill "$evsieve_pid" 2>/dev/null || true
   env -u PYTHONHOME -u PYTHONPATH wineserver -k >/dev/null 2>&1 || true
 }
 trap cleanup EXIT HUP INT TERM

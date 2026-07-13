@@ -27,6 +27,29 @@ if [ ! -d "$sm_dir/Assets" ]; then
 fi
 mkdir -p "$sm_dir/NVRAM" "$sm_dir/Saves" "$sm_dir/Screenshots"
 
+# Select+Start on any connected pad quits (Supermodel's UIExit is
+# Escape): evsieve watches the pads (no grab) and injects Esc on a
+# virtual keyboard when the chord fires. Same pattern as azahar-launch.
+evsieve_pid=""
+if command -v evsieve >/dev/null 2>&1 && [ -w /dev/uinput ]; then
+  pad_inputs=""
+  for l in /dev/input/by-id/*8BitDo*Ultimate*event-joystick \
+           /dev/input/by-id/*Xbox*event-joystick \
+           /dev/input/by-id/*XBOX*event-joystick; do
+    [ -e "$l" ] && pad_inputs="$pad_inputs --input $(readlink -f "$l")"
+  done
+  if [ -n "$pad_inputs" ]; then
+    # shellcheck disable=SC2086
+    evsieve $pad_inputs \
+      --hook btn:select btn:start send-key=key:esc \
+      --output name="supermodel-exit-keys" key:esc >/dev/null 2>&1 &
+    evsieve_pid=$!
+  fi
+fi
+cleanup() { [ -n "$evsieve_pid" ] && kill "$evsieve_pid" 2>/dev/null || true; }
+trap cleanup EXIT INT TERM HUP
+
 # WAYLAND_DISPLAY='' forces SDL2 onto XWayland; the existing Hyprland
-# gaming rule fullscreens the supermodel window class.
-exec env WAYLAND_DISPLAY='' /usr/bin/supermodel-binary "$@"
+# gaming rule fullscreens the supermodel window class. NOT exec: the
+# binary runs as a child so the trap stops evsieve on exit.
+env WAYLAND_DISPLAY='' /usr/bin/supermodel-binary "$@"

@@ -7,6 +7,15 @@
 # roms_mid / roms_heavy / roms_rare) and ES-DE only supports one
 # ROMDirectory, so a single %ROMPATH% can't cover them all.
 
+# Arcade systems whose ROM dirs are MAME-style sets with Skraper
+# gamelist.xml metadata: the configure_esde role generates ES-DE
+# gamelists for these with clone sets hidden (parent = shortest
+# filename per display name). naomi/naomi2 are deliberately not listed
+# — their libraries showed no duplicate clutter.
+dg_esde_arcade_clone_systems:
+  - model2
+  - model3
+
 dg_esde_systems:
   - name: switch
     fullname: Nintendo Switch

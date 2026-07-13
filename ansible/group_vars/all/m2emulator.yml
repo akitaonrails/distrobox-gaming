@@ -21,6 +21,15 @@ dg_m2_rom_dir: "{{ dg_rom_rare_root }}/model2"
 dg_m2_gamescope_width: 3840
 dg_m2_gamescope_height: 2160
 
+# Same winebus policy as the pc-racing prefixes: single SDL backend,
+# no duplicate hidraw/evdev enumeration, SDL devices mapped as XInput
+# controllers (the emulator runs with XInput=1).
+dg_m2_winebus_registry:
+  - { name: DisableHidraw, value: 1 }
+  - { name: DisableInput, value: 1 }
+  - { name: Enable SDL, value: 1 }
+  - { name: Map Controllers, value: 1 }
+
 # d3dx9 + d3dcompiler: the emulator loads d3dx9 helpers and compiles
 # its scripts/*.ps pixel shaders at runtime; without the native
 # d3dcompiler the renderer falls back to garbage or crashes.

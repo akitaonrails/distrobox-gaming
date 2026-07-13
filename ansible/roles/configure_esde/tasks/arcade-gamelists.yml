@@ -1,0 +1,28 @@
+---
+# Generate ES-DE gamelists for the MAME-style arcade systems from the
+# Skraper gamelist.xml files that live in the ROM dirs. ES-DE never
+# reads those directly, so games otherwise show as raw MAME filenames —
+# and every clone set (daytona/daytonam/daytonase/...) scrapes to the
+# same display name, appearing as duplicate entries. The generator
+# keeps the parent set visible and marks clones <hidden>.
+#
+# Regenerated on every configure run. ES-DE merges its own runtime
+# writes (favorites, playcounts) into the same file, so a regen
+# discards those for these arcade systems — trade-off accepted for
+# correct dedup; the Skraper file in the ROM dir is the source of
+# truth. The generator is a no-op when output already matches.
+
+- name: Generate arcade gamelists with clones hidden
+  ansible.builtin.command:
+    argv:
+      - python3
+      - "{{ role_path }}/files/arcade-clone-gamelist.py"
+      - "{{ dg_rom_rare_root }}/{{ item }}/gamelist.xml"
+      - "{{ dg_box_home }}/ES-DE/gamelists/{{ item }}/gamelist.xml"
+  register: _arcade_gamelists
+  changed_when: "'wrote ' in _arcade_gamelists.stdout"
+  loop: "{{ dg_esde_arcade_clone_systems }}"
+
+- name: Show arcade gamelist generation summary
+  ansible.builtin.debug:
+    msg: "{{ _arcade_gamelists.results | map(attribute='stdout') | list }}"

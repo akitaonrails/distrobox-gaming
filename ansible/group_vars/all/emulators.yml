@@ -326,6 +326,23 @@ dg_supermodel_settings:
   - { option: New3DEngine, value: "1" }
   - { option: VSync, value: "1" }
   - { option: Throttle, value: "1" }
+  # Input fixes for xpad-ordered pads (8BitDo dongle, Xbox): Supermodel's
+  # JOY1_BUTTONn is 1-based over the SDL joystick button list
+  # (1=A 2=B 3=X 4=Y 5=LB 6=RB 7=Back 8=Start 9=Guide 10=L3 11=R3).
+  # Defaults put Start on Guide, Coin on L3, accel/brake on the d-pad,
+  # and gears 3/4 on Back/Start — all wrong for these pads.
+  - { option: InputStart1, value: '"KEY_1,JOY1_BUTTON8"' }
+  - { option: InputCoin1, value: '"KEY_3,JOY1_BUTTON7"' }
+  - { option: InputAccelerator, value: '"KEY_UP,JOY1_RZAXIS_POS"' }
+  - { option: InputBrake, value: '"KEY_DOWN,JOY1_ZAXIS_POS"' }
+  - { option: InputGearShiftUp, value: '"KEY_Y,JOY1_BUTTON6"' }
+  - { option: InputGearShiftDown, value: '"KEY_H,JOY1_BUTTON5"' }
+  # Keyboard-only: the JOY defaults for the 4-way shifter collided with
+  # Back/Start (coin/start) on these pads.
+  - { option: InputGearShift1, value: '"KEY_Q"' }
+  - { option: InputGearShift2, value: '"KEY_W"' }
+  - { option: InputGearShift3, value: '"KEY_E"' }
+  - { option: InputGearShift4, value: '"KEY_R"' }
 
 dg_flycast_ini: "{{ dg_box_home }}/.config/flycast/emu.cfg"
 dg_flycast_data_dir: "{{ dg_box_home }}/.local/share/flycast"

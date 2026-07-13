@@ -43,10 +43,21 @@ come from the pre-staged ini.
 Verified 2026-07-13: Daytona USA 2 (`daytona2.zip`) boots and renders
 on the RTX 5090 (GL 4.5 core profile) via the wrapper.
 
-Controls: the binary's built-in defaults already include SDL gamepad
-bindings alongside the keyboard; tune per-game overrides in
-`~/.supermodel/Config/Supermodel.ini` (sections named after the ROM
-set, e.g. `[ daytona2 ]`).
+Controls: Supermodel's `JOY1_BUTTONn` is 1-based over the SDL joystick
+button list, and on xpad-ordered pads (8BitDo dongle, Xbox) the
+defaults land wrong: Start on Guide, Coin on L3, accel/brake on the
+d-pad, gears 3/4 colliding with Back/Start. The managed
+`dg_supermodel_settings` fix this: Start=Start, Coin=Back,
+accel/brake=RT/LT, sequential shift on RB/LB (the 4-way shifter is
+keyboard-only to avoid the collision). Verify with
+`WAYLAND_DISPLAY= supermodel-binary -print-inputs`. Per-game overrides
+go in sections named after the ROM set (e.g. `[ daytona2 ]`).
+
+**Exit chord**: `Select+Start` quits — the `supermodel-launch` wrapper
+runs an evsieve bridge (no grab) that injects Escape (Supermodel's
+UIExit) on a virtual keyboard when the chord fires on any connected
+pad. Note the chord necessarily also sends Coin+Start to the game for
+an instant — harmless since you're leaving.
 
 ## Sega Model 2 — Model 2 Emulator (Wine)
 
@@ -85,10 +96,34 @@ The ES-DE `model2` system lists `roms_rare/model2/*.zip` and launches
 through the wrapper. Verified 2026-07-13: Daytona USA boots, renders
 and titles its gamescope window.
 
-Per-game input remapping must be done in the emulator's own GUI menu
-(windowed mode: set `AutoFull=0` temporarily or run
+Controllers: the prefix gets the same winebus policy as the pc-racing
+prefixes (`DisableHidraw=1`, `DisableInput=1`, `Enable SDL=1`,
+`Map Controllers=1`) so Wine presents one clean XInput pad to the
+emulator's `XInput=1` mode instead of duplicate hidraw/evdev
+enumerations. Per-game input remapping must be done in the emulator's
+own GUI menu (windowed mode: set `AutoFull=0` temporarily or run
 `m2emulator-launch <romset>` from a terminal and use the menus) — the
 CFG/*.input files it writes are preserved across role reruns.
+
+**Exit chord**: `Select+Start` quits via the same evsieve→Escape bridge
+as supermodel-launch (the emulator exits on Esc).
+
+## ES-DE gamelists: hiding MAME clone sets
+
+ES-DE never reads the Skraper `gamelist.xml` inside the ROM dirs, so
+model2/model3 games showed as raw MAME filenames — and with scraper art
+attached, every clone set (daytona/daytonam/daytonase/daytonata all
+scrape to "Daytona USA") looked like duplicated entries. The
+`configure_esde` role now generates
+`ES-DE/gamelists/<system>/gamelist.xml` from the Skraper file via
+`arcade-clone-gamelist.py`: entries sharing a display name keep the
+shortest filename visible (MAME parents are prefixes of their clones)
+and hide the rest (`model2`: 7 hidden, `model3`: 13 hidden). Systems
+covered are listed in `dg_esde_arcade_clone_systems`; regeneration
+happens on every configure run and discards ES-DE-side
+favorites/playcounts for those systems (Skraper file is the source of
+truth). Hidden clones stay on disk and can be shown again with ES-DE's
+"show hidden games" setting.
 
 ## Sega NAOMI 1/2 — Flycast
 

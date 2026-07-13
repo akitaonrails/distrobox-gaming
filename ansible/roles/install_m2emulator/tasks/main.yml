@@ -74,6 +74,30 @@
     label: "{{ item.item }}"
   when: not item.stat.exists
 
+- name: Configure Model 2 Wine controller backend
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      export WINEPREFIX="{{ dg_m2_prefix }}"
+      export WINEARCH=win64
+      export WINEDEBUG=-all
+      key="HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\winebus"
+      name="{{ item.name }}"
+      value="{{ item.value }}"
+
+      if env -u PYTHONHOME -u PYTHONPATH wine reg query "$key" /v "$name" 2>/dev/null | grep -Eq "REG_DWORD[[:space:]]+0x0*${value}"; then
+        exit 0
+      fi
+
+      env -u PYTHONHOME -u PYTHONPATH wine reg add "$key" /v "$name" /t REG_DWORD /d "$value" /f
+      printf "%s\n" "configured-winebus $name=$value"
+    '
+  register: _m2_winebus
+  changed_when: "'configured-winebus' in _m2_winebus.stdout"
+  loop: "{{ dg_m2_winebus_registry }}"
+  loop_control:
+    label: "{{ item.name }}"
+
 - name: Symlink ROM directory as ROMS next to the exe
   # "ROMS subdirectory in the same folder than the exe is always
   # scanned when searching for roms" (README.TXT) — no [RomDirs]
