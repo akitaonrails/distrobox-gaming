@@ -177,15 +177,32 @@ dg_esde_systems:
     platform: arcade
     theme: model3
 
+  # NAOMI 1/2 ROM layout is MAME-style: <game>.zip at the top level, and
+  # GD-ROM games additionally keep their gdl/gds-*.chd inside a folder
+  # named after the zip (flycast resolves it there automatically). The
+  # extension list is therefore zips ONLY — a wider list would also
+  # surface the bare CHDs as duplicate entries that can't boot on their
+  # own. BIOS (naomi.zip/naomi2.zip) is symlinked into flycast's data
+  # dir by seed_configs.
   - name: naomi
     fullname: Sega NAOMI
     path: "{{ dg_emudeck_root }}/roms_rare/naomi"
-    extension: ".bin .BIN .cdi .CDI .chd .CHD .cue .CUE .dat .DAT .elf .ELF .gdi .GDI .iso .ISO .lst .LST .zip .ZIP .7z .7Z"
+    extension: ".zip .ZIP .7z .7Z"
     commands:
       - { label: "Flycast (Standalone)", cmd: "{{ dg_box_home }}/bin/flycast-hires %ROM%" }
       - { label: "Flycast (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/flycast_libretro.so %ROM%" }
     platform: arcade
     theme: naomi
+
+  - name: naomi2
+    fullname: Sega NAOMI 2
+    path: "{{ dg_emudeck_root }}/roms_rare/naomi2"
+    extension: ".zip .ZIP .7z .7Z"
+    commands:
+      - { label: "Flycast (Standalone)", cmd: "{{ dg_box_home }}/bin/flycast-hires %ROM%" }
+      - { label: "Flycast (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/flycast_libretro.so %ROM%" }
+    platform: arcade
+    theme: naomi2
 
   # ---------------------------------------------------------------------
   # RetroArch-cored systems. Each entry uses a single libretro core

@@ -1,4 +1,21 @@
 ---
+- name: Ensure Flycast data directory exists
+  ansible.builtin.file:
+    path: "{{ dg_flycast_data_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Symlink arcade BIOS sets into Flycast data dir
+  # NAOMI/NAOMI2/Atomiswave games silently fail to boot without these;
+  # flycast does not look in the EmuDeck bios tree on its own.
+  ansible.builtin.file:
+    src: "{{ dg_bios_root }}/dc/{{ item }}"
+    dest: "{{ dg_flycast_data_dir }}/{{ item }}"
+    state: link
+    force: true
+    follow: false
+  loop: "{{ dg_flycast_bios_links }}"
+
 - name: Check if Flycast config exists
   ansible.builtin.stat:
     path: "{{ dg_flycast_ini }}"

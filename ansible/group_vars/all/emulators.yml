@@ -328,6 +328,14 @@ dg_supermodel_settings:
   - { option: Throttle, value: "1" }
 
 dg_flycast_ini: "{{ dg_box_home }}/.config/flycast/emu.cfg"
+dg_flycast_data_dir: "{{ dg_box_home }}/.local/share/flycast"
+# Arcade BIOS sets flycast needs for NAOMI 1/2 (and Atomiswave). It only
+# finds them in its data dir or a configured content path — symlinked
+# from the EmuDeck bios tree, NAS stays the single source of truth.
+dg_flycast_bios_links:
+  - naomi.zip
+  - naomi2.zip
+  - awbios.zip
 dg_flycast_settings:
   - { section: config, option: pvr.AutoSkipFrame, value: "0" }
   - { section: config, option: pvr.rend, value: "4" }

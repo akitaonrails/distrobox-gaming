@@ -89,3 +89,29 @@ Per-game input remapping must be done in the emulator's own GUI menu
 (windowed mode: set `AutoFull=0` temporarily or run
 `m2emulator-launch <romset>` from a terminal and use the menus) — the
 CFG/*.input files it writes are preserved across role reruns.
+
+## Sega NAOMI 1/2 — Flycast
+
+Both systems run in the already-installed Flycast (`flycast-git`),
+launched via the existing `flycast-hires` wrapper (4K internal
+resolution).
+
+**ROM layout** (MAME-style, both dirs): `<game>.zip` at the top level;
+GD-ROM games additionally keep their `gdl-*/gds-*.chd` inside a folder
+named after the zip — flycast resolves the CHD from there
+automatically. This is why the ES-DE `naomi`/`naomi2` entries list
+**zips only**: a wider extension list would surface the bare CHDs as
+duplicate entries that can't boot on their own.
+
+**BIOS**: flycast only finds arcade BIOS sets (`naomi.zip`,
+`naomi2.zip`, `awbios.zip`) in its data dir or a configured content
+path — NOT in the EmuDeck bios tree. `seed_configs` symlinks them from
+`{{ dg_bios_root }}/dc/` into `~/.local/share/flycast/`. Without the
+links, NAOMI games fail to boot with no visible error from ES-DE.
+
+Verified 2026-07-13: `azumanga.zip` (NAOMI GD-ROM) and `initdexp.zip`
+(NAOMI 2 GD-ROM, Initial D Export) both boot — game ID read, EEPROM
+initialized, CHD resolved from the per-game folder. The
+`naomi2: Cannot open epr-*.ic27` warnings at startup are flycast
+probing for BIOS revisions this `naomi2.zip` set doesn't carry before
+settling on a working region — harmless.
