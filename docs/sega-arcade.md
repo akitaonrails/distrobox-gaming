@@ -106,16 +106,28 @@ What the role does:
   scans that subdir (README), which sidesteps `[RomDirs]` Windows-path
   backslash escaping entirely (a first attempt via ini_file produced a
   mangled `Z:\mnt\\terachad\...` value; don't reintroduce it).
-- Manages EMULATOR.INI: 4K fullscreen (`AutoFull=1` — safe because
+- Manages EMULATOR.INI: renders at **4:3** (`FullScreenWidth=2880`,
+  `FullScreenHeight=2160`, `WideScreenWindow=0`), `AutoFull=1` (safe —
   gamescope hosts the mode), 4x FSAA, bilinear, XInput on.
 - Deploys `m2emulator-launch`: reduces ES-DE's `%ROM%` path to the
   romset name (`EMULATOR.EXE` takes names, not paths, and resolves the
   zip via the ROMS dir), runs `emulator_multicpu.exe` (the multicore
-  build) under gamescope 4K.
+  build) under gamescope.
+
+**Aspect ratio.** Model 2 games are 4:3 and the emulator has no true
+widescreen — its `WideScreenWindow=1/2` just *stretches* 4:3 to 16:9.
+So the emulator renders 4:3 (2880x2160) and gamescope pillarboxes it
+into the 16:9 output. This needs **`gamescope -S fit`**: the emulator's
+undersized fullscreen surface goes to gamescope via `-w 2880 -h 2160`,
+and `-S fit` scales it to the `-W 3840 -H 2160` output *preserving
+aspect* (centered, black bars). Without `-S fit` the default `auto`
+scaler stretches the surface to fill 16:9 — the game came out visibly
+stretched, and the undefined area even bled the desktop through with a
+tearing glitch on the edge.
 
 The ES-DE `model2` system lists `roms_rare/model2/*.zip` and launches
-through the wrapper. Verified 2026-07-13: Daytona USA boots, renders
-and titles its gamescope window.
+through the wrapper. Verified 2026-07-13: Daytona USA and Sega Rally
+boot and render at correct 4:3 aspect, centered and pillarboxed.
 
 Controllers: the prefix gets the same winebus policy as the pc-racing
 prefixes (`DisableHidraw=1`, `DisableInput=1`, `Enable SDL=1`,
