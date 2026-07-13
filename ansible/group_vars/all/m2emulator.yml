@@ -18,6 +18,14 @@ dg_m2_exe: emulator_multicpu.exe
 
 dg_m2_rom_dir: "{{ dg_rom_rare_root }}/model2"
 
+# Pre-configured per-game controller maps (CFG/*.input) for a single
+# XInput pad, covering ~41 games. The stock M2emulator_1.1a ships only
+# daytona/daytonam .input files, and those are a broken 2-device setup
+# (analog axes on joypad 1, buttons/hats on joypad 2) that does nothing
+# with one controller. This pack maps everything to joypad 1. Seeded
+# once into the install CFG (see role); later in-GUI tweaks persist.
+dg_m2_cfg_source: "{{ dg_external_games_root }}/Model 2/CFG"
+
 dg_m2_gamescope_width: 3840
 dg_m2_gamescope_height: 2160
 

@@ -99,14 +99,45 @@ and titles its gamescope window.
 Controllers: the prefix gets the same winebus policy as the pc-racing
 prefixes (`DisableHidraw=1`, `DisableInput=1`, `Enable SDL=1`,
 `Map Controllers=1`) so Wine presents one clean XInput pad to the
-emulator's `XInput=1` mode instead of duplicate hidraw/evdev
-enumerations. Per-game input remapping must be done in the emulator's
-own GUI menu (windowed mode: set `AutoFull=0` temporarily or run
-`m2emulator-launch <romset>` from a terminal and use the menus) — the
-CFG/*.input files it writes are preserved across role reruns.
+emulator's `XInput=1` mode, and the launcher exports the pc-racing SDL
+environment (`SDL_JOYSTICK_HIDAPI=0`, background events, the pad
+allow-list). The `+xinput` trace confirms the emulator polls
+`XInputGetState` with the 8BitDo on slot 0.
 
-**Exit chord**: `Select+Start` quits via the same evsieve→Escape bridge
-as supermodel-launch (the emulator exits on Esc).
+**Controller maps are pre-seeded, not hand-configured.** The stock
+`M2emulator_1.1a` ships only `daytona`/`daytonam` `.input` files, and
+those are a broken **two-device** setup (analog axes on joypad 1,
+buttons/hats on joypad 2 — a wheel-plus-buttonbox arcade rig) that does
+nothing with a single pad. The `.input` format is a flat array of
+4-byte little-endian entries in the game's control display-order plus
+an 8-byte analog-enable footer (keyboard = scancode in byte 0; button =
+button# in byte-0 high nybble + joypad# in byte-1 low nybble; hat =
+0..3 dir in byte 0; axis = axis id in byte 0, joypad in byte 1,
+`00 FF` in bytes 2-3). Rather than hand-write these blind (the
+per-game control *order* is undocumented), the role seeds a
+**pre-configured single-XInput-pad pack** (41 games, all bindings on
+joypad 1) from `dg_m2_cfg_source` into the install `CFG/`, **once**,
+guarded by a `.dg-cfg-seeded` marker so later in-GUI remaps persist.
+
+Re-mapping in the GUI: the config dialog captures the mouse (a
+double-click registers "Mouse Left" instantly, and mouse motion reads
+as an axis). Click a control field **once** then press the pad
+button / move the stick — don't move the mouse. Windowed mode is
+`AutoFull=0` (temporary) or just run `m2emulator-launch <romset>` from
+a terminal.
+
+**Exit chord**: `Select+Start` quits. Note Esc only *leaves
+fullscreen* in this emulator (it resizes the window, doesn't quit), so
+the chord injects **Alt+F4** (WM_CLOSE) via the evsieve bridge, not
+Esc.
+
+**Clean exit under gamescope**: gamescope only exits once its whole
+child process tree is empty, but `wine <exe>` returns while wine's
+background `winedevice.exe` service keeps running — leaving gamescope
+as an empty, unclosable window (had to be killed from btop) and
+hanging the launcher's `wait`. The gamescope child therefore runs
+`wine …; wineserver -k`, so winedevice is torn down the instant the
+emulator quits and gamescope exits on its own.
 
 ## ES-DE gamelists: hiding MAME clone sets
 

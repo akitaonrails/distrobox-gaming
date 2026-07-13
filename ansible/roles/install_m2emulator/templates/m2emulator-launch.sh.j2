@@ -74,11 +74,20 @@ trap cleanup EXIT HUP INT TERM
 # XWayland cannot otherwise provide; the Hyprland gamescope class rule
 # fullscreens it.
 if command -v gamescope >/dev/null 2>&1; then
+  # gamescope only exits once its entire child process tree is empty.
+  # `wine <exe>` returns when the emulator quits, but wine's background
+  # winedevice.exe service keeps running — so gamescope would hang as an
+  # empty, unclosable window (and block the wait below). Kill wineserver
+  # from inside the gamescope child right after the emulator returns so
+  # winedevice dies and gamescope can exit cleanly.
   env -u PYTHONHOME -u PYTHONPATH gamescope \
     -W {{ dg_m2_gamescope_width }} \
     -H {{ dg_m2_gamescope_height }} \
     -f \
-    -- env -u PYTHONHOME -u PYTHONPATH wine "$exe" "$romset" "$@" &
+    -- sh -c '
+      env -u PYTHONHOME -u PYTHONPATH wine "$@"
+      env -u PYTHONHOME -u PYTHONPATH wineserver -k >/dev/null 2>&1 || true
+    ' _ "$exe" "$romset" "$@" &
 else
   env -u PYTHONHOME -u PYTHONPATH wine "$exe" "$romset" "$@" &
 fi

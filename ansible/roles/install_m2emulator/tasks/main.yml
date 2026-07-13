@@ -74,6 +74,43 @@
     label: "{{ item.item }}"
   when: not item.stat.exists
 
+- name: Check Model 2 controller-config seed marker
+  ansible.builtin.stat:
+    path: "{{ dg_m2_install_dir }}/.dg-cfg-seeded"
+  register: _m2_cfg_marker
+
+- name: Check pre-configured controller pack exists
+  ansible.builtin.stat:
+    path: "{{ dg_m2_cfg_source }}"
+  register: _m2_cfg_source
+  when: not _m2_cfg_marker.stat.exists
+
+- name: Seed single-pad controller configs from the pre-configured pack
+  # One-time overlay: replaces the broken stock daytona/daytonam maps and
+  # adds the other ~39 games' single-XInput-pad configs. Guarded by a
+  # marker so a rerun never clobbers controls the user later remaps in
+  # the emulator's GUI (which writes back to these same files).
+  ansible.builtin.shell: >-
+    rsync -a --info=NAME
+    '{{ dg_m2_cfg_source }}/'
+    '{{ dg_m2_install_dir }}/CFG/'
+    && touch '{{ dg_m2_install_dir }}/.dg-cfg-seeded'
+  register: _m2_cfg_seed
+  changed_when: "'.input' in _m2_cfg_seed.stdout"
+  when:
+    - not _m2_cfg_marker.stat.exists
+    - _m2_cfg_source.stat.exists and _m2_cfg_source.stat.isdir
+
+- name: Warn if the controller pack is missing
+  ansible.builtin.debug:
+    msg: >-
+      Pre-configured Model 2 controller pack not found at
+      {{ dg_m2_cfg_source }} — controls will need setting in the
+      emulator GUI (Game > Configure Controls). See docs/sega-arcade.md.
+  when:
+    - not _m2_cfg_marker.stat.exists
+    - not (_m2_cfg_source.stat.exists | default(false))
+
 - name: Configure Model 2 Wine controller backend
   ansible.builtin.shell: |
     {{ dg_in_box }} sh -lc '
