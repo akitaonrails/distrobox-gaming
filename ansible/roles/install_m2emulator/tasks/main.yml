@@ -1,0 +1,122 @@
+---
+# Model 2 Emulator under Wine. See group_vars/all/m2emulator.yml for
+# the knobs and docs/sega-arcade.md for the full write-up.
+
+- name: Validate Model 2 Emulator source directory
+  ansible.builtin.stat:
+    path: "{{ dg_m2_source_dir }}/EMULATOR.EXE"
+  register: _m2_source
+
+- name: Assert Model 2 Emulator source exists
+  ansible.builtin.assert:
+    that: _m2_source.stat.exists
+    fail_msg: >-
+      Model 2 Emulator not found at {{ dg_m2_source_dir }}. The
+      segaretro.org download is captcha-gated — fetch it in a browser
+      from https://segaretro.org/Model_2_Emulator and extract it there.
+
+- name: Create Model 2 install directory
+  ansible.builtin.file:
+    path: "{{ dg_m2_install_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Copy Model 2 Emulator to box-local install dir
+  # --ignore-existing: NVDATA, CFG and EMULATOR.INI are user state after
+  # first run; reruns must never clobber them.
+  ansible.builtin.shell: >-
+    rsync -a --ignore-existing --info=NAME
+    '{{ dg_m2_source_dir }}/'
+    '{{ dg_m2_install_dir }}/'
+  register: _m2_copy
+  changed_when: _m2_copy.stdout | length > 0
+
+- name: Create Model 2 Wine prefix directory
+  ansible.builtin.file:
+    path: "{{ dg_m2_prefix }}"
+    state: directory
+    mode: "0755"
+
+- name: Check Model 2 prefix initialization
+  ansible.builtin.stat:
+    path: "{{ dg_m2_prefix }}/system.reg"
+  register: _m2_prefix
+
+- name: Initialize Model 2 Wine prefix
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      export WINEPREFIX="{{ dg_m2_prefix }}"
+      export WINEARCH=win64
+      export WINEDEBUG=-all
+      env -u PYTHONHOME -u PYTHONPATH wineboot -u
+    '
+  when: not _m2_prefix.stat.exists
+
+- name: Check Model 2 winetricks component markers
+  ansible.builtin.stat:
+    path: "{{ dg_m2_prefix }}/.dg-winetricks-{{ item }}"
+  register: _m2_winetricks_markers
+  loop: "{{ dg_m2_winetricks_components }}"
+
+- name: Install Model 2 winetricks components
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      export WINEPREFIX="{{ dg_m2_prefix }}"
+      export WINEARCH=win64
+      export WINEDEBUG=-all
+      timeout 300 env -u PYTHONHOME -u PYTHONPATH winetricks -q "{{ item.item }}"
+      printf "%s\n" "{{ item.item }}" > "{{ dg_m2_prefix }}/.dg-winetricks-{{ item.item }}"
+    '
+  loop: "{{ _m2_winetricks_markers.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+  when: not item.stat.exists
+
+- name: Symlink ROM directory as ROMS next to the exe
+  # "ROMS subdirectory in the same folder than the exe is always
+  # scanned when searching for roms" (README.TXT) — no [RomDirs]
+  # Windows-path escaping needed.
+  ansible.builtin.file:
+    src: "{{ dg_m2_rom_dir }}"
+    dest: "{{ dg_m2_install_dir }}/ROMS"
+    state: link
+    force: true
+    follow: false
+
+- name: Remove stale RomDirs override from EMULATOR.INI
+  # The example Dir1=E:\... from the stock ini (or an earlier mangled
+  # managed value) would make the emulator scan a nonexistent drive.
+  community.general.ini_file:
+    path: "{{ dg_m2_install_dir }}/EMULATOR.INI"
+    section: RomDirs
+    option: Dir1
+    state: absent
+    mode: "0644"
+
+- name: Configure EMULATOR.INI
+  community.general.ini_file:
+    path: "{{ dg_m2_install_dir }}/EMULATOR.INI"
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    backup: true
+    mode: "0644"
+  loop: "{{ dg_m2_ini_settings }}"
+  loop_control:
+    label: "[{{ item.section }}] {{ item.option }}"
+
+- name: Deploy m2emulator-launch wrapper
+  ansible.builtin.template:
+    src: m2emulator-launch.sh.j2
+    dest: "{{ dg_box_home }}/bin/m2emulator-launch"
+    mode: "0755"
+    backup: true
+
+- name: Report Model 2 Emulator setup
+  ansible.builtin.debug:
+    msg: >-
+      Model 2 Emulator ready. Launcher:
+      {{ dg_box_home }}/bin/m2emulator-launch <rom.zip|romset-name>.
+      ES-DE lists ROMs from {{ dg_m2_rom_dir }} under "Sega Model 2".

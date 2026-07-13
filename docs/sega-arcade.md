@@ -47,3 +47,45 @@ Controls: the binary's built-in defaults already include SDL gamepad
 bindings alongside the keyboard; tune per-game overrides in
 `~/.supermodel/Config/Supermodel.ini` (sections named after the ROM
 set, e.g. `[ daytona2 ]`).
+
+## Sega Model 2 — Model 2 Emulator (Wine)
+
+ElSemi's Windows-only Model 2 Emulator v1.1a, run under Wine by the
+opt-in **`install_m2emulator`** role
+(`ansible-playbook site.yml --tags m2emulator`; knobs in
+`group_vars/all/m2emulator.yml`).
+
+Source is the copy already on the NAS at
+`{{ dg_external_games_root }}/M2emulator_1.1a` — the segaretro.org
+download page is **captcha-gated**, so if that copy is ever lost, fetch
+it manually in a browser from <https://segaretro.org/Model_2_Emulator>.
+
+What the role does:
+
+- Copies the emulator **box-local** to
+  `{{ dg_box_home }}/emulators/m2emulator` (`rsync --ignore-existing`)
+  because NVDATA (high scores), CFG (per-game inputs) and EMULATOR.INI
+  are all mutated next to the exe — the NAS original is never run in
+  place.
+- Creates a dedicated wine prefix (`wineprefixes/m2emulator`) with
+  `d3dx9`, `d3dcompiler_47` (the emulator compiles its `scripts/*.ps`
+  pixel shaders at runtime) and `dxvk`.
+- Symlinks the ROM dir as `ROMS/` next to the exe — the emulator always
+  scans that subdir (README), which sidesteps `[RomDirs]` Windows-path
+  backslash escaping entirely (a first attempt via ini_file produced a
+  mangled `Z:\mnt\\terachad\...` value; don't reintroduce it).
+- Manages EMULATOR.INI: 4K fullscreen (`AutoFull=1` — safe because
+  gamescope hosts the mode), 4x FSAA, bilinear, XInput on.
+- Deploys `m2emulator-launch`: reduces ES-DE's `%ROM%` path to the
+  romset name (`EMULATOR.EXE` takes names, not paths, and resolves the
+  zip via the ROMS dir), runs `emulator_multicpu.exe` (the multicore
+  build) under gamescope 4K.
+
+The ES-DE `model2` system lists `roms_rare/model2/*.zip` and launches
+through the wrapper. Verified 2026-07-13: Daytona USA boots, renders
+and titles its gamescope window.
+
+Per-game input remapping must be done in the emulator's own GUI menu
+(windowed mode: set `AutoFull=0` temporarily or run
+`m2emulator-launch <romset>` from a terminal and use the menus) — the
+CFG/*.input files it writes are preserved across role reruns.

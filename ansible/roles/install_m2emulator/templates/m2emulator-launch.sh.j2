@@ -1,0 +1,63 @@
+#!/usr/bin/env sh
+set -eu
+
+# ES-DE launcher for the Model 2 Emulator (Wine). Managed by the
+# install_m2emulator role.
+#
+# EMULATOR.EXE takes a ROM SET NAME (it resolves the zip itself via the
+# [RomDirs] entries in EMULATOR.INI), not a path — so this wrapper
+# accepts either form and reduces a %ROM% path to its basename.
+
+install_dir="{{ dg_m2_install_dir }}"
+exe="{{ dg_m2_exe }}"
+
+if [ $# -lt 1 ]; then
+  printf '%s\n' "usage: m2emulator-launch <rom.zip|romset-name>" >&2
+  exit 64
+fi
+
+romset="$(basename "$1")"
+romset="${romset%.zip}"
+romset="${romset%.ZIP}"
+shift
+
+if [ ! -f "$install_dir/$exe" ]; then
+  printf '%s\n' "ERROR: Model 2 Emulator missing: $install_dir/$exe" >&2
+  printf '%s\n' "Run: ansible-playbook site.yml --tags m2emulator" >&2
+  exit 1
+fi
+
+export WINEPREFIX="{{ dg_m2_prefix }}"
+export WINEARCH=win64
+export WINEDEBUG="${WINEDEBUG:--all}"
+
+# The emulator resolves scripts/, CFG/, NVDATA/ and EMULATOR.INI
+# relative to its CWD.
+cd "$install_dir"
+
+cleanup() {
+  env -u PYTHONHOME -u PYTHONPATH wineserver -k >/dev/null 2>&1 || true
+}
+trap cleanup EXIT HUP INT TERM
+
+# gamescope hosts the exclusive-fullscreen mode (AutoFull=1 at
+# {{ dg_m2_gamescope_width }}x{{ dg_m2_gamescope_height }}) that scaled
+# XWayland cannot otherwise provide; the Hyprland gamescope class rule
+# fullscreens it.
+if command -v gamescope >/dev/null 2>&1; then
+  env -u PYTHONHOME -u PYTHONPATH gamescope \
+    -W {{ dg_m2_gamescope_width }} \
+    -H {{ dg_m2_gamescope_height }} \
+    -f \
+    -- env -u PYTHONHOME -u PYTHONPATH wine "$exe" "$romset" "$@" &
+else
+  env -u PYTHONHOME -u PYTHONPATH wine "$exe" "$romset" "$@" &
+fi
+game_pid=$!
+set +e
+wait "$game_pid"
+status=$?
+set -e
+trap - EXIT HUP INT TERM
+cleanup
+exit "$status"

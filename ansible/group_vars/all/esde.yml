@@ -155,6 +155,17 @@ dg_esde_systems:
     platform: xbox360
     theme: xbox360
 
+  - name: model2
+    fullname: Sega Model 2
+    path: "{{ dg_emudeck_root }}/roms_rare/model2"
+    extension: ".zip .ZIP"
+    commands:
+      # Wrapper reduces %ROM% to the romset name; EMULATOR.EXE resolves
+      # the zip itself via [RomDirs] in EMULATOR.INI.
+      - { label: "Model 2 Emulator (Wine)", cmd: "{{ dg_box_home }}/bin/m2emulator-launch %ROM%" }
+    platform: arcade
+    theme: model2
+
   - name: model3
     fullname: Sega Model 3
     path: "{{ dg_emudeck_root }}/roms_rare/model3"

@@ -1,0 +1,43 @@
+---
+# Model 2 Emulator (ElSemi's EMULATOR.EXE, v1.1a) — Windows-only, runs
+# under Wine inside the box. Source is the copy already on the NAS;
+# the segaretro.org download page sits behind a bot captcha, so if the
+# NAS copy is ever lost, fetch it manually in a browser from
+# https://segaretro.org/Model_2_Emulator and drop it at dg_m2_source_dir.
+dg_m2_source_dir: "{{ dg_external_games_root }}/M2emulator_1.1a"
+
+# Box-local install: NVDATA (high scores/settings), CFG (per-game input
+# maps) and EMULATOR.INI are all mutated next to the exe, so the NAS
+# original must not be run in place.
+dg_m2_install_dir: "{{ dg_box_home }}/emulators/m2emulator"
+dg_m2_prefix: "{{ dg_box_home }}/wineprefixes/m2emulator"
+
+# emulator_multicpu.exe distributes the DSP/SCSP threads — the right
+# build on a modern many-core CPU (EMULATOR.EXE is the single-core one).
+dg_m2_exe: emulator_multicpu.exe
+
+dg_m2_rom_dir: "{{ dg_rom_rare_root }}/model2"
+
+dg_m2_gamescope_width: 3840
+dg_m2_gamescope_height: 2160
+
+# d3dx9 + d3dcompiler: the emulator loads d3dx9 helpers and compiles
+# its scripts/*.ps pixel shaders at runtime; without the native
+# d3dcompiler the renderer falls back to garbage or crashes.
+dg_m2_winetricks_components:
+  - d3dx9
+  - d3dcompiler_47
+  - dxvk
+
+# EMULATOR.INI keys managed by Ansible. ROM discovery is NOT configured
+# here: [RomDirs] needs a Windows path and the backslash escaping
+# through YAML+Jinja+ini_file is unreliable — instead the role symlinks
+# a ROMS/ dir next to the exe, which the emulator always scans.
+dg_m2_ini_settings:
+  - { section: Renderer, option: FullScreenWidth, value: "{{ dg_m2_gamescope_width }}" }
+  - { section: Renderer, option: FullScreenHeight, value: "{{ dg_m2_gamescope_height }}" }
+  # Start fullscreen (gamescope provides the matching video mode).
+  - { section: Renderer, option: AutoFull, value: "1" }
+  - { section: Renderer, option: Bilinear, value: "1" }
+  - { section: Renderer, option: FSAA, value: "4" }
+  - { section: Input, option: XInput, value: "1" }
