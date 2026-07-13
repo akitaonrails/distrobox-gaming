@@ -49,7 +49,19 @@ fi
 cleanup() { [ -n "$evsieve_pid" ] && kill "$evsieve_pid" 2>/dev/null || true; }
 trap cleanup EXIT INT TERM HUP
 
-# WAYLAND_DISPLAY='' forces SDL2 onto XWayland; the existing Hyprland
-# gaming rule fullscreens the supermodel window class. NOT exec: the
-# binary runs as a child so the trap stops evsieve on exit.
-env WAYLAND_DISPLAY='' /usr/bin/supermodel-binary "$@"
+# Run under gamescope. Supermodel only applies its 4K resolution in
+# EXCLUSIVE fullscreen; that mode-set fails on scaled XWayland ("Unable
+# to enter fullscreen mode: Couldn't find any matching video modes"),
+# and its windowed/borderless path ignores the resolution and opens a
+# tiny native-res (496x384) window. gamescope presents a real 3840x2160
+# mode so -fullscreen succeeds. Model 3 has true widescreen (WideScreen
+# in Supermodel.ini) so we render native 16:9 — no pillarboxing needed.
+# NOT exec: gamescope runs as a child so the EXIT trap stops evsieve.
+if command -v gamescope >/dev/null 2>&1; then
+  env -u PYTHONHOME -u PYTHONPATH gamescope -W 3840 -H 2160 -f -- \
+    /usr/bin/supermodel-binary "$@" -res=3840,2160 -fullscreen
+else
+  # No gamescope: fall back to XWayland borderless (small window, but at
+  # least runs). WAYLAND_DISPLAY='' forces SDL2 onto XWayland.
+  env WAYLAND_DISPLAY='' /usr/bin/supermodel-binary "$@" -borderless
+fi

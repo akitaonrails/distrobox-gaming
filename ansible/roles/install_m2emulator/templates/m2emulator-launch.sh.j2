@@ -69,10 +69,13 @@ cleanup() {
 }
 trap cleanup EXIT HUP INT TERM
 
-# gamescope hosts the exclusive-fullscreen mode (AutoFull=1 at
-# {{ dg_m2_gamescope_width }}x{{ dg_m2_gamescope_height }}) that scaled
+# gamescope hosts the exclusive-fullscreen mode (AutoFull=1) that scaled
 # XWayland cannot otherwise provide; the Hyprland gamescope class rule
-# fullscreens it.
+# fullscreens it. The game renders 4:3 ({{ dg_m2_game_width }}x{{ dg_m2_game_height }})
+# via -w/-h and gamescope scales it into the 16:9 output
+# ({{ dg_m2_gamescope_width }}x{{ dg_m2_gamescope_height }}) preserving
+# aspect — Model 2 has no real widescreen, so this pillarboxes rather
+# than stretching.
 if command -v gamescope >/dev/null 2>&1; then
   # gamescope only exits once its entire child process tree is empty.
   # `wine <exe>` returns when the emulator quits, but wine's background
@@ -83,6 +86,8 @@ if command -v gamescope >/dev/null 2>&1; then
   env -u PYTHONHOME -u PYTHONPATH gamescope \
     -W {{ dg_m2_gamescope_width }} \
     -H {{ dg_m2_gamescope_height }} \
+    -w {{ dg_m2_game_width }} \
+    -h {{ dg_m2_game_height }} \
     -f \
     -- sh -c '
       env -u PYTHONHOME -u PYTHONPATH wine "$@"

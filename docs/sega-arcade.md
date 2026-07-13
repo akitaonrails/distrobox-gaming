@@ -32,16 +32,24 @@ and passes the ROM through. The ES-DE `model3` entry launches it.
 
 Managed render settings (`dg_supermodel_settings` →
 `~/.supermodel/Config/Supermodel.ini`, merged into the pre-staged file):
-4K, **borderless window instead of exclusive fullscreen** — SDL
-fullscreen needs an XRandR mode matching 3840x2160 and scaled XWayland
-only exposes logical modes ("Couldn't find any matching video modes",
-then the emulator exits). The Hyprland `gaming.conf` supermodel class
-rule fullscreens the borderless window. Widescreen FOV + wide
-backgrounds are on; the New3D engine, quad rendering and force feedback
-come from the pre-staged ini.
+4K exclusive fullscreen (`FullScreen=1`), true widescreen FOV + wide
+backgrounds (Model 3 has a real widescreen mode, unlike Model 2), New3D
+engine, quad rendering, force feedback.
 
-Verified 2026-07-13: Daytona USA 2 (`daytona2.zip`) boots and renders
-on the RTX 5090 (GL 4.5 core profile) via the wrapper.
+**Runs under gamescope** (like every other emulator here). Supermodel
+only applies its 4K resolution in *exclusive fullscreen*, and that
+mode-set fails on scaled XWayland ("Unable to enter fullscreen mode:
+Couldn't find any matching video modes"); its windowed/borderless path
+ignores the resolution entirely and opens a tiny native-res 496x384
+window (which showed as ~330x256 at the 1.5 monitor scale — the "small
+window, no game" symptom). gamescope presents a real 3840x2160 mode, so
+the wrapper runs `gamescope -W 3840 -H 2160 -f -- supermodel-binary
+<rom> -res=3840,2160 -fullscreen`. Supermodel is native (no wine) so
+gamescope tears down cleanly when it exits.
+
+Verified 2026-07-13: Daytona USA 2 and Scud Race boot and render
+fullscreen at 4K on the RTX 5090 (GL 4.5 core profile) via the ES-DE
+command path.
 
 Controls: Supermodel's `JOY1_BUTTONn` is 1-based over the SDL joystick
 button list, and on xpad-ordered pads (8BitDo dongle, Xbox) the

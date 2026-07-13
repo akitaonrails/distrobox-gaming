@@ -310,13 +310,12 @@ dg_duckstation_cheats:
 # already include SDL gamepad bindings).
 dg_supermodel_ini: "{{ dg_box_home }}/.supermodel/Config/Supermodel.ini"
 dg_supermodel_settings:
-  # NOT FullScreen=1: SDL exclusive fullscreen needs an XRandR mode
-  # matching 3840x2160, and scaled XWayland only exposes logical modes
-  # ("Couldn't find any matching video modes", then the emulator exits).
-  # Borderless window instead — the Hyprland gaming.conf supermodel
-  # class rule fullscreens it.
-  - { option: FullScreen, value: "0" }
-  - { option: Borderless, value: "1" }
+  # FullScreen=1 works because supermodel-launch runs under gamescope,
+  # which presents a real 3840x2160 mode. (Bare on scaled XWayland it
+  # fails — "Couldn't find any matching video modes" — and windowed mode
+  # ignores the resolution and opens a tiny 496x384 window; hence
+  # gamescope. The wrapper also passes -res/-fullscreen explicitly.)
+  - { option: FullScreen, value: "1" }
   - { option: XResolution, value: "3840" }
   - { option: YResolution, value: "2160" }
   # Native 16:9 rendering (wider FOV) instead of stretched 4:3, with
