@@ -31,13 +31,21 @@ export WINEPREFIX="{{ dg_m2_prefix }}"
 export WINEARCH=win64
 export WINEDEBUG="${WINEDEBUG:--all}"
 
+# Same SDL environment as the pc-racing launchers — wine's winebus SDL
+# backend needs these to present the pads cleanly: no hidapi double-
+# open, background events (gamescope), and the shared pad allow-list.
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+export SDL_JOYSTICK_HIDAPI="${SDL_JOYSTICK_HIDAPI:-0}"
+export SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT="${SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT:-{{ dg_pc_racing_gamepad_only }}}"
+
 # The emulator resolves scripts/, CFG/, NVDATA/ and EMULATOR.INI
 # relative to its CWD.
 cd "$install_dir"
 
-# Select+Start on any connected pad quits (the emulator exits on
-# Escape): evsieve watches the pads (no grab) and injects Esc on a
-# virtual keyboard when the chord fires. Same pattern as azahar-launch.
+# Select+Start on any connected pad quits: evsieve watches the pads
+# (no grab) and injects Alt+F4 (WM_CLOSE) on a virtual keyboard when
+# the chord fires. NOT Escape — in this emulator Esc only leaves
+# fullscreen back to windowed mode. Same pattern as azahar-launch.
 evsieve_pid=""
 if command -v evsieve >/dev/null 2>&1 && [ -w /dev/uinput ]; then
   pad_inputs=""
@@ -49,8 +57,8 @@ if command -v evsieve >/dev/null 2>&1 && [ -w /dev/uinput ]; then
   if [ -n "$pad_inputs" ]; then
     # shellcheck disable=SC2086
     evsieve $pad_inputs \
-      --hook btn:select btn:start send-key=key:esc \
-      --output name="m2emulator-exit-keys" key:esc >/dev/null 2>&1 &
+      --hook btn:select btn:start send-key=key:leftalt send-key=key:f4 \
+      --output name="m2emulator-exit-keys" key:leftalt key:f4 >/dev/null 2>&1 &
     evsieve_pid=$!
   fi
 fi
