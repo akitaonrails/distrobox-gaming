@@ -160,7 +160,9 @@ dg_esde_systems:
     path: "{{ dg_emudeck_root }}/roms_rare/model3"
     extension: ".zip .ZIP"
     commands:
-      - { label: "Supermodel (Standalone)", cmd: "supermodel %ROM%" }
+      # Must be the dg wrapper: the AUR /usr/bin/supermodel drops its
+      # args, so a plain `supermodel %ROM%` never loads the ROM.
+      - { label: "Supermodel (Standalone)", cmd: "{{ dg_box_home }}/bin/supermodel-launch %ROM%" }
     platform: arcade
     theme: model3
 

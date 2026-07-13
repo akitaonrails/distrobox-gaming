@@ -1,0 +1,26 @@
+---
+# Supermodel (Sega Model 3). The binary reads ~/.supermodel/Config/
+# absolutely; the supermodel-launch wrapper seeds Games.xml, Music.xml
+# and Assets from /usr/share/supermodel on first run. Here we only own
+# the [Global] render settings in Supermodel.ini — controls stay on the
+# binary's built-in defaults (keyboard + SDL gamepad) unless the user
+# tunes them in-app, and this file is created if missing so the settings
+# apply before the first launch too.
+
+- name: Ensure Supermodel config directory exists
+  ansible.builtin.file:
+    path: "{{ dg_supermodel_ini | dirname }}"
+    state: directory
+    mode: "0755"
+
+- name: Set Supermodel INI keys
+  community.general.ini_file:
+    path: "{{ dg_supermodel_ini }}"
+    section: "Global"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    backup: true
+    mode: "0644"
+  loop: "{{ dg_supermodel_settings }}"
+  loop_control:
+    label: "[Global] {{ item.option }}"

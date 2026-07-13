@@ -10,6 +10,7 @@
 - ansible.builtin.include_tasks: pcsx2.yml
 - ansible.builtin.include_tasks: duckstation.yml
 - ansible.builtin.include_tasks: flycast.yml
+- ansible.builtin.include_tasks: supermodel.yml
 - ansible.builtin.include_tasks: xemu.yml
 - ansible.builtin.include_tasks: shadps4.yml
 - ansible.builtin.include_tasks: cemu.yml

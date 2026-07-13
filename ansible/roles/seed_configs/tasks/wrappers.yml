@@ -6,6 +6,17 @@
     mode: "0755"
     backup: true
 
+- name: Install supermodel-launch wrapper
+  # ES-DE bridge for Sega Model 3: the AUR package's own wrapper drops
+  # its arguments (no ROM ever reaches the binary) and seeds config
+  # paths this build doesn't read. This one seeds ~/.supermodel and
+  # passes the ROM through. See the wrapper header for details.
+  ansible.builtin.copy:
+    src: wrappers/supermodel-launch
+    dest: "{{ dg_box_home }}/bin/supermodel-launch"
+    mode: "0755"
+    backup: true
+
 - name: Install xenia-canary-launch wrapper
   # ES-DE bridge that resolves a ROM path to its per-game config via
   # Xenia Manager's games.json before invoking xenia_canary.exe inside

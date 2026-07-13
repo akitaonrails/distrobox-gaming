@@ -1,0 +1,32 @@
+#!/usr/bin/env sh
+set -eu
+
+# ES-DE launcher for Supermodel (Sega Model 3).
+#
+# The AUR package's /usr/bin/supermodel wrapper is unusable from a
+# frontend: it ignores its arguments entirely (launches a bare
+# supermodel-binary with no ROM), hard-fails behind a zenity prompt
+# unless a ROMs dir exists, and seeds ~/.config/supermodel — a path
+# this build never reads. The actual binary (0.3a-WIP, checked
+# 2026-07-13) resolves everything under ~/.supermodel/ absolutely:
+#   ~/.supermodel/Config/   Games.xml, Music.xml, Supermodel.ini
+#   ~/.supermodel/NVRAM, Saves, Screenshots, Assets
+# This wrapper seeds that layout from /usr/share/supermodel on first
+# run, then passes the ROM (and any extra flags) straight through.
+
+sm_dir="$HOME/.supermodel"
+
+if [ ! -f "$sm_dir/Config/Games.xml" ]; then
+  install -Dm644 /usr/share/supermodel/Config/Games.xml "$sm_dir/Config/Games.xml"
+fi
+if [ ! -f "$sm_dir/Config/Music.xml" ]; then
+  install -Dm644 /usr/share/supermodel/Config/Music.xml "$sm_dir/Config/Music.xml"
+fi
+if [ ! -d "$sm_dir/Assets" ]; then
+  cp -r /usr/share/supermodel/Assets "$sm_dir/"
+fi
+mkdir -p "$sm_dir/NVRAM" "$sm_dir/Saves" "$sm_dir/Screenshots"
+
+# WAYLAND_DISPLAY='' forces SDL2 onto XWayland; the existing Hyprland
+# gaming rule fullscreens the supermodel window class.
+exec env WAYLAND_DISPLAY='' /usr/bin/supermodel-binary "$@"
