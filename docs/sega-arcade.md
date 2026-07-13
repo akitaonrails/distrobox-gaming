@@ -59,6 +59,19 @@ UIExit) on a virtual keyboard when the chord fires on any connected
 pad. Note the chord necessarily also sends Coin+Start to the game for
 an instant — harmless since you're leaving.
 
+**No per-game config needed (unlike Model 2).** Supermodel is native
+SDL with a single global mapping — there is no wine joypad-number split
+and no per-game `.input` files, so the class of problem Model 2 had
+cannot occur here. The pad's SDL axis layout was verified against the
+kernel (`/proc/bus/input/devices` ABS bitmap `3003f` = X, Y, Z, RX, RY,
+RZ + HAT0, the standard xpad order), confirming the managed mapping is
+hardware-correct: steering = left-stick X, **accel = RT** (`RZAXIS`,
+SDL axis 5), **brake = LT** (`ZAXIS`, SDL axis 2). Button numbers are
+1-based over SDL's list, so `BUTTON8` = Start, `BUTTON7` = Back (Coin),
+`BUTTON6`/`BUTTON5` = RB/LB (shift up/down), `BUTTON1` = A (view). The
+pad is detected automatically (it's a clean `js0`); the only thing that
+can't be verified without hands-on is per-button in-game feel.
+
 ## Sega Model 2 — Model 2 Emulator (Wine)
 
 ElSemi's Windows-only Model 2 Emulator v1.1a, run under Wine by the
