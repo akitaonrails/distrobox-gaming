@@ -309,6 +309,10 @@ dg_duckstation_cheats:
 # render settings on top of the binary's built-in defaults (which
 # already include SDL gamepad bindings).
 dg_supermodel_ini: "{{ dg_box_home }}/.supermodel/Config/Supermodel.ini"
+dg_supermodel_nvram_dir: "{{ dg_box_home }}/.supermodel/NVRAM"
+# Pre-configured per-game NVRAM (<romset>.nv) — Test/Service-menu
+# settings (Free Play etc.). Seeded once, existing NVRAM backed up.
+dg_supermodel_nvram_source: "{{ dg_external_games_root }}/Supermodel3/NVRAM"
 dg_supermodel_settings:
   # FullScreen=1 works because supermodel-launch runs under gamescope,
   # which presents a real 3840x2160 mode. (Bare on scaled XWayland it
@@ -352,6 +356,11 @@ dg_flycast_bios_links:
   - naomi.zip
   - naomi2.zip
   - awbios.zip
+# Pre-configured per-game NAOMI/NAOMI2 NVRAM (<rom>.zip.nvmem +
+# .eeprom) — Test/Service-menu settings (Free Play etc.). ~97 games,
+# covers both naomi and naomi2. Seeded once into the flycast data dir,
+# existing NVRAM backed up first.
+dg_flycast_nvmem_source: "{{ dg_external_games_root }}/Launchbox/launchbox naomi/NVMEM Naomi"
 dg_flycast_settings:
   - { section: config, option: pvr.AutoSkipFrame, value: "0" }
   - { section: config, option: pvr.rend, value: "4" }

@@ -16,6 +16,34 @@
     follow: false
   loop: "{{ dg_flycast_bios_links }}"
 
+- name: Check Flycast NVRAM seed marker
+  ansible.builtin.stat:
+    path: "{{ dg_flycast_data_dir }}/.dg-nvmem-seeded"
+  register: _flycast_nvmem_marker
+
+- name: Check pre-configured NAOMI NVRAM pack exists
+  ansible.builtin.stat:
+    path: "{{ dg_flycast_nvmem_source }}"
+  register: _flycast_nvmem_source
+  when: not _flycast_nvmem_marker.stat.exists
+
+- name: Seed pre-configured NAOMI/NAOMI2 NVRAM (Free Play / easy)
+  # One-time overlay of the per-game Test-menu settings (both naomi and
+  # naomi2). Existing .nvmem/.eeprom backed up (nothing destroyed); the
+  # marker prevents reruns clobbering in-game changes. Copies only the
+  # per-game NVRAM, not the dir's other contents.
+  ansible.builtin.shell: >-
+    rsync -a --info=NAME --include='*.nvmem' --include='*.eeprom' --exclude='*'
+    --backup --backup-dir='{{ dg_flycast_data_dir }}/nvmem.pre-easymode'
+    '{{ dg_flycast_nvmem_source }}/'
+    '{{ dg_flycast_data_dir }}/'
+    && touch '{{ dg_flycast_data_dir }}/.dg-nvmem-seeded'
+  register: _flycast_nvmem_seed
+  changed_when: "'.nvmem' in _flycast_nvmem_seed.stdout or '.eeprom' in _flycast_nvmem_seed.stdout"
+  when:
+    - not _flycast_nvmem_marker.stat.exists
+    - _flycast_nvmem_source.stat.exists and _flycast_nvmem_source.stat.isdir
+
 - name: Check if Flycast config exists
   ansible.builtin.stat:
     path: "{{ dg_flycast_ini }}"

@@ -1,5 +1,25 @@
 # Sega Arcade Systems (Model 2, Model 3, NAOMI 1/2)
 
+> **Pre-configured NVRAM (Free Play / casual).** Arcade difficulty,
+> lives, time, continues and Free Play are **not** config-file settings
+> — each game stores them in binary NVRAM written from its own
+> Test/Service menu (no global toggle, and the menus can't be driven
+> headlessly). Instead the roles seed the standard **pre-configured
+> NVRAM packs** from the NAS (Model 2 `NVDATA/*.DAT`, Supermodel
+> `NVRAM/*.nv`, NAOMI `*.zip.nvmem/.eeprom`), which are the
+> Free-Play + calibrated + English distributions. This gives unlimited
+> credits/continues (the core of "easy") for ~44 Model 2, ~37 Model 3
+> and ~97 NAOMI games. Seeding is **one-time** (guarded by a
+> `.dg-*-seeded` marker so in-game changes you make later are never
+> clobbered) and **non-destructive** (any existing NVRAM is moved to a
+> sibling `*.pre-easymode/` backup dir first). Exact per-game
+> difficulty/lives/time beyond what the packs set can't be verified
+> from the binary NVRAM — if a specific game needs tuning, set it in
+> that game's Test menu (Model 2/3: Test button; NAOMI: Service→Test),
+> then copy the resulting NVRAM file back into the pack source so it
+> stays reproducible.
+
+
 The four Sega arcade ROM sets live under `{{ dg_emudeck_root }}/roms_rare/`
 (`model2/`, `model3/`, `naomi/`, `naomi2/`) and each shows up as its own
 system in ES-DE. Three different emulators cover them:

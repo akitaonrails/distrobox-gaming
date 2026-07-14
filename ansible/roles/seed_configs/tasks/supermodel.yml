@@ -24,3 +24,31 @@
   loop: "{{ dg_supermodel_settings }}"
   loop_control:
     label: "[Global] {{ item.option }}"
+
+- name: Check Supermodel NVRAM seed marker
+  ansible.builtin.stat:
+    path: "{{ dg_supermodel_nvram_dir }}/.dg-nvram-seeded"
+  register: _supermodel_nvram_marker
+
+- name: Check pre-configured Supermodel NVRAM pack exists
+  ansible.builtin.stat:
+    path: "{{ dg_supermodel_nvram_source }}"
+  register: _supermodel_nvram_source
+  when: not _supermodel_nvram_marker.stat.exists
+
+- name: Seed pre-configured Supermodel NVRAM (Free Play / easy)
+  # One-time overlay of the per-game Test-menu settings; existing NVRAM
+  # backed up (nothing destroyed), marker prevents reruns clobbering
+  # settings the user later changes in-game.
+  ansible.builtin.shell: >-
+    mkdir -p '{{ dg_supermodel_nvram_dir }}'
+    && rsync -a --info=NAME
+    --backup --backup-dir='{{ dg_supermodel_nvram_dir }}.pre-easymode'
+    '{{ dg_supermodel_nvram_source }}/'
+    '{{ dg_supermodel_nvram_dir }}/'
+    && touch '{{ dg_supermodel_nvram_dir }}/.dg-nvram-seeded'
+  register: _supermodel_nvram_seed
+  changed_when: "'.nv' in _supermodel_nvram_seed.stdout"
+  when:
+    - not _supermodel_nvram_marker.stat.exists
+    - _supermodel_nvram_source.stat.exists and _supermodel_nvram_source.stat.isdir

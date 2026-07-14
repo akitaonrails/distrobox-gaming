@@ -26,6 +26,13 @@ dg_m2_rom_dir: "{{ dg_rom_rare_root }}/model2"
 # once into the install CFG (see role); later in-GUI tweaks persist.
 dg_m2_cfg_source: "{{ dg_external_games_root }}/Model 2/CFG"
 
+# Pre-configured per-game NVRAM (NVDATA/*.DAT) from the same pack — the
+# games' Test/Service-menu settings (Free Play = unlimited credits/
+# continues, English, calibrated). Difficulty/lives/time live in these
+# binary files; there is no config-file toggle. Seeded once, with any
+# existing NVDATA backed up first (nothing destroyed).
+dg_m2_nvdata_source: "{{ dg_external_games_root }}/Model 2/NVDATA"
+
 # gamescope output = emulator render resolution: the full 16:9 screen.
 # Model 2 games are 4:3, but rendering 4:3 and pillarboxing under
 # gamescope proved unstable with this emulator (the AutoFull mode-switch

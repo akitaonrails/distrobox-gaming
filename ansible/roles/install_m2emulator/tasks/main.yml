@@ -111,6 +111,34 @@
     - not _m2_cfg_marker.stat.exists
     - not (_m2_cfg_source.stat.exists | default(false))
 
+- name: Check Model 2 NVRAM seed marker
+  ansible.builtin.stat:
+    path: "{{ dg_m2_install_dir }}/.dg-nvdata-seeded"
+  register: _m2_nvdata_marker
+
+- name: Check pre-configured NVRAM pack exists
+  ansible.builtin.stat:
+    path: "{{ dg_m2_nvdata_source }}"
+  register: _m2_nvdata_source
+  when: not _m2_nvdata_marker.stat.exists
+
+- name: Seed pre-configured NVRAM (Free Play / easy) into NVDATA
+  # One-time overlay of the pack's per-game Test-menu settings. `--backup
+  # --backup-dir` preserves any NVDATA the box already wrote (nothing is
+  # destroyed); the marker stops reruns from clobbering settings the user
+  # later changes in-game.
+  ansible.builtin.shell: >-
+    rsync -a --info=NAME
+    --backup --backup-dir='{{ dg_m2_install_dir }}/NVDATA.pre-easymode'
+    '{{ dg_m2_nvdata_source }}/'
+    '{{ dg_m2_install_dir }}/NVDATA/'
+    && touch '{{ dg_m2_install_dir }}/.dg-nvdata-seeded'
+  register: _m2_nvdata_seed
+  changed_when: "'.DAT' in _m2_nvdata_seed.stdout"
+  when:
+    - not _m2_nvdata_marker.stat.exists
+    - _m2_nvdata_source.stat.exists and _m2_nvdata_source.stat.isdir
+
 - name: Configure Model 2 Wine controller backend
   ansible.builtin.shell: |
     {{ dg_in_box }} sh -lc '
