@@ -26,17 +26,14 @@ dg_m2_rom_dir: "{{ dg_rom_rare_root }}/model2"
 # once into the install CFG (see role); later in-GUI tweaks persist.
 dg_m2_cfg_source: "{{ dg_external_games_root }}/Model 2/CFG"
 
-# gamescope OUTPUT (the physical 16:9 screen).
+# gamescope output = emulator render resolution: the full 16:9 screen.
+# Model 2 games are 4:3, but rendering 4:3 and pillarboxing under
+# gamescope proved unstable with this emulator (the AutoFull mode-switch
+# drifts the surface and re-exposes the transparent letterbox → desktop
+# bleed + tearing). Filling 16:9 (a ~33% horizontal stretch) is the
+# stable trade-off. See the launcher template and docs/sega-arcade.md.
 dg_m2_gamescope_width: 3840
 dg_m2_gamescope_height: 2160
-
-# Emulator RENDER resolution — 4:3 (2880x2160 = full screen height, exact
-# 4:3). Model 2 games are 4:3 and the emulator has no true widescreen
-# (its WideScreenWindow just stretches 4:3 to 16:9, distorting), so we
-# render 4:3 and let gamescope pillarbox it into the 16:9 output with
-# aspect preserved (black bars on the sides, no stretch).
-dg_m2_game_width: 2880
-dg_m2_game_height: 2160
 
 # Same winebus policy as the pc-racing prefixes: single SDL backend,
 # no duplicate hidraw/evdev enumeration, SDL devices mapped as XInput
@@ -60,11 +57,9 @@ dg_m2_winetricks_components:
 # through YAML+Jinja+ini_file is unreliable — instead the role symlinks
 # a ROMS/ dir next to the exe, which the emulator always scans.
 dg_m2_ini_settings:
-  # Render at the 4:3 game resolution; gamescope pillarboxes to 16:9.
-  - { section: Renderer, option: FullScreenWidth, value: "{{ dg_m2_game_width }}" }
-  - { section: Renderer, option: FullScreenHeight, value: "{{ dg_m2_game_height }}" }
-  # 4:3, not stretched to the window (0 = 4:3, 1 = 16:9, 2 = 16:10).
-  - { section: Renderer, option: WideScreenWindow, value: "0" }
+  # Fill the 16:9 output (stretched); see the resolution comment above.
+  - { section: Renderer, option: FullScreenWidth, value: "{{ dg_m2_gamescope_width }}" }
+  - { section: Renderer, option: FullScreenHeight, value: "{{ dg_m2_gamescope_height }}" }
   # Start fullscreen (gamescope provides the matching video mode).
   - { section: Renderer, option: AutoFull, value: "1" }
   - { section: Renderer, option: Bilinear, value: "1" }
