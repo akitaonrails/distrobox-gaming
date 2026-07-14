@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Repo Does
 
-Ansible playbooks for reproducibly creating and configuring an Arch-based distrobox named `gaming`. The box hosts ES-DE, standalone emulators (shadPS4, Dolphin, PCSX2, DuckStation, Flycast, xemu, RPCS3, PPSSPP), Walker desktop entries, and an optional Wine-managed Xenia Manager for Xbox 360.
+Ansible playbooks for reproducibly creating and configuring an Arch-based distrobox named `gaming`. The box hosts ES-DE, standalone emulators (shadPS4, Dolphin, PCSX2, DuckStation, Flycast, xemu, RPCS3, PPSSPP, Supermodel for Sega Model 3), Walker desktop entries, an optional Wine-managed Xenia Manager for Xbox 360, and an optional Wine-managed Model 2 Emulator for Sega Model 2 (see `docs/sega-arcade.md`).
 
 ## Commands
 

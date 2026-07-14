@@ -58,6 +58,7 @@ ansible-playbook site.yml --tags bootstrap   # install packages
 ansible-playbook site.yml --tags shadps4     # install/update shadPS4
 ansible-playbook site.yml --tags hedgemodmanager # install/update Hedge Mod Manager
 ansible-playbook site.yml --tags pc_racing   # optional Windows PC racing setup
+ansible-playbook site.yml --tags m2emulator  # optional Sega Model 2 Emulator (Wine)
 ansible-playbook site.yml --tags sonic_p06   # optional Sonic Project '06 setup
 ansible-playbook site.yml --tags configure   # apply configs, desktop entries, ES-DE
 ansible-playbook site.yml --tags verify      # post-setup assertions
