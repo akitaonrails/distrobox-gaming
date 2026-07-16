@@ -764,6 +764,18 @@ from the earlier 1.1.0 overlay caused the widescreen launcher to crash at
 Wine with the 8BitDo attached, matching the repack's Linux troubleshooting
 note.
 
+**The real pad must stay hidden from DirectInput in this prefix**
+(2026-07-15): when the global stale-disable cleanup un-hid the 8BitDo's
+bare device names, SR2 immediately regressed — the 4:3 exe crashed with
+an error dialog and the widescreen launcher wedged at the intro, i.e.
+the documented mginput crash class. Both SR2 catalog entries therefore
+carry a per-game `dinput_disabled_joysticks` list re-disabling the bare
+names in this prefix only; the global removal task skips names a game
+explicitly disables. Consequence: **SR2 is keyboard-only for now**
+(advance the intro with Enter; the pad was never verified working in
+this game — building an evsieve pad→keyboard bridge like CMR1's is the
+future path if pad play is wanted).
+
 During manual testing, the game kept running and music continued even when the
 gamescope window lost focus or disappeared behind the desktop. Test from the
 host launcher rather than from an active terminal so tmux or assistant output

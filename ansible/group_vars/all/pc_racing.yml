@@ -921,6 +921,15 @@ dg_pc_racing_games:
         value: 0
       - name: Map Controllers
         value: 0
+    # SR2 crashes/wedges when wine DirectInput exposes the raw 8BitDo
+    # (documented mginput crashes: 4:3 exe faults with an error dialog,
+    # the widescreen launcher hangs at the intro). Keep the real pad
+    # hidden from dinput in THIS prefix — the global stale-disable
+    # removal task skips these names for this game. Controller is
+    # keyboard-only here until a pad bridge is built (see docs).
+    dinput_disabled_joysticks:
+      - 8BitDo 8BitDo Ultimate 2 Wireless Controller for PC
+      - 8BitDo Ultimate 2 Wireless Controller
     # Force SR2 to recognise the controller as a Logitech WingMan
     # Formula Force wheel (type 0A in SpecialProducts) — that device
     # type has SR2 read analog axes for steering / gas / brake instead
@@ -999,6 +1008,10 @@ dg_pc_racing_games:
         value: 0
       - name: Map Controllers
         value: 0
+    # Same as the widescreen sibling: raw 8BitDo in dinput crashes SR2.
+    dinput_disabled_joysticks:
+      - 8BitDo 8BitDo Ultimate 2 Wireless Controller for PC
+      - 8BitDo Ultimate 2 Wireless Controller
     # 4:3 800x600 → gamescope upscale to the configured 4K output,
     # pillarboxed on a 16:9 monitor (preserves aspect ratio).
     gamescope_game_width: 800

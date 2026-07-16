@@ -318,11 +318,42 @@
     label: "{{ item.0.name }} / {{ item.1 }}"
   when: dg_pc_racing_dinput_disabled_joysticks | length > 0
 
+- name: Disable per-game DirectInput joysticks
+  # Some games need the REAL pad hidden from DirectInput: Sega Rally 2
+  # crashes/wedges when wine dinput exposes the raw 8BitDo (documented
+  # mginput crashes). A game opts in via its own
+  # dinput_disabled_joysticks list; the stale-removal task below skips
+  # those names for that game.
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      export WINEPREFIX="{{ item.0.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.0.slug) }}"
+      export WINEARCH="{{ item.0.winearch | default(dg_pc_racing_winearch) }}"
+      export WINEDEBUG=-all
+      export PATH="{{ item.0.wine_path | default(dg_pc_racing_wine_path) }}"
+      wine_bin="{{ item.0.wine_binary | default('wine') }}"
+      key="HKEY_CURRENT_USER\Software\Wine\DirectInput\Joysticks"
+      name="{{ item.1 }}"
+
+      if env -u PYTHONHOME -u PYTHONPATH "$wine_bin" reg query "$key" /v "$name" 2>/dev/null | grep -Eq "REG_SZ[[:space:]]+disabled"; then
+        exit 0
+      fi
+
+      env -u PYTHONHOME -u PYTHONPATH "$wine_bin" reg add "$key" /v "$name" /t REG_SZ /d disabled /f
+      printf "%s\n" "disabled-dinput-joystick {{ item.0.name }} $name"
+    '
+  register: _pc_racing_dinput_pergame_disabled
+  changed_when: "'disabled-dinput-joystick' in _pc_racing_dinput_pergame_disabled.stdout"
+  loop: "{{ _dg_pc_racing_games_selected | subelements('dinput_disabled_joysticks', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }} / {{ item.1 }}"
+
 - name: Remove stale DirectInput disables of the real gamepad
   # The disable task above only ever ADDS values, so names dropped from
   # the disable list linger in existing prefixes forever. These are the
   # real pad's device names — if present, DirectInput games see no
-  # controller at all (OutRun 2006, Sega Rally 2).
+  # controller at all (OutRun 2006, Sega Rally 2). Games that NEED the
+  # pad hidden (per-game dinput_disabled_joysticks) are skipped.
   ansible.builtin.shell: |
     {{ dg_in_box }} sh -lc '
       set -eu
@@ -346,7 +377,9 @@
   loop: "{{ _dg_pc_racing_games_selected | product(dg_pc_racing_dinput_removed_joysticks) | list }}"
   loop_control:
     label: "{{ item.0.name }} / {{ item.1 }}"
-  when: dg_pc_racing_dinput_removed_joysticks | length > 0
+  when:
+    - dg_pc_racing_dinput_removed_joysticks | length > 0
+    - item.1 not in (item.0.dinput_disabled_joysticks | default([]))
 
 - name: Configure PC racing game registry values
   ansible.builtin.shell: |
