@@ -49,8 +49,18 @@ dg_pc_racing_dinput_disabled_joysticks:
   # 2026-07-12; XInput games never noticed).
   - 8BitDo 8BitDo Ultimate 2 Wireless Controller for PC Keyboard
   - 8BitDo 8BitDo Ultimate 2 Wireless Controller for PC Mouse
-  - 8BitDo 8BitDo Ultimate 2 Wireless Controller for PC Keyboard
-  - 8BitDo 8BitDo Ultimate 2 Wireless Controller for PC Mouse
+
+# Names that must NOT be disabled and are actively removed from every
+# prefix: these are the REAL gamepad's names (dinput/hidraw name and the
+# evdev/js device name). They were in the disable list during the CMR2
+# era (ee2d33e..ea4ba35), so prefixes configured then still carried the
+# values — the role only ever added disables. Hit OutRun 2006
+# (2026-07-12) and Sega Rally 2 (2026-07-15): DirectInput games saw no
+# pad at all; XInput games never noticed.
+dg_pc_racing_dinput_removed_joysticks:
+  - 8BitDo 8BitDo Ultimate 2 Wireless Controller for PC
+  - 8BitDo Ultimate 2 Wireless Controller
+
 dg_pc_racing_winebus_registry:
   - name: DisableHidraw
     value: 1

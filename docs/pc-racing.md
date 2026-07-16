@@ -84,10 +84,12 @@ gamepad enumerates under the *bare* device name
 the dongle's old phantom entries used. Only the `... Keyboard` /
 `... Mouse` suffixed names may be in the disable list; disabling the
 bare name hides the actual pad from every DirectInput game (OutRun 2006
-lost its controller this way — XInput games never noticed because they
-don't consult this key). The role only *adds* disables, so stale bare-name
-entries in existing prefixes must be removed with
-`wine reg delete "HKCU\Software\Wine\DirectInput\Joysticks" /v "<name>" /f`.
+lost its controller this way on 2026-07-12, Sega Rally 2 on 2026-07-15
+— XInput games never noticed because they don't consult this key). The
+disable task only *adds* values, so the role now also actively deletes
+the real pad's names from every prefix via
+`dg_pc_racing_dinput_removed_joysticks` — names dropped from the
+disable list no longer linger in previously-configured prefixes.
 
 For controllers, first identify whether the game is a legacy DirectInput title
 or a newer XInput-aware title. Old DirectInput racing games often misread
