@@ -665,6 +665,18 @@ entry stays, so online still works). Deliberately left off:
 
 ## Sega Rally Revo
 
+**Pinned to the wine-11.8 sidecar** (the same runner CMR2 uses): the
+system wine 11.12→11.13 upgrade (2026-07-12) regressed this game to a
+**black fullscreen screen** — deceptive because everything looks alive
+(process at ~13% CPU, DXVK vk threads up, dsound mixer running, window
+titled and fullscreen in gamescope; only black frames are presented, no
+crash, no error). Diagnosed 2026-07-15 by relaunching under the 11.8
+sidecar, which immediately rendered the title screen. If a game here
+"runs" but shows only black after a wine upgrade, suspect the wine
+version first and test against the sidecar before touching the game
+config. Drop the `wine_binary`/`wine_path` lines from the catalog entry
+to re-test on future wine releases.
+
 Sega Rally Revo uses the full-rip payload under
 `{{ dg_pc_racing_source_root }}/SEGA-Rally-Revo_Win_EN-FR-DE-ES-IT-PL_Full-Rip/Sega Rally`.
 It is copied directly to `{{ dg_pc_racing_install_root }}/sega-rally-revo`

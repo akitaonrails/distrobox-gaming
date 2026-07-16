@@ -814,6 +814,14 @@ dg_pc_racing_games:
     source_dir: "{{ dg_pc_racing_source_root }}/SEGA-Rally-Revo_Win_EN-FR-DE-ES-IT-PL_Full-Rip/Sega Rally"
     launch_exe: "SEGA Rally.exe"
     installed_path: "{{ dg_pc_racing_install_root }}/sega-rally-revo"
+    # Pinned to the wine-11.8 sidecar (same runner CMR2 uses): system
+    # wine 11.13 (2026-07-12 upgrade) regressed this game to a black
+    # screen — process alive, DXVK initialized, dsound mixing, but only
+    # black frames presented. Verified 2026-07-15: title screen renders
+    # again under 11.8. Re-test on future wine upgrades by dropping
+    # these two lines.
+    wine_binary: "{{ dg_pc_racing_wine_runner_root }}/wine-11.8/usr/bin/wine"
+    wine_path: "{{ dg_pc_racing_wine_runner_root }}/wine-11.8/usr/bin:{{ dg_pc_racing_wine_path }}"
     disabled_files:
       - "Bootup/video/Rally/SEGA_Logo720p.wmv"
       - "Bootup/video/Rally/SRS_Logo_1.wmv"
