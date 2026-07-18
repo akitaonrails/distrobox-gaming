@@ -13,6 +13,7 @@
 # filename per display name). naomi/naomi2 are deliberately not listed
 # — their libraries showed no duplicate clutter.
 dg_esde_arcade_clone_systems:
+  - model1
   - model2
   - model3
 
@@ -174,6 +175,15 @@ dg_esde_systems:
       - { label: "Model 2 Emulator (Wine)", cmd: "{{ dg_box_home }}/bin/m2emulator-launch %ROM%" }
     platform: arcade
     theme: model2
+
+  - name: model1
+    fullname: Sega Model 1
+    path: "{{ dg_emudeck_root }}/roms_rare/model1"
+    extension: ".zip .ZIP"
+    commands:
+      - { label: "Model 1 dispatcher (Wine/MAME)", cmd: "{{ dg_box_home }}/bin/model1-launch %ROM%" }
+    platform: arcade
+    theme: model1
 
   - name: model3
     fullname: Sega Model 3

@@ -1,0 +1,73 @@
+#!/usr/bin/env sh
+set -eu
+rom_dir="{{ dg_model1_rom_dir }}"
+vr_dir="{{ dg_model1_vr_work_dir }}"
+mame_state="{{ dg_model1_mame_state_dir }}"
+common_env() {
+  export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+  export SDL_JOYSTICK_HIDAPI="${SDL_JOYSTICK_HIDAPI:-{{ dg_pc_racing_sdl_hidapi }}}"
+  export SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT="${SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT:-{{ dg_pc_racing_gamepad_only }}}"
+}
+wine_gui() {
+  prefix=$1 workdir=$2 exe=$3
+  common_env; export WINEPREFIX="$prefix" WINEARCH={{ dg_model1_winearch }} WINEDEBUG="${WINEDEBUG:--all}"
+  cd "$workdir"
+  env -u PYTHONHOME -u PYTHONPATH wine "$exe"
+}
+mame_gui() {
+  common_env
+  mame -rompath "$rom_dir" -cfg_directory "$mame_state/cfg" -nvram_directory "$mame_state/nvram" "$1"
+}
+run_with_exit_chord() {
+  wine_prefix=${1:-}
+  shift
+  evsieve_pid=""
+  if command -v evsieve >/dev/null 2>&1 && [ -w /dev/uinput ]; then
+    pad_inputs=""
+    for l in /dev/input/by-id/*8BitDo*Ultimate*event-joystick \
+             /dev/input/by-id/*Xbox*event-joystick \
+             /dev/input/by-id/*XBOX*event-joystick; do
+      [ -e "$l" ] && pad_inputs="$pad_inputs --input $(readlink -f "$l")"
+    done
+    if [ -n "$pad_inputs" ]; then
+      # No grab: the physical pad remains visible to Wine/MAME. This only
+      # injects Alt+F4 when Select+Start is pressed together.
+      # shellcheck disable=SC2086
+      evsieve $pad_inputs --hook btn:select btn:start send-key=key:leftalt send-key=key:f4 \
+        --output name="model1-exit-keys" key:leftalt key:f4 >/dev/null 2>&1 &
+      evsieve_pid=$!
+    fi
+  fi
+  cleanup() {
+    [ -n "$evsieve_pid" ] && kill "$evsieve_pid" 2>/dev/null || true
+    [ -n "$wine_prefix" ] && WINEPREFIX="$wine_prefix" env -u PYTHONHOME -u PYTHONPATH wineserver -k >/dev/null 2>&1 || true
+  }
+  trap cleanup EXIT HUP INT TERM
+  set +e
+  "$@"
+  launch_status=$?
+  set -e
+  trap - EXIT HUP INT TERM
+  cleanup
+  return "$launch_status"
+}
+status() {
+  printf '%s\n' 'Sega Model 1 status'
+  for f in "{{ dg_model1_vr_archive }}"; do [ -f "$f" ] && sha256sum "$f" || printf 'missing %s\n' "$f"; done
+  for r in {{ dg_model1_expected_roms | join(' ') }}; do [ -f "$rom_dir/$r" ] && printf 'ROM present: %s\n' "$r" || printf 'ROM missing: %s\n' "$r"; done
+  command -v mame >/dev/null 2>&1 && mame -version || printf '%s\n' 'MAME missing'
+  for p in "{{ dg_model1_vr_prefix }}"; do [ -f "$p/system.reg" ] && printf 'prefix ready: %s\n' "$p" || printf 'prefix missing: %s\n' "$p"; done
+  for f in "$vr_dir/vr.exe" "$vr_dir/nvram" "$mame_state/cfg" "$mame_state/nvram"; do [ -e "$f" ] && printf 'backend state: %s\n' "$f" || printf 'missing backend state: %s\n' "$f"; done
+  ls /dev/input/js* 2>/dev/null || printf '%s\n' 'no /dev/input/js controller visible'
+  for f in "$vr_dir/settings.ini" "$vr_dir/vfmenu.cfg" "$vr_dir/wheel_di.ini"; do [ -e "$f" ] && printf 'config: %s\n' "$f"; done
+}
+case "${1:-}" in
+  status) status; exit 0 ;;
+  configure-vr) run_with_exit_chord "{{ dg_model1_vr_prefix }}" wine_gui "{{ dg_model1_vr_prefix }}" "$vr_dir" vr.exe; exit $? ;;
+esac
+[ $# -eq 1 ] || { printf '%s\n' 'usage: model1-launch <rom.zip>|status|configure-vr' >&2; exit 64; }
+short=$(basename "$1"); short=${short%.zip}; short=${short%.ZIP}
+case "$short" in
+  vr) printf '%s\n' 'Virtua Racing: Wanszai GUI; use its in-app controller/deadzone settings.' >&2; run_with_exit_chord "{{ dg_model1_vr_prefix }}" wine_gui "{{ dg_model1_vr_prefix }}" "$vr_dir" vr.exe ;;
+  *) run_with_exit_chord "" mame_gui "$short" ;;
+esac

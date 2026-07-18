@@ -1,0 +1,133 @@
+---
+- name: Create Model 1 persistent directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_model1_root }}"
+    - "{{ dg_model1_cache_dir }}"
+    - "{{ dg_model1_root }}/releases"
+    - "{{ dg_model1_vr_prefix }}"
+    - "{{ dg_model1_mame_state_dir }}/cfg"
+    - "{{ dg_model1_mame_state_dir }}/nvram"
+    - "{{ dg_box_home }}/bin"
+
+- name: Remove retired WANGMODEL1 artifacts
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: "{{ dg_model1_legacy_wang_paths }}"
+
+- name: Warn about missing Model 1 ROM archives
+  ansible.builtin.debug:
+    msg: "Model 1 ROM archive is absent (not downloaded): {{ dg_model1_rom_dir }}/{{ item }}"
+  when: not lookup('ansible.builtin.fileglob', dg_model1_rom_dir ~ '/' ~ item)
+  loop: "{{ dg_model1_expected_roms }}"
+
+- name: Install Model 1 runtime packages inside box
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sudo pacman -S --needed --noconfirm
+    {{ dg_model1_packages | join(' ') }}
+  register: _model1_pacman
+  changed_when: "'installing' in _model1_pacman.stdout"
+
+- name: Install Model 1 AUR runtime packages inside box
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} yay -S --needed --noconfirm
+    --answerclean None --answerdiff None
+    {{ dg_model1_aur_packages | join(' ') }}
+  register: _model1_yay
+  changed_when: "'installing' in _model1_yay.stdout"
+
+- name: Download pinned Model 1 frontend archive
+  ansible.builtin.get_url:
+    url: "{{ item.url }}"
+    dest: "{{ item.archive }}"
+    checksum: "{{ item.checksum }}"
+    mode: "0644"
+  loop:
+    - { url: "{{ dg_model1_vr_url }}", archive: "{{ dg_model1_vr_archive }}", checksum: "{{ dg_model1_vr_checksum }}" }
+  when: not ansible_check_mode
+
+- name: Create immutable release directory
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop: ["{{ dg_model1_vr_release_dir }}"]
+
+- name: Extract immutable Model 1 frontend release
+  ansible.builtin.unarchive:
+    src: "{{ item.archive }}"
+    dest: "{{ item.dest }}"
+    remote_src: true
+    creates: "{{ item.creates }}"
+  loop:
+    - { archive: "{{ dg_model1_vr_archive }}", dest: "{{ dg_model1_vr_release_dir }}", creates: "{{ dg_model1_vr_release_dir }}/VirtuaRacing/vr.exe" }
+  when: not ansible_check_mode
+
+- name: Refresh Wanszai application files while preserving generated state
+  # A new pinned release must replace its exe/assets, but these files are
+  # written by the frontend and are deliberately never overwritten or deleted.
+  ansible.builtin.shell: >-
+    rsync -a --itemize-changes
+    --exclude=settings.ini --exclude=vfmenu.cfg --exclude=wheel_di.ini --exclude=nvram/
+    '{{ dg_model1_vr_release_dir }}/VirtuaRacing/' '{{ dg_model1_vr_work_dir }}/'
+    && touch '{{ dg_model1_vr_work_dir }}/.dg-release-{{ dg_model1_vr_version }}'
+  args:
+    creates: "{{ dg_model1_vr_work_dir }}/.dg-release-{{ dg_model1_vr_version }}"
+  when: not ansible_check_mode
+
+- name: Create frontend-local Model 1 ROM directory
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop: ["{{ dg_model1_vr_work_dir }}/roms"]
+
+- name: Link owned Model 1 ROM set into frontend directory
+  ansible.builtin.file:
+    src: "{{ dg_model1_rom_dir }}/{{ item.rom }}"
+    dest: "{{ item.dir }}/roms/{{ item.rom }}"
+    state: link
+    force: true
+    follow: false
+  loop:
+    - { dir: "{{ dg_model1_vr_work_dir }}", rom: vr.zip }
+
+- name: Verify available Model 1 ROMs with MAME without failing on set drift
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} mame -rompath '{{ dg_model1_rom_dir }}' -verifyroms
+    vr vformula vf swa swaj wingwar || true
+  register: _model1_verifyroms
+  changed_when: false
+
+- name: Initialize Model 1 Wine prefix
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc 'export WINEPREFIX="{{ item }}" WINEARCH="{{ dg_model1_winearch }}" WINEDEBUG=-all; env -u PYTHONHOME -u PYTHONPATH wineboot -u'
+  args:
+    creates: "{{ item }}/system.reg"
+  loop: ["{{ dg_model1_vr_prefix }}"]
+
+- name: Install Wanszai Visual C++ runtime
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc 'export WINEPREFIX="{{ dg_model1_vr_prefix }}" WINEARCH="{{ dg_model1_winearch }}" WINEDEBUG=-all; timeout 300 env -u PYTHONHOME -u PYTHONPATH winetricks -q vcrun2022; touch "{{ dg_model1_vr_prefix }}/.dg-winetricks-vcrun2022"'
+  args:
+    creates: "{{ dg_model1_vr_prefix }}/.dg-winetricks-vcrun2022"
+
+- name: Configure Model 1 WineBus controller policy
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc 'export WINEPREFIX="{{ item.0 }}" WINEARCH="{{ dg_model1_winearch }}"; wine reg add "HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\winebus" /v "{{ item.1.name }}" /t REG_DWORD /d "{{ item.1.value }}" /f'
+  changed_when: false
+  loop: "{{ [dg_model1_vr_prefix] | product(dg_model1_winebus_registry) | list }}"
+
+- name: Deploy Model 1 launcher
+  ansible.builtin.template:
+    src: model1-launch.sh.j2
+    dest: "{{ dg_box_home }}/bin/model1-launch"
+    mode: "0755"
+
+- name: Report Model 1 setup
+  ansible.builtin.debug:
+    msg: "Model 1 ready: {{ dg_box_home }}/bin/model1-launch status"

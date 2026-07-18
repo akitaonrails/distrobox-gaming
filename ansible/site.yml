@@ -23,6 +23,7 @@
     - { role: pcsx2_textures,            tags: [pcsx2_textures, never] }
     - { role: install_pc_racing,         tags: [pc_racing, never] }
     - { role: install_m2emulator,        tags: [m2emulator, never] }
+    - { role: install_model1,            tags: [model1, never] }
     - { role: metal_gear_master_collection, tags: [metal_gear_master_collection, never] }
     - { role: steam_lib32_nvidia,        tags: [steam_lib32_nvidia, never] }
     - { role: steam_trainers,            tags: [steam_trainers, never] }

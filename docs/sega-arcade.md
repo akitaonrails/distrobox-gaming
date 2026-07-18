@@ -1,4 +1,4 @@
-# Sega Arcade Systems (Model 2, Model 3, NAOMI 1/2)
+# Sega Arcade Systems (Model 1, Model 2, Model 3, NAOMI 1/2)
 
 > **Pre-configured NVRAM (Free Play / casual).** Arcade difficulty,
 > lives, time, continues and Free Play are **not** config-file settings
@@ -20,15 +20,40 @@
 > stays reproducible.
 
 
-The four Sega arcade ROM sets live under `{{ dg_emudeck_root }}/roms_rare/`
-(`model2/`, `model3/`, `naomi/`, `naomi2/`) and each shows up as its own
-system in ES-DE. Three different emulators cover them:
+The Sega arcade ROM sets live under `{{ dg_emudeck_root }}/roms_rare/`
+(`model1/`, `model2/`, `model3/`, `naomi/`, `naomi2/`) and each shows up as its own
+system in ES-DE. Several emulators cover them:
 
 | System  | Emulator                | Install path                    |
 |---------|-------------------------|---------------------------------|
 | Model 3 | Supermodel (native)     | AUR `supermodel` package        |
 | Model 2 | Model 2 Emulator (wine) | see its section below           |
+| Model 1 | Wanszai/MAME           | `tools/model1/`                 |
 | NAOMI 1/2 | Flycast (native)      | AUR `flycast-git` (already in)  |
+
+## Sega Model 1 — Wanszai and MAME
+
+Model 1 is opt-in: run `ansible-playbook install-model1.yml` (or
+`ansible-playbook site.yml --tags model1`). It installs native MAME and a
+Wanszai Wine prefix; ES-DE calls `model1-launch` for
+`roms_rare/model1/*.zip`. ROM archives are user-supplied and remain in place:
+the role never copies or modifies ROM contents.
+
+Wanszai Virtua Racing is pinned at **1.0.2b** (`PC-VirtuaRacing102b.zip`,
+SHA256 `50b28072048e75150590a4107280d841d9726e9c2c5346236153a1778156f445`).
+Versioned extraction refreshes application assets while preserving Wanszai
+settings and NVRAM.
+
+Routing: exact `vr` uses Wanszai (compatible MAME 0.150 `vr.zip` required).
+`vf`, `swa`, their clones, Wing War, and every other Model 1 set use native
+MAME with explicit ROM/config/NVRAM paths. Parent/clone compatibility is
+checked informationally with MAME, never made a role failure.
+
+Run `model1-launch status` for artifact hashes, ROM/prefix/MAME/controller and
+config checks. `configure-vr` opens Wanszai in its working directory; use its
+in-app controller and deadzone settings. Select+Start injects Alt+F4 through a
+no-grab `evsieve` helper for both Wine and MAME. Wanszai may stutter under Wine,
+so MAME is the fallback.
 
 ## Sega Model 3 — Supermodel
 

@@ -1,0 +1,10 @@
+---
+- name: Install Sega Model 1 frontend and MAME fallback
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_model1
+    - configure_esde
+    # verify executes box commands, which Ansible skips in --check mode.
+    - { role: verify, tags: [verify], when: not ansible_check_mode }

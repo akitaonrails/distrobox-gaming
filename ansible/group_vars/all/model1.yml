@@ -1,0 +1,28 @@
+---
+# Sega Model 1: opt-in Wanszai Virtua Racing plus native MAME fallback.
+dg_model1_root: "{{ dg_box_home }}/tools/model1"
+dg_model1_cache_dir: "{{ dg_model1_root }}/cache"
+dg_model1_rom_dir: "{{ dg_emudeck_root }}/roms_rare/model1"
+dg_model1_mame_state_dir: "{{ dg_box_home }}/.local/share/mame-model1"
+dg_model1_packages: [wine, winetricks, mame, sdl2]
+dg_model1_aur_packages: [evsieve]
+dg_model1_winearch: win64
+dg_model1_winebus_registry:
+  - { name: DisableHidraw, value: 1 }
+  - { name: DisableInput, value: 1 }
+  - { name: Enable SDL, value: 1 }
+  - { name: Map Controllers, value: 1 }
+dg_model1_expected_roms: [vr.zip, vformula.zip, vf.zip, swa.zip, swaj.zip, wingwar.zip]
+
+dg_model1_vr_version: "1.0.2b"
+dg_model1_vr_url: "https://github.com/wanszai/Virtua-Racing---XBOXONE-Windows/releases/download/1.0.2b/PC-VirtuaRacing102b.zip"
+dg_model1_vr_archive: "{{ dg_model1_cache_dir }}/PC-VirtuaRacing102b.zip"
+dg_model1_vr_checksum: "sha256:50b28072048e75150590a4107280d841d9726e9c2c5346236153a1778156f445"
+dg_model1_vr_release_dir: "{{ dg_model1_root }}/releases/virtua-racing-{{ dg_model1_vr_version }}"
+dg_model1_vr_work_dir: "{{ dg_model1_root }}/virtua-racing"
+dg_model1_vr_prefix: "{{ dg_box_home }}/wineprefixes/model1-virtua-racing"
+dg_model1_legacy_wang_paths:
+  - "{{ dg_model1_root }}/wangmodel1"
+  - "{{ dg_model1_root }}/releases/wangmodel1-1.3"
+  - "{{ dg_model1_cache_dir }}/WANGMODEL1_v1.3.zip"
+  - "{{ dg_box_home }}/wineprefixes/model1-wangmodel1"

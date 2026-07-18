@@ -59,6 +59,7 @@ ansible-playbook site.yml --tags shadps4     # install/update shadPS4
 ansible-playbook site.yml --tags hedgemodmanager # install/update Hedge Mod Manager
 ansible-playbook site.yml --tags pc_racing   # optional Windows PC racing setup
 ansible-playbook site.yml --tags m2emulator  # optional Sega Model 2 Emulator (Wine)
+ansible-playbook install-model1.yml          # optional Sega Model 1 (Wanszai + MAME)
 ansible-playbook site.yml --tags sonic_p06   # optional Sonic Project '06 setup
 ansible-playbook site.yml --tags configure   # apply configs, desktop entries, ES-DE
 ansible-playbook site.yml --tags verify      # post-setup assertions
@@ -76,6 +77,16 @@ ansible-playbook reset-configs.yml --tags configs   # reset only emulator INIs
 ```
 
 All playbooks are idempotent — re-run any phase safely.
+
+### Optional Sega Model 1
+
+Place legally obtained MAME-format archives in
+`{{ dg_emudeck_root }}/roms_rare/model1/`, then run
+`ansible-playbook install-model1.yml`. The role downloads a pinned frontend
+artifact but never downloads, extracts, or modifies ROM archives. Use
+`model1-launch status`, then `configure-vr` for Wanszai controller binding;
+`vf` and `swa` route to native MAME. See `docs/sega-arcade.md` for routing and
+limitations.
 
 ## Using legacy shell scripts
 
