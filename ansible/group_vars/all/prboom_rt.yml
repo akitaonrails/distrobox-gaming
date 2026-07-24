@@ -1,0 +1,81 @@
+# PrBoom-Plus-RT — native Linux path-traced Doom renderer.
+#
+# This is the viable distrobox alternative to GZDoom-RT. GZDoom-RT's
+# Windows build currently requires VK_KHR_external_fence_win32, which
+# Proton cannot expose on Linux. The PrBoom fork uses native Vulkan.
+
+dg_prboom_rt_version: "2.6.1-rt1.0.7"
+dg_prboom_rt_release_tag: "v{{ dg_prboom_rt_version }}"
+dg_prboom_rt_archive_name: "prboom-rt-1.0.7.tar.gz"
+dg_prboom_rt_release_url: >-
+  https://github.com/tomboylover93/prboom-plus-rt/releases/download/
+  {{- dg_prboom_rt_release_tag }}/{{ dg_prboom_rt_archive_name }}
+dg_prboom_rt_release_sha256: "3a76049219a8c1e1c24ca1ae4f50dc4b885e63e4397536bb1aa91dfdae81e14b"
+
+dg_prboom_rt_root: "{{ dg_box_home }}/tools/prboom-plus-rt"
+dg_prboom_rt_cache_dir: "{{ dg_box_home }}/cache/prboom-plus-rt"
+dg_prboom_rt_archive: "{{ dg_prboom_rt_cache_dir }}/{{ dg_prboom_rt_archive_name }}"
+dg_prboom_rt_release_dir: "{{ dg_prboom_rt_root }}/releases/{{ dg_prboom_rt_version }}"
+dg_prboom_rt_package_dir: "{{ dg_prboom_rt_release_dir }}/package"
+dg_prboom_rt_bin: "{{ dg_prboom_rt_package_dir }}/prboom-plus-rt"
+
+# Doom II lighting metadata by rellik66. ModDB publishes the size and MD5;
+# the SHA256 below was independently measured from that exact official file.
+dg_prboom_rt_addon_version: "0.9"
+dg_prboom_rt_addon_name: "doom2rt-{{ dg_prboom_rt_addon_version }}.zip"
+dg_prboom_rt_addon_page: >-
+  https://www.moddb.com/mods/doom-lights-for-raytraced-prboom/addons/
+  doom2-lights-for-prboomraytracing
+dg_prboom_rt_addon_size: 285803
+dg_prboom_rt_addon_md5: "064349e6810812957d33009f67ab8b46"
+dg_prboom_rt_addon_sha256: "732c05a87b6dcf7ec73fee74871ac3e2f9b3770436df2c27abc00a8e5557bb9d"
+dg_prboom_rt_addon_archive: "{{ dg_prboom_rt_cache_dir }}/{{ dg_prboom_rt_addon_name }}"
+# ModDB places its mirrors behind a browser challenge. Stage the official zip
+# here once; subsequent runs use the verified persistent cache. Override this
+# variable if the downloaded file is elsewhere.
+dg_prboom_rt_staging_dir: "{{ dg_box_home }}/staging/prboom-plus-rt"
+dg_prboom_rt_addon_source: "{{ dg_prboom_rt_staging_dir }}/{{ dg_prboom_rt_addon_name }}"
+
+# Generated, replaceable Doom II renderer data. Persistent config/saves live
+# outside this tree so updating a pinned release cannot erase them.
+dg_prboom_rt_doom2_runtime_dir: >-
+  {{ dg_prboom_rt_root }}/runtime/{{ dg_prboom_rt_version }}/doom2
+dg_prboom_rt_doom2_ovrd_dir: "{{ dg_prboom_rt_doom2_runtime_dir }}/ovrd"
+dg_prboom_rt_doom2_metainfo: "{{ dg_prboom_rt_doom2_ovrd_dir }}/map_metainfo_doom2.txt"
+dg_prboom_rt_base_marker: "{{ dg_prboom_rt_doom2_runtime_dir }}/.base-{{ dg_prboom_rt_version }}"
+dg_prboom_rt_addon_marker: "{{ dg_prboom_rt_doom2_runtime_dir }}/.addon-{{ dg_prboom_rt_addon_sha256 }}"
+
+dg_prboom_rt_data_dir: "{{ dg_prboom_rt_root }}/data"
+dg_prboom_rt_doom2_wad: "{{ dg_prboom_rt_data_dir }}/DOOM2.WAD"
+# An explicit source wins. When blank, the role searches the Steam libraries
+# below recursively and accepts any legal Doom II IWAD variant.
+dg_prboom_rt_doom2_wad_source: ""
+dg_prboom_rt_wad_search_roots:
+  - "{{ dg_steam_root }}/steamapps/common"
+  - >-
+    {{ (dg_external_usb_games_root ~ '/steamapps/common')
+       if (dg_external_usb_games_root | length > 0) else '' }}
+  - "{{ dg_box_home }}/.local/share/Steam/steamapps/common"
+  - "{{ dg_box_home }}/.steam/steam/steamapps/common"
+
+dg_prboom_rt_config_dir: "{{ dg_box_home }}/.config/prboom-plus-rt"
+dg_prboom_rt_config: "{{ dg_prboom_rt_config_dir }}/doom2-rt.cfg"
+dg_prboom_rt_save_dir: "{{ dg_box_home }}/.local/share/prboom-plus-rt/doom2/saves"
+dg_prboom_rt_screenshot_dir: "{{ dg_box_home }}/Pictures/prboom-plus-rt"
+dg_prboom_rt_controller_dir: "{{ dg_prboom_rt_config_dir }}/controllers"
+dg_prboom_rt_controller_profile: "{{ dg_prboom_rt_controller_dir }}/doom2-rt.gamecontroller.amgp"
+dg_prboom_rt_launcher: "{{ dg_box_home }}/bin/doom2-rt"
+
+dg_prboom_rt_width: 2560
+dg_prboom_rt_height: 1440
+dg_prboom_rt_controller_allowlist: "{{ dg_pc_racing_gamepad_only }}"
+
+dg_prboom_rt_packages:
+  - antimicrox
+  - dumb
+  - fluidsynth
+  - glu
+  - libmad
+  - portmidi
+  - sdl2_mixer
+  - vulkan-tools

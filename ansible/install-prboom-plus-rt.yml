@@ -1,0 +1,10 @@
+---
+- name: Install native PrBoom-Plus-RT for Doom II
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - create_box
+    - install_prboom_plus_rt
+    - desktop_apps
+    - { role: verify, tags: [verify] }

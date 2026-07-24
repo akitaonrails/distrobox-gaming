@@ -1,0 +1,334 @@
+---
+- name: Verify Steam library root is writable by the box user
+  ansible.builtin.stat:
+    path: "{{ dg_steam_root }}"
+  register: _prboom_rt_steam_root
+
+- name: Require a writable Steam library root
+  ansible.builtin.assert:
+    that:
+      - _prboom_rt_steam_root.stat.exists
+      - _prboom_rt_steam_root.stat.isdir
+      - _prboom_rt_steam_root.stat.writeable
+    fail_msg: >-
+      Steam root {{ dg_steam_root }} is not writable by UID {{ dg_host_uid }}.
+      Run the create_box role before installing or restoring Steam games.
+
+- name: Create PrBoom-Plus-RT persistent directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_prboom_rt_root }}"
+    - "{{ dg_prboom_rt_cache_dir }}"
+    - "{{ dg_prboom_rt_release_dir }}"
+    - "{{ dg_prboom_rt_data_dir }}"
+    - "{{ dg_prboom_rt_config_dir }}"
+    - "{{ dg_prboom_rt_save_dir }}"
+    - "{{ dg_prboom_rt_screenshot_dir }}"
+    - "{{ dg_prboom_rt_controller_dir }}"
+    - "{{ dg_prboom_rt_staging_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Install PrBoom-Plus-RT runtime and controller packages inside box
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sudo pacman -S --needed --noconfirm
+    {{ dg_prboom_rt_packages | join(' ') }}
+  register: _prboom_rt_pacman
+  changed_when: "'installing' in _prboom_rt_pacman.stdout"
+
+- name: Download pinned native PrBoom-Plus-RT release
+  ansible.builtin.get_url:
+    url: "{{ dg_prboom_rt_release_url }}"
+    dest: "{{ dg_prboom_rt_archive }}"
+    checksum: "sha256:{{ dg_prboom_rt_release_sha256 }}"
+    mode: "0644"
+  when: not ansible_check_mode
+
+- name: Extract immutable PrBoom-Plus-RT release
+  ansible.builtin.unarchive:
+    src: "{{ dg_prboom_rt_archive }}"
+    dest: "{{ dg_prboom_rt_release_dir }}"
+    remote_src: true
+    creates: "{{ dg_prboom_rt_bin }}"
+  when: not ansible_check_mode
+
+- name: Check native renderer shared-library dependencies
+  ansible.builtin.command:
+    cmd: "{{ dg_in_box }} ldd {{ dg_prboom_rt_bin }}"
+  register: _prboom_rt_ldd
+  changed_when: false
+  failed_when: >-
+    _prboom_rt_ldd.rc != 0 or
+    'not found' in _prboom_rt_ldd.stdout
+  when: not ansible_check_mode
+
+- name: Inspect cached Doom II RT addon
+  ansible.builtin.stat:
+    path: "{{ dg_prboom_rt_addon_archive }}"
+    checksum_algorithm: sha256
+  register: _prboom_rt_addon_cached
+
+- name: Inspect staged Doom II RT addon
+  ansible.builtin.stat:
+    path: "{{ dg_prboom_rt_addon_source }}"
+    checksum_algorithm: sha256
+  register: _prboom_rt_addon_staged
+  when:
+    - not _prboom_rt_addon_cached.stat.exists or
+      _prboom_rt_addon_cached.stat.checksum != dg_prboom_rt_addon_sha256
+    - dg_prboom_rt_addon_source | length > 0
+
+- name: Reject a staged Doom II RT addon with the wrong identity
+  ansible.builtin.assert:
+    that:
+      - _prboom_rt_addon_staged.stat.size == dg_prboom_rt_addon_size
+      - _prboom_rt_addon_staged.stat.checksum == dg_prboom_rt_addon_sha256
+    fail_msg: |
+      Refusing unexpected Doom II RT addon: {{ dg_prboom_rt_addon_source }}
+      Expected {{ dg_prboom_rt_addon_size }} bytes and SHA256
+      {{ dg_prboom_rt_addon_sha256 }}.
+  when:
+    - _prboom_rt_addon_staged is not skipped | default(true)
+    - _prboom_rt_addon_staged.stat.exists
+
+- name: Cache verified Doom II RT addon
+  ansible.builtin.copy:
+    src: "{{ dg_prboom_rt_addon_source }}"
+    dest: "{{ dg_prboom_rt_addon_archive }}"
+    remote_src: true
+    mode: "0644"
+  when:
+    - _prboom_rt_addon_staged is not skipped | default(true)
+    - _prboom_rt_addon_staged.stat.exists
+    - _prboom_rt_addon_staged.stat.checksum == dg_prboom_rt_addon_sha256
+
+- name: Reinspect cached Doom II RT addon
+  ansible.builtin.stat:
+    path: "{{ dg_prboom_rt_addon_archive }}"
+    checksum_algorithm: sha256
+  register: _prboom_rt_addon_ready
+
+- name: Report missing Doom II RT addon
+  ansible.builtin.debug:
+    msg: |
+      Native renderer installed, but the Doom II lighting addon is not staged.
+      Download {{ dg_prboom_rt_addon_name }} from:
+        {{ dg_prboom_rt_addon_page }}
+      Place it at:
+        {{ dg_prboom_rt_addon_source }}
+      The next run verifies its pinned SHA256 before extracting anything.
+  when: >-
+    not _prboom_rt_addon_ready.stat.exists or
+    _prboom_rt_addon_ready.stat.checksum != dg_prboom_rt_addon_sha256
+
+- name: Create generated Doom II RT runtime directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_prboom_rt_doom2_runtime_dir }}"
+    - "{{ dg_prboom_rt_doom2_ovrd_dir }}"
+  when:
+    - _prboom_rt_addon_ready.stat.exists
+    - _prboom_rt_addon_ready.stat.checksum == dg_prboom_rt_addon_sha256
+
+- name: Inspect generated Doom II RT base marker
+  ansible.builtin.stat:
+    path: "{{ dg_prboom_rt_base_marker }}"
+  register: _prboom_rt_base_marker
+  when:
+    - _prboom_rt_addon_ready.stat.exists
+    - _prboom_rt_addon_ready.stat.checksum == dg_prboom_rt_addon_sha256
+
+- name: Copy base renderer data into generated Doom II tree
+  ansible.builtin.command:
+    cmd: >-
+      rsync -a --itemize-changes
+      --exclude=map_metainfo_doom1.txt
+      {{ dg_prboom_rt_package_dir }}/ovrd/
+      {{ dg_prboom_rt_doom2_ovrd_dir }}/
+  register: _prboom_rt_base_copy
+  changed_when: _prboom_rt_base_copy.stdout | length > 0
+  when:
+    - _prboom_rt_addon_ready.stat.exists
+    - _prboom_rt_addon_ready.stat.checksum == dg_prboom_rt_addon_sha256
+    - not _prboom_rt_base_marker.stat.exists
+
+- name: Mark generated Doom II RT base complete
+  ansible.builtin.file:
+    path: "{{ dg_prboom_rt_base_marker }}"
+    state: touch
+    mode: "0644"
+  when:
+    - _prboom_rt_addon_ready.stat.exists
+    - _prboom_rt_addon_ready.stat.checksum == dg_prboom_rt_addon_sha256
+    - not _prboom_rt_base_marker.stat.exists
+
+- name: Inspect generated Doom II RT addon marker
+  ansible.builtin.stat:
+    path: "{{ dg_prboom_rt_addon_marker }}"
+  register: _prboom_rt_addon_marker
+  when:
+    - _prboom_rt_addon_ready.stat.exists
+    - _prboom_rt_addon_ready.stat.checksum == dg_prboom_rt_addon_sha256
+
+- name: Overlay verified Doom II lighting metadata
+  ansible.builtin.unarchive:
+    src: "{{ dg_prboom_rt_addon_archive }}"
+    dest: "{{ dg_prboom_rt_doom2_runtime_dir }}"
+    remote_src: true
+  when:
+    - _prboom_rt_addon_ready.stat.exists
+    - _prboom_rt_addon_ready.stat.checksum == dg_prboom_rt_addon_sha256
+    - not _prboom_rt_addon_marker.stat.exists
+
+- name: Mark generated Doom II RT addon overlay complete
+  ansible.builtin.file:
+    path: "{{ dg_prboom_rt_addon_marker }}"
+    state: touch
+    mode: "0644"
+  when:
+    - _prboom_rt_addon_ready.stat.exists
+    - _prboom_rt_addon_ready.stat.checksum == dg_prboom_rt_addon_sha256
+    - not _prboom_rt_addon_marker.stat.exists
+
+- name: Remove Doom I map metadata from generated Doom II tree
+  ansible.builtin.file:
+    path: "{{ dg_prboom_rt_doom2_ovrd_dir }}/map_metainfo_doom1.txt"
+    state: absent
+  when:
+    - _prboom_rt_addon_ready.stat.exists
+    - _prboom_rt_addon_ready.stat.checksum == dg_prboom_rt_addon_sha256
+
+- name: Install PrBoom support WAD into generated Doom II tree
+  ansible.builtin.copy:
+    src: "{{ dg_prboom_rt_package_dir }}/prboom-plus.wad"
+    dest: "{{ dg_prboom_rt_doom2_runtime_dir }}/prboom-plus.wad"
+    remote_src: true
+    mode: "0644"
+  when:
+    - _prboom_rt_addon_ready.stat.exists
+    - _prboom_rt_addon_ready.stat.checksum == dg_prboom_rt_addon_sha256
+
+- name: Inspect an already installed owned Doom II IWAD
+  ansible.builtin.stat:
+    path: "{{ dg_prboom_rt_doom2_wad }}"
+    checksum_algorithm: sha256
+  register: _prboom_rt_wad_installed
+
+- name: Inspect explicit Doom II IWAD source
+  ansible.builtin.stat:
+    path: "{{ dg_prboom_rt_doom2_wad_source }}"
+  register: _prboom_rt_wad_explicit
+  when:
+    - not _prboom_rt_wad_installed.stat.exists
+    - dg_prboom_rt_doom2_wad_source | length > 0
+
+- name: Inspect Steam library search roots
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop: "{{ dg_prboom_rt_wad_search_roots | reject('equalto', '') | list }}"
+  register: _prboom_rt_wad_roots
+  when: not _prboom_rt_wad_installed.stat.exists
+
+- name: Search Steam libraries for a Doom II IWAD
+  ansible.builtin.find:
+    paths: >-
+      {{ _prboom_rt_wad_roots.results
+         | selectattr('stat.isdir', 'defined')
+         | selectattr('stat.isdir', 'equalto', true)
+         | map(attribute='item')
+         | list }}
+    patterns: "(?i)^doom2\\.wad$"
+    use_regex: true
+    recurse: true
+    file_type: file
+  register: _prboom_rt_wad_find
+  when:
+    - not _prboom_rt_wad_installed.stat.exists
+    - _prboom_rt_wad_roots.results
+      | selectattr('stat.isdir', 'defined')
+      | selectattr('stat.isdir', 'equalto', true)
+      | list
+      | length > 0
+
+- name: Select explicit owned Doom II IWAD
+  ansible.builtin.set_fact:
+    _prboom_rt_wad_selected: "{{ dg_prboom_rt_doom2_wad_source }}"
+  when:
+    - not _prboom_rt_wad_installed.stat.exists
+    - _prboom_rt_wad_explicit is not skipped | default(true)
+    - _prboom_rt_wad_explicit.stat.exists
+
+- name: Select discovered owned Doom II IWAD
+  ansible.builtin.set_fact:
+    _prboom_rt_wad_selected: "{{ (_prboom_rt_wad_find.files | sort(attribute='path') | first).path }}"
+  when:
+    - not _prboom_rt_wad_installed.stat.exists
+    - _prboom_rt_wad_selected is not defined
+    - _prboom_rt_wad_find is not skipped | default(true)
+    - _prboom_rt_wad_find.files | length > 0
+
+- name: Copy owned Doom II IWAD into persistent renderer data
+  ansible.builtin.copy:
+    src: "{{ _prboom_rt_wad_selected }}"
+    dest: "{{ dg_prboom_rt_doom2_wad }}"
+    remote_src: true
+    force: false
+    mode: "0644"
+  when:
+    - not _prboom_rt_wad_installed.stat.exists
+    - _prboom_rt_wad_selected is defined
+
+- name: Inspect final Doom II IWAD state
+  ansible.builtin.stat:
+    path: "{{ dg_prboom_rt_doom2_wad }}"
+    checksum_algorithm: sha256
+  register: _prboom_rt_wad_ready
+
+- name: Read Doom II IWAD magic
+  ansible.builtin.command:
+    cmd: "od -An -tx1 -N4 {{ dg_prboom_rt_doom2_wad }}"
+  register: _prboom_rt_wad_magic
+  changed_when: false
+  failed_when: "_prboom_rt_wad_magic.stdout | trim != '49 57 41 44'"
+  when: _prboom_rt_wad_ready.stat.exists
+
+- name: Report missing owned Doom II IWAD
+  ansible.builtin.debug:
+    msg: |
+      No Doom II IWAD is currently available. Searched Steam roots:
+      {{ dg_prboom_rt_wad_search_roots | reject('equalto', '') | join('\n') }}
+      Install/restore Steam app 2280 (DOOM + DOOM II) into one of those
+      libraries, then rerun this playbook. The role searches recursively.
+  when: not _prboom_rt_wad_ready.stat.exists
+
+- name: Seed persistent PrBoom-Plus-RT config without overwriting user changes
+  ansible.builtin.template:
+    src: doom2-rt.cfg.j2
+    dest: "{{ dg_prboom_rt_config }}"
+    mode: "0644"
+    force: false
+
+- name: Install per-game controller profile
+  ansible.builtin.template:
+    src: doom2-rt.gamecontroller.amgp.j2
+    dest: "{{ dg_prboom_rt_controller_profile }}"
+    mode: "0644"
+
+- name: Install native Doom II RT launcher
+  ansible.builtin.template:
+    src: doom2-rt.sh.j2
+    dest: "{{ dg_prboom_rt_launcher }}"
+    mode: "0755"
+
+- name: Report native Doom II RT readiness
+  ansible.builtin.debug:
+    msg: |
+      PrBoom-Plus-RT {{ dg_prboom_rt_version }} installed.
+      Runtime data: {{ 'ready' if (_prboom_rt_addon_ready.stat.exists and _prboom_rt_addon_ready.stat.checksum == dg_prboom_rt_addon_sha256) else 'missing addon' }}
+      Doom II IWAD: {{ (_prboom_rt_wad_ready.stat.checksum | default('missing')) }}
+      Check: {{ dg_prboom_rt_launcher }} status

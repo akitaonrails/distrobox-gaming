@@ -11,6 +11,15 @@
     state: directory
     mode: "0755"
 
+- name: Ensure Steam library root is writable by the box user
+  become: true
+  ansible.builtin.file:
+    path: "{{ dg_steam_root }}"
+    state: directory
+    owner: "{{ dg_host_uid }}"
+    group: "{{ dg_host_gid }}"
+    mode: "0755"
+
 - name: Build distrobox create command
   # Note on :ro for NFS paths: when the host has the same NFS share
   # mounted RW (e.g. via autofs), the kernel resolves writes through

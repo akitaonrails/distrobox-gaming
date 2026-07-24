@@ -69,3 +69,9 @@
 # 0xVID/0xPID). Add your pads' IDs (lsusb) — unlisted devices stay
 # invisible to the old games on purpose (filters phantom HID pads).
 # dg_pc_racing_gamepad_only: "0x2dc8/0x310b,0x045e/0x0b12"
+#
+# Native Doom II RT (opt-in install-prboom-plus-rt.yml). Normally the role
+# discovers DOOM2.WAD below dg_steam_root or dg_external_usb_games_root. Use an
+# explicit source only when neither configured Steam root matches the layout.
+# dg_prboom_rt_doom2_wad_source: /path/to/legal/DOOM2.WAD
+# dg_prboom_rt_addon_source: /path/to/doom2rt-0.9.zip

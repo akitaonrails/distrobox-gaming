@@ -1,0 +1,98 @@
+#!/usr/bin/env sh
+set -eu
+
+release_dir="{{ dg_prboom_rt_package_dir }}"
+runtime_dir="{{ dg_prboom_rt_doom2_runtime_dir }}"
+renderer="$release_dir/prboom-plus-rt"
+iwad="{{ dg_prboom_rt_doom2_wad }}"
+metainfo="{{ dg_prboom_rt_doom2_metainfo }}"
+config="{{ dg_prboom_rt_config }}"
+save_dir="{{ dg_prboom_rt_save_dir }}"
+screenshot_dir="{{ dg_prboom_rt_screenshot_dir }}"
+controller_profile="{{ dg_prboom_rt_controller_profile }}"
+
+status() {
+  printf '%s\n' 'Doom II: Ray Traced status'
+  [ -x "$renderer" ] && printf 'renderer: ready (%s)\n' "$renderer" || printf 'renderer: MISSING (%s)\n' "$renderer"
+  [ -f "$metainfo" ] && printf 'Doom II RT metadata: ready\n' || printf 'Doom II RT metadata: MISSING\n'
+  if [ -f "$iwad" ]; then
+    printf 'owned IWAD: '
+    sha256sum "$iwad"
+  else
+    printf 'owned IWAD: MISSING (%s)\n' "$iwad"
+  fi
+  if command -v vulkaninfo >/dev/null 2>&1; then
+    vulkaninfo --summary 2>/dev/null | sed -n '/Devices:/,$p' | sed -n '1,14p'
+  else
+    printf '%s\n' 'vulkaninfo: MISSING'
+  fi
+  if command -v antimicrox >/dev/null 2>&1; then
+    antimicrox --version | sed -n '1p'
+  else
+    printf '%s\n' 'antimicrox: MISSING'
+  fi
+  for pad in /dev/input/by-id/*8BitDo*event-joystick /dev/input/by-id/*Xbox*event-joystick /dev/input/by-id/*XBOX*event-joystick; do
+    [ -e "$pad" ] && printf 'controller: %s -> %s\n' "$pad" "$(readlink -f "$pad")"
+  done
+}
+
+if [ "${1:-}" = status ]; then
+  status
+  exit 0
+fi
+
+[ -x "$renderer" ] || { printf 'Renderer missing; rerun install-prboom-plus-rt.yml.\n' >&2; exit 1; }
+[ -f "$metainfo" ] || { printf 'Doom II RT addon missing; run doom2-rt status.\n' >&2; exit 1; }
+[ -f "$iwad" ] || {
+  printf 'Owned DOOM2.WAD missing. Restore Steam app 2280 in a configured Steam library, then rerun install-prboom-plus-rt.yml.\n' >&2
+  exit 1
+}
+
+antimicrox_pid=""
+evsieve_pid=""
+pad_inputs=""
+for pad in /dev/input/by-id/*8BitDo*event-joystick /dev/input/by-id/*Xbox*event-joystick /dev/input/by-id/*XBOX*event-joystick; do
+  [ -e "$pad" ] && pad_inputs="$pad_inputs --input $(readlink -f "$pad")"
+done
+
+if [ -n "$pad_inputs" ] && command -v antimicrox >/dev/null 2>&1 && [ -w /dev/uinput ]; then
+  SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT="{{ dg_prboom_rt_controller_allowlist }}" \
+    antimicrox --hidden --no-tray --eventgen uinput --profile "$controller_profile" >/dev/null 2>&1 &
+  antimicrox_pid=$!
+else
+  printf '%s\n' 'No supported event-joystick/uinput path; using keyboard and mouse.' >&2
+fi
+
+if [ -n "$pad_inputs" ] && command -v evsieve >/dev/null 2>&1 && [ -w /dev/uinput ]; then
+  # No grab: AntiMicroX still receives the pad. SDL_QUIT from Alt+F4 uses
+  # PrBoom's clean I_SafeExit path, so config is persisted before shutdown.
+  # shellcheck disable=SC2086
+  evsieve $pad_inputs --hook btn:select btn:start send-key=key:leftalt send-key=key:f4 \
+    --output name="doom2-rt-exit-keys" key:leftalt key:f4 >/dev/null 2>&1 &
+  evsieve_pid=$!
+fi
+
+cleanup() {
+  [ -n "$evsieve_pid" ] && kill "$evsieve_pid" 2>/dev/null || true
+  [ -n "$antimicrox_pid" ] && kill "$antimicrox_pid" 2>/dev/null || true
+}
+trap cleanup EXIT HUP INT TERM
+
+cd "$runtime_dir"
+export PRBOOM_DATA_DIR="$runtime_dir"
+export LD_LIBRARY_PATH="$release_dir${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+
+set +e
+"$renderer" \
+  -config "$config" \
+  -save "$save_dir" \
+  -shotdir "$screenshot_dir" \
+  -width {{ dg_prboom_rt_width }} \
+  -height {{ dg_prboom_rt_height }} \
+  -fullscreen \
+  -iwadrt "$metainfo" \
+  -iwad "$iwad" \
+  "$@"
+launch_status=$?
+set -e
+exit "$launch_status"
