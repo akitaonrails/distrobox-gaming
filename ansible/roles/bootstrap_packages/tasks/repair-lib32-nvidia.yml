@@ -64,6 +64,34 @@
   register: _lib32_repair
   changed_when: "'linked=' in _lib32_repair.stdout"
 
+- name: Prune stale /usr/lib32 NVIDIA symlinks from older driver versions
+  # The repair loop above only (re)links the CURRENT extract's files, so
+  # after a host driver update the previous version's fully-qualified
+  # symlinks (e.g. libGLX_nvidia.so.610.43.02) linger as dangling links
+  # into the now-refreshed extract dir. Harmless functionally (nothing
+  # resolves those exact names — the soname links point at the new
+  # version), but they trigger ldconfig "same soname but different type"
+  # warnings on every update. Remove any /usr/lib32 symlink that points
+  # into our extract dir and no longer resolves. Scoped to our extract
+  # path so it can never touch a live distrobox bind or a system lib.
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sudo sh -c '
+      pruned=0
+      for l in /usr/lib32/*nvidia* /usr/lib32/libcuda* /usr/lib32/libnvcuvid* \
+               /usr/lib32/gbm/*nvidia* /usr/lib32/vdpau/*nvidia*; do
+        [ -L "$l" ] || continue
+        case "$(readlink "$l")" in
+          {{ dg_nvidia_lib32_lib_dir }}/*) ;;
+          *) continue ;;
+        esac
+        [ -e "$l" ] && continue
+        rm -f "$l" && pruned=$((pruned+1))
+      done
+      [ "$pruned" -gt 0 ] && echo "lib32-nvidia-prune: removed=$pruned" || true
+    '
+  register: _lib32_prune
+  changed_when: "'lib32-nvidia-prune: removed=' in _lib32_prune.stdout"
+
 - name: Verify /usr/lib32 NVIDIA GLX driver is 32-bit
   ansible.builtin.shell: |
     {{ dg_in_box }} sh -c '
