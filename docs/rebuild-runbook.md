@@ -60,6 +60,7 @@ ansible-playbook site.yml --tags hedgemodmanager # install/update Hedge Mod Mana
 ansible-playbook site.yml --tags pc_racing   # optional Windows PC racing setup
 ansible-playbook site.yml --tags m2emulator  # optional Sega Model 2 Emulator (Wine)
 ansible-playbook install-model1.yml          # optional Sega Model 1 (Wanszai + MAME)
+ansible-playbook install-sega-rally.yml      # optional Sega Rally HD (Wanszai, Model 2)
 ansible-playbook site.yml --tags sonic_p06   # optional Sonic Project '06 setup
 ansible-playbook site.yml --tags configure   # apply configs, desktop entries, ES-DE
 ansible-playbook site.yml --tags verify      # post-setup assertions

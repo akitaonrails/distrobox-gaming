@@ -222,6 +222,44 @@ hanging the launcher's `wait`. The gamescope child therefore runs
 `wine …; wineserver -k`, so winedevice is torn down the instant the
 emulator quits and gamescope exits on its own.
 
+## Sega Rally Championship — Wanszai HD wrapper (Wine)
+
+A separate, higher-quality option for **one** Model 2 game: the
+[Wanszai *Sega Rally Championship* PC wrapper](https://github.com/wanszai/Sega-Rally-Championship-PC-Xbox360-Series-X-)
+— a MAME-core-based HD remaster with UHD scaling, 16:9/4:3 toggle, CRT
+filters, force feedback and online play. Run under Wine by the opt-in
+**`install_sega_rally`** role
+(`ansible-playbook install-sega-rally.yml`, or
+`site.yml --tags sega_rally`). Same shape as the Model 1 Virtua Racing
+wrapper (`install_model1`).
+
+What the role does (knobs in `group_vars/all/sega_rally.yml`):
+
+- Downloads the **pinned** PC release
+  (`PC-SegaRally1.0.0a.zip`, sha256-checked) to the box, extracts it to
+  an immutable `releases/` dir, then `rsync`s the app into a work dir
+  **excluding `nvram/`, `soundtrack/` and settings** so a future release
+  bump never wipes saves/config (per-version `.dg-release-*` marker).
+- **Symlinks** the owned ROM `srallyc.zip` (Twin/DX Rev C) from the
+  shared `roms_rare/model2` dir into the wrapper's `roms/` — never
+  copied; the wrapper ships no ROM and won't boot a race without it.
+- Dedicated Wine prefix with `vcrun2022` and the pc-racing WineBus pad
+  policy (`DisableHidraw`/`DisableInput`/`Enable SDL`/`Map Controllers`)
+  so the 8BitDo/Xbox pad presents as one clean XInput device.
+- Deploys `sega-rally-launch` (SDL pad env + `Select+Start → Alt+F4`
+  exit chord via a no-grab evsieve bridge, `wineserver -k` on exit —
+  identical to `model1-launch`) plus a **"Sega Rally Championship HD"**
+  desktop entry.
+
+Launch it two ways: the desktop entry, or in **ES-DE → Sega Model 2**,
+pick `srallyc` and choose the **"Sega Rally HD (Wanszai)"** alternate
+emulator (the default is still the Model 2 Emulator). That command is
+only valid for `srallyc` — it ignores `%ROM%` and always runs its own
+build. Controls are configured inside the game (it has its own
+controller/wheel/deadzone menu). `sega-rally-launch status` prints
+install/ROM/pad state. Verified 2026-07-25: boots and renders under
+Wine (title screen, windowed by default — F11 toggles fullscreen).
+
 ## ES-DE gamelists: hiding MAME clone sets
 
 ES-DE never reads the Skraper `gamelist.xml` inside the ROM dirs, so

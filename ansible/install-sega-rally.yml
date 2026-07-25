@@ -1,0 +1,10 @@
+---
+- name: Install Sega Rally Championship (Wanszai HD PC wrapper)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_sega_rally
+    - configure_esde
+    # verify executes box commands, which Ansible skips in --check mode.
+    - { role: verify, tags: [verify], when: not ansible_check_mode }

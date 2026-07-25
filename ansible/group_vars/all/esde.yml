@@ -173,6 +173,10 @@ dg_esde_systems:
       # Wrapper reduces %ROM% to the romset name; EMULATOR.EXE resolves
       # the zip itself via [RomDirs] in EMULATOR.INI.
       - { label: "Model 2 Emulator (Wine)", cmd: "{{ dg_box_home }}/bin/m2emulator-launch %ROM%" }
+      # Alternate emulator, valid ONLY for srallyc.zip: the Wanszai HD PC
+      # wrapper (install_sega_rally). Pick it per-game for Sega Rally;
+      # it ignores %ROM% and always runs its own bundled build.
+      - { label: "Sega Rally HD (Wanszai)", cmd: "{{ dg_box_home }}/bin/sega-rally-launch %ROM%" }
     platform: arcade
     theme: model2
 

@@ -1,0 +1,80 @@
+#!/usr/bin/env sh
+set -eu
+
+# Sega Rally Championship (Wanszai HD PC wrapper) launcher. Runs
+# segarally.exe under Wine with the shared pad policy and a Select+Start
+# exit chord. Same mechanism as model1-launch. Managed by
+# install_sega_rally.
+#
+# Usage:
+#   sega-rally-launch            # launch the game
+#   sega-rally-launch <rom.zip>  # same (ES-DE passes %ROM%; ignored)
+#   sega-rally-launch status     # print install / ROM / pad status
+
+work_dir="{{ dg_sega_rally_work_dir }}"
+prefix="{{ dg_sega_rally_prefix }}"
+exe="{{ dg_sega_rally_exe }}"
+rom_dir="{{ dg_sega_rally_rom_dir }}"
+required_rom="{{ dg_sega_rally_required_rom }}"
+
+common_env() {
+  # Same SDL environment as the pc-racing / Model 1 launchers: let the
+  # pad be seen unfocused, no hidapi double-open, only real pads exposed.
+  export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+  export SDL_JOYSTICK_HIDAPI="${SDL_JOYSTICK_HIDAPI:-{{ dg_pc_racing_sdl_hidapi }}}"
+  export SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT="${SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT:-{{ dg_pc_racing_gamepad_only }}}"
+}
+
+run_game() {
+  common_env
+  export WINEPREFIX="$prefix" WINEARCH={{ dg_sega_rally_winearch }} WINEDEBUG="${WINEDEBUG:--all}"
+  cd "$work_dir"
+  env -u PYTHONHOME -u PYTHONPATH wine "$exe"
+}
+
+run_with_exit_chord() {
+  evsieve_pid=""
+  if command -v evsieve >/dev/null 2>&1 && [ -w /dev/uinput ]; then
+    pad_inputs=""
+    for l in /dev/input/by-id/*8BitDo*Ultimate*event-joystick \
+             /dev/input/by-id/*Xbox*event-joystick \
+             /dev/input/by-id/*XBOX*event-joystick; do
+      [ -e "$l" ] && pad_inputs="$pad_inputs --input $(readlink -f "$l")"
+    done
+    if [ -n "$pad_inputs" ]; then
+      # No grab: the physical pad stays visible to the game; this only
+      # injects Alt+F4 when Select+Start are pressed together.
+      # shellcheck disable=SC2086
+      evsieve $pad_inputs --hook btn:select btn:start send-key=key:leftalt send-key=key:f4 \
+        --output name="sega-rally-exit-keys" key:leftalt key:f4 >/dev/null 2>&1 &
+      evsieve_pid=$!
+    fi
+  fi
+  cleanup() {
+    [ -n "$evsieve_pid" ] && kill "$evsieve_pid" 2>/dev/null || true
+    WINEPREFIX="$prefix" env -u PYTHONHOME -u PYTHONPATH wineserver -k >/dev/null 2>&1 || true
+  }
+  trap cleanup EXIT HUP INT TERM
+  set +e
+  run_game
+  status=$?
+  set -e
+  trap - EXIT HUP INT TERM
+  cleanup
+  return "$status"
+}
+
+status() {
+  printf '%s\n' 'Sega Rally Championship (Wanszai) status'
+  [ -f "{{ dg_sega_rally_archive }}" ] && sha256sum "{{ dg_sega_rally_archive }}" || printf 'archive missing\n'
+  [ -f "$work_dir/$exe" ] && printf 'exe present: %s\n' "$work_dir/$exe" || printf 'exe MISSING: %s\n' "$work_dir/$exe"
+  [ -f "$rom_dir/$required_rom" ] && printf 'ROM present: %s\n' "$required_rom" || printf 'ROM MISSING: %s\n' "$required_rom"
+  [ -L "$work_dir/roms/$required_rom" ] && printf 'ROM linked into wrapper: %s\n' "$work_dir/roms/$required_rom" || printf 'ROM link MISSING\n'
+  [ -f "$prefix/system.reg" ] && printf 'prefix ready: %s\n' "$prefix" || printf 'prefix MISSING\n'
+  ls /dev/input/js* 2>/dev/null || printf '%s\n' 'no /dev/input/js controller visible (wake the pad before launching)'
+}
+
+case "${1:-}" in
+  status) status; exit 0 ;;
+  *) run_with_exit_chord; exit $? ;;
+esac

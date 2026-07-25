@@ -1,0 +1,42 @@
+---
+# Sega Rally Championship — Wanszai HD PC wrapper (Model 2), run under
+# Wine in the box. Same shape as the Model 1 Virtua Racing setup
+# (install_model1): a pinned GitHub release, extracted immutably and
+# rsynced into a work dir that preserves the app's generated state, with
+# the owned MAME ROM symlinked in. The wrapper ships no ROM — it needs
+# the standalone Sega Rally Championship Twin/DX Rev C set (srallyc.zip),
+# which already lives in the Model 2 ROM dir.
+dg_sega_rally_root: "{{ dg_box_home }}/tools/sega-rally"
+dg_sega_rally_cache_dir: "{{ dg_sega_rally_root }}/cache"
+
+# Owned ROM: srallyc.zip in the shared Model 2 ROM dir (never copied or
+# modified — symlinked into the wrapper's roms/).
+dg_sega_rally_rom_dir: "{{ dg_emudeck_root }}/roms_rare/model2"
+dg_sega_rally_required_rom: srallyc.zip
+
+dg_sega_rally_winearch: win64
+# Same WineBus policy as the pc-racing / Model 1 prefixes: single clean
+# SDL-backed XInput pad, no duplicate hidraw/evdev enumeration.
+dg_sega_rally_winebus_registry:
+  - { name: DisableHidraw, value: 1 }
+  - { name: DisableInput, value: 1 }
+  - { name: Enable SDL, value: 1 }
+  - { name: Map Controllers, value: 1 }
+
+# Pinned Wanszai PC release. 1.0.0a is the current PC build; the repo
+# also ships X360/XboxSX variants we don't use.
+dg_sega_rally_version: "1.0.0a"
+dg_sega_rally_url: "https://github.com/wanszai/Sega-Rally-Championship-PC-Xbox360-Series-X-/releases/download/1.0.0a/PC-SegaRally1.0.0a.zip"
+dg_sega_rally_archive: "{{ dg_sega_rally_cache_dir }}/PC-SegaRally1.0.0a.zip"
+dg_sega_rally_checksum: "sha256:873339b92dc2fb9f6b57fbe4d94302f567c8d15262990fe51102499ecebae75e"
+dg_sega_rally_release_dir: "{{ dg_sega_rally_root }}/releases/sega-rally-{{ dg_sega_rally_version }}"
+# The archive's top-level folder is literally "Sega Rally".
+dg_sega_rally_release_subdir: "Sega Rally"
+dg_sega_rally_work_dir: "{{ dg_sega_rally_root }}/sega-rally"
+dg_sega_rally_exe: segarally.exe
+dg_sega_rally_prefix: "{{ dg_box_home }}/wineprefixes/sega-rally-wanszai"
+
+# Runtime the wrapper needs (already present in a fully-set-up box; kept
+# here so the role is self-contained / opt-in).
+dg_sega_rally_packages: [wine, winetricks, sdl2]
+dg_sega_rally_aur_packages: [evsieve]
