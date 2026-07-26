@@ -128,6 +128,23 @@
     dest: "{{ dg_box_home }}/bin/model1-launch"
     mode: "0755"
 
+- name: Render Virtua Racing desktop entry
+  ansible.builtin.template:
+    src: virtua-racing.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/virtua-racing.desktop"
+    mode: "0644"
+
+- name: Install rendered Virtua Racing desktop file into host applications dir
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _model1_host_launchers
+  changed_when: >-
+    'installed ' in _model1_host_launchers.stdout or
+    'removed stale ' in _model1_host_launchers.stdout
+
 - name: Report Model 1 setup
   ansible.builtin.debug:
     msg: "Model 1 ready: {{ dg_box_home }}/bin/model1-launch status"

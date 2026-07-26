@@ -14,7 +14,7 @@ set -eu
 work_dir="{{ dg_sega_rally_work_dir }}"
 prefix="{{ dg_sega_rally_prefix }}"
 exe="{{ dg_sega_rally_exe }}"
-rom_dir="{{ dg_sega_rally_rom_dir }}"
+rom_source="{{ dg_sega_rally_rom_source }}"
 required_rom="{{ dg_sega_rally_required_rom }}"
 
 common_env() {
@@ -68,8 +68,8 @@ status() {
   printf '%s\n' 'Sega Rally Championship (Wanszai) status'
   [ -f "{{ dg_sega_rally_archive }}" ] && sha256sum "{{ dg_sega_rally_archive }}" || printf 'archive missing\n'
   [ -f "$work_dir/$exe" ] && printf 'exe present: %s\n' "$work_dir/$exe" || printf 'exe MISSING: %s\n' "$work_dir/$exe"
-  [ -f "$rom_dir/$required_rom" ] && printf 'ROM present: %s\n' "$required_rom" || printf 'ROM MISSING: %s\n' "$required_rom"
-  [ -L "$work_dir/roms/$required_rom" ] && printf 'ROM linked into wrapper: %s\n' "$work_dir/roms/$required_rom" || printf 'ROM link MISSING\n'
+  [ -f "$rom_source" ] && printf 'MAME ROM source present: %s\n' "$rom_source" || printf 'MAME ROM source MISSING: %s\n' "$rom_source"
+  [ -L "$work_dir/roms/$required_rom" ] && [ -e "$work_dir/roms/$required_rom" ] && printf 'ROM linked into wrapper: %s -> %s\n' "$work_dir/roms/$required_rom" "$(readlink "$work_dir/roms/$required_rom")" || printf 'ROM link MISSING/broken\n'
   [ -f "$prefix/system.reg" ] && printf 'prefix ready: %s\n' "$prefix" || printf 'prefix MISSING\n'
   ls /dev/input/js* 2>/dev/null || printf '%s\n' 'no /dev/input/js controller visible (wake the pad before launching)'
 }

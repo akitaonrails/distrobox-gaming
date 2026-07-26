@@ -44,10 +44,16 @@ SHA256 `50b28072048e75150590a4107280d841d9726e9c2c5346236153a1778156f445`).
 Versioned extraction refreshes application assets while preserving Wanszai
 settings and NVRAM.
 
-Routing: exact `vr` uses Wanszai (compatible MAME 0.150 `vr.zip` required).
-`vf`, `swa`, their clones, Wing War, and every other Model 1 set use native
-MAME with explicit ROM/config/NVRAM paths. Parent/clone compatibility is
-checked informationally with MAME, never made a role failure.
+Routing: exact `vr` uses Wanszai (compatible **MAME 0.150** `vr.zip`
+required — the MAME game set; box MAME 0.288 reports it missing only the
+post-0.150 `m1comm` BIOS, which is expected and fine). `vf`, `swa`,
+their clones, Wing War, and every other Model 1 set use native MAME with
+explicit ROM/config/NVRAM paths. Parent/clone compatibility is checked
+informationally with MAME, never made a role failure.
+
+Virtua Racing also has a **"Virtua Racing"** desktop entry (runs
+`model1-launch vr`) for direct Walker/menu launch, alongside the ES-DE
+`model1` system.
 
 Run `model1-launch status` for artifact hashes, ROM/prefix/MAME/controller and
 config checks. `configure-vr` opens Wanszai in its working directory; use its
@@ -240,9 +246,18 @@ What the role does (knobs in `group_vars/all/sega_rally.yml`):
   an immutable `releases/` dir, then `rsync`s the app into a work dir
   **excluding `nvram/`, `soundtrack/` and settings** so a future release
   bump never wipes saves/config (per-version `.dg-release-*` marker).
-- **Symlinks** the owned ROM `srallyc.zip` (Twin/DX Rev C) from the
-  shared `roms_rare/model2` dir into the wrapper's `roms/` — never
-  copied; the wrapper ships no ROM and won't boot a race without it.
+- **Symlinks** the owned ROM into the wrapper's `roms/` as `srallyc.zip`
+  — never copied; the wrapper ships no ROM. **Critical ROM gotcha:** the
+  wrapper's core is MAME **0.150**, so it needs the **MAME** `srallyc`
+  set (`dg_sega_rally_rom_source`, from the arcade MAME collection),
+  **not** the `srallyc.zip` in `roms_rare/model2` — that one is the
+  *Model 2 Emulator's* decrypted/merged format and the wrapper rejects
+  it with "ROM FAILED VERIFICATION / wrong or incomplete romset for MAME
+  0.150". Box MAME (0.288) flags the correct MAME set as missing the
+  `segabill` BIOS, but that BIOS split was added *after* 0.150, so the
+  game-ROM set is right for the wrapper — identical to how the Model 1
+  Virtua Racing `vr.zip` verifies as missing only the post-0.150
+  `m1comm` BIOS yet plays fine.
 - Dedicated Wine prefix with `vcrun2022` and the pc-racing WineBus pad
   policy (`DisableHidraw`/`DisableInput`/`Enable SDL`/`Map Controllers`)
   so the 8BitDo/Xbox pad presents as one clean XInput device.

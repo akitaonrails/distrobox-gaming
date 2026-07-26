@@ -9,9 +9,17 @@
 dg_sega_rally_root: "{{ dg_box_home }}/tools/sega-rally"
 dg_sega_rally_cache_dir: "{{ dg_sega_rally_root }}/cache"
 
-# Owned ROM: srallyc.zip in the shared Model 2 ROM dir (never copied or
-# modified — symlinked into the wrapper's roms/).
-dg_sega_rally_rom_dir: "{{ dg_emudeck_root }}/roms_rare/model2"
+# Owned ROM. IMPORTANT: this MAME-core wrapper needs the **MAME** srallyc
+# set (parent, MAME 0.150-era), NOT the Model 2 Emulator srallyc in
+# roms_rare/model2 — that one is the emulator's decrypted/merged format
+# and the wrapper rejects it with "ROM FAILED VERIFICATION / wrong or
+# incomplete romset for MAME 0.150". The MAME set lives in the arcade
+# MAME collection. Box MAME (0.288) flags it as missing the `segabill`
+# BIOS, but that split was added AFTER 0.150, so the game-ROM set is
+# correct for the wrapper's 0.150 core — the same situation as the Model
+# 1 Virtua Racing vr.zip (missing only the post-0.150 `m1comm` BIOS).
+# The wrapper expects the file named exactly `srallyc.zip` in its roms/.
+dg_sega_rally_rom_source: "{{ dg_roms_final_root }}/arcade/mame/srallyc_dup1.zip"
 dg_sega_rally_required_rom: srallyc.zip
 
 dg_sega_rally_winearch: win64

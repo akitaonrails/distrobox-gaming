@@ -15,13 +15,15 @@
     - "{{ dg_sega_rally_prefix }}"
     - "{{ dg_box_home }}/bin"
 
-- name: Warn if the required Sega Rally ROM is missing
+- name: Warn if the required MAME Sega Rally ROM is missing
   ansible.builtin.debug:
     msg: >-
-      Required ROM absent: {{ dg_sega_rally_rom_dir }}/{{ dg_sega_rally_required_rom }}
-      (srallyc.zip — Sega Rally Championship Twin/DX Rev C). The wrapper
-      installs but will not boot a race without it.
-  when: not lookup('ansible.builtin.fileglob', dg_sega_rally_rom_dir ~ '/' ~ dg_sega_rally_required_rom)
+      Required MAME srallyc set absent: {{ dg_sega_rally_rom_source }}
+      (Sega Rally Championship Twin/DX Rev C, MAME parent set). The
+      wrapper installs but will not boot a race without it. NOTE: the
+      Model 2 Emulator srallyc in roms_rare/model2 is the WRONG format
+      for this MAME-core wrapper.
+  when: not (dg_sega_rally_rom_source is file)
 
 - name: Install Sega Rally runtime packages inside box
   ansible.builtin.shell: >-
@@ -87,14 +89,17 @@
     - soundtrack
     - nvram
 
-- name: Link owned Sega Rally ROM into the wrapper roms directory
+- name: Link the MAME Sega Rally ROM into the wrapper roms directory
   # Symlink, never copy — the NAS ROM stays the single source of truth.
+  # The wrapper needs the file named srallyc.zip; the source is the MAME
+  # parent set (possibly a dedup-renamed *_dup1.zip on the NAS).
   ansible.builtin.file:
-    src: "{{ dg_sega_rally_rom_dir }}/{{ dg_sega_rally_required_rom }}"
+    src: "{{ dg_sega_rally_rom_source }}"
     dest: "{{ dg_sega_rally_work_dir }}/roms/{{ dg_sega_rally_required_rom }}"
     state: link
     force: true
     follow: false
+  when: dg_sega_rally_rom_source is file
 
 - name: Initialize Sega Rally Wine prefix
   ansible.builtin.shell: |
