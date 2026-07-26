@@ -34,30 +34,34 @@ system in ES-DE. Several emulators cover them:
 ## Sega Model 1 — Wanszai and MAME
 
 Model 1 is opt-in: run `ansible-playbook install-model1.yml` (or
-`ansible-playbook site.yml --tags model1`). It installs native MAME and a
-Wanszai Wine prefix; ES-DE calls `model1-launch` for
-`roms_rare/model1/*.zip`. ROM archives are user-supplied and remain in place:
-the role never copies or modifies ROM contents.
+`ansible-playbook site.yml --tags model1`). It installs native MAME plus
+**two** Wanszai Wine frontends (Virtua Racing and Virtua Fighter), each
+in its own prefix; ES-DE calls `model1-launch` for
+`roms_rare/model1/*.zip`. ROM archives are user-supplied and remain in
+place: the role never copies or modifies ROM contents.
 
-Wanszai Virtua Racing is pinned at **1.0.2b** (`PC-VirtuaRacing102b.zip`,
-SHA256 `50b28072048e75150590a4107280d841d9726e9c2c5346236153a1778156f445`).
-Versioned extraction refreshes application assets while preserving Wanszai
-settings and NVRAM.
+Pinned Wanszai releases (SHA256-checked, extracted immutably then
+rsynced into a work dir that preserves settings/NVRAM):
+- **Virtua Racing** `1.0.2b` (`PC-VirtuaRacing102b.zip`)
+- **Virtua Fighter** `1.0.4` (`PC-VirtuaFighter.zip`)
 
-Routing: exact `vr` uses Wanszai (compatible **MAME 0.150** `vr.zip`
-required — the MAME game set; box MAME 0.288 reports it missing only the
-post-0.150 `m1comm` BIOS, which is expected and fine). `vf`, `swa`,
-their clones, Wing War, and every other Model 1 set use native MAME with
-explicit ROM/config/NVRAM paths. Parent/clone compatibility is checked
+Routing: exact `vr` → Wanszai Virtua Racing, exact `vf` → Wanszai Virtua
+Fighter; `swa`, clones, Wing War and every other Model 1 set use native
+MAME with explicit ROM/config/NVRAM paths. Both Wanszai wrappers need
+the **MAME 0.150** game set of their ROM (`vr.zip` / `vf.zip`); box MAME
+0.288 reports these missing only a post-0.150 BIOS split (`m1comm` for
+vr, `model1io` for vf), which is expected — the game-ROM set is correct
+for the wrappers' 0.150 core. Parent/clone compatibility is checked
 informationally with MAME, never made a role failure.
 
-Virtua Racing also has a **"Virtua Racing"** desktop entry (runs
-`model1-launch vr`) for direct Walker/menu launch, alongside the ES-DE
-`model1` system.
+Both have desktop entries — **"Virtua Racing"** (`model1-launch vr`) and
+**"Virtua Fighter"** (`model1-launch vf`) — for direct Walker/menu
+launch, alongside the ES-DE `model1` system.
 
 Run `model1-launch status` for artifact hashes, ROM/prefix/MAME/controller and
-config checks. `configure-vr` opens Wanszai in its working directory; use its
-in-app controller and deadzone settings. Select+Start injects Alt+F4 through a
+config checks. `configure-vr` / `configure-vf` open the respective Wanszai
+frontend in its working directory; use its in-app controller/deadzone
+settings. Select+Start injects Alt+F4 through a
 no-grab `evsieve` helper for both Wine and MAME. Wanszai may stutter under Wine,
 so MAME is the fallback.
 

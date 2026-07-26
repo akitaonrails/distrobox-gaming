@@ -9,6 +9,7 @@
     - "{{ dg_model1_cache_dir }}"
     - "{{ dg_model1_root }}/releases"
     - "{{ dg_model1_vr_prefix }}"
+    - "{{ dg_model1_vf_prefix }}"
     - "{{ dg_model1_mame_state_dir }}/cfg"
     - "{{ dg_model1_mame_state_dir }}/nvram"
     - "{{ dg_box_home }}/bin"
@@ -48,6 +49,7 @@
     mode: "0644"
   loop:
     - { url: "{{ dg_model1_vr_url }}", archive: "{{ dg_model1_vr_archive }}", checksum: "{{ dg_model1_vr_checksum }}" }
+    - { url: "{{ dg_model1_vf_url }}", archive: "{{ dg_model1_vf_archive }}", checksum: "{{ dg_model1_vf_checksum }}" }
   when: not ansible_check_mode
 
 - name: Create immutable release directory
@@ -55,7 +57,9 @@
     path: "{{ item }}"
     state: directory
     mode: "0755"
-  loop: ["{{ dg_model1_vr_release_dir }}"]
+  loop:
+    - "{{ dg_model1_vr_release_dir }}"
+    - "{{ dg_model1_vf_release_dir }}"
 
 - name: Extract immutable Model 1 frontend release
   ansible.builtin.unarchive:
@@ -65,6 +69,7 @@
     creates: "{{ item.creates }}"
   loop:
     - { archive: "{{ dg_model1_vr_archive }}", dest: "{{ dg_model1_vr_release_dir }}", creates: "{{ dg_model1_vr_release_dir }}/VirtuaRacing/vr.exe" }
+    - { archive: "{{ dg_model1_vf_archive }}", dest: "{{ dg_model1_vf_release_dir }}", creates: "{{ dg_model1_vf_release_dir }}/VirtuaFighter/vf.exe" }
   when: not ansible_check_mode
 
 - name: Refresh Wanszai application files while preserving generated state
@@ -72,11 +77,16 @@
   # written by the frontend and are deliberately never overwritten or deleted.
   ansible.builtin.shell: >-
     rsync -a --itemize-changes
-    --exclude=settings.ini --exclude=vfmenu.cfg --exclude=wheel_di.ini --exclude=nvram/
-    '{{ dg_model1_vr_release_dir }}/VirtuaRacing/' '{{ dg_model1_vr_work_dir }}/'
-    && touch '{{ dg_model1_vr_work_dir }}/.dg-release-{{ dg_model1_vr_version }}'
+    --exclude=settings.ini --exclude=vfmenu.cfg --exclude=wheel_di.ini --exclude='*.cfg' --exclude=nvram/
+    '{{ item.subdir }}/' '{{ item.work }}/'
+    && touch '{{ item.work }}/.dg-release-{{ item.version }}'
   args:
-    creates: "{{ dg_model1_vr_work_dir }}/.dg-release-{{ dg_model1_vr_version }}"
+    creates: "{{ item.work }}/.dg-release-{{ item.version }}"
+  loop:
+    - { subdir: "{{ dg_model1_vr_release_dir }}/VirtuaRacing", work: "{{ dg_model1_vr_work_dir }}", version: "{{ dg_model1_vr_version }}" }
+    - { subdir: "{{ dg_model1_vf_release_dir }}/VirtuaFighter", work: "{{ dg_model1_vf_work_dir }}", version: "{{ dg_model1_vf_version }}" }
+  loop_control:
+    label: "{{ item.work | basename }}"
   when: not ansible_check_mode
 
 - name: Create frontend-local Model 1 ROM directory
@@ -84,7 +94,9 @@
     path: "{{ item }}"
     state: directory
     mode: "0755"
-  loop: ["{{ dg_model1_vr_work_dir }}/roms"]
+  loop:
+    - "{{ dg_model1_vr_work_dir }}/roms"
+    - "{{ dg_model1_vf_work_dir }}/roms"
 
 - name: Link owned Model 1 ROM set into frontend directory
   ansible.builtin.file:
@@ -95,6 +107,7 @@
     follow: false
   loop:
     - { dir: "{{ dg_model1_vr_work_dir }}", rom: vr.zip }
+    - { dir: "{{ dg_model1_vf_work_dir }}", rom: vf.zip }
 
 - name: Verify available Model 1 ROMs with MAME without failing on set drift
   ansible.builtin.shell: >-
@@ -108,19 +121,26 @@
     {{ dg_in_box }} sh -lc 'export WINEPREFIX="{{ item }}" WINEARCH="{{ dg_model1_winearch }}" WINEDEBUG=-all; env -u PYTHONHOME -u PYTHONPATH wineboot -u'
   args:
     creates: "{{ item }}/system.reg"
-  loop: ["{{ dg_model1_vr_prefix }}"]
+  loop:
+    - "{{ dg_model1_vr_prefix }}"
+    - "{{ dg_model1_vf_prefix }}"
 
 - name: Install Wanszai Visual C++ runtime
   ansible.builtin.shell: |
-    {{ dg_in_box }} sh -lc 'export WINEPREFIX="{{ dg_model1_vr_prefix }}" WINEARCH="{{ dg_model1_winearch }}" WINEDEBUG=-all; timeout 300 env -u PYTHONHOME -u PYTHONPATH winetricks -q vcrun2022; touch "{{ dg_model1_vr_prefix }}/.dg-winetricks-vcrun2022"'
+    {{ dg_in_box }} sh -lc 'export WINEPREFIX="{{ item }}" WINEARCH="{{ dg_model1_winearch }}" WINEDEBUG=-all; timeout 300 env -u PYTHONHOME -u PYTHONPATH winetricks -q vcrun2022; touch "{{ item }}/.dg-winetricks-vcrun2022"'
   args:
-    creates: "{{ dg_model1_vr_prefix }}/.dg-winetricks-vcrun2022"
+    creates: "{{ item }}/.dg-winetricks-vcrun2022"
+  loop:
+    - "{{ dg_model1_vr_prefix }}"
+    - "{{ dg_model1_vf_prefix }}"
 
 - name: Configure Model 1 WineBus controller policy
   ansible.builtin.shell: |
     {{ dg_in_box }} sh -lc 'export WINEPREFIX="{{ item.0 }}" WINEARCH="{{ dg_model1_winearch }}"; wine reg add "HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\winebus" /v "{{ item.1.name }}" /t REG_DWORD /d "{{ item.1.value }}" /f'
   changed_when: false
-  loop: "{{ [dg_model1_vr_prefix] | product(dg_model1_winebus_registry) | list }}"
+  loop: "{{ [dg_model1_vr_prefix, dg_model1_vf_prefix] | product(dg_model1_winebus_registry) | list }}"
+  loop_control:
+    label: "{{ item.0 | basename }} / {{ item.1.name }}"
 
 - name: Deploy Model 1 launcher
   ansible.builtin.template:
@@ -128,11 +148,14 @@
     dest: "{{ dg_box_home }}/bin/model1-launch"
     mode: "0755"
 
-- name: Render Virtua Racing desktop entry
+- name: Render Model 1 desktop entries
   ansible.builtin.template:
-    src: virtua-racing.desktop.j2
-    dest: "{{ dg_desktop_render_dir }}/virtua-racing.desktop"
+    src: "{{ item }}.j2"
+    dest: "{{ dg_desktop_render_dir }}/{{ item }}"
     mode: "0644"
+  loop:
+    - virtua-racing.desktop
+    - virtua-fighter.desktop
 
 - name: Install rendered Virtua Racing desktop file into host applications dir
   ansible.builtin.command:

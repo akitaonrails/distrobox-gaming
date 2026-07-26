@@ -1,5 +1,6 @@
 ---
-# Sega Model 1: opt-in Wanszai Virtua Racing plus native MAME fallback.
+# Sega Model 1: opt-in Wanszai Virtua Racing + Virtua Fighter Wine
+# frontends plus native MAME fallback.
 dg_model1_root: "{{ dg_box_home }}/tools/model1"
 dg_model1_cache_dir: "{{ dg_model1_root }}/cache"
 dg_model1_rom_dir: "{{ dg_emudeck_root }}/roms_rare/model1"
@@ -21,6 +22,19 @@ dg_model1_vr_checksum: "sha256:50b28072048e75150590a4107280d841d9726e9c2c5346236
 dg_model1_vr_release_dir: "{{ dg_model1_root }}/releases/virtua-racing-{{ dg_model1_vr_version }}"
 dg_model1_vr_work_dir: "{{ dg_model1_root }}/virtua-racing"
 dg_model1_vr_prefix: "{{ dg_box_home }}/wineprefixes/model1-virtua-racing"
+
+# Wanszai Virtua Fighter — second Model 1 Wine frontend, same shape as
+# Virtua Racing. Needs the MAME vf set (roms_rare/model1/vf.zip; box
+# MAME reports it missing only the post-0.150 model1io BIOS, which is
+# expected — the game-ROM set is correct for the wrapper's 0.150 core).
+dg_model1_vf_version: "1.0.4"
+dg_model1_vf_url: "https://github.com/wanszai/Virtua-Fighter---XboxOne-Windows/releases/download/1.0.4/PC-VirtuaFighter.zip"
+dg_model1_vf_archive: "{{ dg_model1_cache_dir }}/PC-VirtuaFighter.zip"
+dg_model1_vf_checksum: "sha256:ea0813f32e6af82979cc0d78e232fc8bd5a65d0be82cd7fe6174df65d069d07b"
+dg_model1_vf_release_dir: "{{ dg_model1_root }}/releases/virtua-fighter-{{ dg_model1_vf_version }}"
+dg_model1_vf_work_dir: "{{ dg_model1_root }}/virtua-fighter"
+dg_model1_vf_prefix: "{{ dg_box_home }}/wineprefixes/model1-virtua-fighter"
+
 dg_model1_legacy_wang_paths:
   - "{{ dg_model1_root }}/wangmodel1"
   - "{{ dg_model1_root }}/releases/wangmodel1-1.3"

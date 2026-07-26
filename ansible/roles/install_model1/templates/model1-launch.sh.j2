@@ -2,6 +2,7 @@
 set -eu
 rom_dir="{{ dg_model1_rom_dir }}"
 vr_dir="{{ dg_model1_vr_work_dir }}"
+vf_dir="{{ dg_model1_vf_work_dir }}"
 mame_state="{{ dg_model1_mame_state_dir }}"
 common_env() {
   export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
@@ -56,18 +57,20 @@ status() {
   for f in "{{ dg_model1_vr_archive }}"; do [ -f "$f" ] && sha256sum "$f" || printf 'missing %s\n' "$f"; done
   for r in {{ dg_model1_expected_roms | join(' ') }}; do [ -f "$rom_dir/$r" ] && printf 'ROM present: %s\n' "$r" || printf 'ROM missing: %s\n' "$r"; done
   command -v mame >/dev/null 2>&1 && mame -version || printf '%s\n' 'MAME missing'
-  for p in "{{ dg_model1_vr_prefix }}"; do [ -f "$p/system.reg" ] && printf 'prefix ready: %s\n' "$p" || printf 'prefix missing: %s\n' "$p"; done
-  for f in "$vr_dir/vr.exe" "$vr_dir/nvram" "$mame_state/cfg" "$mame_state/nvram"; do [ -e "$f" ] && printf 'backend state: %s\n' "$f" || printf 'missing backend state: %s\n' "$f"; done
+  for p in "{{ dg_model1_vr_prefix }}" "{{ dg_model1_vf_prefix }}"; do [ -f "$p/system.reg" ] && printf 'prefix ready: %s\n' "$p" || printf 'prefix missing: %s\n' "$p"; done
+  for f in "$vr_dir/vr.exe" "$vf_dir/vf.exe" "$mame_state/cfg" "$mame_state/nvram"; do [ -e "$f" ] && printf 'backend state: %s\n' "$f" || printf 'missing backend state: %s\n' "$f"; done
+  for r in "$vr_dir/roms/vr.zip" "$vf_dir/roms/vf.zip"; do [ -e "$r" ] && printf 'wrapper ROM: %s -> %s\n' "$r" "$(readlink "$r" 2>/dev/null || echo "$r")" || printf 'wrapper ROM MISSING: %s\n' "$r"; done
   ls /dev/input/js* 2>/dev/null || printf '%s\n' 'no /dev/input/js controller visible'
-  for f in "$vr_dir/settings.ini" "$vr_dir/vfmenu.cfg" "$vr_dir/wheel_di.ini"; do [ -e "$f" ] && printf 'config: %s\n' "$f"; done
 }
 case "${1:-}" in
   status) status; exit 0 ;;
   configure-vr) run_with_exit_chord "{{ dg_model1_vr_prefix }}" wine_gui "{{ dg_model1_vr_prefix }}" "$vr_dir" vr.exe; exit $? ;;
+  configure-vf) run_with_exit_chord "{{ dg_model1_vf_prefix }}" wine_gui "{{ dg_model1_vf_prefix }}" "$vf_dir" vf.exe; exit $? ;;
 esac
-[ $# -eq 1 ] || { printf '%s\n' 'usage: model1-launch <rom.zip>|status|configure-vr' >&2; exit 64; }
+[ $# -eq 1 ] || { printf '%s\n' 'usage: model1-launch <rom.zip>|status|configure-vr|configure-vf' >&2; exit 64; }
 short=$(basename "$1"); short=${short%.zip}; short=${short%.ZIP}
 case "$short" in
   vr) printf '%s\n' 'Virtua Racing: Wanszai GUI; use its in-app controller/deadzone settings.' >&2; run_with_exit_chord "{{ dg_model1_vr_prefix }}" wine_gui "{{ dg_model1_vr_prefix }}" "$vr_dir" vr.exe ;;
+  vf) printf '%s\n' 'Virtua Fighter: Wanszai GUI; use its in-app controller settings.' >&2; run_with_exit_chord "{{ dg_model1_vf_prefix }}" wine_gui "{{ dg_model1_vf_prefix }}" "$vf_dir" vf.exe ;;
   *) run_with_exit_chord "" mame_gui "$short" ;;
 esac
