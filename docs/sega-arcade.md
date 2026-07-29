@@ -91,20 +91,49 @@ Managed render settings (`dg_supermodel_settings` →
 backgrounds (Model 3 has a real widescreen mode, unlike Model 2), New3D
 engine, quad rendering, force feedback.
 
-**Runs under gamescope** (like every other emulator here). Supermodel
-only applies its 4K resolution in *exclusive fullscreen*, and that
-mode-set fails on scaled XWayland ("Unable to enter fullscreen mode:
-Couldn't find any matching video modes"); its windowed/borderless path
-ignores the resolution entirely and opens a tiny native-res 496x384
-window (which showed as ~330x256 at the 1.5 monitor scale — the "small
-window, no game" symptom). gamescope presents a real 3840x2160 mode, so
-the wrapper runs `gamescope -W 3840 -H 2160 -f -- supermodel-binary
-<rom> -res=3840,2160 -fullscreen`. Supermodel is native (no wine) so
-gamescope tears down cleanly when it exits.
+**Renders directly on the RTX 5090 via XWayland — NOT gamescope**
+(changed 2026-07-29; see below). Supermodel only applies its 4K
+resolution in *exclusive fullscreen*, and that mode-set needs a real
+video mode. SDL2 defaults to its **Wayland** backend under Hyprland,
+which exposes *no* modes — that is the "Unable to enter fullscreen mode:
+Couldn't find any matching video modes" error. The wrapper forces SDL
+onto **X11** (`SDL_VIDEODRIVER=x11`); XWayland *does* expose the
+monitor's real `3840x2160@240` mode, so `-fullscreen` succeeds natively
+at 4K. (Supermodel's windowed/borderless path is a dead end — it ignores
+`-res` and opens a tiny 496x384 window, ~330x256 at the 1.5 monitor
+scale, the "small window, no game" symptom.)
 
-Verified 2026-07-13: Daytona USA 2 and Scud Race boot and render
-fullscreen at 4K on the RTX 5090 (GL 4.5 core profile) via the ES-DE
-command path.
+**Why gamescope was dropped (2026-07-29).** It used to run under
+`gamescope -f`, but the July host bump (gamescope 3.16.25 + mesa 26.1.5)
+broke it: the 7950X3D's **integrated Radeon** now exposes a RADV Vulkan
+device, and gamescope grabbed *that iGPU* to composite a Model 3 game →
+epilepsy-strobe flicker that never advanced past the boot screen.
+Pointing gamescope at the NVIDIA GPU (`--prefer-vk-device 10de:2b85`)
+instead threw `vkGetPhysicalDeviceFormatProperties2 returned zero
+modifiers` DRM errors → black screen. Native XWayland has none of this.
+
+**GPU is hard-pinned to the RTX 5090** so GL/Vulkan can never fall back
+to the iGPU: `__GLX_VENDOR_LIBRARY_NAME=nvidia` +
+`__NV_PRIME_RENDER_OFFLOAD=1` route Supermodel's OpenGL (GLX) to the
+NVIDIA driver (verified renderer `NVIDIA 610.43.03`), and the `VK_*`
+vars keep any Vulkan off the iGPU. Supermodel is native (no wine), so the
+wrapper's EXIT trap tears down evsieve cleanly.
+
+**Always opens on the main horizontal monitor (DP-1), never the portrait
+DP-2.** SDL exclusive fullscreen targets the *focused* output; if focus
+is on the portrait DP-2 (`2160x3840`) the `3840x2160` mode-set fails with
+the same "no matching video modes" error. Before launching, the wrapper
+focuses `${DG_MAIN_OUTPUT:-DP-1}` via Hyprland IPC — the compositor
+socket is shared into the box, but `hyprctl` isn't installed there and
+`distrobox-host-exec hyprctl` fails (exit 127), so it talks to
+`$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket.sock`
+directly with `python3` (`dispatch focusmonitor`). Best-effort — a no-op
+off Hyprland.
+
+Verified 2026-07-29: Scud Race boots and renders fullscreen at 4K on
+DP-1 (GL 4.5 core profile, `NVIDIA 610.43.03`) via the ES-DE command
+path, including the worst case of launching while the portrait DP-2 held
+focus (the wrapper self-corrects to DP-1).
 
 Controls: Supermodel's `JOY1_BUTTONn` is 1-based over the SDL joystick
 button list, and on xpad-ordered pads (8BitDo dongle, Xbox) the

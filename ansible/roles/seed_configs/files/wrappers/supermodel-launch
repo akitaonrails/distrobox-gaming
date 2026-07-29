@@ -49,19 +49,49 @@ fi
 cleanup() { [ -n "$evsieve_pid" ] && kill "$evsieve_pid" 2>/dev/null || true; }
 trap cleanup EXIT INT TERM HUP
 
-# Run under gamescope. Supermodel only applies its 4K resolution in
-# EXCLUSIVE fullscreen; that mode-set fails on scaled XWayland ("Unable
-# to enter fullscreen mode: Couldn't find any matching video modes"),
-# and its windowed/borderless path ignores the resolution and opens a
-# tiny native-res (496x384) window. gamescope presents a real 3840x2160
-# mode so -fullscreen succeeds. Model 3 has true widescreen (WideScreen
-# in Supermodel.ini) so we render native 16:9 — no pillarboxing needed.
-# NOT exec: gamescope runs as a child so the EXIT trap stops evsieve.
-if command -v gamescope >/dev/null 2>&1; then
-  env -u PYTHONHOME -u PYTHONPATH gamescope -W 3840 -H 2160 -f -- \
-    /usr/bin/supermodel-binary "$@" -res=3840,2160 -fullscreen
-else
-  # No gamescope: fall back to XWayland borderless (small window, but at
-  # least runs). WAYLAND_DISPLAY='' forces SDL2 onto XWayland.
-  env WAYLAND_DISPLAY='' /usr/bin/supermodel-binary "$@" -borderless
+# Always open on the main HORIZONTAL monitor, never the portrait one.
+# SDL exclusive fullscreen targets the focused output; if focus is on the
+# portrait DP-2 (2160x3840) the 3840x2160 mode-set fails ("no matching
+# video modes"). Focus the main output first via Hyprland IPC — the socket
+# is shared into the box, but hyprctl isn't installed here and
+# distrobox-host-exec can't reach it (exit 127), so talk to the socket
+# with python3. Best-effort: harmless off Hyprland or without python3.
+main_output="${DG_MAIN_OUTPUT:-DP-1}"
+if command -v python3 >/dev/null 2>&1 && [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+  python3 - "$main_output" <<'PY' >/dev/null 2>&1 || true
+import socket, os, sys
+sig = os.environ["HYPRLAND_INSTANCE_SIGNATURE"]; xdg = os.environ["XDG_RUNTIME_DIR"]
+s = socket.socket(socket.AF_UNIX); s.connect(f"{xdg}/hypr/{sig}/.socket.sock")
+s.sendall(f"dispatch focusmonitor {sys.argv[1]}".encode()); s.recv(64)
+PY
 fi
+
+# Render directly on the RTX 5090 via XWayland — NO gamescope.
+#
+# Supermodel only applies its 4K resolution in EXCLUSIVE fullscreen; its
+# windowed/borderless path ignores -res and opens a tiny 496x384 window.
+# Exclusive fullscreen needs a real video mode. SDL2 defaults to its
+# Wayland backend under Hyprland, which exposes NO modes — that is the
+# "Unable to enter fullscreen mode: Couldn't find any matching video
+# modes" error. Forcing SDL onto X11 (SDL_VIDEODRIVER=x11) makes it use
+# XWayland, which DOES expose the monitor's real 3840x2160@240 mode, so
+# -fullscreen succeeds natively at 4K on the focused (main) output.
+#
+# We do NOT use gamescope: 3.16.25 regressed badly here. The 7950X3D's
+# integrated Radeon now exposes a RADV Vulkan device, and gamescope grabs
+# that iGPU to composite (epilepsy-flicker, game never advances) or, when
+# pointed at NVIDIA, hits "vkGetPhysicalDeviceFormatProperties2 returned
+# zero modifiers" DRM bugs (black screen). Native XWayland has none of it.
+#
+# Hard-pin the RTX 5090 so GL/Vulkan never fall back to the iGPU:
+#   __GLX_VENDOR_LIBRARY_NAME=nvidia + __NV_PRIME_RENDER_OFFLOAD=1 route
+#   Supermodel's OpenGL (GLX) to the NVIDIA driver; the VK_* vars keep any
+#   Vulkan off the iGPU too. Verified renderer: "NVIDIA 610.43.03".
+# NOT exec: runs as a child so the EXIT trap still stops evsieve.
+sm_env="SDL_VIDEODRIVER=x11 __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia __VK_LAYER_NV_optimus=NVIDIA_only"
+if [ -f /usr/share/vulkan/icd.d/nvidia_icd.json ]; then
+  sm_env="$sm_env VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/nvidia_icd.json"
+fi
+# shellcheck disable=SC2086
+env -u PYTHONHOME -u PYTHONPATH $sm_env \
+  /usr/bin/supermodel-binary "$@" -res=3840,2160 -fullscreen
