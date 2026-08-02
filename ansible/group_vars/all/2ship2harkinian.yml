@@ -24,7 +24,9 @@ dg_two_ship2harkinian_appimage_name: 2ship.appimage
 # Local ROM is byte-swapped (.n64 / v64 order). The role converts it to a
 # canonical big-endian z64 copy in the install directory and verifies the
 # Majora's Mask USA SHA1 before launch.
-dg_two_ship2harkinian_rom_source: "{{ dg_rom_mid_root }}/n64/Legend of Zelda, The - Majora's Mask (USA).n64"
+# The pristine dump (SHA1 d6133ace…) was moved into n64/originals/; the
+# top-level Majora's Mask (USA).n64 is now a different dump (e3415f90…).
+dg_two_ship2harkinian_rom_source: "{{ dg_rom_mid_root }}/n64/originals/Legend of Zelda, The - Majora's Mask (USA).n64"
 dg_two_ship2harkinian_rom_name: mm.z64
 dg_two_ship2harkinian_rom_sha1: d6133ace5afaa0882cf214cf88daba39e266c078
 

@@ -23,7 +23,9 @@ dg_ship_of_harkinian_bin: "{{ dg_box_home }}/bin/ship-of-harkinian"
 # Local ROM is byte-swapped (.n64 / v64 order). The role converts it to a
 # canonical big-endian z64 copy in the install directory and verifies the
 # Ocarina of Time USA Rev B (v1.2) SHA1 before launch.
-dg_ship_of_harkinian_rom_source: "{{ dg_rom_mid_root }}/n64/Legend of Zelda, The - Ocarina of Time (USA) (Rev B).n64"
+# The pristine dump was moved into n64/originals/ to separate it from the
+# Ocarina of Time Redux romhack that now sits at the n64/ top level.
+dg_ship_of_harkinian_rom_source: "{{ dg_rom_mid_root }}/n64/originals/Legend of Zelda, The - Ocarina of Time (USA) (Rev B).n64"
 dg_ship_of_harkinian_rom_name: oot.z64
 dg_ship_of_harkinian_rom_sha1: 41b3bdc48d98c48529219919015a1af22f5057c2
 
