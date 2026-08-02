@@ -22,12 +22,14 @@ dg_sorr_archive: "{{ dg_sorr_cache_dir }}/{{ dg_sorr_archive_name }}"
 # sha1 from archive.org per-file metadata (334 MB .rar; verified before
 # extraction). archive.org exposes sha1, so we pin on sha1.
 dg_sorr_checksum: "sha1:8e67ff027d71a6e8561eaa44bb5e735004aacafa"
-# Escape hatch: archive.org throttles and (currently) serves corrupt
-# multi-connection ranges from some CDN nodes. Point this at a manually
-# downloaded SORRv52_rev550.rar (e.g. from the official MEGA link) and it
-# is staged into the cache; the get_url step then just verifies its sha1
-# and skips the slow download. Blank = fetch from the Internet Archive.
-dg_sorr_archive_source: ""
+# Preferred source: a manually-staged SORRv52_rev550.rar on the NAS.
+# archive.org throttles single connections to a crawl and serves corrupt
+# multi-connection ranges from some CDN nodes, so the official archive is
+# staged once under ROMS_FINAL/PC and reused on every rebuild. The get_url
+# step still verifies this file's sha1 (and only falls back to downloading
+# from the Internet Archive if it is absent or corrupt). Override or blank
+# it to force the download.
+dg_sorr_archive_source: "{{ dg_roms_final_root }}/PC/{{ dg_sorr_archive_name }}"
 dg_sorr_release_dir: "{{ dg_sorr_root }}/releases/{{ dg_sorr_version }}"
 # Writable working copy — SorR.exe is portable and writes saves/config next
 # to itself, so the game runs from here (not the immutable release).
