@@ -54,6 +54,18 @@
   when: _multilib_check.rc != 0
   changed_when: true
 
+# A freshly created container ships without base-devel, so makepkg has no
+# fakeroot/debugedit and the NVIDIA dummy build below fails ("Cannot find
+# the fakeroot binary"). The main package install pulls nvidia-utils as a
+# dependency, so it must run AFTER the dummy exists — meaning base-devel
+# has to be installed here, before the dummy is built. (On a long-lived
+# box base-devel was already present, which is why this only bites a
+# from-scratch rebuild.)
+- name: Install base-devel so makepkg can build the NVIDIA dummy packages
+  ansible.builtin.shell: "{{ dg_in_box }} sudo pacman -S --needed --noconfirm base-devel"
+  register: _basedevel
+  changed_when: "'installing' in _basedevel.stdout or 'reinstalling' in _basedevel.stdout"
+
 # NVIDIA dummy packages: distrobox --nvidia bind-mounts host NVIDIA libs
 # into /usr/lib, which conflicts with pacman installing nvidia-utils.
 # Install dummy packages that satisfy the dependency without writing files.
@@ -234,12 +246,35 @@
   when: _yay_check.rc != 0
 
 - name: Install AUR packages via yay
+  # Best-effort: yay builds every package in the batch and still installs
+  # the ones that succeed even when another fails, so a single broken AUR
+  # package (e.g. the recurring vita3k-bin upstream packaging bug) must NOT
+  # abort the whole rebuild — the config/ES-DE roles downstream depend on
+  # bootstrap completing. We tolerate a non-zero rc here and report any
+  # genuinely missing packages in the next task instead.
   ansible.builtin.shell: >-
     {{ dg_in_box }} yay -S --needed --noconfirm
     --answerclean None --answerdiff None
     {{ dg_aur_packages | join(' ') }}
   register: _yay
   changed_when: "'installing' in _yay.stdout"
+  failed_when: false
+
+- name: Detect AUR packages that failed to install
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} bash -lc 'm=""; for p in {{ dg_aur_packages | join(" ") }};
+    do pacman -Q "$p" >/dev/null 2>&1 || m="$m $p"; done; echo "$m" | xargs'
+  register: _aur_missing
+  changed_when: false
+
+- name: Warn about AUR packages that did not install
+  ansible.builtin.debug:
+    msg: >-
+      AUR packages that FAILED to build/install (usually a transient
+      upstream AUR packaging bug): {{ _aur_missing.stdout | trim }}.
+      The rest of the box is fully provisioned; re-run bootstrap later to
+      retry these once upstream is fixed.
+  when: _aur_missing.stdout | trim | length > 0
 
 - name: Repair flycast-git's libjuice soname mismatch
   # flycast-git was linked against libjuice.so.1.7.0, but libjuice
