@@ -24,6 +24,16 @@
   register: _sorr_pacman
   changed_when: "'installing' in _sorr_pacman.stdout"
 
+- name: Grant CAP_SYS_NICE to gamescope for realtime scheduling
+  # gamescope --rt needs CAP_SYS_NICE to raise thread priority; without it
+  # it warns ("No CAP_SYS_NICE") and runs at regular priority, adding input
+  # latency. Best-effort — the container may not permit setcap.
+  ansible.builtin.shell: "{{ dg_in_box }} sudo setcap 'cap_sys_nice=eip' /usr/bin/gamescope"
+  register: _sorr_setcap
+  changed_when: false
+  failed_when: false
+  when: dg_sorr_use_gamescope | bool
+
 - name: Install SORR AUR runtime packages inside box
   # Tolerate a transient AUR build failure and report genuinely-missing
   # packages instead of aborting (same pattern as bootstrap_packages).
@@ -169,5 +179,6 @@
   ansible.builtin.debug:
     msg: >-
       Streets of Rage Remake ready: {{ dg_box_home }}/bin/sorr-launch status.
-      Launch via the "Streets of Rage Remake" desktop entry. Start a FRESH
-      save — v5.2 rejects saves from older versions.
+      Launch via the "Streets of Rage Remake" desktop entry — gamescope
+      upscales it to true fullscreen (keep SORR itself in WINDOWED mode in
+      Options -> Video). Start a FRESH save — v5.2 rejects older saves.

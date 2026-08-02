@@ -42,14 +42,17 @@ run_game() {
   focus_main_output
   export WINEPREFIX="$prefix" WINEARCH={{ dg_sorr_winearch }} WINEDEBUG="${WINEDEBUG:--all}"
   cd "$work_dir"
-  # Run inside a Wine virtual desktop sized to fill the main monitor. Old
-  # SDL-1.2 games like SorR.exe request a real display mode-change for
-  # "fullscreen" that XWayland on a scaled output can't satisfy (it lands
-  # as an undersized window). A virtual desktop gives the game a fixed
-  # "screen" to fill. Set DG_SORR_DESKTOP_RES="" (or dg_sorr_desktop_res)
-  # to disable.
+  use_gamescope="${DG_SORR_GAMESCOPE-{{ dg_sorr_use_gamescope | ternary('1', '') }}}"
+  gamescope_opts="${DG_SORR_GAMESCOPE_OPTS-{{ dg_sorr_gamescope_opts }}}"
   desktop_res="${DG_SORR_DESKTOP_RES-{{ dg_sorr_desktop_res }}}"
-  if [ -n "$desktop_res" ]; then
+  if [ -n "$use_gamescope" ] && command -v gamescope >/dev/null 2>&1; then
+    # gamescope upscales SorR.exe's fixed ~640x480 output to true fullscreen
+    # (keep SORR itself in WINDOWED mode). --immediate-flips + --rt reduce
+    # the compositor input latency. Set DG_SORR_GAMESCOPE=0 to disable.
+    # shellcheck disable=SC2086
+    env -u PYTHONHOME -u PYTHONPATH gamescope $gamescope_opts -- wine "$exe"
+  elif [ -n "$desktop_res" ]; then
+    # No gamescope: give SORR a Wine virtual desktop to fill.
     env -u PYTHONHOME -u PYTHONPATH wine explorer /desktop=sorr,"$desktop_res" "$exe"
   else
     env -u PYTHONHOME -u PYTHONPATH wine "$exe"

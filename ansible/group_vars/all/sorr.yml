@@ -38,13 +38,19 @@ dg_sorr_exe: SorR.exe
 dg_sorr_prefix: "{{ dg_box_home }}/wineprefixes/sorr"
 dg_sorr_winearch: win64
 
-# SorR.exe is an old SDL 1.2 game: its in-game "fullscreen" requests a real
-# display mode-change, which XWayland on a scaled output (DP-1 is 3840x2160
-# @ scale 1.5) cannot satisfy — it lands as an undersized window. Running
-# it inside a Wine virtual desktop of this size gives the game a fixed
-# "screen" to fill, and the desktop window itself fills the main monitor.
-# 3840x2160 (physical) maps to the 2560x1440 logical DP-1 = full screen.
-# Set to "" to launch without a virtual desktop.
+# SorR.exe is an old SDL 1.2 game that renders at a fixed ~640x480 and does
+# NOT scale its own output up, so on the 4K/scaled DP-1 it always looks
+# tiny — its in-game "fullscreen" only mode-changes (which XWayland on a
+# scaled output can't satisfy) rather than upscaling. gamescope is the one
+# thing that upscales a fixed-res game to true fullscreen here, and it works
+# for SORR (2D, so it dodges the NVIDIA-compositor issues that broke it for
+# Supermodel's heavy 3D). --immediate-flips + --rt cut the compositor's
+# input latency; --rt needs CAP_SYS_NICE, granted to the gamescope binary.
+dg_sorr_use_gamescope: true
+dg_sorr_gamescope_opts: "-W 3840 -H 2160 -f --immediate-flips --rt"
+
+# Fallback only (gamescope disabled/missing): a Wine virtual desktop this
+# size gives SORR a "screen" to fill. Set "" to launch plain-windowed.
 dg_sorr_desktop_res: "3840x2160"
 
 # Same WineBus policy as the other Wine games: one clean SDL-backed XInput
@@ -55,7 +61,7 @@ dg_sorr_winebus_registry:
   - { name: Enable SDL, value: 1 }
   - { name: Map Controllers, value: 1 }
 
-dg_sorr_packages: [wine]
+dg_sorr_packages: [wine, gamescope]
 dg_sorr_aur_packages: [evsieve]
 
 # Main horizontal monitor the launcher focuses before starting, per the
