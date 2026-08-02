@@ -1,3 +1,0 @@
-# Optional packages for the Wine-managed Xenia Manager flow.
-wine
-winetricks
