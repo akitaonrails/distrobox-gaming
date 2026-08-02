@@ -59,6 +59,7 @@
     dest: "{{ dg_sorr_archive }}"
     mode: "0644"
     remote_src: true
+    force: false
   when:
     - dg_sorr_archive_source | length > 0
     - dg_sorr_archive_source is file

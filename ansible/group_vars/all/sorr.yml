@@ -38,6 +38,15 @@ dg_sorr_exe: SorR.exe
 dg_sorr_prefix: "{{ dg_box_home }}/wineprefixes/sorr"
 dg_sorr_winearch: win64
 
+# SorR.exe is an old SDL 1.2 game: its in-game "fullscreen" requests a real
+# display mode-change, which XWayland on a scaled output (DP-1 is 3840x2160
+# @ scale 1.5) cannot satisfy — it lands as an undersized window. Running
+# it inside a Wine virtual desktop of this size gives the game a fixed
+# "screen" to fill, and the desktop window itself fills the main monitor.
+# 3840x2160 (physical) maps to the 2560x1440 logical DP-1 = full screen.
+# Set to "" to launch without a virtual desktop.
+dg_sorr_desktop_res: "3840x2160"
+
 # Same WineBus policy as the other Wine games: one clean SDL-backed XInput
 # pad (SorR.exe uses XInput by default), no duplicate hidraw/evdev opens.
 dg_sorr_winebus_registry:

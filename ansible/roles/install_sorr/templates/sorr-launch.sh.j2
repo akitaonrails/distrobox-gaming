@@ -42,7 +42,18 @@ run_game() {
   focus_main_output
   export WINEPREFIX="$prefix" WINEARCH={{ dg_sorr_winearch }} WINEDEBUG="${WINEDEBUG:--all}"
   cd "$work_dir"
-  env -u PYTHONHOME -u PYTHONPATH wine "$exe"
+  # Run inside a Wine virtual desktop sized to fill the main monitor. Old
+  # SDL-1.2 games like SorR.exe request a real display mode-change for
+  # "fullscreen" that XWayland on a scaled output can't satisfy (it lands
+  # as an undersized window). A virtual desktop gives the game a fixed
+  # "screen" to fill. Set DG_SORR_DESKTOP_RES="" (or dg_sorr_desktop_res)
+  # to disable.
+  desktop_res="${DG_SORR_DESKTOP_RES-{{ dg_sorr_desktop_res }}}"
+  if [ -n "$desktop_res" ]; then
+    env -u PYTHONHOME -u PYTHONPATH wine explorer /desktop=sorr,"$desktop_res" "$exe"
+  else
+    env -u PYTHONHOME -u PYTHONPATH wine "$exe"
+  fi
 }
 
 run_with_exit_chord() {
