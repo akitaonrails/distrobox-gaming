@@ -182,6 +182,7 @@
     section: RomDirs
     option: Dir1
     state: absent
+    backup: true
     mode: "0644"
 
 - name: Configure EMULATOR.INI

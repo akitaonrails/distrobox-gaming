@@ -108,6 +108,7 @@
     option: "{{ pgs.1.option }}"
     value: "{{ pgs.1.value }}"
     create: true
+    backup: true
     mode: "0644"
   loop: "{{ dg_pcsx2_per_game_settings | subelements('settings') }}"
   loop_control:

@@ -30,6 +30,7 @@
     option: "{{ pgs.1.option }}"
     value: "{{ pgs.1.value }}"
     create: true
+    backup: true
     mode: "0644"
   loop: "{{ dg_duckstation_per_game_settings | default([]) | subelements('settings') }}"
   loop_control:
