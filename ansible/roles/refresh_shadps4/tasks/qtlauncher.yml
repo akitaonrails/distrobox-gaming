@@ -11,13 +11,29 @@
   ansible.builtin.set_fact:
     _qt_candidates: "{{ _qt_releases.json | rejectattr('draft') | list }}"
 
+- name: Fail clearly if no QtLauncher release is available
+  ansible.builtin.fail:
+    msg: >-
+      No non-draft shadPS4 QtLauncher release returned by GitHub — the API
+      may have been rate-limited (unauthenticated 60/hr) or returned an
+      error body instead of a release list.
+  when: _qt_candidates | length == 0
+
+# set-candidates-then-fallback rather than `A if cond else B`: Ansible
+# native Jinja eagerly evaluates the untaken branch's `| first`.
+- name: Prefer a QtLauncher release matching the pinned tag
+  ansible.builtin.set_fact:
+    _qt_release_candidates: "{{ _qt_candidates | selectattr('tag_name', 'search', dg_shadps4_qtlauncher_release) | list }}"
+  when: dg_shadps4_qtlauncher_release | length > 0
+
+- name: Fall back to the latest non-draft QtLauncher release
+  ansible.builtin.set_fact:
+    _qt_release_candidates: "{{ _qt_candidates }}"
+  when: _qt_release_candidates is not defined or _qt_release_candidates | length == 0
+
 - name: Select matching QtLauncher release
   ansible.builtin.set_fact:
-    _qt_release: >-
-      {{ (_qt_candidates | selectattr('tag_name', 'search', dg_shadps4_qtlauncher_release) | list | first)
-         if (dg_shadps4_qtlauncher_release | length > 0 and
-             _qt_candidates | selectattr('tag_name', 'search', dg_shadps4_qtlauncher_release) | list | length > 0)
-         else (_qt_candidates | first) }}
+    _qt_release: "{{ _qt_release_candidates | first }}"
 
 - name: Set QtLauncher tag and suffix
   ansible.builtin.set_fact:

@@ -29,20 +29,32 @@
     _shadps4_codename: "{{ _shadps4_release.target_commitish | default(_shadps4_release.tag_name) }}"
     _shadps4_type: "{{ 1 if _shadps4_release.prerelease else 0 }}"
 
+# Prefer an SDL AppImage/zip; fall back to any AppImage. Uses the
+# set-candidates-then-fallback pattern (not `A if cond else B`): Ansible's
+# native Jinja eagerly evaluates the untaken ternary branch, so a `| first`
+# there throws "sequence was empty" even when it wouldn't be reached — the
+# bug that bit install_xenia. Keeping each `| first` on a list we've just
+# confirmed is the chosen one avoids that entirely.
+- name: Select Linux SDL asset (preferred)
+  ansible.builtin.set_fact:
+    _shadps4_asset_candidates: "{{ _shadps4_release.assets | selectattr('name', 'match', '(?i).*sdl.*\\.(AppImage|zip)$') | list }}"
+
+- name: Fall back to any AppImage asset
+  ansible.builtin.set_fact:
+    _shadps4_asset_candidates: "{{ _shadps4_release.assets | selectattr('name', 'match', '.*\\.AppImage$') | list }}"
+  when: _shadps4_asset_candidates | length == 0
+
+- name: Fail clearly if no Linux asset is present
+  ansible.builtin.fail:
+    msg: >-
+      No SDL/AppImage asset found in the shadPS4 release {{ _shadps4_release.tag_name | default('?') }}
+      (assets: {{ _shadps4_release.assets | map(attribute='name') | list }}). Upstream may have
+      renamed the asset, or the GitHub API was rate-limited.
+  when: _shadps4_asset_candidates | length == 0
+
 - name: Select Linux SDL asset
   ansible.builtin.set_fact:
-    _shadps4_asset: >-
-      {{
-        (_shadps4_release.assets
-          | selectattr('name', 'match', '(?i).*sdl.*\.(AppImage|zip)$')
-          | list | first)
-        if (_shadps4_release.assets
-          | selectattr('name', 'match', '(?i).*sdl.*\.(AppImage|zip)$')
-          | list | length > 0)
-        else (_shadps4_release.assets
-          | selectattr('name', 'match', '.*\\.AppImage$')
-          | list | first)
-      }}
+    _shadps4_asset: "{{ _shadps4_asset_candidates | first }}"
 
 - name: Create managed build directory
   ansible.builtin.file:
