@@ -62,7 +62,13 @@ dg_aur_packages:
   - melonds-bin
   - evsieve
   - xemu-bin
-  - vita3k-bin
+  # vita3k-bin: SKIPPED. Its AUR PKGBUILD fails to build (the nightly zip
+  # dropped org.vita3k.vita3k.metainfo.xml, so package() errors out) —
+  # verified failing on a from-scratch rebuild 2026-08-01. Not our bug.
+  # Re-enable by uncommenting once upstream restores the metainfo file; the
+  # bootstrap AUR install already tolerates it failing, this just avoids
+  # the wasted build attempt every run.
+  # - vita3k-bin
   - shadps4-bin
   - flycast-git
   # Sega Model 3 arcade (roms_rare/model3). Plain `supermodel` is the
