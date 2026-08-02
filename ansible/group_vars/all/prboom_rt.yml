@@ -76,6 +76,10 @@ dg_prboom_rt_packages:
   - fluidsynth
   - glu
   - libmad
+  # The pinned native binary links against pcre v1's libpcreposix.so.0
+  # (not pcre2). A fresh container ships only pcre2, so without this the
+  # renderer's ldd check fails "libpcreposix.so.0 => not found".
+  - pcre
   - portmidi
   - sdl2_mixer
   - vulkan-tools
