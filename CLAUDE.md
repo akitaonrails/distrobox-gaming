@@ -4,7 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Repo Does
 
-Ansible playbooks for reproducibly creating and configuring an Arch-based distrobox named `gaming`. The box hosts ES-DE, standalone emulators (shadPS4, Dolphin, PCSX2, DuckStation, Flycast, xemu, RPCS3, PPSSPP, Supermodel for Sega Model 3), Walker desktop entries, an optional Wine-managed Xenia Manager for Xbox 360, and an optional Wine-managed Model 2 Emulator for Sega Model 2 (see `docs/sega-arcade.md`).
+Ansible playbooks for reproducibly creating and configuring an Arch-based distrobox named `gaming`. The box hosts ES-DE, standalone emulators (shadPS4, Dolphin, PCSX2, DuckStation, Flycast, xemu, RPCS3, PPSSPP, Azahar for 3DS, RetroArch, and Supermodel for Sega Model 3), and Walker desktop entries.
+
+Beyond the core emulators, a large set of **opt-in** roles (all `never`-tagged in `site.yml`, or run via a standalone `install-*.yml` playbook) install:
+
+- **Sega arcade** (see `docs/sega-arcade.md`): Model 1 via the Wanszai Virtua Racing / Virtua Fighter Wine frontends (`install_model1`), Model 2 via ElSemi's Model 2 Emulator (`install_m2emulator`) and the Wanszai Sega Rally HD wrapper (`install_sega_rally`).
+- **Xbox 360**: Wine-managed Xenia Manager (`install-xenia.yml`).
+- **Native recomp / decomp ports**: Ship of Harkinian (OoT), 2Ship2Harkinian (Majora's Mask), Starship (Star Fox 64), Render96ex (SM64), SpaghettiKart (MK64), Sonic P-06, Unleashed Recomp, and PrBoom-Plus Doom II RT.
+- **Windows/Wine games** (see `docs/external-installers.md`): Colin McRae Rally 04/2/3 + DiRT, OutRun 2006, Sega Rally 2 / Revo, GT5 Master Mod, Dusk, FFVII 7th Heaven, Metal Gear Master Collection fixes, and the shared `install_pc_racing` pipeline.
+- **Content / tooling**: DLC installers, Switch/PCSX2/DuckStation per-game configs, RetroArch extras, HD texture packs, cheat/trainer tooling, and SMM2 offline levels.
+
+See `docs/external-installers.md` for the download inventory and `docs/rebuild-runbook.md` for a from-scratch rebuild.
 
 ## Commands
 
@@ -50,9 +60,11 @@ There is no unit test suite. The `verify` role is the validation step — run it
 - Override defaults by creating `ansible/host_vars/localhost.yml` (see `.example`).
 - UID 1026 is the default for NAS access — set `dg_host_uid`/`dg_host_gid` to override.
 
-### Legacy shell scripts (retained for reference)
+### Helper scripts and config sources
 
-The `bin/dg`, `scripts/`, `lib/`, and `config/` directories contain the original POSIX shell implementation. The Ansible playbooks are the primary interface; the shell scripts are kept as reference.
+`scripts/` holds helper scripts invoked **by the Ansible roles** — `install-host-launchers.sh` (host `.desktop` export, used by `desktop_apps` and several game roles), the `set-*.py` Steam/INI helpers (`metal_gear`, `steam_lib32_nvidia`, `steam_trainers`), `sync-emulator-cheats.py`, and a couple of download utilities. `config/` holds the live config **source trees** (emulator INIs, ES-DE, Steam vdfs, `config/desktop/` templates) that `seed_configs` and related roles copy into the box. Neither directory is a standalone interface — the roles drive them.
+
+The original POSIX shell implementation (`bin/dg` dispatcher, `lib/paths.sh`/`lib/common.sh`, and the numbered `scripts/NN-*.sh` orchestration layer, plus its `config/{emulator-overrides,wrappers,package-lists}` and `config/distrobox-gaming.env.example`) was **removed** once Ansible fully superseded it. Recover from git history if ever needed.
 
 ## Coding Conventions
 
@@ -74,17 +86,14 @@ The `bin/dg`, `scripts/`, `lib/`, and `config/` directories contain the original
 - Per-emulator config is split into subtask files under `seed_configs/tasks/`.
 - Static config files live in role `files/` directories; templates in `templates/`.
 
-### Legacy shell scripts
+### Helper scripts (`scripts/`)
 
-- POSIX `sh`, not Bash. Every script starts `#!/usr/bin/env sh` + `set -eu`.
-- All exported config uses `DG_*` uppercase names (defined in `lib/paths.sh`).
-- Scripts never hardcode mount paths — use `DG_*` variables.
+- These are called at runtime by roles (mostly Python `set-*.py` / `*.py` helpers plus `install-host-launchers.sh`), not a standalone CLI.
+- They take their paths from the invoking role (env vars / args) and never hardcode mount paths.
 
 ## Path Configuration
 
 For Ansible: create `ansible/host_vars/localhost.yml` and override any `dg_*` variable. Or pass `-e dg_emudeck_root=/other/path` on the command line.
-
-For legacy shell scripts: `cp config/distrobox-gaming.env.example config/distrobox-gaming.env` and edit.
 
 ## Safety
 

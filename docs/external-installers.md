@@ -77,7 +77,7 @@ links, and configures them (see the Safety section in CLAUDE.md).
 | What | Stage at | Consumed by |
 |---|---|---|
 | xemu BIOS trio: `mcpx_1.0.bin`, `Complex_4627.bin`, `xbox_hdd.qcow2` | `dg_bios_root` | `seed_configs` (xemu) |
-| N64 ROMs for the 5 native ports (SM64, MK64, OoT, MM, SF64 — SHA1-verified) | `dg_rom_mid_root/n64/` | `n64_rom_prepare` via each port role |
+| N64 ROMs for the 5 native ports (SM64, MK64, OoT, MM, SF64 — SHA1-verified) | `dg_rom_mid_root/n64/` (OoT and MM specifically under `dg_rom_mid_root/n64/originals/` — the `n64/` top level holds romhacks) | `n64_rom_prepare` via each port role |
 | CMR 2.0 / CMR3 / CMR04 installers (CD extracts / repacks) | `dg_pc_racing_source_root` | `install_pc_racing` |
 | Sonic P-06 release build | `dg_pc_racing_source_root` | `install_sonic_p06` |
 | Sonic Unleashed game files (X360 ISO + title update + DLC) | `dg_unleashed_recomp_*_source` (empty defaults) | `install_unleashed_recomp` |

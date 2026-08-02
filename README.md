@@ -455,10 +455,8 @@ ansible/                            # Ansible playbooks and roles (primary)
     install_pc_racing/              # Wine wrappers for tested Windows racing games
     install_sonic_p06/              # Wine wrapper for Sonic Project '06
     install_unleashed_recomp/       # native Unleashed Recompiled Flatpak install
-bin/                                # legacy shell CLI (reference)
-scripts/                            # legacy numbered scripts (reference)
-lib/                                # legacy shell helpers (reference)
-config/                             # static config files and package lists
+scripts/                            # helper scripts invoked by the Ansible roles
+config/                             # live config source trees (emulator INIs, ES-DE, desktop templates)
 docs/                               # historical notes and focused docs
 ```
 

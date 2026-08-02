@@ -396,6 +396,14 @@ Unlike most emulators, `vita3k-bin` writes a default `~/.config/Vita3K/config.ym
 
 **Pattern:** Install first, then apply targeted edits to the default config.
 
+**Update (2026-08):** `vita3k-bin` is currently commented out of the AUR
+package list — its upstream PKGBUILD fails to build (it dropped
+`org.vita3k.vita3k.metainfo.xml`). It's a known, expected skip until
+upstream fixes the PKGBUILD, not a local regression. The bootstrap AUR
+install also now tolerates any single broken AUR package instead of
+aborting the whole run, so this failure mode no longer blocks the rest
+of setup.
+
 ### RPCS3 — rejects pre-written YAML
 
 RPCS3's `config.yml` has version-specific key names and structure. If you pre-stage a YAML config that doesn't match RPCS3's expected format exactly, it errors with `Failed to apply global config` and silently ignores it.

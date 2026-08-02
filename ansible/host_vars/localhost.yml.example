@@ -13,9 +13,16 @@
 # dg_roms_final_root: "{{ dg_external_games_root }}/ROMS_FINAL"
 # dg_external_usb_games_root: /run/media/me/STEAM
 #
+# Steam library root on the host. This is the ONE host-sudo target in the
+# whole playbook set: create_box chows it to the box UID/GID before the
+# container exists, so `site.yml` needs working host sudo (--ask-become-pass
+# or a NOPASSWD entry) the first time it runs.
+# dg_steam_root: "{{ dg_data_root }}/steam"
+#
 # Roots derived from dg_emudeck_root (override individually only if
 # your layout diverges from EmuDeck's default):
 # dg_rom_root:        "{{ dg_emudeck_root }}/roms"
+# dg_rom_mid_root:    "{{ dg_emudeck_root }}/roms_mid"
 # dg_rom_heavy_root:  "{{ dg_emudeck_root }}/roms_heavy"
 # dg_rom_rare_root:   "{{ dg_emudeck_root }}/roms_rare"
 # dg_bios_root:       "{{ dg_emudeck_root }}/Emulation/bios"
@@ -69,6 +76,19 @@
 # 0xVID/0xPID). Add your pads' IDs (lsusb) — unlisted devices stay
 # invisible to the old games on purpose (filters phantom HID pads).
 # dg_pc_racing_gamepad_only: "0x2dc8/0x310b,0x045e/0x0b12"
+#
+# Staging root for the pc-racing installers (CMR 2.0/2/3/04, OutRun 2006,
+# Sega Rally 2/Revo, Sonic P-06) — CD extracts / repacks you source yourself.
+# dg_pc_racing_source_root: "{{ dg_roms_final_root }}/PC"
+#
+# Sonic Unleashed Recomp source staging (opt-in install-unleashed-recomp.yml
+# / --tags unleashed_recomp). Empty by default — no reliable public URL, you
+# source your own X360 ISO/title-update/DLC.
+# dg_unleashed_recomp_game_source: /path/to/unleashed/game
+# dg_unleashed_recomp_iso_source: /path/to/SonicUnleashed.iso
+# dg_unleashed_recomp_title_update_source: /path/to/title_update_dir
+# dg_unleashed_recomp_title_update_zip_source: /path/to/title_update.zip
+# dg_unleashed_recomp_dlc_source: /path/to/dlc_dir
 #
 # Native Doom II RT (opt-in install-prboom-plus-rt.yml). Normally the role
 # discovers DOOM2.WAD below dg_steam_root or dg_external_usb_games_root. Use an
