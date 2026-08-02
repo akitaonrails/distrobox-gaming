@@ -33,12 +33,29 @@
   changed_when: "'installing' in _sega_rally_pacman.stdout"
 
 - name: Install Sega Rally AUR runtime packages inside box
+  # Tolerate a transient AUR build failure and report genuinely-missing
+  # packages instead of aborting (same pattern as bootstrap_packages).
   ansible.builtin.shell: >-
     {{ dg_in_box }} yay -S --needed --noconfirm
     --answerclean None --answerdiff None
     {{ dg_sega_rally_aur_packages | join(' ') }}
   register: _sega_rally_yay
   changed_when: "'installing' in _sega_rally_yay.stdout"
+  failed_when: false
+
+- name: Detect missing Sega Rally AUR packages
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} bash -lc 'm=""; for p in {{ dg_sega_rally_aur_packages | join(" ") }};
+    do pacman -Q "$p" >/dev/null 2>&1 || m="$m $p"; done; echo "$m" | xargs'
+  register: _sega_rally_aur_missing
+  changed_when: false
+
+- name: Warn about missing Sega Rally AUR packages
+  ansible.builtin.debug:
+    msg: >-
+      Sega Rally AUR package(s) did not install: {{ _sega_rally_aur_missing.stdout | trim }}.
+      Re-run to retry (evsieve, the exit-chord dep, is also in the core AUR set).
+  when: _sega_rally_aur_missing.stdout | trim | length > 0
 
 - name: Download pinned Sega Rally PC release
   ansible.builtin.get_url:
