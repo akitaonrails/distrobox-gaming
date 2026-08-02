@@ -131,20 +131,17 @@
   when: dg_xenia_manager_zip_url | length == 0
 
 - name: Extract Xenia Manager tag and URL from GitHub
+  # Take the first .zip asset. Xenia Manager ships a single
+  # `xenia_manager.zip`. The previous `<win-x64-zip> if <...> else <any-zip>`
+  # form broke under Ansible's native Jinja, which eagerly evaluates the
+  # UNTAKEN branch too: when no asset matched the win/x64 pattern, the
+  # `| first` in that branch raised "No first item, sequence was empty"
+  # even though the else branch would have matched. Concatenating a
+  # preferred+fallback list and mapping to the URL before `first` avoids
+  # any `first` on a possibly-empty list.
   ansible.builtin.set_fact:
     _xenia_tag: "{{ _xenia_release.json.tag_name }}"
-    _xenia_zip_url: >-
-      {{
-        (_xenia_release.json.assets
-          | selectattr('name', 'match', '(?i).*win.*x64.*\\.zip$')
-          | list | first).browser_download_url
-        if (_xenia_release.json.assets
-          | selectattr('name', 'match', '(?i).*win.*x64.*\\.zip$')
-          | list | length > 0)
-        else (_xenia_release.json.assets
-          | selectattr('name', 'match', '.*\\.zip$')
-          | list | first).browser_download_url
-      }}
+    _xenia_zip_url: "{{ _xenia_release.json.assets | selectattr('name', 'match', '.*\\.zip$') | map(attribute='browser_download_url') | list | first }}"
   when: dg_xenia_manager_zip_url | length == 0
 
 - name: Use manually specified Xenia Manager URL
@@ -163,6 +160,16 @@
   ansible.builtin.stat:
     path: "{{ dg_xenia_manager_releases_dir }}/{{ _xenia_tag }}"
   register: _xenia_extracted
+
+- name: Ensure Xenia Manager release directory exists
+  # unarchive requires an existing dest dir; the versioned release folder
+  # survived on the long-lived box, so this was never needed until a
+  # from-scratch rebuild.
+  ansible.builtin.file:
+    path: "{{ dg_xenia_manager_releases_dir }}/{{ _xenia_tag }}"
+    state: directory
+    mode: "0755"
+  when: not _xenia_extracted.stat.exists
 
 - name: Extract Xenia Manager
   ansible.builtin.unarchive:
