@@ -12,7 +12,6 @@
 dg_azahar_aur_package: "azahar"
 
 # Where Azahar lives + per-user data after install.
-dg_azahar_bin: "/usr/bin/azahar"
 dg_azahar_user_dir: "{{ dg_box_home }}/.local/share/azahar-emu"
 dg_azahar_config_dir: "{{ dg_box_home }}/.config/azahar-emu"
 dg_azahar_config: "{{ dg_azahar_config_dir }}/qt-config.ini"

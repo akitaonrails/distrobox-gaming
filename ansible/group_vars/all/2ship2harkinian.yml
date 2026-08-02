@@ -1,12 +1,10 @@
 # 2Ship2Harkinian native Linux Majora's Mask PC port.
 
 dg_two_ship2harkinian_version: "4.0.2"
-dg_two_ship2harkinian_release_name: "Keiichi Charlie"
 dg_two_ship2harkinian_asset_name: 2Ship-Keiichi-Charlie-Linux.zip
 dg_two_ship2harkinian_asset_url: "https://github.com/HarbourMasters/2ship2harkinian/releases/download/{{ dg_two_ship2harkinian_version }}/{{ dg_two_ship2harkinian_asset_name }}"
 dg_two_ship2harkinian_asset_sha256: c97fc9440f5584f350c911ec7385778394aa62f651c6613cee0b74c0141932cb
 
-dg_two_ship2harkinian_repo_url: https://github.com/HarbourMasters/2ship2harkinian.git
 dg_two_ship2harkinian_git_ref: acfd617302ebb74e63f26f0049b53400a644c8e8
 
 dg_two_ship2harkinian_hd_pack_version: v11.0.2
@@ -31,7 +29,6 @@ dg_two_ship2harkinian_rom_name: mm.z64
 dg_two_ship2harkinian_rom_sha1: d6133ace5afaa0882cf214cf88daba39e266c078
 
 dg_two_ship2harkinian_install_id: "{{ dg_two_ship2harkinian_version }}-{{ dg_two_ship2harkinian_git_ref }}-{{ dg_two_ship2harkinian_asset_sha256 }}"
-dg_two_ship2harkinian_rom_id: "{{ dg_two_ship2harkinian_rom_sha1 }}"
 dg_two_ship2harkinian_hd_pack_id: "{{ dg_two_ship2harkinian_hd_pack_version }}-{{ dg_two_ship2harkinian_hd_pack_sha256 }}"
 
 dg_two_ship2harkinian_pacman_packages:

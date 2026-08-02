@@ -3,7 +3,6 @@
 dg_sonic_p06_source_dir: "{{ dg_roms_final_root }}/PC/Project 06 - Silver Release (Patch v1.45)/Sonic the Hedgehog (P-06)"
 dg_sonic_p06_install_root: "{{ dg_box_home }}/Games/sonic-p06"
 dg_sonic_p06_prefix: "{{ dg_box_home }}/wineprefixes/sonic-p06"
-dg_sonic_p06_tools_root: "{{ dg_box_home }}/tools/sonic-p06"
 dg_sonic_p06_cache_dir: "{{ dg_box_home }}/cache/sonic-p06"
 dg_sonic_p06_bin: "{{ dg_box_home }}/bin/sonic-p06"
 dg_sonic_p06_exe: "Sonic the Hedgehog.exe"

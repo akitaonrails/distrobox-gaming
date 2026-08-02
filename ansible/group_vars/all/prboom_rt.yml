@@ -27,7 +27,6 @@ dg_prboom_rt_addon_page: >-
   https://www.moddb.com/mods/doom-lights-for-raytraced-prboom/addons/
   doom2-lights-for-prboomraytracing
 dg_prboom_rt_addon_size: 285803
-dg_prboom_rt_addon_md5: "064349e6810812957d33009f67ab8b46"
 dg_prboom_rt_addon_sha256: "732c05a87b6dcf7ec73fee74871ac3e2f9b3770436df2c27abc00a8e5557bb9d"
 dg_prboom_rt_addon_archive: "{{ dg_prboom_rt_cache_dir }}/{{ dg_prboom_rt_addon_name }}"
 # ModDB places its mirrors behind a browser challenge. Stage the official zip

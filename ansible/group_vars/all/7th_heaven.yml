@@ -49,5 +49,3 @@ dg_7th_heaven_supported_ffvii_apps:
     branch: legacy
     executable: ff7_en.exe
     launcher_name: Launch 7th Heaven (2013)
-
-dg_7th_heaven_supported_appids: "{{ dg_7th_heaven_supported_ffvii_apps | map(attribute='appid') | list }}"

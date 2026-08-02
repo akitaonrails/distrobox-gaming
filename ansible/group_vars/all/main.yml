@@ -39,7 +39,6 @@ dg_ps4_firmware_modules: "{{ dg_rom_rare_root }}/ps4-firmware/11.00_sys_modules"
 dg_shadps4_title_id: CUSA00003
 dg_shadps4_game_dir: "{{ dg_ps4_rom_root }}/{{ dg_shadps4_title_id }}"
 dg_shadps4_game_boot: "{{ dg_shadps4_game_dir }}/eboot.bin"
-dg_shadps4_game_arg: "{{ dg_shadps4_title_id }}"
 dg_shadps4_patch_name: Driveclub.xml
 dg_shadps4_patch_xml: "{{ dg_box_home }}/.local/share/shadPS4/patches/{{ dg_shadps4_patch_name }}"
 
@@ -69,7 +68,6 @@ dg_xemu_bootrom: "{{ dg_xemu_config_dir }}/mcpx_1.0.bin"
 dg_xemu_flashrom: "{{ dg_xemu_config_dir }}/Complex_4627.bin"
 dg_xemu_hdd: "{{ dg_xemu_data_dir }}/xbox_hdd.qcow2"
 
-dg_desktop_template_dir: "{{ dg_project_root }}/config/desktop/templates"
 dg_desktop_render_dir: "{{ dg_project_root }}/config/desktop/rendered"
 dg_host_applications_dir: "{{ ansible_facts.env.HOME }}/.local/share/applications"
 
