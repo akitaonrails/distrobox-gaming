@@ -1,0 +1,172 @@
+---
+# Streets of Rage Remake v5.2 (SorR.exe under Wine). Mirrors
+# install_sega_rally — a single Wine backend with a pinned, checksummed
+# release, extracted immutably and rsynced into a writable work dir that
+# preserves the game's saves/config. See group_vars/all/sorr.yml.
+
+- name: Create SORR persistent directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_sorr_root }}"
+    - "{{ dg_sorr_cache_dir }}"
+    - "{{ dg_sorr_root }}/releases"
+    - "{{ dg_sorr_release_dir }}"
+    - "{{ dg_sorr_prefix }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Install SORR runtime packages inside box
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sudo pacman -S --needed --noconfirm
+    {{ dg_sorr_packages | join(' ') }}
+  register: _sorr_pacman
+  changed_when: "'installing' in _sorr_pacman.stdout"
+
+- name: Install SORR AUR runtime packages inside box
+  # Tolerate a transient AUR build failure and report genuinely-missing
+  # packages instead of aborting (same pattern as bootstrap_packages).
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} yay -S --needed --noconfirm
+    --answerclean None --answerdiff None
+    {{ dg_sorr_aur_packages | join(' ') }}
+  register: _sorr_yay
+  changed_when: "'installing' in _sorr_yay.stdout"
+  failed_when: false
+
+- name: Detect missing SORR AUR packages
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} bash -lc 'm=""; for p in {{ dg_sorr_aur_packages | join(" ") }};
+    do pacman -Q "$p" >/dev/null 2>&1 || m="$m $p"; done; echo "$m" | xargs'
+  register: _sorr_aur_missing
+  changed_when: false
+
+- name: Warn about missing SORR AUR packages
+  ansible.builtin.debug:
+    msg: >-
+      SORR AUR package(s) did not install: {{ _sorr_aur_missing.stdout | trim }}.
+      The game still runs; evsieve only powers the Select+Start exit chord
+      (it is also in the core AUR set).
+  when: _sorr_aur_missing.stdout | trim | length > 0
+
+- name: Stage a manually-downloaded SORR archive if one is provided
+  # Copies a local SORRv52_rev550.rar into the cache; the get_url below
+  # then verifies its sha1 and skips the (slow, sometimes CDN-corrupted)
+  # archive.org download. See dg_sorr_archive_source.
+  ansible.builtin.copy:
+    src: "{{ dg_sorr_archive_source }}"
+    dest: "{{ dg_sorr_archive }}"
+    mode: "0644"
+    remote_src: true
+  when:
+    - dg_sorr_archive_source | length > 0
+    - dg_sorr_archive_source is file
+    - not ansible_check_mode
+
+- name: Fetch and verify the pinned SORR v5.2 archive
+  # get_url verifies the checksum against an already-present file and
+  # skips the download when it matches — so a correctly staged archive
+  # (previous task) makes this a no-op, and archive.org is only hit when
+  # the file is missing or corrupt.
+  ansible.builtin.get_url:
+    url: "{{ dg_sorr_url }}"
+    dest: "{{ dg_sorr_archive }}"
+    checksum: "{{ dg_sorr_checksum }}"
+    mode: "0644"
+    timeout: 120
+  when: not ansible_check_mode
+
+- name: Extract the SORR .rar into the immutable release directory
+  # unarchive does not handle .rar; bsdtar (libarchive, a core package)
+  # reads rar4/rar5. Guarded by a per-version marker.
+  ansible.builtin.shell: >-
+    bsdtar -xf '{{ dg_sorr_archive }}' -C '{{ dg_sorr_release_dir }}'
+    && touch '{{ dg_sorr_release_dir }}/.dg-extracted-{{ dg_sorr_version }}'
+  args:
+    creates: "{{ dg_sorr_release_dir }}/.dg-extracted-{{ dg_sorr_version }}"
+  when: not ansible_check_mode
+
+- name: Locate SorR.exe in the extracted release
+  # The archive's top-level folder name is not guaranteed, so find the exe
+  # rather than hardcode a subdir.
+  ansible.builtin.find:
+    paths: "{{ dg_sorr_release_dir }}"
+    patterns: '(?i)^sorr\.exe$'
+    use_regex: true
+    recurse: true
+    file_type: file
+  register: _sorr_exe_find
+
+- name: Assert SorR.exe was found after extraction
+  ansible.builtin.assert:
+    that: _sorr_exe_find.files | length > 0
+    fail_msg: >-
+      SorR.exe not found under {{ dg_sorr_release_dir }} after extracting
+      {{ dg_sorr_archive_name }} — the archive layout may have changed.
+  when: not ansible_check_mode
+
+- name: Record the extracted game directory
+  ansible.builtin.set_fact:
+    _sorr_src_dir: "{{ _sorr_exe_find.files[0].path | dirname }}"
+  when: _sorr_exe_find.files | length > 0
+
+- name: Refresh SORR game files while preserving saves and config
+  # First install copies everything into the writable work dir; a per-
+  # version marker stops re-runs from clobbering saves/config the game
+  # writes next to the exe. On a (rare) version bump the excludes keep
+  # user state.
+  ansible.builtin.shell: >-
+    rsync -a --itemize-changes
+    --exclude='*.sav' --exclude='save*' --exclude='savegame*'
+    --exclude='screenshots/' --exclude='replays/'
+    --exclude='config.ini' --exclude='system.txt'
+    '{{ _sorr_src_dir }}/' '{{ dg_sorr_work_dir }}/'
+    && touch '{{ dg_sorr_work_dir }}/.dg-release-{{ dg_sorr_version }}'
+  args:
+    creates: "{{ dg_sorr_work_dir }}/.dg-release-{{ dg_sorr_version }}"
+  when: not ansible_check_mode and _sorr_src_dir is defined
+
+- name: Initialize SORR Wine prefix
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc 'export WINEPREFIX="{{ dg_sorr_prefix }}" WINEARCH="{{ dg_sorr_winearch }}" WINEDEBUG=-all; env -u PYTHONHOME -u PYTHONPATH wineboot -u'
+  args:
+    creates: "{{ dg_sorr_prefix }}/system.reg"
+
+- name: Configure SORR WineBus controller policy
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc 'export WINEPREFIX="{{ dg_sorr_prefix }}" WINEARCH="{{ dg_sorr_winearch }}"; wine reg add "HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\winebus" /v "{{ item.name }}" /t REG_DWORD /d "{{ item.value }}" /f'
+  changed_when: false
+  loop: "{{ dg_sorr_winebus_registry }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Deploy SORR launcher
+  ansible.builtin.template:
+    src: sorr-launch.sh.j2
+    dest: "{{ dg_box_home }}/bin/sorr-launch"
+    mode: "0755"
+
+- name: Render SORR desktop entry
+  ansible.builtin.template:
+    src: streets-of-rage-remake.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/streets-of-rage-remake.desktop"
+    mode: "0644"
+
+- name: Install rendered SORR desktop file into host applications dir
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _sorr_host_launchers
+  changed_when: >-
+    'installed ' in _sorr_host_launchers.stdout or
+    'removed stale ' in _sorr_host_launchers.stdout
+
+- name: Report SORR setup
+  ansible.builtin.debug:
+    msg: >-
+      Streets of Rage Remake ready: {{ dg_box_home }}/bin/sorr-launch status.
+      Launch via the "Streets of Rage Remake" desktop entry. Start a FRESH
+      save — v5.2 rejects saves from older versions.

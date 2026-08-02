@@ -1,0 +1,9 @@
+---
+- name: Install Streets of Rage Remake v5.2 (Wine)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_sorr
+    # verify executes box commands, which Ansible skips in --check mode.
+    - { role: verify, tags: [verify], when: not ansible_check_mode }

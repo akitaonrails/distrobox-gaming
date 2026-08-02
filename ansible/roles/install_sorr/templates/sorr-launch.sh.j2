@@ -1,0 +1,91 @@
+#!/usr/bin/env sh
+set -eu
+
+# Streets of Rage Remake v5.2 launcher. Runs SorR.exe under Wine with the
+# shared pad policy and a Select+Start exit chord, on the main horizontal
+# monitor. Same mechanism as sega-rally-launch. Managed by install_sorr.
+#
+# Usage:
+#   sorr-launch          # launch the game
+#   sorr-launch <arg>    # same (ES-DE would pass %ROM%; ignored)
+#   sorr-launch status   # print install / prefix / pad status
+
+work_dir="{{ dg_sorr_work_dir }}"
+prefix="{{ dg_sorr_prefix }}"
+exe="{{ dg_sorr_exe }}"
+main_output="${DG_MAIN_OUTPUT:-{{ dg_sorr_main_output }}}"
+
+common_env() {
+  # Same SDL environment as the other Wine game launchers: pad seen
+  # unfocused, no hidapi double-open, only real pads exposed.
+  export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+  export SDL_JOYSTICK_HIDAPI="${SDL_JOYSTICK_HIDAPI:-{{ dg_pc_racing_sdl_hidapi }}}"
+  export SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT="${SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT:-{{ dg_pc_racing_gamepad_only }}}"
+}
+
+focus_main_output() {
+  # Open on the main HORIZONTAL monitor, never the portrait one. hyprctl
+  # isn't in the box and distrobox-host-exec can't reach it, but the
+  # Hyprland socket is shared in, so talk to it with python3. Best-effort.
+  if command -v python3 >/dev/null 2>&1 && [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+    python3 - "$main_output" <<'PY' >/dev/null 2>&1 || true
+import socket, os, sys
+sig = os.environ["HYPRLAND_INSTANCE_SIGNATURE"]; xdg = os.environ["XDG_RUNTIME_DIR"]
+s = socket.socket(socket.AF_UNIX); s.connect(f"{xdg}/hypr/{sig}/.socket.sock")
+s.sendall(f"dispatch focusmonitor {sys.argv[1]}".encode()); s.recv(64)
+PY
+  fi
+}
+
+run_game() {
+  common_env
+  focus_main_output
+  export WINEPREFIX="$prefix" WINEARCH={{ dg_sorr_winearch }} WINEDEBUG="${WINEDEBUG:--all}"
+  cd "$work_dir"
+  env -u PYTHONHOME -u PYTHONPATH wine "$exe"
+}
+
+run_with_exit_chord() {
+  evsieve_pid=""
+  if command -v evsieve >/dev/null 2>&1 && [ -w /dev/uinput ]; then
+    pad_inputs=""
+    for l in /dev/input/by-id/*8BitDo*Ultimate*event-joystick \
+             /dev/input/by-id/*Xbox*event-joystick \
+             /dev/input/by-id/*XBOX*event-joystick; do
+      [ -e "$l" ] && pad_inputs="$pad_inputs --input $(readlink -f "$l")"
+    done
+    if [ -n "$pad_inputs" ]; then
+      # No grab: the physical pad stays visible to the game; this only
+      # injects Alt+F4 when Select+Start are pressed together.
+      # shellcheck disable=SC2086
+      evsieve $pad_inputs --hook btn:select btn:start send-key=key:leftalt send-key=key:f4 \
+        --output name="sorr-exit-keys" key:leftalt key:f4 >/dev/null 2>&1 &
+      evsieve_pid=$!
+    fi
+  fi
+  cleanup() {
+    [ -n "$evsieve_pid" ] && kill "$evsieve_pid" 2>/dev/null || true
+    WINEPREFIX="$prefix" env -u PYTHONHOME -u PYTHONPATH wineserver -k >/dev/null 2>&1 || true
+  }
+  trap cleanup EXIT HUP INT TERM
+  set +e
+  run_game
+  status=$?
+  set -e
+  trap - EXIT HUP INT TERM
+  cleanup
+  return "$status"
+}
+
+status() {
+  printf '%s\n' 'Streets of Rage Remake v5.2 status'
+  [ -f "{{ dg_sorr_archive }}" ] && sha1sum "{{ dg_sorr_archive }}" || printf 'archive missing\n'
+  [ -f "$work_dir/$exe" ] && printf 'exe present: %s\n' "$work_dir/$exe" || printf 'exe MISSING: %s\n' "$work_dir/$exe"
+  [ -f "$prefix/system.reg" ] && printf 'prefix ready: %s\n' "$prefix" || printf 'prefix MISSING\n'
+  ls /dev/input/js* 2>/dev/null || printf '%s\n' 'no /dev/input/js controller visible (wake the pad before launching)'
+}
+
+case "${1:-}" in
+  status) status; exit 0 ;;
+  *) run_with_exit_chord; exit $? ;;
+esac

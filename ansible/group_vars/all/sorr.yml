@@ -1,0 +1,52 @@
+---
+# Streets of Rage Remake (SORR) v5.2 rev550 — the BomberGames fan remake
+# of Streets of Rage 1/2/3, run under Wine in the box.
+#
+# There is no clean modern native Linux engine: the game engine is BennuGD
+# and the AUR `streetsofrageremake` package is only v5.1 and pins
+# OpenSSL-1.0-era 32-bit libs (libcrypto.so.1.0.0) that modern Arch dropped.
+# So we run the self-contained Windows build (SorR.exe, a BennuGD/SDL app —
+# no MSVC runtime, hence no vcrun/winetricks step) under Wine, the
+# documented working method.
+#
+# The only official download is a MEGA link, which cannot be pinned or
+# checksummed. We use the Internet Archive mirror instead: a stable direct
+# URL plus a per-file sha1 exposed in archive.org's metadata.
+dg_sorr_root: "{{ dg_box_home }}/tools/sorr"
+dg_sorr_cache_dir: "{{ dg_sorr_root }}/cache"
+
+dg_sorr_version: "5.2-rev550"
+dg_sorr_archive_name: "SORRv52_rev550.rar"
+dg_sorr_url: "https://archive.org/download/sorrv-52-rev-550_202401/SORRv52_rev550.rar"
+dg_sorr_archive: "{{ dg_sorr_cache_dir }}/{{ dg_sorr_archive_name }}"
+# sha1 from archive.org per-file metadata (334 MB .rar; verified before
+# extraction). archive.org exposes sha1, so we pin on sha1.
+dg_sorr_checksum: "sha1:8e67ff027d71a6e8561eaa44bb5e735004aacafa"
+# Escape hatch: archive.org throttles and (currently) serves corrupt
+# multi-connection ranges from some CDN nodes. Point this at a manually
+# downloaded SORRv52_rev550.rar (e.g. from the official MEGA link) and it
+# is staged into the cache; the get_url step then just verifies its sha1
+# and skips the slow download. Blank = fetch from the Internet Archive.
+dg_sorr_archive_source: ""
+dg_sorr_release_dir: "{{ dg_sorr_root }}/releases/{{ dg_sorr_version }}"
+# Writable working copy — SorR.exe is portable and writes saves/config next
+# to itself, so the game runs from here (not the immutable release).
+dg_sorr_work_dir: "{{ dg_sorr_root }}/game"
+dg_sorr_exe: SorR.exe
+dg_sorr_prefix: "{{ dg_box_home }}/wineprefixes/sorr"
+dg_sorr_winearch: win64
+
+# Same WineBus policy as the other Wine games: one clean SDL-backed XInput
+# pad (SorR.exe uses XInput by default), no duplicate hidraw/evdev opens.
+dg_sorr_winebus_registry:
+  - { name: DisableHidraw, value: 1 }
+  - { name: DisableInput, value: 1 }
+  - { name: Enable SDL, value: 1 }
+  - { name: Map Controllers, value: 1 }
+
+dg_sorr_packages: [wine]
+dg_sorr_aur_packages: [evsieve]
+
+# Main horizontal monitor the launcher focuses before starting, per the
+# "games open on the landscape 4K screen, never the portrait" rule.
+dg_sorr_main_output: "DP-1"

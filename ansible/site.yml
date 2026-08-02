@@ -25,6 +25,7 @@
     - { role: install_m2emulator,        tags: [m2emulator, never] }
     - { role: install_model1,            tags: [model1, never] }
     - { role: install_sega_rally,        tags: [sega_rally, never] }
+    - { role: install_sorr,              tags: [sorr, never] }
     - { role: install_prboom_plus_rt,    tags: [prboom_rt, doom_rt, never] }
     - { role: metal_gear_master_collection, tags: [metal_gear_master_collection, never] }
     - { role: steam_lib32_nvidia,        tags: [steam_lib32_nvidia, never] }

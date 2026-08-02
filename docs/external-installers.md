@@ -27,6 +27,7 @@ the upstream release is deleted.
 | Eden Cheats Manager | github.com/ChrisA95G/eden-cheats-manager releases | `install_eden_cheats_manager` |
 | lib32-nvidia-utils (32-bit driver extract) | archive.archlinux.org (version-matched to host driver) | `bootstrap_packages` / `dg_nvidia_lib32_*` |
 | Wine 9.19 (CMR experiments) | archive.archlinux.org | `install_pc_racing` |
+| Streets of Rage Remake v5.2 rev550 (SorR.exe under Wine) | Internet Archive mirror `sorrv-52-rev-550_202401/SORRv52_rev550.rar` (sha1-pinned; the official MEGA link isn't checksummable, and the AUR pkg is only v5.1) | `install_sorr` / `dg_sorr_*` |
 
 ## 2. AUTO — "latest" via API (moving target)
 
