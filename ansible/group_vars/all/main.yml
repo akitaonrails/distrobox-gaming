@@ -158,6 +158,10 @@ dg_retroarch_cores:
   - mednafen_supergrafx
   - vecx
   - neocd
+  # ParaLLEl-N64: the accuracy N64 core. Mupen64Plus-Next crashes some
+  # heavy Kaze romhacks (SM64: Last Impact quits right after its intro);
+  # ParaLLEl runs them. Selectable per-game in ES-DE (n64 alt emulator).
+  - parallel_n64
   - fceumm
   - puae
   - hatari

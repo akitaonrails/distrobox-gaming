@@ -298,6 +298,9 @@ dg_esde_systems:
     extension: ".n64 .N64 .v64 .V64 .z64 .Z64 .ndd .NDD .zip .ZIP .7z .7Z"
     commands:
       - { label: "Mupen64Plus-Next (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/mupen64plus_next_libretro.so %ROM%" }
+      # ParaLLEl-N64 runs heavy Kaze romhacks that crash Mupen64Plus-Next
+      # (SM64: Last Impact). Pick it per-game in ES-DE for those hacks.
+      - { label: "ParaLLEl N64 (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/parallel_n64_libretro.so %ROM%" }
     platform: n64
     theme: n64
 
