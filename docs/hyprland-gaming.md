@@ -29,15 +29,24 @@ and the frontends are pinned there so their launches inherit it.
 # Everything on workspace 7 opens fullscreen (console-like).
 windowrule = fullscreen on, match:workspace 7
 
-# Send ES-DE and Steam (and everything they spawn) to workspace 7.
-windowrule = workspace 7, match:class (?i).*(es-de|steam).*
+# Send ES-DE (and everything it spawns) to workspace 7.
+windowrule = workspace 7, match:class (?i).*(es-de).*
 ```
 
-Flow: launch ES-DE or Steam (from Walker) → it opens on workspace 7,
-fullscreen, and the view follows → launch a game from it → the game
-opens on workspace 7, fullscreen, on top → quit → the frontend is back.
-This covers **native Steam games too** (arbitrary window classes) with
-no per-class maintenance — they just open on workspace 7.
+Flow: launch ES-DE (from Walker) → it opens on workspace 7, fullscreen,
+and the view follows → launch an emulator from it → it opens on
+workspace 7, fullscreen, on top → quit → ES-DE is back.
+
+> **`steam` was intentionally removed from the workspace-7 rule.** Pinning
+> Steam here force-fullscreened *every* native Steam game (arbitrary
+> `steam_app_*` classes), and Hyprland force-fullscreening a game that
+> manages its own resolution breaks it — **Super Woden** resize-fights
+> between two states, **Horizon Chase** mis-scales to the bottom-left
+> quarter of an oversized surface. Steam games now open in their own
+> window/fullscreen mode (set fullscreen in-game if wanted). Re-add
+> `|steam` only if you want the console-like forcing back and accept that
+> some games misbehave. Emulators are still covered by the per-class
+> fallback rules below, so the ES-DE flow is unaffected.
 
 Verified live: launching ES-DE from workspace 1 → it moves to
 workspace 7 and opens `fullscreen=2`.
