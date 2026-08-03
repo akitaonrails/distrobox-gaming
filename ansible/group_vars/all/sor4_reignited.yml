@@ -1,0 +1,26 @@
+---
+# Streets of Rage 4: REIGNITED — a gameplay-rebalance mod for SOR4
+# (nexusmods.com/streetsofrage4/mods/133, source
+# gitlab.com/fuzzyetdeadly/sor4-reignited). The mod is a single modified
+# `bigfile` — SOR4's encrypted data archive — that REPLACES the vanilla
+# `data/bigfile`. Same file for the native-Linux and Proton builds. It is
+# built on the game's v8 patch; on a different game version the game may
+# reject it (revert via the backup or Steam "Verify integrity").
+dg_sor4_reignited_version: "1.0.0"
+dg_sor4_reignited_url: "https://gitlab.com/fuzzyetdeadly/sor4-reignited/-/raw/main/assets/SOR4-Reignited-v{{ dg_sor4_reignited_version }}.zip"
+dg_sor4_reignited_checksum: "sha256:ad56c4ce3a4068873b2b4f6ae067f0b60c096ed721f4b0405be4fdacca7edc40"
+# sha256 of the modded `bigfile` INSIDE the zip — used to detect whether the
+# mod is already applied (idempotency) and to never back up a modded file.
+dg_sor4_reignited_bigfile_sha256: "660138f8718e821ce487e7cbdcf7add7da84949c6f6202b482fe245980360144"
+
+# SOR4 install. It currently lives in the USB Steam library
+# (dg_external_usb_games_root, set in host_vars). Override dg_sor4_root if
+# the game moves to another Steam library.
+dg_sor4_root: "{{ dg_external_usb_games_root | default('') }}/steamapps/common/Streets of Rage 4"
+dg_sor4_data_dir: "{{ dg_sor4_root }}/data"
+dg_sor4_bigfile: "{{ dg_sor4_data_dir }}/bigfile"
+# Canonical vanilla backup (created once, only from an unmodded bigfile).
+dg_sor4_bigfile_backup: "{{ dg_sor4_data_dir }}/bigfile.vanilla-backup"
+
+dg_sor4_reignited_cache_dir: "{{ dg_box_home }}/cache/sor4-reignited"
+dg_sor4_reignited_archive: "{{ dg_sor4_reignited_cache_dir }}/SOR4-Reignited-v{{ dg_sor4_reignited_version }}.zip"

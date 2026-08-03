@@ -1,0 +1,7 @@
+---
+- name: Install Streets of Rage 4 REIGNITED mod
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_sor4_reignited

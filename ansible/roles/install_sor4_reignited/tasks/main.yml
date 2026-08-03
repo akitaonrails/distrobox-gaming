@@ -1,0 +1,73 @@
+---
+# Streets of Rage 4: REIGNITED — replace the game's data/bigfile with the
+# modded one, keeping a vanilla backup. See group_vars/all/sor4_reignited.yml.
+
+- name: Check SOR4 is installed (bigfile present)
+  ansible.builtin.stat:
+    path: "{{ dg_sor4_bigfile }}"
+    checksum_algorithm: sha256
+  register: _sor4_bigfile
+
+- name: Warn and skip if SOR4 / its bigfile is not found
+  ansible.builtin.debug:
+    msg: >-
+      SOR4 bigfile not found at {{ dg_sor4_bigfile }}. Is the USB Steam
+      library mounted and SOR4 installed? Override dg_sor4_root to point at
+      the right Steam library, then re-run.
+  when: not _sor4_bigfile.stat.exists
+
+- name: Apply REIGNITED
+  when: _sor4_bigfile.stat.exists
+  block:
+    - name: Create REIGNITED cache directory
+      ansible.builtin.file:
+        path: "{{ dg_sor4_reignited_cache_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Download pinned REIGNITED release
+      ansible.builtin.get_url:
+        url: "{{ dg_sor4_reignited_url }}"
+        dest: "{{ dg_sor4_reignited_archive }}"
+        checksum: "{{ dg_sor4_reignited_checksum }}"
+        mode: "0644"
+      when: not ansible_check_mode
+
+    - name: Extract the modded bigfile from the release
+      ansible.builtin.unarchive:
+        src: "{{ dg_sor4_reignited_archive }}"
+        dest: "{{ dg_sor4_reignited_cache_dir }}"
+        include:
+          - bigfile
+        remote_src: true
+      when: not ansible_check_mode
+
+    - name: Back up the vanilla bigfile (once; never a modded one)
+      # Only runs when the live bigfile is NOT already the mod, and force:false
+      # means an existing backup (the true vanilla) is never overwritten — so
+      # the backup is always a clean, restorable vanilla bigfile.
+      ansible.builtin.copy:
+        src: "{{ dg_sor4_bigfile }}"
+        dest: "{{ dg_sor4_bigfile_backup }}"
+        remote_src: true
+        force: false
+        mode: "0644"
+      when: _sor4_bigfile.stat.checksum != dg_sor4_reignited_bigfile_sha256
+
+    - name: Install the REIGNITED bigfile (replace vanilla)
+      # Idempotent: skipped once the live bigfile already matches the mod.
+      ansible.builtin.copy:
+        src: "{{ dg_sor4_reignited_cache_dir }}/bigfile"
+        dest: "{{ dg_sor4_bigfile }}"
+        remote_src: true
+        mode: "0755"
+      when: _sor4_bigfile.stat.checksum != dg_sor4_reignited_bigfile_sha256
+
+    - name: Report REIGNITED status
+      ansible.builtin.debug:
+        msg: >-
+          SOR4 REIGNITED v{{ dg_sor4_reignited_version }} applied to
+          {{ dg_sor4_bigfile }}. Vanilla backup: {{ dg_sor4_bigfile_backup }}
+          (restore by copying it back, or Steam -> SOR4 -> Verify integrity).
+          Requires the game's v8 patch. A Steam update or integrity check
+          reverts to vanilla — just re-run this to reapply.
