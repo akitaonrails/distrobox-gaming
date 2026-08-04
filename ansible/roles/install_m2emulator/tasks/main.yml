@@ -162,6 +162,34 @@
     - not _m2_nvdata_marker.stat.exists
     - _m2_nvdata_source.stat.exists and _m2_nvdata_source.stat.isdir
 
+- name: Check widescreen scripts seed marker
+  ansible.builtin.stat:
+    path: "{{ dg_m2_install_dir }}/.dg-scripts-seeded"
+  register: _m2_scripts_marker
+
+- name: Check widescreen script pack exists
+  ansible.builtin.stat:
+    path: "{{ dg_m2_scripts_source }}"
+  register: _m2_scripts_source
+  when: not _m2_scripts_marker.stat.exists
+
+- name: Seed per-game widescreen LUA scripts
+  # One-time overlay of Norm's True 16:9 scripts so supported games render
+  # real widescreen instead of a 4:3 stretch (the emulator auto-loads
+  # scripts/<romset>.lua). The base install ships only a handful of stock
+  # scripts; this adds the full per-game set. Marker-gated so a later
+  # per-game swap to the pack's 4x3 variant isn't clobbered on rerun.
+  ansible.builtin.shell: >-
+    rsync -a --info=NAME
+    '{{ dg_m2_scripts_source }}/'
+    '{{ dg_m2_install_dir }}/scripts/'
+    && touch '{{ dg_m2_install_dir }}/.dg-scripts-seeded'
+  register: _m2_scripts_seed
+  changed_when: "'.lua' in _m2_scripts_seed.stdout"
+  when:
+    - not _m2_scripts_marker.stat.exists
+    - _m2_scripts_source.stat.exists and _m2_scripts_source.stat.isdir
+
 - name: Configure Model 2 Wine controller backend
   ansible.builtin.shell: |
     {{ dg_in_box }} sh -lc '

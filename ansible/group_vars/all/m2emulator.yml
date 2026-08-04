@@ -33,6 +33,19 @@ dg_m2_cfg_source: "{{ dg_external_games_root }}/Model 2/CFG"
 # existing NVDATA backed up first (nothing destroyed).
 dg_m2_nvdata_source: "{{ dg_external_games_root }}/Model 2/NVDATA"
 
+# Per-game widescreen LUA scripts (Norm's True 16:9 Widescreen Project),
+# from the same pack. The emulator auto-loads scripts/<romset>.lua and
+# each calls Model2_SetWideScreen(1) to render TRUE 16:9 in-game — real
+# horizontal FOV expansion (extra scene on the sides), not a stretch and
+# no pillarbox. Without them the emulator fills 16:9 by stretching the 4:3
+# image (~33% too wide). The pack also ships a "4x3 Scripts" subfolder to
+# swap any title back to correct 4:3. Seeded into the install scripts/
+# folder (one-time, marker-gated, so later per-game swaps aren't clobbered).
+# Verified 2026-08-04: VF2 renders proper widescreen with correct
+# proportions. (Pilot Kids, Sky Target, Virtua Striker are the known
+# not-working titles in the upstream project.)
+dg_m2_scripts_source: "{{ dg_external_games_root }}/Model 2/scripts"
+
 # gamescope output = emulator render resolution: the full 16:9 screen.
 # Model 2 games are 4:3, but rendering 4:3 and pillarboxing under
 # gamescope proved unstable with this emulator (the AutoFull mode-switch
