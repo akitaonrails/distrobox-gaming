@@ -143,6 +143,32 @@
     - "{{ dg_model1_vr_prefix }}"
     - "{{ dg_model1_vf_prefix }}"
 
+- name: Force the GLX OpenGL backend (wine 11 EGL regression)
+  # See roles/install_pc_racing/tasks/main.yml for the full rationale:
+  # wine 10.17+ defaults winex11.drv to EGL, which resolves to Mesa
+  # llvmpipe / the AMD iGPU instead of the RTX 5090 on this box.
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      export WINEPREFIX="{{ item }}"
+      export WINEARCH="{{ dg_model1_winearch }}"
+      export WINEDEBUG=-all
+      key="HKCU\\Software\\Wine\\X11 Driver"
+
+      if env -u PYTHONHOME -u PYTHONPATH wine reg query "$key" /v UseEGL 2>/dev/null | grep -Eiq "REG_SZ[[:space:]]+N[[:space:]]*$"; then
+        exit 0
+      fi
+
+      env -u PYTHONHOME -u PYTHONPATH wine reg add "$key" /v UseEGL /t REG_SZ /d N /f
+      printf "%s\n" "forced-glx"
+    '
+  register: _model1_force_glx
+  changed_when: "'forced-glx' in _model1_force_glx.stdout"
+  when: dg_wine_force_glx | default(true)
+  loop:
+    - "{{ dg_model1_vr_prefix }}"
+    - "{{ dg_model1_vf_prefix }}"
+
 - name: Install Wanszai Visual C++ runtime
   ansible.builtin.shell: |
     {{ dg_in_box }} sh -lc 'export WINEPREFIX="{{ item }}" WINEARCH="{{ dg_model1_winearch }}" WINEDEBUG=-all; timeout 300 env -u PYTHONHOME -u PYTHONPATH winetricks -q vcrun2022; touch "{{ item }}/.dg-winetricks-vcrun2022"'

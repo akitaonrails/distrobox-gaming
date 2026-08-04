@@ -95,3 +95,11 @@
 # explicit source only when neither configured Steam root matches the layout.
 # dg_prboom_rt_doom2_wad_source: /path/to/legal/DOOM2.WAD
 # dg_prboom_rt_addon_source: /path/to/doom2rt-0.9.zip
+#
+# Wine 10.17+ defaults winex11.drv to the EGL OpenGL backend, which on
+# dual-GPU boxes can resolve to Mesa llvmpipe / an iGPU instead of the
+# discrete NVIDIA GPU, breaking wined3d/dgVoodoo GL games (black screen
+# or crash). All wine-based roles (pc_racing, m2emulator, sega_rally,
+# sonic_p06, model1) force the GLX backend via UseEGL=N by default.
+# Set false only if a future wine build drops the EGL regression.
+# dg_wine_force_glx: true

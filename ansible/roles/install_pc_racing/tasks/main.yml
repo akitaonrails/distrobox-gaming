@@ -381,6 +381,40 @@
     - dg_pc_racing_dinput_removed_joysticks | length > 0
     - item.1 not in (item.0.dinput_disabled_joysticks | default([]))
 
+- name: Force the GLX OpenGL backend on every PC racing prefix
+  # wine 10.17+ defaults winex11.drv to the EGL OpenGL backend. On this
+  # box EGL-on-X11 resolves to Mesa (llvmpipe / the AMD 7950X3D iGPU),
+  # NOT the RTX 5090, so DirectDraw/Direct3D games render black or crash
+  # with a null device after a rebuild bumps wine past 10.17 (verified
+  # 2026-08-03: Colin McRae Rally 1 black, Sega Rally Revo black, Sega
+  # Rally 2 null-pointer crash). GLX still binds the nvidia GPU cleanly,
+  # so pin every prefix back to it. UseEGL=N is the documented winex11.drv
+  # toggle. Harmless for DXVK/Vulkan games (they don't use the GL backend).
+  # Override with dg_wine_force_glx=false if a future wine drops it.
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      export WINEPREFIX="{{ item.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.slug) }}"
+      export WINEARCH="{{ item.winearch | default(dg_pc_racing_winearch) }}"
+      export WINEDEBUG=-all
+      export PATH="{{ item.wine_path | default(dg_pc_racing_wine_path) }}"
+      wine_bin="{{ item.wine_binary | default('wine') }}"
+      key="HKCU\\Software\\Wine\\X11 Driver"
+
+      if env -u PYTHONHOME -u PYTHONPATH "$wine_bin" reg query "$key" /v UseEGL 2>/dev/null | grep -Eiq "REG_SZ[[:space:]]+N[[:space:]]*$"; then
+        exit 0
+      fi
+
+      env -u PYTHONHOME -u PYTHONPATH "$wine_bin" reg add "$key" /v UseEGL /t REG_SZ /d N /f
+      printf "%s\n" "forced-glx {{ item.name }}"
+    '
+  register: _pc_racing_force_glx
+  changed_when: "'forced-glx' in _pc_racing_force_glx.stdout"
+  when: dg_wine_force_glx | default(true)
+  loop: "{{ _dg_pc_racing_games_selected }}"
+  loop_control:
+    label: "{{ item.name }}"
+
 - name: Configure PC racing game registry values
   ansible.builtin.shell: |
     {{ dg_in_box }} sh -lc '

@@ -71,6 +71,29 @@
     '
   when: not _sonic_p06_prefix.stat.exists
 
+- name: Force the GLX OpenGL backend (wine 11 EGL regression)
+  # See roles/install_pc_racing/tasks/main.yml for the full rationale:
+  # wine 10.17+ defaults winex11.drv to EGL, which resolves to Mesa
+  # llvmpipe / the AMD iGPU instead of the RTX 5090 on this box.
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      export WINEPREFIX="{{ dg_sonic_p06_prefix }}"
+      export WINEARCH="{{ dg_sonic_p06_winearch }}"
+      export WINEDEBUG=-all
+      key="HKCU\\Software\\Wine\\X11 Driver"
+
+      if env -u PYTHONHOME -u PYTHONPATH "{{ dg_sonic_p06_wine_bin }}" reg query "$key" /v UseEGL 2>/dev/null | grep -Eiq "REG_SZ[[:space:]]+N[[:space:]]*$"; then
+        exit 0
+      fi
+
+      env -u PYTHONHOME -u PYTHONPATH "{{ dg_sonic_p06_wine_bin }}" reg add "$key" /v UseEGL /t REG_SZ /d N /f
+      printf "%s\n" "forced-glx"
+    '
+  register: _sonic_p06_force_glx
+  changed_when: "'forced-glx' in _sonic_p06_force_glx.stdout"
+  when: dg_wine_force_glx | default(true)
+
 - name: Check Sonic P-06 winetricks component markers
   ansible.builtin.stat:
     path: "{{ dg_sonic_p06_prefix }}/.dg-winetricks-{{ item }}"
