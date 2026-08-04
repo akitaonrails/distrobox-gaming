@@ -831,6 +831,17 @@ dg_pc_racing_games:
     # these two lines.
     wine_binary: "{{ dg_pc_racing_wine_runner_root }}/wine-11.8/usr/bin/wine"
     wine_path: "{{ dg_pc_racing_wine_runner_root }}/wine-11.8/usr/bin:{{ dg_pc_racing_wine_path }}"
+    # Run native (no gamescope). This game renders through DXVK/Vulkan,
+    # and on this dual-GPU box gamescope routes Vulkan to the AMD 7950X3D
+    # iGPU (the same iGPU-grab that black-screens Supermodel), producing a
+    # black screen while the process runs and DXVK reports a swapchain.
+    # Native, DXVK picks the RTX 5090 (Vulkan device 0) and the title
+    # screen renders. The game self-fullscreens at 4K (config.ini
+    # RunWindowed=0, 3840x2160), so gamescope was not upscaling anything.
+    # NOTE: this is almost certainly the real cause of the July "black
+    # screen" above too (DXVK-initialized-but-black is the iGPU signature),
+    # so the wine-11.8 pin may now be unnecessary — re-test on 11.8 removal.
+    gamescope_enabled: false
     disabled_files:
       - "Bootup/video/Rally/SEGA_Logo720p.wmv"
       - "Bootup/video/Rally/SRS_Logo_1.wmv"
