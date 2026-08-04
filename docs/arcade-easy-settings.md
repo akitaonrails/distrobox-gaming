@@ -13,6 +13,16 @@ to the NAS seed sources so the settings survive a from-scratch rebuild (the
 reverse NAS→box seed is one-time, marker-gated, in `seed_configs` /
 `install_m2emulator`).
 
+## Note: continues are already free (both boards)
+
+You do **not** need to configure "Free Play" to get unlimited continues —
+pressing the **Coin** button inserts a credit for free (it's emulated; there
+are no real coins), so you can always coin-up and continue. On **Supermodel**
+Coin #1 defaults to `KEY_3` (joypad button 7). "Free Play" in the Test menu
+only removes the need to *tap Coin* before starting — a convenience, not a
+gameplay unlock — so the per-game Free-Play pass on Model 3 was intentionally
+skipped. **Model 2** already ships Free Play via the NVDATA pack.
+
 ## How to enter the Test menu
 
 - **Supermodel (Model 3):** press the mapped **Test** input (bind it in
