@@ -11,3 +11,28 @@ dg_xenia_manager_zip_url: ""
 dg_xenia_dotnet_url: https://aka.ms/dotnet/10.0/windowsdesktop-runtime-win-x64.exe
 dg_xenia_vcredist_url: https://aka.ms/vs/17/release/vc_redist.x64.exe
 dg_xenia_game_dir: "{{ dg_rom_heavy_root }}/xbox360"
+
+# Optimal Xenia Canary settings enforced on every per-game .config.toml
+# AND the root xenia-canary.config.toml (Xenia Manager's template for
+# newly-added games), so ES-DE launches and new games both inherit them.
+# Only UNIVERSAL, non-game-specific knobs live here — game-specific tuning
+# (render_target_path_vulkan, readback_resolve, internal_display_resolution,
+# etc.) is left untouched per game. Set dg_xenia_apply_optimal_config
+# false to manage every config by hand instead.
+#   - gpu=vulkan: mandatory under Wine (d3d12 backend does not work).
+#   - draw_resolution_scale 2: supersample 2x (720p->1440p) — the safe way
+#     to raise internal res without the internal_display_resolution=1080p
+#     "changed console resolution" glitches.
+#   - fsr + fxaa + 0.15 sharpness: sharp FSR upscale to the 4K panel,
+#     matching the hand-tuned Forza template.
+# Trade-off: this REWRITES these keys on every run, so if a specific title
+# glitches at 2x/FSR and you drop it to scale 1, exclude it or disable the
+# toggle — the sweep would otherwise reset it.
+dg_xenia_apply_optimal_config: true
+dg_xenia_optimal_config:
+  - { key: gpu, value: '"vulkan"' }
+  - { key: draw_resolution_scale_x, value: "2" }
+  - { key: draw_resolution_scale_y, value: "2" }
+  - { key: postprocess_scaling_and_sharpening, value: '"fsr"' }
+  - { key: postprocess_antialiasing, value: '"fxaa"' }
+  - { key: postprocess_ffx_fsr_sharpness_reduction, value: "0.15" }

@@ -234,6 +234,39 @@
     state: link
     force: true
 
+- name: Enforce optimal Xenia Canary settings on all game configs + default template
+  # ES-DE launches xenia_canary.exe with each game's per-game .config.toml
+  # (bin/xenia-canary-launch), and Xenia Manager clones the root
+  # xenia-canary.config.toml for newly-added games. Both live in
+  # Emulators/Xenia Canary/config/ and both match *.config.toml, so this
+  # single sweep keeps ES-DE launches AND new games on the tuned universal
+  # knobs (see dg_xenia_optimal_config). Only the listed keys are rewritten;
+  # game-specific tuning on other keys is preserved. Runs on the controller
+  # against the bind-mounted config dir (plain-text edit, no container).
+  ansible.builtin.shell:
+    cmd: |
+      python3 - <<'PY'
+      import re, glob, os
+      cfg = "{{ dg_xenia_manager_current }}/Emulators/Xenia Canary/config"
+      settings = {
+      {% for s in dg_xenia_optimal_config %}
+          "{{ s.key }}": r'''{{ s.value }}''',
+      {% endfor %}
+      }
+      changed = 0
+      for p in sorted(glob.glob(os.path.join(cfg, "*.config.toml"))):
+          s = open(p, encoding="utf-8").read(); orig = s
+          for k, v in settings.items():
+              s = re.sub(r'(?m)^(' + re.escape(k) + r'\s*=\s*)\S+',
+                         lambda m, v=v: m.group(1) + v, s, count=1)
+          if s != orig:
+              open(p, "w", encoding="utf-8").write(s); changed += 1
+      print(f"xenia-optimal-changed {changed}")
+      PY
+  register: _xenia_optimal_config
+  changed_when: "'xenia-optimal-changed 0' not in _xenia_optimal_config.stdout"
+  when: dg_xenia_apply_optimal_config | bool
+
 # Wrapper script and desktop entry
 
 - name: Deploy Xenia Manager launcher wrapper
