@@ -190,6 +190,43 @@
     that: _xenia_exe_files.files | length > 0
     fail_msg: "XeniaManager.exe not found after extracting {{ _xenia_tag }}.zip"
 
+- name: Resolve the currently-linked (previous) Xenia Manager release
+  # Captured BEFORE relinking `current`, so we can carry its state into a
+  # newly-downloaded release.
+  ansible.builtin.command: readlink -f "{{ dg_xenia_manager_current }}"
+  register: _xenia_prev_release
+  changed_when: false
+  failed_when: false
+
+- name: Migrate Xenia Manager state into the new release
+  # Xenia Manager is portable: its library and everything it references
+  # live NEXT TO the versioned exe — Config/ (games.json), GameData/
+  # (artwork), Emulators/Xenia Canary/ (per-game .config.toml + content/
+  # = saves & DLC), Downloads/ and Cache/. A freshly-downloaded release
+  # ships those empty, so switching `current` to a new version shows a
+  # BLANK library and orphans the ES-DE per-game configs unless we carry
+  # the old state forward. Copy (not move) so the previous release stays
+  # as a rollback backup. Self-guards: only runs when the new release has
+  # no library yet and a different previous release with one exists.
+  ansible.builtin.shell: |
+    set -eu
+    old="{{ _xenia_prev_release.stdout | default('') }}"
+    new="{{ _xenia_exe_files.files[0].path | dirname }}"
+    [ -n "$old" ] && [ -d "$old" ] && [ "$old" != "$new" ] || { echo "no-prev-release"; exit 0; }
+    new_count=$(python3 -c "import json,sys;print(len(json.load(open('$new/Config/games.json'))))" 2>/dev/null || echo 0)
+    [ "$new_count" = "0" ] || { echo "new-already-populated"; exit 0; }
+    old_count=$(python3 -c "import json,sys;print(len(json.load(open('$old/Config/games.json'))))" 2>/dev/null || echo 0)
+    [ "$old_count" != "0" ] || { echo "prev-empty-nothing-to-migrate"; exit 0; }
+    for d in Config GameData Emulators Downloads Cache; do
+      if [ -d "$old/$d" ]; then
+        rm -rf "$new/$d"
+        cp -a "$old/$d" "$new/$d"
+      fi
+    done
+    echo "migrated-xenia-state ${old_count}-games"
+  register: _xenia_state_migration
+  changed_when: "'migrated-xenia-state' in _xenia_state_migration.stdout"
+
 - name: Link current Xenia Manager release
   ansible.builtin.file:
     src: "{{ _xenia_exe_files.files[0].path | dirname }}"
