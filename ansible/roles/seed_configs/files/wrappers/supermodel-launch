@@ -49,20 +49,26 @@ fi
 cleanup() { [ -n "$evsieve_pid" ] && kill "$evsieve_pid" 2>/dev/null || true; }
 trap cleanup EXIT INT TERM HUP
 
-# Always open on the main HORIZONTAL monitor, never the portrait one.
-# SDL exclusive fullscreen targets the focused output; if focus is on the
-# portrait DP-2 (2160x3840) the 3840x2160 mode-set fails ("no matching
-# video modes"). Focus the main output first via Hyprland IPC — the socket
-# is shared into the box, but hyprctl isn't installed here and
-# distrobox-host-exec can't reach it (exit 127), so talk to the socket
-# with python3. Best-effort: harmless off Hyprland or without python3.
+# Two Hyprland tweaks before launch, via the shared socket (hyprctl isn't
+# installed in the box and distrobox-host-exec can't reach it — exit 127 —
+# so talk to the socket with python3; best-effort, harmless off Hyprland):
+#
+#  1. Focus the main HORIZONTAL monitor. SDL exclusive fullscreen targets
+#     the focused output; if focus is on the portrait DP-2 (2160x3840) the
+#     3840x2160 mode-set fails ("no matching video modes").
+#  2. Re-assert xwayland:force_zero_scaling=true (omarchy's default). CMR2's
+#     host wrapper flips it false and only restores it via a hyprctl reload
+#     trap, which a force-kill/SIGKILL of that wrapper skips — leaving it
+#     off. With it off, Supermodel's native-4K exclusive fullscreen is
+#     treated as logical pixels and overflows the 1.5x-scaled panel (game
+#     visible but zoomed). Asserting it true here self-heals that leak.
 main_output="${DG_MAIN_OUTPUT:-DP-1}"
 if command -v python3 >/dev/null 2>&1 && [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
   python3 - "$main_output" <<'PY' >/dev/null 2>&1 || true
 import socket, os, sys
 sig = os.environ["HYPRLAND_INSTANCE_SIGNATURE"]; xdg = os.environ["XDG_RUNTIME_DIR"]
 s = socket.socket(socket.AF_UNIX); s.connect(f"{xdg}/hypr/{sig}/.socket.sock")
-s.sendall(f"dispatch focusmonitor {sys.argv[1]}".encode()); s.recv(64)
+s.sendall(f"[[BATCH]]dispatch focusmonitor {sys.argv[1]}; keyword xwayland:force_zero_scaling true".encode()); s.recv(64)
 PY
 fi
 
