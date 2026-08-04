@@ -1,0 +1,52 @@
+---
+# Push the box's current Model 2 (NVDATA) and Model 3 (Supermodel NVRAM)
+# arcade settings UP to their NAS seed sources, so per-game Test/Service
+# menu tweaks (Free Play / more lives / more continues / easier difficulty,
+# all set in-game and stored only in NVRAM) become the reproducible
+# baseline that setup re-seeds after a from-scratch rebuild.
+#
+#   Reverse direction (NAS -> box) is the one-time seed, gated by a marker
+#   so it never clobbers later in-game changes:
+#     - Model 3: roles/seed_configs/tasks/supermodel.yml
+#     - Model 2: roles/install_m2emulator (NVDATA seed)
+#
+# Run this AFTER tuning games in their Test menus (see
+# docs/arcade-easy-settings.md), then the settings persist across rebuilds.
+- name: Sync arcade NVRAM up to the NAS seed sources
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Ensure NAS seed source directories exist
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_supermodel_nvram_source }}"
+        - "{{ dg_m2_nvdata_source }}"
+
+    - name: Push Supermodel (Model 3) NVRAM to the NAS source
+      # Exclude the seed marker so it never travels to the source pack.
+      ansible.builtin.shell: >-
+        rsync -a --info=NAME
+        --exclude '.dg-nvram-seeded'
+        '{{ dg_supermodel_nvram_dir }}/'
+        '{{ dg_supermodel_nvram_source }}/'
+      register: _sm_push
+      changed_when: _sm_push.stdout | length > 0
+
+    - name: Push Model 2 NVDATA to the NAS source
+      ansible.builtin.shell: >-
+        rsync -a --info=NAME
+        '{{ dg_m2_install_dir }}/NVDATA/'
+        '{{ dg_m2_nvdata_source }}/'
+      register: _m2_push
+      changed_when: _m2_push.stdout | length > 0
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Arcade NVRAM pushed to the NAS seed sources
+          ({{ dg_supermodel_nvram_source }}, {{ dg_m2_nvdata_source }}).
+          A from-scratch rebuild will re-seed these on setup.
