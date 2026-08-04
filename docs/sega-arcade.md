@@ -198,16 +198,41 @@ What the role does:
   zip via the ROMS dir), runs `emulator_multicpu.exe` (the multicore
   build) under gamescope.
 
-**Aspect ratio — 16:9 stretched (a deliberate compromise).** Model 2
-games are 4:3 and the emulator has no true widescreen. A proper 4:3
-pillarbox was attempted (emulator renders 2880x2160, gamescope
-`-w 2880 -h 2160 -S fit`, plus a Hyprland `opaque` rule) but proved
-**unstable with this emulator**: it starts centered with black bars,
-then the `AutoFull` fullscreen mode-switch (~1s after launch) drifts
-the surface off-centre and re-exposes gamescope's transparent letterbox
-— the desktop bleeds through and the edges tear/blink in motion (a
-screenshot forces a repaint and misleadingly looks correct; only OBS or
-the naked eye shows the real state). Filling the whole 16:9 output
+**Aspect ratio.** Model 2 games are natively 4:3. Two ways to fill a
+16:9 screen exist, and which a game gets depends on whether a *working*
+per-game widescreen script is present:
+
+- **True 16:9 (where it works).** ElSemi's emulator can render real
+  horizontal-FOV widescreen via a per-game `scripts/<romset>.lua` that
+  calls `Model2_SetWideScreen(1)`. Norm's "True 16:9 Widescreen Project"
+  scripts are seeded from the NAS pack (`dg_m2_scripts_source`). The
+  fighters (VF2 et al.) render correct-proportion widescreen this way —
+  verified 2026-08-04.
+- **16:9 stretched (fallback).** Games without a working script render
+  the 4:3 image stretched ~33% to fill the output.
+
+**Racer widescreen — attempted, unsuccessful, parked (2026-08-04).**
+Daytona USA and Sega Rally (`srallyc`) ship widescreen scripts, but they
+gate `SetWideScreen(1)` behind an in-game state check keyed to a RAM
+address that does **not** match the `emulator_multicpu` build here, so
+the call never fires and both render 4:3-stretched. Forcing the call
+**always-on** (the same unconditional pattern the fighters use) was
+tried on both through the real gamescope path — they *stayed stretched*
+rather than gaining FOV, so the emulator's widescreen genuinely does not
+engage for these titles under this build. Left at the stable 16:9
+stretch; the stock (conditional) pack scripts are restored and no
+always-on override is shipped.
+
+**A proper 4:3 pillarbox** was also attempted (emulator renders
+2880x2160, gamescope `-w 2880 -h 2160 -S fit`, plus a Hyprland `opaque`
+rule) but proved **unstable with this emulator**: it starts centered
+with black bars, then the `AutoFull` fullscreen mode-switch (~1s after
+launch) drifts the surface off-centre and re-exposes gamescope's
+transparent letterbox — the desktop bleeds through and the edges
+tear/blink in motion (a screenshot forces a repaint and misleadingly
+looks correct; only OBS or the naked eye shows the real state). A
+gamescope pillarbox retry in this session never displayed a window at
+all (gamescope instability on this box). Filling the whole 16:9 output
 (FullScreenWidth = the gamescope width) sidesteps all of it — no
 letterbox, no bleed, no drift. The ~33% horizontal stretch is accepted
 as the stable trade-off (verified fine by the user). If a future

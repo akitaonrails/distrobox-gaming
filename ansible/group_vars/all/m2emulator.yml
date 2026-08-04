@@ -44,6 +44,15 @@ dg_m2_nvdata_source: "{{ dg_external_games_root }}/Model 2/NVDATA"
 # Verified 2026-08-04: VF2 renders proper widescreen with correct
 # proportions. (Pilot Kids, Sky Target, Virtua Striker are the known
 # not-working titles in the upstream project.)
+#
+# Racers unsuccessful (parked 2026-08-04): Daytona USA and Sega Rally
+# (srallyc) render 4:3-stretched. Their pack scripts gate SetWideScreen(1)
+# on an in-game RAM-state check that doesn't match this emulator_multicpu
+# build, so it never fires. Forcing it always-on (like the fighters) was
+# tried on both and they STAYED stretched instead of gaining FOV — the
+# emulator's widescreen simply doesn't engage for these titles here. Left
+# at the stable 16:9 stretch; stock conditional scripts kept, no override.
+# See the aspect-ratio section in docs/sega-arcade.md.
 dg_m2_scripts_source: "{{ dg_external_games_root }}/Model 2/scripts"
 
 # Games where the upstream widescreen script glitches (missing geometry /
