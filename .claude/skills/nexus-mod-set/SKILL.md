@@ -89,7 +89,12 @@ WebSearch of indexed titles + authoritative guides. For each mod capture: name/
 author, type (ENB / ASI / .NET script / OpenIV `.rpf` / texture / data / trainer
 / tool), **game version required**, **dependencies** (Nexus + off-site: ASI
 loader, ScriptHook(.NET), xliveless, ENB, OpenIV), install method, and download
-file(s). Also capture fundamentals: the version/downgrade landscape, the
+file(s). **Read each mod's DESCRIPTION and any sticky/pinned notes for stated
+limitations, quirks, known incompatibilities, and conflicts with the OTHER mods
+in the set** — plus load-order notes, required base mods/frameworks, and variant
+choices (which file for this game edition). These change install order, variant
+selection, or whether to include a mod at all; record them per mod and surface
+conflicts to the user. Also capture fundamentals: the version/downgrade landscape, the
 foundational load order, Proton specifics (`WINEDLLOVERRIDES`, `protontricks`
 verbs, DXVK), a recommended install order, and conflicts. Explicitly flag any
 ReShade / RTX-Remix dependency to drop.
