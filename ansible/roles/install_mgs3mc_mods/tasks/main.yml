@@ -1,0 +1,129 @@
+---
+# MGS3 Master Collection (appid 2131650) mod set — MGSHDFix + Community Bugfix,
+# both extracted into the game root. See group_vars/all/mgs3mc_mods.yml.
+
+- name: Revert the MGS3 MC mod set when requested
+  ansible.builtin.include_tasks: revert.yml
+  when: dg_mgs3mc_revert | bool
+
+- name: Install the MGS3 MC mod set
+  when: not (dg_mgs3mc_revert | bool)
+  block:
+    - name: Locate the MGS3 game dir
+      ansible.builtin.stat:
+        path: "{{ dg_mgs3mc_game_dir }}"
+      register: _m3_game
+
+    - name: Fail when MGS3 MC is not found
+      ansible.builtin.fail:
+        msg: >-
+          {{ dg_mgs3mc_game_dir }} not found (appid {{ dg_mgs3mc_appid }}).
+          Install it + mount the USB library, or override
+          dg_mgs3mc_steam_library_root. See docs/nexusmods.md.
+      when: not _m3_game.stat.exists
+
+    - name: Download each mod via the Nexus API (Premium key)
+      ansible.builtin.command:
+        cmd: >-
+          {{ dg_project_root }}/scripts/nexus-download.py --game metalgearsolid3mc
+          --mod {{ item.id }} --via api
+          --dest {{ (dg_mgs3mc_staging_root + '/' + item.dir) | quote }}
+      loop: "{{ dg_mgs3mc_mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _m3_dl
+      changed_when: "'saved' in _m3_dl.stdout"
+      failed_when: false
+      no_log: true
+      when: lookup('ansible.builtin.env', 'NEXUS_MODS_API_KEY') | length > 0
+
+    - name: Find each staged archive
+      ansible.builtin.find:
+        paths: "{{ dg_mgs3mc_staging_root }}/{{ item.dir }}"
+        patterns: ["*.zip", "*.7z", "*.rar"]
+      loop: "{{ dg_mgs3mc_mods }}"
+      loop_control:
+        label: "{{ item.id }}"
+      register: _m3_staged
+
+    - name: Fail with a manifest when a mod is not staged
+      ansible.builtin.fail:
+        msg: |
+          Stage these MGS3 MC mods (set NEXUS_MODS_API_KEY or download):
+          {% for r in _m3_staged.results %}
+          {% if r.matched == 0 %}  - {{ r.item.id }} {{ r.item.name }} — https://www.nexusmods.com/metalgearsolid3mc/mods/{{ r.item.id }} -> {{ dg_mgs3mc_staging_root }}/{{ r.item.dir }}/
+          {% endif %}
+          {% endfor %}
+      when: _m3_staged.results | selectattr('matched', 'equalto', 0) | list | length > 0
+
+    - name: Extract each mod into the game root (marker-gated)
+      ansible.builtin.shell: |
+        set -eu
+        marker="{{ dg_mgs3mc_game_dir }}/.dg-mgs3mc-mod-{{ item.id }}"
+        [ -f "$marker" ] && { echo "skip {{ item.id }}"; exit 0; }
+        arch="$(find {{ (dg_mgs3mc_staging_root + '/' + item.dir) | quote }} -maxdepth 1 -type f \( -name '*.zip' -o -name '*.7z' -o -name '*.rar' \) | head -1)"
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        7z x -y -o"$tmp" "$arch" >/dev/null
+        rsync -a "$tmp"/ {{ dg_mgs3mc_game_dir | quote }}/
+        touch "$marker"; echo "installed {{ item.id }}"
+      loop: "{{ dg_mgs3mc_mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _m3_install
+      changed_when: "'installed' in _m3_install.stdout"
+
+    # --- Steam launch options (wininet/winhttp override for MGSHDFix) ---
+
+    - name: Auto-discover the in-box Steam localconfig.vdf
+      ansible.builtin.find:
+        paths: "{{ dg_mgs3mc_steam_root }}/userdata"
+        patterns: localconfig.vdf
+        recurse: true
+      register: _m3_localconfigs
+      when: dg_mgs3mc_steam_localconfig | length == 0
+
+    - name: Resolve the effective localconfig path
+      ansible.builtin.set_fact:
+        _m3_localconfig: >-
+          {{ dg_mgs3mc_steam_localconfig if (dg_mgs3mc_steam_localconfig | length > 0)
+             else (_m3_localconfigs.files | map(attribute='path') | list | first
+                   if (_m3_localconfigs.files | default([]) | length == 1) else '') }}
+
+    - name: Check if Steam is running
+      ansible.builtin.shell: |
+        pgrep -u "$(id -u)" -x steam >/dev/null || pgrep -u "$(id -u)" -f '/steam(webhelper)?( |$)' >/dev/null
+      register: _m3_steam_running
+      changed_when: false
+      failed_when: false
+      check_mode: false
+      when: _m3_localconfig | length > 0
+
+    - name: Warn that launch options were not set (Steam running)
+      ansible.builtin.debug:
+        msg: >-
+          Steam is running; the wininet/winhttp override was NOT set. Set it
+          manually (MGS3 -> Launch Options -> {{ dg_mgs3mc_launch_options }}) or
+          close Steam and re-run. The mods are installed.
+      when:
+        - _m3_localconfig | length > 0
+        - not (dg_mgs3mc_stop_steam | bool)
+        - _m3_steam_running.rc == 0
+
+    - name: Set the MGS3 Steam launch options (MGSHDFix override)
+      ansible.builtin.command: >-
+        {{ dg_project_root }}/scripts/set-steam-launch-options.py
+        --localconfig {{ _m3_localconfig | quote }}
+        --set {{ dg_mgs3mc_appid | quote }} {{ dg_mgs3mc_launch_options | quote }}
+      register: _m3_launch
+      changed_when: "'changed: true' in _m3_launch.stdout"
+      when:
+        - _m3_localconfig | length > 0
+        - _m3_steam_running.rc != 0
+
+    - name: Report completion
+      ansible.builtin.debug:
+        msg:
+          - "MGS3 MC: MGSHDFix + Community Bugfix installed into the game root."
+          - "In the in-game launcher set Internal Resolution + Upscaling to Default (MGSHDFix owns resolution)."
+          - "{{ 'Launch override set.' if (_m3_localconfig | length > 0 and _m3_steam_running.rc != 0) else 'Set launch option manually: ' + dg_mgs3mc_launch_options }}"
+          - "MANUAL (saves, not automated): NG+ saves (mod 26) — back up + drop into mgs3_savedata_win/<steamid>/. Revert: -e dg_mgs3mc_revert=true."

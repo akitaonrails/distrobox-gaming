@@ -1,0 +1,51 @@
+---
+# Remove MGSHDFix (loader + plugins) and markers; clear the launch option. The
+# Community Bugfix (189) overwrote game textures — restore via Steam Verify.
+
+- name: Remove MGSHDFix loader + plugins
+  ansible.builtin.file:
+    path: "{{ dg_mgs3mc_game_dir }}/{{ item }}"
+    state: absent
+  loop:
+    - wininet.dll
+    - winhttp.dll
+    - plugins/MGSHDFix.asi
+    - plugins/MGSHDFix.ini
+    - plugins/MGSHDFix Config Tool.exe
+
+- name: Remove markers
+  ansible.builtin.file:
+    path: "{{ dg_mgs3mc_game_dir }}/.dg-mgs3mc-mod-{{ item.id }}"
+    state: absent
+  loop: "{{ dg_mgs3mc_mods }}"
+  loop_control:
+    label: "{{ item.id }}"
+
+- name: Auto-discover the in-box Steam localconfig.vdf (revert)
+  ansible.builtin.find:
+    paths: "{{ dg_mgs3mc_steam_root }}/userdata"
+    patterns: localconfig.vdf
+    recurse: true
+  register: _m3_rv_localconfigs
+  when: dg_mgs3mc_steam_localconfig | length == 0
+
+- name: Resolve localconfig for revert
+  ansible.builtin.set_fact:
+    _m3_rv_localconfig: >-
+      {{ dg_mgs3mc_steam_localconfig if (dg_mgs3mc_steam_localconfig | length > 0)
+         else (_m3_rv_localconfigs.files | map(attribute='path') | list | first
+               if (_m3_rv_localconfigs.files | default([]) | length == 1) else '') }}
+
+- name: Clear the MGS3 launch options (best effort)
+  ansible.builtin.command: >-
+    {{ dg_project_root }}/scripts/set-steam-launch-options.py
+    --localconfig {{ _m3_rv_localconfig | quote }}
+    --set {{ dg_mgs3mc_appid | quote }} ""
+  register: _m3_rv_launch
+  changed_when: "'changed: true' in _m3_rv_launch.stdout"
+  failed_when: false
+  when: _m3_rv_localconfig | length > 0
+
+- name: Report revert
+  ansible.builtin.debug:
+    msg: "MGS3 MC reverted: MGSHDFix removed, launch option cleared. Run Steam -> Verify integrity to restore Community Bugfix textures."

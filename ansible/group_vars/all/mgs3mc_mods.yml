@@ -1,0 +1,38 @@
+# MGS3 Master Collection mod set (opt-in role install_mgs3mc_mods). Generated
+# via the nexus-mod-set skill. See docs/nexusmods.md. Standalone appid 2131650.
+#
+# 139 MGSHDFix (ASI resolution/widescreen fix, Ultimate ASI Loader via
+# wininet/winhttp) + 189 MGS3 Community Bugfix Compilation (loose CTXR textures)
+# both extract into the game root; MGSHDFix needs the Proton launch override.
+# 189 requires 139. No ReShade.
+#
+# NOT auto-installed: mod 26 (NG+ savegames) — it overwrites numbered save slots
+# and needs the save folder to pre-exist; the repo's safety rule keeps the role
+# from touching saves. Install it by hand (back up first; pick NA/EU) into
+# common/MGS3/mgs3_savedata_win/<steamid>/.
+#
+# NOTE: MGSHDFix + the CBCs are also installed by the repo's
+# metal_gear_master_collection role (GitHub sources) for the MC Vol.1 bundle;
+# this role targets the STANDALONE MGS3 install (2131650) via the Nexus API.
+
+dg_mgs3mc_appid: "2131650"
+
+dg_mgs3mc_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+dg_mgs3mc_game_dir: "{{ dg_mgs3mc_steam_library_root }}/steamapps/common/MGS3"
+
+dg_mgs3mc_steam_root: "{{ dg_box_home }}/.local/share/Steam"
+dg_mgs3mc_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/mgs3mc"
+
+# MGSHDFix loads via a wininet/winhttp proxy under Proton.
+dg_mgs3mc_launch_options: 'WINEDLLOVERRIDES="wininet,winhttp=n,b" %command%'
+dg_mgs3mc_steam_localconfig: ""
+dg_mgs3mc_stop_steam: false
+
+# Both extract into the game root, in order (MGSHDFix first).
+dg_mgs3mc_mods:
+  - { id: "139", name: "MGSHDFix", dir: "139" }
+  - { id: "189", name: "MGS3 Community Bugfix Compilation (Base)", dir: "189" }
+
+dg_mgs3mc_revert: false

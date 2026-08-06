@@ -31,7 +31,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | GRANDIA HD Remaster | grandiahdremaster | `1034860` | 2 | ✅ (see below) |
 | Metal Gear Rising: Revengeance | metalgearrisingrevengeance | `235460` | 4 | ⏸️ deferred (TexMod/patcher/CE) |
 | MGS Δ: Snake Eater | metalgearsoliddeltasnakeeater | `2417610` | 3 | ✅ (see below) |
-| MGS3 (Master Collection) | metalgearsolid3mc | `2131650` | 3 | ⏳ |
+| MGS3 (Master Collection) | metalgearsolid3mc | `2131650` | 3 | ✅ 2/3 (see below) |
 | MGS2 (Master Collection) | metalgearsolid2mc | `2131640` | 6 | ⏳ |
 | MGSV: Ground Zeroes | metalgearsolidvgz | `311340` | 2 | ⏳ |
 | MGS1 (Master Collection) | metalgearsolidmc | `2131630` | 2 | ⏳ |
@@ -249,6 +249,17 @@ mechanisms, all headless.
 | [17 Camera Tweaks](https://www.nexusmods.com/metalgearsoliddeltasnakeeater/mods/17) | UE5 pak → `~mods` | `dg_mgsdelta_camera_variant` = `117` Camera FoV (default) / `119` / `118`; `dg_mgsdelta_install_guns_scope` optional |
 | [27 MGSDeltaFix](https://www.nexusmods.com/metalgearsoliddeltasnakeeater/mods/27) | ASI (`dsound.dll`) → Binaries/Win64 | needs launch option `WINEDLLOVERRIDES="dsound=n,b" %command%` |
 | [14 Ultimate Engine Tweaks](https://www.nexusmods.com/metalgearsoliddeltasnakeeater/mods/14) | `Engine.ini` → Proton prefix (read-only) | needs the prefix (launch game once first); No-VRR default |
+
+## ✅ MGS3 (Master Collection) — `install_mgs3mc_mods`
+
+Role: `install_mgs3mc_mods` · appid `2131650` (USB library). MGSHDFix + Community
+Bugfix extract into the game root; MGSHDFix loads via a `wininet/winhttp` proxy.
+
+| Mod | Type | Notes |
+|---|---|---|
+| [139 MGSHDFix](https://www.nexusmods.com/metalgearsolid3mc/mods/139) | ASI resolution/widescreen fix | launch option `WINEDLLOVERRIDES="wininet,winhttp=n,b" %command%`; set in-game res/upscaling to Default |
+| [189 Community Bugfix (Base)](https://www.nexusmods.com/metalgearsolid3mc/mods/189) | loose CTXR texture fixes | requires 139 |
+| [26 NG+ saves](https://www.nexusmods.com/metalgearsolid3mc/mods/26) | savegames | ⚠️ manual (safety: don't auto-overwrite saves; needs save folder + NA/EU choice) |
 | [392 Gameplay Enhancement](https://www.nexusmods.com/finalfantasy7rebirth/mods/392) | — | ⏸️ deferred (12 sub-items to curate; conflicts with 61) |
 | [3 Ultimate Engine Tweaks](https://www.nexusmods.com/finalfantasy7rebirth/mods/3) | — | ⏸️ deferred (FFVIIHook DLL + prefix Engine.ini + launch override) |
 
