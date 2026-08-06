@@ -1,0 +1,29 @@
+# Resident Evil 2 (2019) mod set — opt-in role install_re2_mods.
+# Generated via the nexus-mod-set skill. See docs/nexusmods.md. appid 883710.
+#
+# Same RE Engine Fluffy mechanism as install_re4r_mods (natives/ overlay or patch
+# .pak to a high slot). RE2 lives in the BOX Steam library, not the USB one, so
+# the library root is hardcoded (the USB default would be wrong).
+#
+# Only mod 1627 is installed. Mods 182 (Weapon & Ammo Overhaul) and 205 (Full
+# Pack Ammo) are 2019-era: they use the legacy `natives/x64/` layout + old
+# `.scn.19` scene files, which the current ray-tracing build (which reads
+# `natives/stm/`) ignores — installing them would do nothing on the default
+# branch and risks bad scene overrides. Revisit only for the `raytracing_off`
+# classic branch. See docs/nexusmods.md.
+
+dg_re2_appid: "883710"
+
+# RE2 is in the in-box Steam library (not USB) — hardcode it.
+dg_re2_steam_library_root: "{{ dg_box_home }}/.local/share/Steam"
+dg_re2_game_dir: "{{ dg_re2_steam_library_root }}/steamapps/common/RESIDENT EVIL 2  BIOHAZARD RE2"
+
+dg_re2_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/re2"
+
+dg_re2_mods:
+  - id: "1627"
+    file: "6794"
+    name: "Infinite Ammo"
+    variant: ""
+
+dg_re2_revert: false

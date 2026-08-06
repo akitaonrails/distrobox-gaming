@@ -39,7 +39,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Red Dead Redemption | reddeadredemption | `2668510` | 11 | ✅ 2/11 (see below) |
 | Red Dead Redemption 2 | reddeadredemption2 | `1174180` | 13 | ⏸️ deferred (ScriptHook/LML) |
 | Resident Evil 4 (2023 Remake) | residentevil42023 | `2050650` | 2 | ✅ 2/2 (see below) |
-| Resident Evil 2 (2019) | residentevil22019 | `883710` | 3 | ⏳ |
+| Resident Evil 2 (2019) | residentevil22019 | `883710` | 3 | ✅ 1/3 (see below) |
 | Resident Evil 3 (2020) | residentevil32020 | `952060` | 1 | ⏳ |
 | Resident Evil Requiem | residentevilrequiem | `3764200` | 3 | ⏳ |
 | Resident Evil Village | residentevilvillage | `1196590` | 4 | ⏳ |
@@ -332,4 +332,14 @@ This same natives/pak mechanism is reused for RE2/RE3/Village/Requiem.
 |---|---|---|
 | [117 Stack Size Changes](https://www.nexusmods.com/residentevil42023/mods/117) | patch `.pak` | v1.10; variant **"Stack Size (All)- 0999"** → `patch_900.pak` (999 stacks, no herb change) |
 | [3429 Infinite Ammo](https://www.nexusmods.com/residentevil42023/mods/3429) | `natives/` overlay | v1.5; 5 loose `natives/STM/...` files |
+
+## ✅ Resident Evil 2 (2019) — `install_re2_mods`
+
+Role: `install_re2_mods` · appid `883710` (**box** Steam library — hardcoded, not
+USB). Same RE Engine Fluffy natives/pak handler as RE4R.
+
+| Mod | Type | Notes |
+|---|---|---|
+| [1627 Infinite Ammo](https://www.nexusmods.com/residentevil22019/mods/1627) | `natives/` overlay | v1.1 (2024); `natives/stm/...` — RT-build compatible |
+| [182 Weapon & Ammo Overhaul](https://www.nexusmods.com/residentevil22019/mods/182) · [205 Full Pack Ammo](https://www.nexusmods.com/residentevil22019/mods/205) | — | ⏭️ skipped — 2019-era, use the legacy `natives/x64/` layout + old `.scn.19` scene files that the current **ray-tracing build ignores** (it reads `natives/stm/`). Revisit only on the `raytracing_off` classic branch; 182 also needs a variant pick (WAO full-pack vs less-ammo vs keyitem). |
 
