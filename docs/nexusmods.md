@@ -31,7 +31,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | GRANDIA HD Remaster | grandiahdremaster | `1034860` | 2 | ✅ (see below) |
 | Metal Gear Rising: Revengeance | metalgearrisingrevengeance | `235460` | 4 | ⏸️ deferred (TexMod/patcher/CE) |
 | MGS Δ: Snake Eater | metalgearsoliddeltasnakeeater | `2417610` | 3 | ✅ (see below) |
-| MGS3 (Master Collection) | metalgearsolid3mc | `2131650` | 3 | ✅ 2/3 (see below) |
+| MGS3 (Master Collection) | metalgearsolid3mc | `2131650` | 3 | ✅ 3/3 (see below) |
 | MGS2 (Master Collection) | metalgearsolid2mc | `2131640` | 6 | ✅ 5/6 (see below) |
 | MGSV: Ground Zeroes | metalgearsolidvgz | `311340` | 2 | ⏸️ deferred (GzsTool/CE) |
 | MGS1 (Master Collection) | metalgearsolidmc | `2131630` | 2 | ✅ 1/2 (see below) |
@@ -342,7 +342,24 @@ Bugfix extract into the game root; MGSHDFix loads via a `wininet/winhttp` proxy.
 |---|---|---|
 | [139 MGSHDFix](https://www.nexusmods.com/metalgearsolid3mc/mods/139) | ASI resolution/widescreen fix | launch option `WINEDLLOVERRIDES="wininet,winhttp=n,b" %command%`; set in-game res/upscaling to Default |
 | [189 Community Bugfix (Base)](https://www.nexusmods.com/metalgearsolid3mc/mods/189) | loose CTXR texture fixes | requires 139 |
-| [26 NG+ saves](https://www.nexusmods.com/metalgearsolid3mc/mods/26) | savegames | ⚠️ manual (safety: don't auto-overwrite saves; needs save folder + NA/EU choice) |
+| [26 NG+ saves](https://www.nexusmods.com/metalgearsolid3mc/mods/26) | savegames | ✅ placed into `<game>/mgs3_savedata_win/<steamid>/` as NG+ slots **6–A** (your save is slot 1, untouched); dir backed up as `<steamid>.dg-save-backup`. |
+
+> **⚠️ MGS3 MC — two Proton gotchas (both handled):**
+> 1. **Boot / MGSHDFix settings.** MGSHDFix 4.x won't run without a valid
+>    `MGSHDFix.settings` and can't auto-generate one (its Config Tool must run
+>    once). The role now **self-heals** this — `scripts/regen-mgshdfix-settings.sh`
+>    runs the Config Tool offscreen to (re)generate a valid settings file,
+>    idempotently, after every install. (Both roles' `.asi` come from Nexus at
+>    4.0.2 while `metal_gear_master_collection` installs 3.1.0 — the regen makes
+>    the settings match whatever `.asi` is on disk, so the version drift can't
+>    re-break it.)
+> 2. **Cutscene audio.** The `movie/*.sdt` cutscenes are MP4 (H.264 + **AAC**).
+>    Proton 11.0's built-in Media Foundation decodes the video but not AAC, so
+>    cutscenes play silent. **Fix: run MGS3 under GE-Proton** (bundles the AAC
+>    codec) — set in `config/config.vdf` `CompatToolMapping` → `2131650` →
+>    `GE-Proton11-1` (Steam must be closed; backup `config.vdf.dg-backup-mgs3ge`).
+>    This is a per-game **Proton override**, the same idea as a launch-command
+>    dependency — re-apply it after a Steam config reset.
 
 ## ✅ MGS2 (Master Collection) — `install_mgs2mc_mods`
 
