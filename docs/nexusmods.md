@@ -50,7 +50,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Marvel's Spider-Man Remastered | marvelsspidermanremastered | `1817070` | 8 | ⏸️ deferred (Overstrike GUI) |
 | Marvel's Spider-Man: Miles Morales | spidermanmilesmorales | `1817190` | 6 | ⏸️ deferred (Overstrike GUI) |
 | Streets of Rage 4 | streetsofrage4 | `985890` | 1 | ✅ mod 133 (REIGNITED) via existing `install_sor4_reignited` |
-| Tokyo Xtreme Racer | tokyoxtremeracer | `2634950` | 4 | ⏳ |
+| Tokyo Xtreme Racer | tokyoxtremeracer | `2634950` | 3 | ✅ 1/3 (see below) |
 | WRC 5 | wrc5 | `354160` | 1 | ⏳ |
 | UNCHARTED: Legacy of Thieves | unchartedlegacyofthievescollection | `1659420` | 5 | ⏳ |
 | Yakuza 0 (Director's Cut) | yakuza0 | `2988580` | 10 | ⏳ |
@@ -419,4 +419,16 @@ up). It is pinned to **v1.0.0** (from the author's GitLab). Nexus is now at
 **v2.0.0** — not auto-bumped: the mod is built against a specific game patch, so
 updating the `bigfile` must match the installed SOR4 version and can't be verified
 headlessly. Bump `dg_sor4_reignited_version` + the bigfile sha256 deliberately.
+
+## ✅ Tokyo Xtreme Racer — `install_txr_mods`
+
+Role: `install_txr_mods` · appid `2634950` (USB library). UE5 — loads loose paks
+from `<game>/TokyoXtremeRacer/Content/Paks/~mods/` (doubled dir: Steam installdir
++ inner UE project). (The source list repeats mod 87, so 3 unique mods.)
+
+| Mod | Type | Notes |
+|---|---|---|
+| [83 No Wanderer Requirements](https://www.nexusmods.com/tokyoxtremeracer/mods/83) | `~mods` pak triplet | v1.2; the **NoWandererRequirements** file (per the user's note) — removes rival-challenge conditions, no Wanderer-framework dependency |
+| [87 Ultradynamic TXR](https://www.nexusmods.com/tokyoxtremeracer/mods/87) | — | ⏸️ deferred — **UE4SS** Lua mod (`ue4ss/Mods/...` day-night/weather); needs the UE4SS injector |
+| [5 All Perks + Money](https://www.nexusmods.com/tokyoxtremeracer/mods/5) | — | ⏸️ manual — `UserData_00.sav` **save file** (repo Safety: never overwrite saves) |
 

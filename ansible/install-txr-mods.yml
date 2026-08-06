@@ -1,0 +1,7 @@
+---
+- name: Install the Tokyo Xtreme Racer NexusMods set
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_txr_mods

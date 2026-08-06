@@ -1,0 +1,24 @@
+# Tokyo Xtreme Racer (2025) mod set — opt-in role install_txr_mods.
+# Generated via the nexus-mod-set skill. See docs/nexusmods.md. appid 2634950.
+#
+# UE5 game: loads loose paks from <game>/TokyoXtremeRacer/Content/Paks/~mods/
+# (note the doubled dir: Steam installdir + inner UE project). USB library.
+#
+# Only mod 83 (a ~mods pak) installs headlessly. Excluded:
+#   87 Ultradynamic TXR -> UE4SS Lua mod (needs the UE4SS injector) — deferred
+#   5  All Perks + Money -> UserData_00.sav SAVE file — manual (repo Safety)
+
+dg_txr_appid: "2634950"
+
+dg_txr_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+dg_txr_game_dir: "{{ dg_txr_steam_library_root }}/steamapps/common/TokyoXtremeRacer"
+dg_txr_mods_subdir: "TokyoXtremeRacer/Content/Paks/~mods"
+
+dg_txr_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/txr"
+
+dg_txr_mods:
+  - { id: "83", file: "330", name: "No Wanderer Requirements" }
+
+dg_txr_revert: false

@@ -1,0 +1,73 @@
+---
+# Tokyo Xtreme Racer (appid 2634950) mod set — UE5 ~mods pak drops.
+# See group_vars/all/txr_mods.yml and docs/nexusmods.md.
+
+- name: Revert the TXR mod set when requested
+  ansible.builtin.include_tasks: revert.yml
+  when: dg_txr_revert | bool
+
+- name: Install the TXR mod set
+  when: not (dg_txr_revert | bool)
+  block:
+    - name: Locate the TXR Paks dir
+      ansible.builtin.stat:
+        path: "{{ dg_txr_game_dir }}/TokyoXtremeRacer/Content/Paks"
+      register: _txr_paks
+
+    - name: Fail when TXR is not found
+      ansible.builtin.fail:
+        msg: >-
+          {{ dg_txr_game_dir }}/TokyoXtremeRacer/Content/Paks not found
+          (appid {{ dg_txr_appid }}). Install TXR + mount the USB library, or
+          override dg_txr_steam_library_root. See docs/nexusmods.md.
+      when: not _txr_paks.stat.exists
+
+    - name: Download each TXR mod via the Nexus API (Premium key)
+      ansible.builtin.command:
+        cmd: >-
+          {{ dg_project_root }}/scripts/nexus-download.py --game tokyoxtremeracer
+          --mod {{ item.id }} --file {{ item.file }} --via api
+          --dest {{ (dg_txr_staging_root + '/' + item.id) | quote }}
+      loop: "{{ dg_txr_mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _txr_dl
+      changed_when: "'saved' in _txr_dl.stdout"
+      failed_when: false
+      no_log: true
+      when: lookup('ansible.builtin.env', 'NEXUS_MODS_API_KEY') | length > 0
+
+    - name: Install each mod's pak triplet into ~mods (records a manifest)
+      ansible.builtin.shell: |
+        set -eu
+        game={{ dg_txr_game_dir | quote }}
+        mods_dir="$game/{{ dg_txr_mods_subdir }}"
+        manifest="$game/.dg-txr-{{ item.id }}.manifest"
+        [ -f "$manifest" ] && { echo "skip"; exit 0; }
+        arch="$(find {{ (dg_txr_staging_root + '/' + item.id) | quote }} -type f \
+          \( -name '*.zip' -o -name '*.rar' -o -name '*.7z' \) | head -1)"
+        [ -n "$arch" ] || { echo "NO-ARCHIVE" >&2; exit 3; }
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        7z x -y -o"$tmp" "$arch" >/dev/null
+        mkdir -p "$mods_dir"
+        find "$tmp" \( -name '*.pak' -o -name '*.ucas' -o -name '*.utoc' \) > "$tmp/.paklist"
+        [ -s "$tmp/.paklist" ] || { echo "NO-PAK" >&2; exit 4; }
+        : > "$manifest.tmp"
+        while IFS= read -r f; do
+          [ -n "$f" ] || continue
+          cp -f "$f" "$mods_dir/"
+          basename "$f" >> "$manifest.tmp"
+        done < "$tmp/.paklist"
+        mv "$manifest.tmp" "$manifest"
+        echo "txr-installed"
+      loop: "{{ dg_txr_mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _txr_install
+      changed_when: "'txr-installed' in _txr_install.stdout"
+
+    - name: Report completion
+      ansible.builtin.debug:
+        msg:
+          - "TXR: installed {{ dg_txr_mods | map(attribute='name') | join(', ') }} into TokyoXtremeRacer/Content/Paks/~mods/."
+          - "Deferred 87 Ultradynamic (UE4SS); manual 5 All Perks (save file). Revert: -e dg_txr_revert=true."
