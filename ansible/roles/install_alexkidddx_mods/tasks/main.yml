@@ -1,0 +1,115 @@
+---
+# Alex Kidd in Miracle World DX (appid 1333470) mod set — a single managed-DLL
+# swap. See group_vars/all/alexkidddx_mods.yml and docs/nexusmods.md.
+
+- name: Revert the Alex Kidd DX mod when requested
+  ansible.builtin.include_tasks: revert.yml
+  when: dg_alexkidddx_revert | bool
+
+- name: Install the Alex Kidd DX mod
+  when: not (dg_alexkidddx_revert | bool)
+  block:
+    - name: Locate the game's Managed assemblies
+      ansible.builtin.stat:
+        path: "{{ dg_alexkidddx_managed_dir }}/Assembly-CSharp.dll"
+      register: _akd_dll
+
+    - name: Fail when Alex Kidd DX is not found
+      ansible.builtin.fail:
+        msg: >-
+          Assembly-CSharp.dll not found under {{ dg_alexkidddx_managed_dir }}
+          (appid {{ dg_alexkidddx_appid }}). Install the game and mount the USB
+          library, or override dg_alexkidddx_steam_library_root. See
+          docs/nexusmods.md.
+      when: not _akd_dll.stat.exists
+
+    - name: Ensure the backup dir exists
+      ansible.builtin.file:
+        path: "{{ dg_alexkidddx_backup_dir }}"
+        state: directory
+        mode: "0755"
+
+    # One-time snapshot of the pristine DLL (before the swap) for revert.
+    - name: Back up the stock Assembly-CSharp.dll
+      ansible.builtin.copy:
+        src: "{{ dg_alexkidddx_managed_dir }}/Assembly-CSharp.dll"
+        dest: "{{ dg_alexkidddx_backup_dir }}/Assembly-CSharp.dll.stock"
+        remote_src: true
+        force: false
+        mode: "0644"
+
+    - name: Download the mod via the Nexus API (Premium key)
+      ansible.builtin.command:
+        cmd: >-
+          {{ dg_project_root }}/scripts/nexus-download.py
+          --game alexkiddinmiracleworlddx --mod {{ item.id }} --via api
+          --dest {{ (dg_alexkidddx_staging_root + '/' + item.dir) | quote }}
+      loop: "{{ dg_alexkidddx_mods }}"
+      loop_control:
+        label: "{{ item.id }}"
+      register: _akd_dl
+      changed_when: "'saved' in _akd_dl.stdout"
+      failed_when: false
+      no_log: true
+      when: lookup('ansible.builtin.env', 'NEXUS_MODS_API_KEY') | length > 0
+
+    - name: Find the staged mod archive
+      ansible.builtin.find:
+        paths: "{{ dg_alexkidddx_staging_root }}/{{ item.dir }}"
+        patterns: ["*.zip", "*.7z", "*.rar"]
+      loop: "{{ dg_alexkidddx_mods }}"
+      loop_control:
+        label: "{{ item.id }}"
+      register: _akd_staged
+
+    - name: Fail with a manifest when the mod is not staged
+      ansible.builtin.fail:
+        msg: |
+          Stage the Alex Kidd DX mod (set NEXUS_MODS_API_KEY or download):
+          {% for r in _akd_staged.results %}
+          {% if r.matched == 0 %}  - {{ r.item.id }} {{ r.item.name }} — {{ r.item.url }} -> {{ dg_alexkidddx_staging_root }}/{{ r.item.dir }}/
+          {% endif %}
+          {% endfor %}
+      when: _akd_staged.results | selectattr('matched', 'equalto', 0) | list | length > 0
+
+    - name: Inspect the archive for red-flag files
+      ansible.builtin.shell: |
+        set -eu
+        listing="$(7z l -ba {{ item.files | map(attribute='path') | map('quote') | join(' ') }} 2>/dev/null || true)"
+        for rf in {{ dg_alexkidddx_archive_red_flags | map('quote') | join(' ') }}; do
+          printf '%s\n' "$listing" | grep -qiE "(^|[/ ])$rf(\$|[/ ])" && { echo "RED FLAG: $rf"; exit 3; } || true
+        done
+        echo ok
+      loop: "{{ _akd_staged.results }}"
+      loop_control:
+        label: "{{ item.item.id }}"
+      register: _akd_inspect
+      changed_when: false
+      failed_when: _akd_inspect.rc == 3
+
+    - name: Install the modded Assembly-CSharp.dll
+      ansible.builtin.shell: |
+        set -eu
+        marker="{{ dg_alexkidddx_game_dir }}/.dg-alexkidddx-mod-{{ item.id }}"
+        [ -f "$marker" ] && { echo "skip {{ item.id }}"; exit 0; }
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        arch="$(find {{ (dg_alexkidddx_staging_root + '/' + item.dir) | quote }} -maxdepth 1 -type f \( -name '*.zip' -o -name '*.7z' -o -name '*.rar' \) | head -1)"
+        7z x -y -o"$tmp" "$arch" >/dev/null
+        dll="$(find "$tmp" -name 'Assembly-CSharp.dll' -not -name '*.bak' | head -1)"
+        [ -n "$dll" ] || { echo "no Assembly-CSharp.dll in archive"; exit 4; }
+        cp -f "$dll" {{ (dg_alexkidddx_managed_dir + '/Assembly-CSharp.dll') | quote }}
+        printf '%s\n' "{{ item.name }} ({{ item.url }})" > "$marker"
+        echo "installed {{ item.id }}"
+      loop: "{{ dg_alexkidddx_mods }}"
+      loop_control:
+        label: "{{ item.id }}"
+      register: _akd_install
+      changed_when: "'installed' in _akd_install.stdout"
+
+    - name: Report completion + manual follow-ups
+      ansible.builtin.debug:
+        msg:
+          - "Alex Kidd DX Enhanced installed (Assembly-CSharp.dll swapped)."
+          - "IN-GAME: enable Settings -> reduced hitboxes (v3.0 needs it, or Alex dies to oversized hitbox)."
+          - "NOTE: a Steam update rewrites Assembly-CSharp.dll and removes the mod — re-run this role after game updates."
+          - "Stock DLL backed up at {{ dg_alexkidddx_backup_dir }}/Assembly-CSharp.dll.stock. Revert: -e dg_alexkidddx_revert=true."

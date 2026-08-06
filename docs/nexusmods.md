@@ -16,7 +16,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 |---|---|---|---|---|
 | GTA IV: Complete Edition | gta4 | `12210` | 9 | ✅ (see below) |
 | Art of Rally | artofrally | `550320` | 4 | 🔧 built — verify in-game |
-| Alex Kidd in Miracle World DX | alexkiddinmiracleworlddx | `1333470` | 1 | ⏳ |
+| Alex Kidd in Miracle World DX | alexkiddinmiracleworlddx | `1333470` | 1 | ✅ (see below) |
 | Ace Combat 7 | acecombat7skiesunknown | `502500` | 1 | ⏳ |
 | Batman: Arkham Knight | batmanarkhamknight | `208650` | 2 | ⏳ |
 | Batman: Arkham City GOTY | batmanarkhamcity | `200260` | 3 | ⏳ |
@@ -103,3 +103,14 @@ ReShade; target build v1.5.5; mods land in `<game>/Mods/<Id>/`.
 | [10 Real car names](https://www.nexusmods.com/artofrally/mods/10) (MMike17) | RealCarNames | real names in menus |
 | [15 FASTER](https://www.nexusmods.com/artofrally/mods/15) (MMike17) | FASTER | speed post-FX (Unity, not ReShade) |
 | [4 era sponsorship](https://www.nexusmods.com/artofrally/mods/4) | aor.era.sponsorship | period sponsor branding |
+
+## ✅ Alex Kidd in Miracle World DX — `install_alexkidddx_mods`
+
+Role: `install_alexkidddx_mods` · appid `1333470` (USB library). A single
+difficulty-rebalance mod — no loader, no deps, no ReShade — installed by
+swapping the game's managed `Assembly-CSharp.dll` (stock backed up for revert).
+
+| Mod | Type | Notes |
+|---|---|---|
+| [1 Enhanced (Nixos) v3.0](https://www.nexusmods.com/alexkiddinmiracleworlddx/mods/1) | difficulty rebalance (DLL swap) | after install, enable **Settings → reduced hitboxes** in-game; re-run after any Steam game update (it overwrites the DLL) |
+

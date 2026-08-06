@@ -1,0 +1,34 @@
+# Alex Kidd in Miracle World DX mod set (opt-in role install_alexkidddx_mods).
+# Generated via the nexus-mod-set skill. See docs/nexusmods.md.
+#
+# One mod: a difficulty-rebalance that REPLACES the game's managed
+# Assembly-CSharp.dll. No loader, no dependencies, no ReShade — a pure file swap,
+# identical under Proton or Windows. Version-fragile: a Steam update rewrites
+# Assembly-CSharp.dll and silently removes the mod, so re-run after game updates.
+
+dg_alexkidddx_appid: "1333470"
+
+# Game is on the external USB library here.
+dg_alexkidddx_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+dg_alexkidddx_game_dir: "{{ dg_alexkidddx_steam_library_root }}/steamapps/common/Alex Kidd in Miracle World DX"
+dg_alexkidddx_managed_dir: "{{ dg_alexkidddx_game_dir }}/Alex Kidd in Miracle World DX_Data/Managed"
+
+dg_alexkidddx_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/alexkidddx"
+# Stock Assembly-CSharp.dll backed up here before the swap (for revert).
+dg_alexkidddx_backup_dir: "{{ dg_external_games_root }}/backups/alexkidddx"
+
+# Files that mark a staged zip as not-legit (belt-and-suspenders).
+dg_alexkidddx_archive_red_flags:
+  - steam_api.dll
+  - steam_appid.txt
+  - autorun.inf
+
+dg_alexkidddx_mods:
+  - id: "1"
+    name: "Alex Kidd in Miracle World DX Enhanced (Nixos)"
+    url: "https://www.nexusmods.com/alexkiddinmiracleworlddx/mods/1"
+    dir: "1-enhanced"
+
+dg_alexkidddx_revert: false
