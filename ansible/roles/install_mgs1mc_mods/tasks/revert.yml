@@ -1,0 +1,51 @@
+---
+# Remove MGSM2Fix from the MGS1 MC game root and clear the launch override.
+
+- name: Remove MGSM2Fix files from the game root
+  ansible.builtin.file:
+    path: "{{ dg_mgs1mc_game_dir }}/{{ item }}"
+    state: absent
+  loop:
+    - d3d11.dll
+    - dinput8.dll
+    - MGSM2Fix32.asi
+    - MGSM2Fix64.asi
+    - MGSM2Fix.ini
+    - README.md
+    - LICENSES.txt
+    - .dg-mgs1mc-mgsm2fix
+
+- name: Auto-discover the in-box Steam localconfig.vdf
+  ansible.builtin.find:
+    paths: "{{ dg_mgs1mc_steam_root }}/userdata"
+    patterns: localconfig.vdf
+    recurse: true
+  register: _m1r_localconfigs
+  when: dg_mgs1mc_steam_localconfig | length == 0
+
+- name: Resolve the effective localconfig path
+  ansible.builtin.set_fact:
+    _m1r_localconfig: >-
+      {{ dg_mgs1mc_steam_localconfig if (dg_mgs1mc_steam_localconfig | length > 0)
+         else (_m1r_localconfigs.files | map(attribute='path') | list | first
+               if (_m1r_localconfigs.files | default([]) | length == 1) else '') }}
+
+- name: Check if Steam is running
+  ansible.builtin.shell: |
+    pgrep -u "$(id -u)" -x steam >/dev/null || pgrep -u "$(id -u)" -f '/steam(webhelper)?( |$)' >/dev/null
+  register: _m1r_steam_running
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  when: _m1r_localconfig | length > 0
+
+- name: Clear the MGS1 Steam launch options
+  ansible.builtin.command: >-
+    {{ dg_project_root }}/scripts/set-steam-launch-options.py
+    --localconfig {{ _m1r_localconfig | quote }}
+    --set {{ dg_mgs1mc_appid | quote }} ""
+  register: _m1r_launch
+  changed_when: "'changed: true' in _m1r_launch.stdout"
+  when:
+    - _m1r_localconfig | length > 0
+    - _m1r_steam_running.rc != 0

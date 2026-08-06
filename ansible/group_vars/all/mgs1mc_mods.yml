@@ -1,0 +1,28 @@
+# MGS1 Master Collection mod set (opt-in role install_mgs1mc_mods). Generated
+# via the nexus-mod-set skill. See docs/nexusmods.md. Standalone appid 2131630.
+#
+# MGS1 in the Master Collection runs on Konami's M2ENGAGE emulator, so its base
+# loader is MGSM2Fix (nuggslet), NOT MGSHDFix. Mod 5 extracts into the game root
+# (d3d11.dll + dinput8.dll proxies + MGSM2Fix*.asi + MGSM2Fix.ini) and needs the
+# dinput8+d3d11 Proton override. Headless.
+#
+# Mod 3 (Metal Gear Solid HD - RetroArch CRT Shader) is DROPPED: ReShade-tagged,
+# and its pipeline needs RetroArch Windowcast + Windows PowerToys + NVIDIA
+# Profile Inspector + interactive GUI setup — PC-only, unsupported on Linux.
+
+dg_mgs1mc_appid: "2131630"
+
+dg_mgs1mc_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+dg_mgs1mc_game_dir: "{{ dg_mgs1mc_steam_library_root }}/steamapps/common/MGS1"
+
+dg_mgs1mc_steam_root: "{{ dg_box_home }}/.local/share/Steam"
+dg_mgs1mc_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/mgs1mc"
+
+# MGSM2Fix loads via dinput8/d3d11 proxies under Proton.
+dg_mgs1mc_launch_options: 'WINEDLLOVERRIDES="dinput8=n,b;d3d11=n,b" %command%'
+dg_mgs1mc_steam_localconfig: ""
+dg_mgs1mc_stop_steam: false
+
+dg_mgs1mc_revert: false

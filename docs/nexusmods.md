@@ -34,7 +34,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | MGS3 (Master Collection) | metalgearsolid3mc | `2131650` | 3 | ✅ 2/3 (see below) |
 | MGS2 (Master Collection) | metalgearsolid2mc | `2131640` | 6 | ✅ 5/6 (see below) |
 | MGSV: Ground Zeroes | metalgearsolidvgz | `311340` | 2 | ⏸️ deferred (GzsTool/CE) |
-| MGS1 (Master Collection) | metalgearsolidmc | `2131630` | 2 | ⏳ |
+| MGS1 (Master Collection) | metalgearsolidmc | `2131630` | 2 | ✅ 1/2 (see below) |
 | MGSV: The Phantom Pain | metalgearsolidvtpp | `287700` | 6 | ⏳ |
 | Red Dead Redemption | reddeadredemption | `2668510` | 11 | ⏳ |
 | Red Dead Redemption 2 | reddeadredemption2 | `1174180` | 13 | ⏳ |
@@ -282,4 +282,17 @@ ecosystem; all headless drops. Load order 49 → 52 → 19/122 → 110.
 | [10 Snake Hair Fix](https://www.nexusmods.com/metalgearsolid2mc/mods/10) | — | ⛔ omitted (redundant — 52 bundles it) |
 | [392 Gameplay Enhancement](https://www.nexusmods.com/finalfantasy7rebirth/mods/392) | — | ⏸️ deferred (12 sub-items to curate; conflicts with 61) |
 | [3 Ultimate Engine Tweaks](https://www.nexusmods.com/finalfantasy7rebirth/mods/3) | — | ⏸️ deferred (FFVIIHook DLL + prefix Engine.ini + launch override) |
+
+## ✅ MGS1 (Master Collection) — `install_mgs1mc_mods`
+
+Role: `install_mgs1mc_mods` · appid `2131630` (USB library). MGS1 in the MC runs
+on Konami's **M2ENGAGE** emulator, so its base loader is **MGSM2Fix** (nuggslet),
+**not** MGSHDFix. The release drops `d3d11.dll` + `dinput8.dll` proxies +
+`MGSM2Fix32/64.asi` + `MGSM2Fix.ini` into the game root; edit `MGSM2Fix.ini` to
+tune widescreen/resolution/FMV.
+
+| Mod | Type | Notes |
+|---|---|---|
+| [5 MGSM2Fix](https://www.nexusmods.com/metalgearsolidmc/mods/5) | ASI loader/fix | launch option `WINEDLLOVERRIDES="dinput8=n,b;d3d11=n,b" %command%` (dinput8+d3d11, **not** wininet/winhttp) |
+| [3 HD RetroArch CRT Shader](https://www.nexusmods.com/metalgearsolidmc/mods/3) | — | ⛔ dropped — ReShade-tagged; pipeline needs RetroArch Windowcast + Windows PowerToys + NVIDIA Profile Inspector + interactive GUI setup, PC-only |
 
