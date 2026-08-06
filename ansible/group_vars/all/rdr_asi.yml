@@ -22,6 +22,14 @@ dg_rdr_asi_ual_asset: "Ultimate-ASI-Loader_x64.zip"
 dg_rdr_asi_ual_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/_loaders/ualoader"
 dg_rdr_asi_ual_dll: "dinput8.dll"
 
+# RDR's Steam install script silently installs the Rockstar Games Launcher, whose
+# installer DEADLOCKS under Proton — so the game hangs on "running install script"
+# forever. The install script gates the RGL installer on a registry HasRunKey; we
+# write that key into the Proton prefix so Steam skips the (already-installed) RGL
+# and boots the game. See docs/nexusmods.md.
+dg_rdr_asi_fix_rgl_hang: true
+dg_rdr_asi_prefix_systemreg: "{{ dg_rdr_asi_steam_library_root }}/steamapps/compatdata/{{ dg_rdr_asi_appid }}/pfx/system.reg"
+
 dg_rdr_asi_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/rdr"
 dg_rdr_asi_mods:
   - { id: "719", file: "1596", name: "RDRFix" }

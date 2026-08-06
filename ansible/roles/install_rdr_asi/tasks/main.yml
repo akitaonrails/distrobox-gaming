@@ -56,6 +56,29 @@
       register: _rdra_loader
       changed_when: "'loader-installed' in _rdra_loader.stdout"
 
+    - name: Fix the Rockstar Games Launcher install-script hang (idempotent HasRunKey)
+      ansible.builtin.shell: |
+        set -eu
+        reg={{ dg_rdr_asi_prefix_systemreg | quote }}
+        [ -f "$reg" ] || { echo "no-prefix-yet"; exit 0; }
+        # HasRunKey the RGL install-script process (101082970) so Steam skips the
+        # deadlocking Rockstar-Games-Launcher.exe silent installer.
+        grep -qF 'Rockstar Games\\Steam\\Launcher' "$reg" && { echo "already-set"; exit 0; }
+        cp -a "$reg" "$reg.dg-rdr-backup"
+        printf '\n[Software\\\\Wow6432Node\\\\Rockstar Games\\\\Steam\\\\Launcher] 1786056455\n#time=1dd25f5934b816e\n"101082970"=dword:00000001\n' >> "$reg"
+        echo "rgl-haskey-added"
+      register: _rdra_rglfix
+      changed_when: "'rgl-haskey-added' in _rdra_rglfix.stdout"
+      when: dg_rdr_asi_fix_rgl_hang | bool
+
+    - name: Note the RGL-hang fix result
+      ansible.builtin.debug:
+        msg: >-
+          RGL install-script fix: {{ _rdra_rglfix.stdout | default('skipped') }}
+          {{ '(prefix not created yet — launch RDR once, then re-run this role)'
+             if (_rdra_rglfix.stdout | default('') == 'no-prefix-yet') else '' }}
+      when: dg_rdr_asi_fix_rgl_hang | bool
+
     - name: Download each RDR ASI mod via the Nexus API (Premium key)
       ansible.builtin.command:
         cmd: >-

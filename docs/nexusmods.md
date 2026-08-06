@@ -36,7 +36,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | MGSV: Ground Zeroes | metalgearsolidvgz | `311340` | 2 | ⏸️ deferred (GzsTool/CE) |
 | MGS1 (Master Collection) | metalgearsolidmc | `2131630` | 2 | ✅ 1/2 (see below) |
 | MGSV: The Phantom Pain | metalgearsolidvtpp | `287700` | 5 | ⏸️ deferred (SnakeBite) |
-| Red Dead Redemption | reddeadredemption | `2668510` | 11 | ✅ 3/11 (see below) |
+| Red Dead Redemption | reddeadredemption | `2668510` | 11 | ✅ 5/11 (see below) |
 | Red Dead Redemption 2 | reddeadredemption2 | `1174180` | 13 | ⏸️ deferred (ScriptHook/LML) |
 | Resident Evil 4 (2023 Remake) | residentevil42023 | `2050650` | 2 | ✅ 2/2 (see below) |
 | Resident Evil 2 (2019) | residentevil22019 | `883710` | 3 | ✅ 1/3 (see below) |
@@ -115,7 +115,7 @@ placed correctly — verify in-game; restore from the backup if not.
 | [Uncharted 22 Save File](https://www.nexusmods.com/unchartedlegacyofthievescollection/mods/22) | Uncharted (`1659420`) | prefix `…/users/65294540/Uncharted4/saves/` (16 files) | ✅ placed — numbered slots may be profile-ID-bound |
 | [RoboCop 49 New Game Plus](https://www.nexusmods.com/robocoproguecity/mods/49) | RoboCop (`1681430`) | prefix `…/RoboCop/Saved/SaveGames/` (50 `.sav`) | ✅ placed — may need `SaveIndex.sav` to list them |
 | [MGS3 26 NG+ saves](https://www.nexusmods.com/metalgearsolid3mc/mods/26) | MGS3 MC (`2131650`) | — | ⏸️ **blocked** — Steam Cloud container files (`STE…`); no `userdata` save dir exists yet. Save once in-game, then re-run. |
-| [RDR 114 Starter](https://www.nexusmods.com/reddeadredemption/mods/114) · [515 100%](https://www.nexusmods.com/reddeadredemption/mods/515) | RDR (`2668510`) | — | ⏸️ **blocked** — no profile/save dir created yet (`RDR2SAVE*.SAV`). Save once in-game, then re-run. |
+| [RDR 114 Starter](https://www.nexusmods.com/reddeadredemption/mods/114) · [515 100%](https://www.nexusmods.com/reddeadredemption/mods/515) | RDR (`2668510`) | prefix `…/Documents/Rockstar Games/Red Dead Redemption/Profiles/<id>/` | ✅ placed once the save dir existed (114 → slot 0 + `RDR2EXTRAS`; 515 → slots 1–2 + Undead Nightmare `RDR2ZOMBIESAVE1/2`). Profile backed up as `Profiles/<id>.dg-save-backup`. |
 
 ### ⏸️ Deferred (blocked) — revisit at the end
 
@@ -391,6 +391,18 @@ replacement archive are clean drop-ins — the role backs up each original as
 | [303 Fast Horse](https://www.nexusmods.com/reddeadredemption/mods/303) | — | ⏸️ deferred — `hrssimtune.xml`, needs MagicRDR injection (pick the "Fast horse" MAIN vs Faster/Fastest variants) |
 | [140 Unlimited Deadeye](https://www.nexusmods.com/reddeadredemption/mods/140) | — | ⏸️ deferred — `playertune.xml`, needs MagicRDR injection |
 | [719 RDRFix](https://www.nexusmods.com/reddeadredemption/mods/719) | ASI (via `install_rdr_asi`) | ✅ now installed — Ultimate ASI Loader (`dinput8.dll`) + `RDRFix.asi`/`.ini` next to `RDR.exe`; launch option `WINEDLLOVERRIDES="dinput8=n,b" %command%`. v1.3 (intro skip, FPS-cap removal, ultrawide bars, physics-timestep fix, post-fx toggles). Edit `RDRFix.ini`. The more complete of the "similar" fixes (supersedes FusionFix). |
+
+> **⚠️ RDR "running install script" hang (Proton) — fixed by `install_rdr_asi`.**
+> RDR's Steam install script (`installscript_sdk.vdf`) silently installs Social Club
+> + the **Rockstar Games Launcher**, each gated by a registry *HasRunKey*. The RGL
+> silent installer **deadlocks under Proton** (0% CPU forever), so its HasRunKey is
+> never written and Steam re-runs the hung installer every launch → the game never
+> starts. Fix: write `HKLM\Software\Wow6432Node\Rockstar Games\Steam\Launcher`
+> `"101082970"=dword:1` into the prefix's `system.reg` so Steam skips the
+> (already-installed) RGL. `install_rdr_asi` now does this idempotently (var
+> `dg_rdr_asi_fix_rgl_hang`, backup `system.reg.dg-rdr-backup`) and self-heals if a
+> game session rewrites the registry. **Same hang applies to other Rockstar titles
+> under Proton (GTA V, RDR2)** — the same HasRunKey trick unblocks them.
 | [475 Basic Trainer](https://www.nexusmods.com/reddeadredemption/mods/475) | — | ⏸️ deferred — `.red` script, needs a mod-menu/script loader |
 | [114 Starter Save](https://www.nexusmods.com/reddeadredemption/mods/114) · [515 100% Saves](https://www.nexusmods.com/reddeadredemption/mods/515) | — | ⏸️ manual — user save data (repo Safety: never overwrite saves) |
 
