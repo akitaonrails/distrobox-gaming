@@ -91,9 +91,32 @@ an interactive GUI.
 | Marvel's Spider-Man Remastered (`1817070`) & Miles Morales (`1817190`) | Every listed mod is a **`.smpcmod`** / **`.mmpcmod`** / `.modular` package installed by the **Overstrike / "Modding Tool"** GUI, which patches the game's Insomniac-engine `asset_archive/*.toc`. The engine has **no loose-file loading**, so there's no headless path (unlike RE Engine natives). Archives preserved under NAS `NexusMods/spiderman-r/` + `spiderman-mm/`. Manual pass: run Overstrike under Proton, add the `.smpcmod`/`.mmpcmod` files, Install. Remastered: 1291 Real Brands, 3179 Expressive Combat, 3550 Tenacious, 2520 Infinite Web Gadget, 2868 Traversal Tweaks, 3200 Expressive Web Climbing, 634 NYC Lighting, 2524 Ultimate Spidey. Miles: 81 TaMT, 29 Unnerfed, 216 Realistic NYC, 26 Infinite Web Zip, 155 Infinite Camo, 317 Infinite Gadget Ammo. |
 | Red Dead Redemption 2 (`1174180`) | No clean drop-in subset — every functional mod needs an external loader whose **Proton compatibility can't be verified headlessly**. **Script Hook RDR2** (`dinput8` ASI loader from dev-c.com) drives the `.asi` mods: 233 Rampage, 1662 Enhanced Brawling, 1675 A.E.M, 3465 Auto Looting, 1245 Reveal Map, 842 Better Horses, 1970 No Auto Horse Equipping, 3302 Auto Crafting, 1828 No VRAM Warning (Scripthook V2 file). **Lenny's Mod Loader (LML)** drives 1389 Remove Black Bars (`install.xml`), 2189 Terrain Textures Overhaul (**13.6 GB**), 5495 Spawns Fix (`gameconfig.xml`). 8 Intro Completed Save = user save data (manual). Manual pass: install ScriptHook RDR2 + LML under a GUI Proton session, verify they load, then drop each mod. |
 
-### 🔜 Queued follow-ups (after the whole list + deferred pass)
+### ✅ Follow-up review — FFVII 7th Heaven (reviewed 2026-08-06)
 
-- **FFVII 7th Heaven** — revisit the existing `install_7th_heaven` role and check whether all its mods can be automated the `nexus-mod-set` way (direct file placement), removing the dependency on the separate 7th Heaven / MateriaForge mod manager.
+**Question:** can the FF7 mods be automated the `nexus-mod-set` way (direct file
+placement), dropping the 7th Heaven / MateriaForge manager?
+
+**Answer: no — keep `install_7th_heaven` (MateriaForge) as-is.** FF7 modding on
+this box (FF7 2026 Steam Edition `3837340` is installed; 2013 `39140` is not) is a
+**runtime mod-loader stack**, not a loose-file/pak overlay like the RE-Engine /
+UE `~mods` games:
+
+1. **FFNx is a mandatory runtime driver** — it replaces FF7's renderer and hooks
+   asset loads (`ff7/workingdir/FFNx.toml`, which the role configures). It *is* the
+   loader; there is no "no manager" path that keeps mods working.
+2. **IRO mods layer at runtime** — 7th Heaven/MateriaForge resolves load order,
+   per-mod settings, and conditional asset selection live. Static extraction loses
+   that machinery.
+3. **The mods come from the 7th Heaven catalog** (qhimm/iros), **not NexusMods** —
+   there is no `nexus-download.py --game … --mod …` path, so the skill's
+   download/preserve/verify pipeline doesn't apply.
+4. A single pure-texture `.iro` *could* be hand-extracted into FFNx's loose
+   `mods/Textures/` folder, but that still needs FFNx (same stack) and forfeits
+   catalog updates + conditional settings — a net loss.
+
+So the nexus-mod-set pattern (loose files / paks / IoStore triplets / natives)
+doesn't replace a runtime IRO loader. `install_7th_heaven` already automates the
+correct thing (bootstrapping FFNx + the manager); no change made.
 
 ---
 
