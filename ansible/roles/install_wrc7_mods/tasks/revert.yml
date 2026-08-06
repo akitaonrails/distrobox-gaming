@@ -1,0 +1,21 @@
+---
+# Remove the WRC 7 overhaul's files via its manifest. NOTE: files the mod
+# OVERWROTE are restored by Steam "Verify integrity of game files", not here —
+# this only removes the mod's files and the manifest.
+
+- name: Remove installed files via the manifest
+  ansible.builtin.shell: |
+    set -eu
+    game={{ dg_wrc7_game_dir | quote }}
+    manifest="$game/.dg-wrc7-{{ item.id }}.manifest"
+    [ -f "$manifest" ] || { echo "nochange"; exit 0; }
+    while IFS= read -r rel; do
+      [ -n "$rel" ] && rm -f "$game/$rel"
+    done < "$manifest"
+    rm -f "$manifest"
+    echo "wrc7-reverted (run Steam Verify integrity to restore originals)"
+  loop: "{{ dg_wrc7_mods }}"
+  loop_control:
+    label: "{{ item.id }} {{ item.name }}"
+  register: _wrc7_revert
+  changed_when: "'wrc7-reverted' in _wrc7_revert.stdout"

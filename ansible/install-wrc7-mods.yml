@@ -1,0 +1,7 @@
+---
+- name: Install the WRC 7 NexusMods set
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_wrc7_mods

@@ -1,0 +1,26 @@
+# WRC 7 mod set — opt-in role install_wrc7_mods. See docs/nexusmods.md.
+# appid 621830 (box library).
+#
+# The only mod, "WRC 7 EVOlution MOD" (4.0), is a ~6 GB total-overhaul: it ships
+# a mirror of the game tree (`WRC 7/WIN32/PKG/CHUNK_*.PKG`) with modded data
+# chunks (physics, damage, particles, sounds, FFB) that OVERWRITE the game's own
+# PKG archives. Because it replaces ~4 GB of core game data, revert is via Steam
+# ->  "Verify integrity of game files" (which re-downloads the originals) rather
+# than a large local backup (keeps big data off the NVMe per project preference).
+#
+# The mod archive extracts to `MOD EVOLUTION 4 FINAL VERSION/WRC 7/...`; the inner
+# `WRC 7/` maps onto the game root.
+
+dg_wrc7_appid: "621830"
+dg_wrc7_steam_library_root: "{{ dg_box_home }}/.local/share/Steam"
+dg_wrc7_game_dir: "{{ dg_wrc7_steam_library_root }}/steamapps/common/WRC 7"
+dg_wrc7_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/wrc7"
+# Extraction scratch on the NAS (the 6 GB rar must not land on a small /tmp tmpfs).
+dg_wrc7_extract_root: "{{ dg_wrc7_staging_root }}/_extract"
+# Folder inside the archive wrapper that maps onto the game root.
+dg_wrc7_inner_subtree: "WRC 7"
+
+dg_wrc7_mods:
+  - { id: "1", file: "1", name: "EVOlution MOD 4.0" }
+
+dg_wrc7_revert: false

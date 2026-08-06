@@ -55,7 +55,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | UNCHARTED: Legacy of Thieves | unchartedlegacyofthievescollection | `1659420` | 5 | ✅ 2/5 (see below) |
 | Yakuza 0 (Director's Cut) | yakuza0 | `2988580` | 10 | ⏸️ deferred (edition mismatch / RMM) |
 | The Witcher 3: Wild Hunt (Next-Gen) | witcher3 | `292030` | 12 | ✅ 10/12 (see below) |
-| WRC 7 | wrc7 | `621830` | 1 | 🔧 EVOlution Mod (6 GB, downloading) |
+| WRC 7 | wrc7 | `621830` | 1 | ✅ 1/1 (EVOlution Mod 4.0, see below) |
 
 ### ⛔ Skipped — not installed in Steam (as of the 2026-08-06 scan)
 
@@ -498,6 +498,18 @@ drop in headlessly (no loader). Manifest-tracked (whole mod folders).
 
 Note: script mods that touch shared scripts (AutoLoot, Weight) may need **Script
 Merger** if they conflict in-game; installed as-is.
+
+## ✅ WRC 7 — `install_wrc7_mods`
+
+Role: `install_wrc7_mods` · appid `621830` (box library). One mod, the ~6 GB
+**EVOlution MOD 4.0** — a total physics/damage/particles/sound/FFB overhaul that
+ships a mirror of the game tree and **overwrites the game's data-chunk PKGs**
+(`WIN32/PKG/CHUNK_*.PKG`, 139 files). The 6 GB `.rar` extracts on the NAS scratch
+(not `/tmp`); files verified by size against the archive.
+
+| Mod | Notes |
+|---|---|
+| [1 EVOlution MOD](https://www.nexusmods.com/wrc7/mods/1) | total overhaul; overwrites core data PKGs. **Revert = Steam → WRC 7 → Properties → Installed Files → Verify integrity** (re-downloads the originals), then `-e dg_wrc7_revert=true` to drop the manifest. |
 
 ## ⚠️ WRC 5 — flagged, not installed
 
