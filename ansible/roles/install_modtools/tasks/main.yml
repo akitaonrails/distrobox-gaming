@@ -1,0 +1,30 @@
+---
+# Stage the GUI mod-manager tool binaries to the NAS (SnakeBite, Overstrike).
+# See group_vars/all/modtools.yml and docs/nexusmods.md.
+
+- name: Ensure each tool's staging dir exists
+  ansible.builtin.file:
+    path: "{{ dg_modtools_staging_root }}/{{ item.key }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ dg_modtools }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: Download + version-pin each tool binary (reused from the NAS if present)
+  ansible.builtin.get_url:
+    url: "{{ item.url }}"
+    dest: "{{ dg_modtools_staging_root }}/{{ item.key }}/{{ item.dest_file }}"
+    mode: "0644"
+    timeout: 120
+  loop: "{{ dg_modtools }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: _mt_dl
+
+- name: Report
+  ansible.builtin.debug:
+    msg:
+      - "Staged GUI mod tools under {{ dg_modtools_staging_root }}/: {{ dg_modtools | map(attribute='name') | join('; ') }}."
+      - "RyuModManager (Yakuza) ships no binary + Yakuza 0 here is the Director's Cut (edition mismatch) — not staged; build from {{ dg_modtools_rmm_repo }} if needed."
+      - "Run each tool once under the game's Proton prefix and import the staged mods. See docs/nexusmods.md 'GUI mod-manager tools (manual pass)'."

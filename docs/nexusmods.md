@@ -78,6 +78,20 @@ in like the bundled `dinput8` hooks — these un-defer the loader-dependent mods
 | **UE4SS** (RE-UE4SS, `dwmapi.dll` UE4/5 script loader) | `install_ue4ss` (tag `ue4ss`) | RoboCop 2 Ultra Plus (self-contained — the Steam file bundles UE4SS); TXR 87 Ultradynamic (UE4SS core v3.0.1 + mod `Mods/` overlay). Core staged under `NexusMods/_loaders/ue4ss/`; installs into `<game>/…/Binaries/Win64`; launch option `WINEDLLOVERRIDES="dwmapi=n,b" %command%`. Watch: use the game's **Steam/Win64** mod file, not the Game Pass/WinGDK one. |
 | **Sekiro Mod Engine** (katalash, `dinput8.dll` + `modengine.ini`) | `install_sekiro_modengine` (tag `sekiro_modengine`) | Sekiro 418 The Easy (param override from `<game>/mods/`). ModEngine2 does **not** support Sekiro; this original ModEngine chainloads the Weapon Wheel (`chainDInput8DLLPath="\weaponwheel.dll"`) so both run. Revert before `install_sekiro_mods`. |
 
+### 🖱️ GUI mod-manager tools (staged; manual pass)
+
+`install_modtools` (tag `modtools`) only **downloads + version-pins** the Windows
+.NET GUI tools to `NexusMods/_loaders/` — their mod-install step is irreducibly
+manual (no headless path). Run each once under the game's Proton prefix
+(`protontricks <appid> <tool>` or a wine prefix with `winetricks dotnet`), then
+import the already-staged mods.
+
+| Tool (staged) | Game(s) | Manual pass |
+|---|---|---|
+| **SnakeBite** `0.8` (`SnakeBite.Installer.exe`) | MGSV: The Phantom Pain (`287700`) | Install SnakeBite, point it at MGS_TPP, add the `.mgsv` files from `NexusMods/mgsvtpp/` (300, 316, 327, 406→Vibrant, 1011→Extreme), Build. |
+| **Overstrike** `v1.7.5` (`Overstrike_v1.7.5.zip`) | Spider-Man Remastered (`1817070`) + Miles Morales (`1817190`) | Run Overstrike, add the `.smpcmod`/`.mmpcmod` files from `NexusMods/spiderman-r/` + `spiderman-mm/`, Install (patches the `.toc`). |
+| **Ryu Mod Manager** (source-only, `mosamadeeb/RyuModManager`) | Yakuza 0 (`2988580`) | ⚠️ not staged — no release binary, **and** this box has the *Director's Cut* while the `yakuza0` `.par` mods target the original (edition mismatch). Build from source only if you accept that risk. |
+
 ### ⏸️ Deferred (blocked) — revisit at the end
 
 Games whose mods need an interactive **Windows GUI tool** that isn't

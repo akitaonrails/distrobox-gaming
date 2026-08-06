@@ -1,0 +1,7 @@
+---
+- name: Stage the GUI mod-manager tool binaries
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_modtools

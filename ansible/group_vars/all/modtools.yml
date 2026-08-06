@@ -1,0 +1,27 @@
+# GUI mod-manager tools staging — opt-in role install_modtools. See docs/nexusmods.md.
+#
+# These Windows .NET GUI tools drive the deferred games whose mod-install step is
+# irreducibly manual (no headless path). This role only DOWNLOADS + version-pins
+# the tool binaries to the NAS so they're ready; the mod install is a one-time
+# manual pass under the game's Proton prefix (see docs/nexusmods.md for steps).
+# Their target mods are already staged under NexusMods/<game>/.
+
+dg_modtools_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/_loaders"
+
+dg_modtools:
+  - key: snakebite
+    name: "SnakeBite (MGSV)"
+    repo: "topher-au/SnakeBite"
+    url: "https://github.com/topher-au/SnakeBite/releases/download/0.8/SnakeBite.Installer.exe"
+    dest_file: "SnakeBite.Installer.exe"
+  - key: overstrike
+    name: "Overstrike (Spider-Man Remastered + Miles Morales)"
+    repo: "Tkachov/Overstrike"
+    url: "https://github.com/Tkachov/Overstrike/releases/download/OS/v1.7.5/Overstrike_v1.7.5.zip"
+    dest_file: "Overstrike_v1.7.5.zip"
+
+# RyuModManager (Yakuza) ships no release binary — build from source
+# (github.com/mosamadeeb/RyuModManager). Also moot here: this box has Yakuza 0
+# **Director's Cut**, not the original the yakuza0 .par mods target (edition
+# mismatch), so RMM is not staged.
+dg_modtools_rmm_repo: "mosamadeeb/RyuModManager"
