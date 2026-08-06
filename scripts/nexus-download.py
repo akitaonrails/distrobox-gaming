@@ -128,8 +128,9 @@ def main() -> int:
     files = meta.get("files", []) if isinstance(meta, dict) else []
     if a.list:
         for f in files:
-            print(f"{f['category_name']:12} id={f['file_id']:<8} v{str(f.get('version')):<10} "
-                  f"{round((f.get('size_kb') or 0) / 1024, 1)}MB  {f['file_name']}")
+            print(f"{(f.get('category_name') or '?'):12} id={f['file_id']:<8} "
+                  f"v{str(f.get('version') or ''):<10} "
+                  f"{round((f.get('size_kb') or 0) / 1024, 1)}MB  {f.get('file_name')}")
         return 0
 
     if not a.dest:

@@ -1,0 +1,7 @@
+---
+- name: Install the Art of Rally NexusMods set (Unity Mod Manager)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_artofrally_mods

@@ -15,7 +15,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Game | Nexus domain | Steam | Mods listed | Status |
 |---|---|---|---|---|
 | GTA IV: Complete Edition | gta4 | `12210` | 9 | ✅ (see below) |
-| Art of Rally | artofrally | `550320` | 4 | ⏳ |
+| Art of Rally | artofrally | `550320` | 4 | 🔧 built — verify in-game |
 | Alex Kidd in Miracle World DX | alexkiddinmiracleworlddx | `1333470` | 1 | ⏳ |
 | Ace Combat 7 | acecombat7skiesunknown | `502500` | 1 | ⏳ |
 | Batman: Arkham Knight | batmanarkhamknight | `208650` | 2 | ⏳ |
@@ -87,3 +87,19 @@ downloaded (Premium API) + verified clean, staged at
 | [195 Realistic Handling](https://www.nexusmods.com/gta4/mods/195) | 470 | ✅ overloader (applied last) |
 | [272 Realistic Weapon Overhaul](https://www.nexusmods.com/gta4/mods/272) | 971 | 🔧 stats/models via overloader; **audio needs OpenIV** |
 | [702 200+ Add-On Vehicles](https://www.nexusmods.com/gta4/mods/702) | 1602 | 🔧 **manual** (Liberty's Legacy framework) |
+
+## 🔧 Art of Rally — `install_artofrally_mods`
+
+Role: `install_artofrally_mods` · appid `550320` (on the USB library) ·
+foundation: **Unity Mod Manager** v0.32.5a (Nexus `site/21`). These are UMM code
+mods; UMM is deployed headlessly via DoorstopProxy (`winhttp.dll`), so the game
+must run under **Proton** (`WINEDLLOVERRIDES="winhttp=n,b"`) and UMM's load must
+be **verified in-game with Ctrl+F10** (option A — see the role header). No
+ReShade; target build v1.5.5; mods land in `<game>/Mods/<Id>/`.
+
+| Mod | UMM Id | Notes |
+|---|---|---|
+| [1 Camera Mod](https://www.nexusmods.com/artofrally/mods/1) (Thoxx) | CameraMod | extra cameras; pairs with FASTER |
+| [10 Real car names](https://www.nexusmods.com/artofrally/mods/10) (MMike17) | RealCarNames | real names in menus |
+| [15 FASTER](https://www.nexusmods.com/artofrally/mods/15) (MMike17) | FASTER | speed post-FX (Unity, not ReShade) |
+| [4 era sponsorship](https://www.nexusmods.com/artofrally/mods/4) | aor.era.sponsorship | period sponsor branding |
