@@ -55,6 +55,7 @@
     - { role: install_robocop_mods,      tags: [robocop_mods, never] }
     - { role: install_sekiro_mods,       tags: [sekiro_mods, never] }
     - { role: install_txr_mods,          tags: [txr_mods, never] }
+    - { role: install_uncharted_mods,    tags: [uncharted_mods, never] }
     - { role: steam_lib32_nvidia,        tags: [steam_lib32_nvidia, never] }
     - { role: steam_trainers,            tags: [steam_trainers, never] }
     - { role: install_render96ex,        tags: [render96ex, never] }

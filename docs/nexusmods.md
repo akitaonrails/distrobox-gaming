@@ -52,7 +52,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Streets of Rage 4 | streetsofrage4 | `985890` | 1 | ✅ mod 133 (REIGNITED) via existing `install_sor4_reignited` |
 | Tokyo Xtreme Racer | tokyoxtremeracer | `2634950` | 3 | ✅ 1/3 (see below) |
 | WRC 5 | wrc5 | `354160` | 1 | ⚠️ flagged — not installed (DLC-unlock crack, see below) |
-| UNCHARTED: Legacy of Thieves | unchartedlegacyofthievescollection | `1659420` | 5 | ⏳ |
+| UNCHARTED: Legacy of Thieves | unchartedlegacyofthievescollection | `1659420` | 5 | ✅ 2/5 (see below) |
 | Yakuza 0 (Director's Cut) | yakuza0 | `2988580` | 10 | ⏳ |
 
 ### ⛔ Skipped — not installed in Steam (as of the 2026-08-06 scan)
@@ -431,6 +431,21 @@ from `<game>/TokyoXtremeRacer/Content/Paks/~mods/` (doubled dir: Steam installdi
 | [83 No Wanderer Requirements](https://www.nexusmods.com/tokyoxtremeracer/mods/83) | `~mods` pak triplet | v1.2; the **NoWandererRequirements** file (per the user's note) — removes rival-challenge conditions, no Wanderer-framework dependency |
 | [87 Ultradynamic TXR](https://www.nexusmods.com/tokyoxtremeracer/mods/87) | — | ⏸️ deferred — **UE4SS** Lua mod (`ue4ss/Mods/...` day-night/weather); needs the UE4SS injector |
 | [5 All Perks + Money](https://www.nexusmods.com/tokyoxtremeracer/mods/5) | — | ⏸️ manual — `UserData_00.sav` **save file** (repo Safety: never overwrite saves) |
+
+## ✅ UNCHARTED: Legacy of Thieves — `install_uncharted_mods`
+
+Role: `install_uncharted_mods` · appid `1659420` (USB library). Plain
+file-replacement mods whose archives carry the correct game-relative paths; the
+role rsyncs them in and backs up any pre-existing file to `<file>.dg-orig`
+(manifest-tracked).
+
+| Mod | Type | Notes |
+|---|---|---|
+| [137 DLSS 4 (v310.7)](https://www.nexusmods.com/unchartedlegacyofthievescollection/mods/137) | DLL swap | replaces game-root `nvngx_dlss.dll` with the newer DLSS runtime |
+| [11 PS Video Removed](https://www.nexusmods.com/unchartedlegacyofthievescollection/mods/11) | `.psarc` replace | swaps the two `Uncharted4_data/build/pc/{uncharted4,thelostlegacy}/rad1.psarc` (~1.6 GB) to drop the Sony intro; originals backed up |
+| [107 RenoDX](https://www.nexusmods.com/unchartedlegacyofthievescollection/mods/107) | — | ⛔ dropped — a **ReShade addon** (`.addon64`); ReShade excluded per project rule |
+| [2 27GB Reducer](https://www.nexusmods.com/unchartedlegacyofthievescollection/mods/2) | — | ⏭️ skipped — overwrites foreign-language voice `.psarc` with 6-byte empty stubs (destroys audio data); against repo Safety |
+| [22 Save File](https://www.nexusmods.com/unchartedlegacyofthievescollection/mods/22) | — | ⏸️ manual — user save data |
 
 ## ⚠️ WRC 5 — flagged, not installed
 

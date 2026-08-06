@@ -1,0 +1,24 @@
+---
+# Restore each Uncharted mod's files from .dg-orig backups (or remove added ones).
+
+- name: Restore each mod via its manifest
+  ansible.builtin.shell: |
+    set -eu
+    game={{ dg_uncharted_game_dir | quote }}
+    manifest="$game/.dg-uncharted-{{ item.id }}.manifest"
+    [ -f "$manifest" ] || { echo "nochange"; exit 0; }
+    while IFS= read -r rel; do
+      [ -n "$rel" ] || continue
+      if [ -e "$game/$rel.dg-orig" ]; then
+        mv -f "$game/$rel.dg-orig" "$game/$rel"
+      else
+        rm -f "$game/$rel"
+      fi
+    done < "$manifest"
+    rm -f "$manifest"
+    echo "uncharted-reverted"
+  loop: "{{ dg_uncharted_mods }}"
+  loop_control:
+    label: "{{ item.id }} {{ item.name }}"
+  register: _unc_revert
+  changed_when: "'uncharted-reverted' in _unc_revert.stdout"

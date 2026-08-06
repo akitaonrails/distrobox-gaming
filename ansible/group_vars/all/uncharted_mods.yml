@@ -1,0 +1,29 @@
+# Uncharted: Legacy of Thieves Collection mod set — opt-in role
+# install_uncharted_mods. Via the nexus-mod-set skill. See docs/nexusmods.md.
+# appid 1659420 (USB library).
+#
+# Both installed mods are plain file replacements whose archives already carry
+# the correct game-relative paths ("drag into the game root"), so the role rsyncs
+# the extracted tree in, backing up any pre-existing file to <file>.dg-orig for
+# revert. Manifest-tracked.
+#
+# Excluded:
+#   107 RenoDX  -> a ReShade addon (.addon64) — ReShade excluded per project rule
+#   2   27GB Reducer -> overwrites foreign-language voice .psarc with 6-byte
+#       empty stubs (destroys audio data) — skipped per repo Safety
+#   22  Save File -> user save data — manual (repo Safety: never overwrite saves)
+
+dg_uncharted_appid: "1659420"
+
+dg_uncharted_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+dg_uncharted_game_dir: "{{ dg_uncharted_steam_library_root }}/steamapps/common/Uncharted Legacy of Thieves Collection"
+
+dg_uncharted_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/uncharted"
+
+dg_uncharted_mods:
+  - { id: "137", file: "325", name: "DLSS 4 (v310.7)" }
+  - { id: "11",  file: "18",  name: "PS Video Removed" }
+
+dg_uncharted_revert: false

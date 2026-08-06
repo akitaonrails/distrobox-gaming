@@ -1,0 +1,76 @@
+---
+# Uncharted: Legacy of Thieves (appid 1659420) mod set — file replacements.
+# See group_vars/all/uncharted_mods.yml and docs/nexusmods.md.
+
+- name: Revert the Uncharted mod set when requested
+  ansible.builtin.include_tasks: revert.yml
+  when: dg_uncharted_revert | bool
+
+- name: Install the Uncharted mod set
+  when: not (dg_uncharted_revert | bool)
+  block:
+    - name: Locate the Uncharted game dir
+      ansible.builtin.stat:
+        path: "{{ dg_uncharted_game_dir }}/Uncharted4_data"
+      register: _unc_game
+
+    - name: Fail when Uncharted is not found
+      ansible.builtin.fail:
+        msg: >-
+          {{ dg_uncharted_game_dir }} not found (appid {{ dg_uncharted_appid }}).
+          Install it + mount the USB library, or override
+          dg_uncharted_steam_library_root. See docs/nexusmods.md.
+      when: not _unc_game.stat.exists
+
+    - name: Download each Uncharted mod via the Nexus API (Premium key)
+      ansible.builtin.command:
+        cmd: >-
+          {{ dg_project_root }}/scripts/nexus-download.py
+          --game unchartedlegacyofthievescollection
+          --mod {{ item.id }} --file {{ item.file }} --via api
+          --dest {{ (dg_uncharted_staging_root + '/' + item.id) | quote }}
+      loop: "{{ dg_uncharted_mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _unc_dl
+      changed_when: "'saved' in _unc_dl.stdout"
+      failed_when: false
+      no_log: true
+      when: lookup('ansible.builtin.env', 'NEXUS_MODS_API_KEY') | length > 0
+
+    - name: Install each mod (replace files, backing up pre-existing ones)
+      ansible.builtin.shell: |
+        set -eu
+        game={{ dg_uncharted_game_dir | quote }}
+        manifest="$game/.dg-uncharted-{{ item.id }}.manifest"
+        [ -f "$manifest" ] && { echo "skip"; exit 0; }
+        arch="$(find {{ (dg_uncharted_staging_root + '/' + item.id) | quote }} -type f \
+          \( -name '*.zip' -o -name '*.rar' -o -name '*.7z' \) | head -1)"
+        [ -n "$arch" ] || { echo "NO-ARCHIVE" >&2; exit 3; }
+        tmp="$(mktemp -d)"; list="$(mktemp)"
+        trap 'rm -rf "$tmp" "$list"' EXIT
+        7z x -y -o"$tmp" "$arch" >/dev/null
+        # Build the file list OUTSIDE the extraction dir so it can't self-include.
+        ( cd "$tmp" && find . -type f | sed 's|^\./||' ) > "$list"
+        [ -s "$list" ] || { echo "NO-FILES" >&2; exit 4; }
+        # Back up any pre-existing target once, then copy the mod file over.
+        while IFS= read -r rel; do
+          [ -n "$rel" ] || continue
+          if [ -e "$game/$rel" ] && [ ! -e "$game/$rel.dg-orig" ]; then
+            cp -a "$game/$rel" "$game/$rel.dg-orig"
+          fi
+        done < "$list"
+        rsync -a "$tmp/" "$game/"
+        cp -f "$list" "$manifest"
+        echo "uncharted-installed"
+      loop: "{{ dg_uncharted_mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _unc_install
+      changed_when: "'uncharted-installed' in _unc_install.stdout"
+
+    - name: Report completion
+      ansible.builtin.debug:
+        msg:
+          - "Uncharted: installed {{ dg_uncharted_mods | map(attribute='name') | join(', ') }} (file replacements; originals kept as *.dg-orig)."
+          - "Dropped 107 RenoDX (ReShade); skipped 2 27GB-Reducer (stubs voice data); manual 22 save. Revert: -e dg_uncharted_revert=true."
