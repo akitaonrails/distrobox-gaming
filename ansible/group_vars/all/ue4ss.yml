@@ -1,0 +1,47 @@
+# UE4SS loader + its UE mods — opt-in role install_ue4ss. See docs/nexusmods.md.
+# UE4SS (RE-UE4SS) is a UE4/UE5 Lua/script loader (dwmapi.dll proxy next to the
+# shipping exe). Proven under Proton with WINEDLLOVERRIDES="dwmapi=n,b".
+#
+# Two install modes:
+#   self_contained  - the Nexus mod already bundles a full UE4SS install; extract
+#                     its `Game/` tree into the game root (RoboCop Ultra Plus).
+#   core_overlay    - the mod ships only ue4ss/Mods/*; install the UE4SS core zip
+#                     into Binaries/Win64 and overlay the mod's Mods (TXR).
+
+# UE4SS core release (used by core_overlay games). Pinned + staged/reused on NAS.
+dg_ue4ss_repo: "UE4SS-RE/RE-UE4SS"
+dg_ue4ss_tag: "v3.0.1"
+dg_ue4ss_asset: "UE4SS_v3.0.1.zip"
+dg_ue4ss_url: "https://github.com/{{ dg_ue4ss_repo }}/releases/download/{{ dg_ue4ss_tag }}/{{ dg_ue4ss_asset }}"
+dg_ue4ss_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/_loaders/ue4ss"
+dg_ue4ss_mods_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods"
+
+dg_ue4ss_launch_options: 'WINEDLLOVERRIDES="dwmapi=n,b" %command%'
+dg_ue4ss_steam_root: "{{ dg_box_home }}/.local/share/Steam"
+dg_ue4ss_steam_localconfig: ""
+
+dg_ue4ss_usb_lib: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+
+dg_ue4ss_games:
+  - key: robocop
+    appid: "1681430"
+    domain: robocoproguecity
+    game_dir: "{{ dg_ue4ss_usb_lib }}/steamapps/common/Robocop Rogue City"
+    mode: self_contained
+    # the mod archive carries this subtree; rsync it into the game root
+    extract_subtree: "Game"
+    win64_subdir: "Game/Binaries/Win64"
+    mods:
+      - { id: "2", file: "206", name: "Ultra Plus (Steam)" }
+  - key: txr
+    appid: "2634950"
+    domain: tokyoxtremeracer
+    game_dir: "{{ dg_ue4ss_usb_lib }}/steamapps/common/TokyoXtremeRacer"
+    mode: core_overlay
+    win64_subdir: "TokyoXtremeRacer/Binaries/Win64"
+    mods:
+      - { id: "87", file: "263", name: "Ultradynamic TXR" }
+
+dg_ue4ss_revert: false

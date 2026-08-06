@@ -1,0 +1,7 @@
+---
+- name: Install UE4SS loader + its UE mods
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_ue4ss

@@ -1,0 +1,157 @@
+---
+# Install UE4SS + its mods into one game (`game` = a dg_ue4ss_games entry).
+
+- name: "{{ game.key }}: check the game dir"
+  ansible.builtin.stat:
+    path: "{{ game.game_dir }}/{{ game.win64_subdir }}"
+  register: _ueg_dir
+
+- name: "{{ game.key }}: warn + skip when the game is not installed"
+  ansible.builtin.debug:
+    msg: "{{ game.game_dir }}/{{ game.win64_subdir }} not found (appid {{ game.appid }}); skipping UE4SS for {{ game.key }}."
+  when: not _ueg_dir.stat.exists
+
+- name: "{{ game.key }}: install UE4SS + mods"
+  when: _ueg_dir.stat.exists
+  block:
+    - name: "{{ game.key }}: install the UE4SS core (core_overlay mode)"
+      ansible.builtin.shell: |
+        set -eu
+        game={{ game.game_dir | quote }}
+        win64="{{ game.win64_subdir }}"
+        manifest="$game/.dg-ue4ss-core.manifest"
+        [ -f "$manifest" ] && { echo "skip"; exit 0; }
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        7z x -y -o"$tmp" {{ (dg_ue4ss_staging_root + '/' + dg_ue4ss_asset) | quote }} >/dev/null
+        ( cd "$tmp" && find . -type f ) | sed "s#^\./#${win64}/#" > "$manifest.tmp"
+        rsync -a "$tmp/" "$game/${win64}/"
+        mv "$manifest.tmp" "$manifest"
+        echo "core-installed"
+      register: _ueg_core
+      changed_when: "'core-installed' in _ueg_core.stdout"
+      when: game.mode == 'core_overlay'
+
+    - name: "{{ game.key }}: download each UE4SS mod via the Nexus API (Premium key)"
+      ansible.builtin.command:
+        cmd: >-
+          {{ dg_project_root }}/scripts/nexus-download.py --game {{ game.domain }}
+          --mod {{ item.id }} --file {{ item.file }} --via api
+          --dest {{ (dg_ue4ss_mods_staging_root + '/' + game.key + '/' + item.id + '/' + item.file) | quote }}
+      loop: "{{ game.mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _ueg_dl
+      changed_when: "'saved' in _ueg_dl.stdout"
+      failed_when: false
+      no_log: true
+      when: lookup('ansible.builtin.env', 'NEXUS_MODS_API_KEY') | length > 0
+
+    - name: "{{ game.key }}: install self-contained mod (bundled UE4SS)"
+      ansible.builtin.shell: |
+        set -eu
+        game={{ game.game_dir | quote }}
+        sub="{{ game.extract_subtree }}"
+        manifest="$game/.dg-ue4ss-{{ item.id }}.manifest"
+        [ -f "$manifest" ] && { echo "skip"; exit 0; }
+        arch="$(find {{ (dg_ue4ss_mods_staging_root + '/' + game.key + '/' + item.id + '/' + item.file) | quote }} -type f \
+          \( -name '*.zip' -o -name '*.rar' -o -name '*.7z' \) | head -1)"
+        [ -n "$arch" ] || { echo "NO-ARCHIVE" >&2; exit 3; }
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        7z x -y -o"$tmp" "$arch" >/dev/null
+        gdir="$(find "$tmp" -type d -name "$sub" | head -1)"
+        [ -n "$gdir" ] || { echo "NO-SUBTREE" >&2; exit 4; }
+        src="$(dirname "$gdir")"
+        ( cd "$src" && find "$sub" -type f ) > "$manifest.tmp"
+        while IFS= read -r rel; do
+          [ -n "$rel" ] || continue
+          if [ -e "$game/$rel" ] && [ ! -e "$game/$rel.dg-orig" ]; then
+            cp -a "$game/$rel" "$game/$rel.dg-orig"
+          fi
+        done < "$manifest.tmp"
+        rsync -a "$src/$sub/" "$game/$sub/"
+        mv "$manifest.tmp" "$manifest"
+        echo "ue4ss-installed"
+      loop: "{{ game.mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _ueg_sc
+      changed_when: "'ue4ss-installed' in _ueg_sc.stdout"
+      when: game.mode == 'self_contained'
+
+    - name: "{{ game.key }}: overlay mod Mods into UE4SS (core_overlay mode)"
+      ansible.builtin.shell: |
+        set -eu
+        game={{ game.game_dir | quote }}
+        win64="{{ game.win64_subdir }}"
+        manifest="$game/.dg-ue4ss-{{ item.id }}.manifest"
+        [ -f "$manifest" ] && { echo "skip"; exit 0; }
+        arch="$(find {{ (dg_ue4ss_mods_staging_root + '/' + game.key + '/' + item.id + '/' + item.file) | quote }} -type f \
+          \( -name '*.zip' -o -name '*.rar' -o -name '*.7z' \) | head -1)"
+        [ -n "$arch" ] || { echo "NO-ARCHIVE" >&2; exit 3; }
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        7z x -y -o"$tmp" "$arch" >/dev/null
+        modsrc="$(find "$tmp" -type d -path '*/ue4ss/Mods' | head -1)"
+        [ -n "$modsrc" ] || modsrc="$(find "$tmp" -type d -name Mods | head -1)"
+        [ -n "$modsrc" ] || { echo "NO-MODS" >&2; exit 4; }
+        ( cd "$modsrc/.." && find Mods -type f ) | sed "s#^#${win64}/#" > "$manifest.tmp"
+        rsync -a "$modsrc/" "$game/${win64}/Mods/"
+        mv "$manifest.tmp" "$manifest"
+        echo "ue4ss-installed"
+      loop: "{{ game.mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _ueg_ov
+      changed_when: "'ue4ss-installed' in _ueg_ov.stdout"
+      when: game.mode == 'core_overlay'
+
+    # --- Steam launch override (dwmapi) ---
+    - name: "{{ game.key }}: auto-discover localconfig.vdf"
+      ansible.builtin.find:
+        paths: "{{ dg_ue4ss_steam_root }}/userdata"
+        patterns: localconfig.vdf
+        recurse: true
+      register: _ueg_localconfigs
+      when: dg_ue4ss_steam_localconfig | length == 0
+
+    - name: "{{ game.key }}: resolve the localconfig path"
+      ansible.builtin.set_fact:
+        _ueg_localconfig: >-
+          {{ dg_ue4ss_steam_localconfig if (dg_ue4ss_steam_localconfig | length > 0)
+             else (_ueg_localconfigs.files | map(attribute='path') | list | first
+                   if (_ueg_localconfigs.files | default([]) | length == 1) else '') }}
+
+    - name: "{{ game.key }}: check if Steam is running"
+      ansible.builtin.shell: |
+        pgrep -u "$(id -u)" -x steam >/dev/null || pgrep -u "$(id -u)" -f '/steam(webhelper)?( |$)' >/dev/null
+      register: _ueg_steam_running
+      changed_when: false
+      failed_when: false
+      check_mode: false
+      when: _ueg_localconfig | length > 0
+
+    - name: "{{ game.key }}: warn that the launch override was not set (Steam running)"
+      ansible.builtin.debug:
+        msg: >-
+          Steam is running; the dwmapi override was NOT set for {{ game.key }}.
+          Set it manually (appid {{ game.appid }} -> Launch Options ->
+          {{ dg_ue4ss_launch_options }}) or close Steam and re-run.
+      when:
+        - _ueg_localconfig | length > 0
+        - _ueg_steam_running.rc == 0
+
+    - name: "{{ game.key }}: set the dwmapi launch override"
+      ansible.builtin.command: >-
+        {{ dg_project_root }}/scripts/set-steam-launch-options.py
+        --localconfig {{ _ueg_localconfig | quote }}
+        --set {{ game.appid | quote }} {{ dg_ue4ss_launch_options | quote }}
+      register: _ueg_launch
+      changed_when: "'changed: true' in _ueg_launch.stdout"
+      when:
+        - _ueg_localconfig | length > 0
+        - _ueg_steam_running.rc != 0
+
+    - name: "{{ game.key }}: report"
+      ansible.builtin.debug:
+        msg:
+          - "{{ game.key }}: UE4SS ({{ game.mode }}) + {{ game.mods | map(attribute='name') | join(', ') }} installed."
+          - "{{ 'Launch override set.' if (_ueg_localconfig | length > 0 and _ueg_steam_running.rc != 0) else 'Set launch option manually: ' + dg_ue4ss_launch_options }}"

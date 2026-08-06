@@ -45,12 +45,12 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Resident Evil Village | residentevilvillage | `1196590` | 4 | ✅ 3/4 (Fluffy + REFramework; 184 save manual) |
 | Resident Evil 4 (2005) | residentevil4 | `254700` | 2 | ✅ re4_tweaks 1.9.1 via install_re4_hd (mod 306 dropped — 2007-port `game.exe`, not the Steam UHD `bio4.exe`) |
 | Resident Evil 0 (HD Remaster) | residentevil0biohazard0hdremaster | `339340` | 2 | ✅ 1/2 (see below) |
-| RoboCop: Rogue City | robocoproguecity | `1681430` | 8 | ✅ 5/8 (see below) |
+| RoboCop: Rogue City | robocoproguecity | `1681430` | 8 | ✅ 6/8 (~mods + UE4SS; 7/49 config) |
 | Sekiro: Shadows Die Twice | sekiro | `814380` | 2 | ✅ 1/2 (see below) |
 | Marvel's Spider-Man Remastered | marvelsspidermanremastered | `1817070` | 8 | ⏸️ deferred (Overstrike GUI) |
 | Marvel's Spider-Man: Miles Morales | spidermanmilesmorales | `1817190` | 6 | ⏸️ deferred (Overstrike GUI) |
 | Streets of Rage 4 | streetsofrage4 | `985890` | 1 | ✅ mod 133 (REIGNITED) via existing `install_sor4_reignited` |
-| Tokyo Xtreme Racer | tokyoxtremeracer | `2634950` | 3 | ✅ 1/3 (see below) |
+| Tokyo Xtreme Racer | tokyoxtremeracer | `2634950` | 3 | ✅ 2/3 (~mods + UE4SS; 5 save manual) |
 | WRC 5 | wrc5 | `354160` | 1 | ⚠️ flagged — not installed (DLC-unlock crack, see below) |
 | UNCHARTED: Legacy of Thieves | unchartedlegacyofthievescollection | `1659420` | 5 | ✅ 2/5 (see below) |
 | Yakuza 0 (Director's Cut) | yakuza0 | `2988580` | 10 | ⏸️ deferred (edition mismatch / RMM) |
@@ -75,6 +75,7 @@ in like the bundled `dinput8` hooks — these un-defer the loader-dependent mods
 | Loader | Role | Games / mods enabled |
 |---|---|---|
 | **REFramework** (praydog, universal RE Engine `dinput8.dll`) | `install_reframework` (tag `reframework`) | RE Village 651 Infinite Ammo; RE Requiem 25 Inf Ammo/HP (+aim-assist/auto-parry) & 100 Infinite CP. Loader staged on NAS under `NexusMods/_loaders/reframework/`; Lua drops into `<game>/reframework/autorun/`; launch option `WINEDLLOVERRIDES="dinput8=n,b" %command%`. |
+| **UE4SS** (RE-UE4SS, `dwmapi.dll` UE4/5 script loader) | `install_ue4ss` (tag `ue4ss`) | RoboCop 2 Ultra Plus (self-contained — the Steam file bundles UE4SS); TXR 87 Ultradynamic (UE4SS core v3.0.1 + mod `Mods/` overlay). Core staged under `NexusMods/_loaders/ue4ss/`; installs into `<game>/…/Binaries/Win64`; launch option `WINEDLLOVERRIDES="dwmapi=n,b" %command%`. Watch: use the game's **Steam/Win64** mod file, not the Game Pass/WinGDK one. |
 
 ### ⏸️ Deferred (blocked) — revisit at the end
 
@@ -430,7 +431,7 @@ install headlessly by dropping the triplet in (manifest-tracked).
 | [1 No-Intro / Splash Fix](https://www.nexusmods.com/robocoproguecity/mods/1) | `~mods` pak | v0.3; skips startup logos |
 | [43 Old Man](https://www.nexusmods.com/robocoproguecity/mods/43) · [44 Casey Wong](https://www.nexusmods.com/robocoproguecity/mods/44) · [47 Sgt Reed](https://www.nexusmods.com/robocoproguecity/mods/47) · [50 Anne Lewis](https://www.nexusmods.com/robocoproguecity/mods/50) | `~mods` pak triplet | movie-accurate voice packs (`_P.pak` + `.ucas` + `.utoc`) |
 | [7 Performance & Lighting](https://www.nexusmods.com/robocoproguecity/mods/7) | — | ⏸️ deferred — `Engine.ini`/`GameUserSettings.ini`/`Scalability.ini` config overlay; prefix-dependent and clobbers the user's own graphics settings |
-| [2 Ultra Plus](https://www.nexusmods.com/robocoproguecity/mods/2) | — | ⏸️ deferred — **UE4SS** Lua mod (needs the UE4SS injector); current file is the Game Pass/WinGDK build, wrong for the Steam Win64 build |
+| [2 Ultra Plus](https://www.nexusmods.com/robocoproguecity/mods/2) | UE4SS (self-contained) | ✅ now installed via `install_ue4ss` — the **Steam** file (206) bundles a full UE4SS install; its `Game/` tree (dwmapi.dll + `ue4ss/UE4SS.dll` + `UltraPlusExtensions` + companion pak) drops into the game root. Launch option `WINEDLLOVERRIDES="dwmapi=n,b" %command%` |
 | [49 New Game Plus](https://www.nexusmods.com/robocoproguecity/mods/49) | — | ⏸️ manual — `.sav` **save files** (repo Safety: never overwrite saves) |
 
 ## ✅ Sekiro: Shadows Die Twice — `install_sekiro_mods`
@@ -462,7 +463,7 @@ from `<game>/TokyoXtremeRacer/Content/Paks/~mods/` (doubled dir: Steam installdi
 | Mod | Type | Notes |
 |---|---|---|
 | [83 No Wanderer Requirements](https://www.nexusmods.com/tokyoxtremeracer/mods/83) | `~mods` pak triplet | v1.2; the **NoWandererRequirements** file (per the user's note) — removes rival-challenge conditions, no Wanderer-framework dependency |
-| [87 Ultradynamic TXR](https://www.nexusmods.com/tokyoxtremeracer/mods/87) | — | ⏸️ deferred — **UE4SS** Lua mod (`ue4ss/Mods/...` day-night/weather); needs the UE4SS injector |
+| [87 Ultradynamic TXR](https://www.nexusmods.com/tokyoxtremeracer/mods/87) | UE4SS (core + overlay) | ✅ now installed via `install_ue4ss` — UE4SS core (v3.0.1) into `TokyoXtremeRacer/Binaries/Win64` + the mod's `Mods/` (TXR_DayNightCycle, TXR_AdditionalSettings) overlaid. Launch option `WINEDLLOVERRIDES="dwmapi=n,b" %command%` |
 | [5 All Perks + Money](https://www.nexusmods.com/tokyoxtremeracer/mods/5) | — | ⏸️ manual — `UserData_00.sav` **save file** (repo Safety: never overwrite saves) |
 
 ## ✅ UNCHARTED: Legacy of Thieves — `install_uncharted_mods`

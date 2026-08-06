@@ -1,0 +1,41 @@
+---
+# Remove UE4SS + mods from one game (`game` = a dg_ue4ss_games entry).
+
+- name: "{{ game.key }}: remove each mod via its manifest"
+  ansible.builtin.shell: |
+    set -eu
+    game={{ game.game_dir | quote }}
+    manifest="$game/.dg-ue4ss-{{ item.id }}.manifest"
+    [ -f "$manifest" ] || { echo "nochange"; exit 0; }
+    while IFS= read -r rel; do
+      [ -n "$rel" ] || continue
+      if [ -e "$game/$rel.dg-orig" ]; then
+        mv -f "$game/$rel.dg-orig" "$game/$rel"
+      else
+        rm -f "$game/$rel"
+      fi
+    done < "$manifest"
+    rm -f "$manifest"
+    echo "mod-reverted"
+  loop: "{{ game.mods }}"
+  loop_control:
+    label: "{{ item.id }} {{ item.name }}"
+  register: _uer_mod
+  changed_when: "'mod-reverted' in _uer_mod.stdout"
+
+- name: "{{ game.key }}: remove the UE4SS core (core_overlay mode)"
+  ansible.builtin.shell: |
+    set -eu
+    game={{ game.game_dir | quote }}
+    manifest="$game/.dg-ue4ss-core.manifest"
+    [ -f "$manifest" ] || { echo "nochange"; exit 0; }
+    while IFS= read -r rel; do
+      [ -n "$rel" ] && rm -f "$game/$rel"
+    done < "$manifest"
+    rm -f "$manifest"
+    win64="$game/{{ game.win64_subdir }}"
+    [ -d "$win64" ] && find "$win64/Mods" "$win64/ue4ss" -type d -empty -delete 2>/dev/null || true
+    echo "core-reverted"
+  register: _uer_core
+  changed_when: "'core-reverted' in _uer_core.stdout"
+  when: game.mode == 'core_overlay'

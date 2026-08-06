@@ -1,0 +1,40 @@
+---
+# UE4SS loader + its UE mods (RoboCop Ultra Plus, TXR Ultradynamic).
+# See group_vars/all/ue4ss.yml and docs/nexusmods.md.
+
+- name: Revert UE4SS when requested
+  ansible.builtin.include_tasks: revert.yml
+  loop: "{{ dg_ue4ss_games }}"
+  loop_control:
+    loop_var: game
+    label: "{{ game.key }}"
+  when: dg_ue4ss_revert | bool
+
+- name: Install UE4SS + UE mods
+  when: not (dg_ue4ss_revert | bool)
+  block:
+    - name: Ensure the UE4SS staging dir exists
+      ansible.builtin.file:
+        path: "{{ dg_ue4ss_staging_root }}"
+        state: directory
+        mode: "0755"
+
+    - name: Check the staged UE4SS core zip
+      ansible.builtin.stat:
+        path: "{{ dg_ue4ss_staging_root }}/{{ dg_ue4ss_asset }}"
+      register: _ue_zip
+
+    - name: Download the UE4SS core zip (reused from the NAS if present)
+      ansible.builtin.get_url:
+        url: "{{ dg_ue4ss_url }}"
+        dest: "{{ dg_ue4ss_staging_root }}/{{ dg_ue4ss_asset }}"
+        mode: "0644"
+        timeout: 120
+      when: not _ue_zip.stat.exists
+
+    - name: Install UE4SS per game
+      ansible.builtin.include_tasks: per_game.yml
+      loop: "{{ dg_ue4ss_games }}"
+      loop_control:
+        loop_var: game
+        label: "{{ game.key }} ({{ game.appid }})"
