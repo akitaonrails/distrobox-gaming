@@ -51,7 +51,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Marvel's Spider-Man: Miles Morales | spidermanmilesmorales | `1817190` | 6 | ⏸️ deferred (Overstrike GUI) |
 | Streets of Rage 4 | streetsofrage4 | `985890` | 1 | ✅ mod 133 (REIGNITED) via existing `install_sor4_reignited` |
 | Tokyo Xtreme Racer | tokyoxtremeracer | `2634950` | 3 | ✅ 1/3 (see below) |
-| WRC 5 | wrc5 | `354160` | 1 | ⏳ |
+| WRC 5 | wrc5 | `354160` | 1 | ⚠️ flagged — not installed (DLC-unlock crack, see below) |
 | UNCHARTED: Legacy of Thieves | unchartedlegacyofthievescollection | `1659420` | 5 | ⏳ |
 | Yakuza 0 (Director's Cut) | yakuza0 | `2988580` | 10 | ⏳ |
 
@@ -431,4 +431,14 @@ from `<game>/TokyoXtremeRacer/Content/Paks/~mods/` (doubled dir: Steam installdi
 | [83 No Wanderer Requirements](https://www.nexusmods.com/tokyoxtremeracer/mods/83) | `~mods` pak triplet | v1.2; the **NoWandererRequirements** file (per the user's note) — removes rival-challenge conditions, no Wanderer-framework dependency |
 | [87 Ultradynamic TXR](https://www.nexusmods.com/tokyoxtremeracer/mods/87) | — | ⏸️ deferred — **UE4SS** Lua mod (`ue4ss/Mods/...` day-night/weather); needs the UE4SS injector |
 | [5 All Perks + Money](https://www.nexusmods.com/tokyoxtremeracer/mods/5) | — | ⏸️ manual — `UserData_00.sav` **save file** (repo Safety: never overwrite saves) |
+
+## ⚠️ WRC 5 — flagged, not installed
+
+Mod [3 "dlcunlock"](https://www.nexusmods.com/wrc5/mods/3) is **not a content mod**:
+it ships a modified/emulated `steam_api.dll` + `steam_api.ini` + a 378 MB
+`missingfiles.7z` to **unlock DLC without owning it**. That trips the crack-marker
+legitimacy check (the exact `steam_api.dll` DRM-emulator pattern the skill inspects
+for), so it was **not installed** — no role, no download applied. If you actually
+own the WRC 5 DLCs and want them enabled, that needs a legitimate route, not a
+Steam API emulator. Flagged for your decision.
 
