@@ -1,0 +1,23 @@
+# Resident Evil 0 HD Remaster mod set — opt-in role install_re0_mods.
+# Generated via the nexus-mod-set skill. See docs/nexusmods.md. appid 339340.
+#
+# RE0 HD runs on MT Framework, which loads loose files from <game>/nativePC/
+# over its .arc archives — so mod 39 (Item Box) installs by copying its
+# nativePC/ tree into the game root. RE0 is in the BOX Steam library (not USB).
+#
+# Mod 58 "re0ct" is a Cheat Engine table (re0hd_v14.CT) — needs the Cheat Engine
+# GUI under Proton; deferred to the manual pass. See docs/nexusmods.md.
+
+dg_re0_appid: "339340"
+
+dg_re0_steam_library_root: "{{ dg_box_home }}/.local/share/Steam"
+dg_re0_game_dir: "{{ dg_re0_steam_library_root }}/steamapps/common/Resident Evil 0"
+
+dg_re0_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/re0"
+
+dg_re0_mods:
+  - id: "39"
+    file: "152"
+    name: "Item Box"
+
+dg_re0_revert: false

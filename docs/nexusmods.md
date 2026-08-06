@@ -43,8 +43,8 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Resident Evil 3 (2020) | residentevil32020 | `952060` | 1 | ✅ 1/1 (see below) |
 | Resident Evil Requiem | residentevilrequiem | `3764200` | 3 | ✅ 1/3 (see below) |
 | Resident Evil Village | residentevilvillage | `1196590` | 4 | ✅ 2/4 (see below) |
-| Resident Evil 4 (2005) | residentevil4 | `254700` | 2 | ✅ re4_tweaks 1.9.1 via install_re4_hd (mod 306 dropped — wrong port) |
-| Resident Evil 0 (HD Remaster) | residentevil0biohazard0hdremaster | `339340` | 2 | ⏳ |
+| Resident Evil 4 (2005) | residentevil4 | `254700` | 2 | ✅ re4_tweaks 1.9.1 via install_re4_hd (mod 306 dropped — 2007-port `game.exe`, not the Steam UHD `bio4.exe`) |
+| Resident Evil 0 (HD Remaster) | residentevil0biohazard0hdremaster | `339340` | 2 | ✅ 1/2 (see below) |
 | RoboCop: Rogue City | robocoproguecity | `1681430` | 8 | ⏳ |
 | Sekiro: Shadows Die Twice | sekiro | `814380` | 2 | ⏳ |
 | Marvel's Spider-Man Remastered | marvelsspidermanremastered | `1817070` | 8 | ⏳ |
@@ -373,4 +373,15 @@ Engine Fluffy handler.
 | [457 Higher Resolution Enemies](https://www.nexusmods.com/residentevilvillage/mods/457) | `natives/` overlay | v1.0.0; ~1.5 GB, 237 `natives/stm/character/...` textures |
 | [651 Infinite Ammo](https://www.nexusmods.com/residentevilvillage/mods/651) | — | ⏸️ deferred — **REFramework** Lua (`reframework/autorun/Infinite Ammo.lua`); needs the REFramework loader (see RE Requiem note) |
 | [184 Newgame Plus - WCX Gun Max Upgrade](https://www.nexusmods.com/residentevilvillage/mods/184) | — | ⏸️ manual — `data00*.bin` **save files** (repo Safety: never overwrite saves) |
+
+## ✅ Resident Evil 0 (HD Remaster) — `install_re0_mods`
+
+Role: `install_re0_mods` · appid `339340` (**box** Steam library). RE0 HD runs on
+**MT Framework**, which loads loose files from `<game>/nativePC/` over the `.arc`
+archives — so the mod installs by copying its `nativePC/` tree in (manifest-tracked).
+
+| Mod | Type | Notes |
+|---|---|---|
+| [39 Item Box](https://www.nexusmods.com/residentevil0biohazard0hdremaster/mods/39) | `nativePC/` overlay | v0.5.2; adds a shared item box (8 `nativePC/arc/message/msg_*_box.arc` files) |
+| [58 re0ct](https://www.nexusmods.com/residentevil0biohazard0hdremaster/mods/58) | — | ⏸️ manual — **Cheat Engine table** (`re0hd_v14.CT`); needs the Cheat Engine GUI under Proton |
 

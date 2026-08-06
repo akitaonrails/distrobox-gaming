@@ -1,0 +1,20 @@
+---
+# Remove each RE0 nativePC/ overlay using its recorded manifest.
+
+- name: Remove each installed overlay via its manifest
+  ansible.builtin.shell: |
+    set -eu
+    game={{ dg_re0_game_dir | quote }}
+    manifest="$game/.dg-re0-{{ item.id }}.manifest"
+    [ -f "$manifest" ] || { echo "nochange"; exit 0; }
+    while IFS= read -r f; do
+      [ -n "$f" ] && rm -f "$game/$f"
+    done < "$manifest"
+    rm -f "$manifest"
+    [ -d "$game/nativePC" ] && find "$game/nativePC" -type d -empty -delete 2>/dev/null || true
+    echo "re0-reverted"
+  loop: "{{ dg_re0_mods }}"
+  loop_control:
+    label: "{{ item.id }} {{ item.name }}"
+  register: _re0_revert
+  changed_when: "'re0-reverted' in _re0_revert.stdout"
