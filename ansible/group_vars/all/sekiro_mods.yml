@@ -1,0 +1,31 @@
+# Sekiro: Shadows Die Twice mod set — opt-in role install_sekiro_mods.
+# Generated via the nexus-mod-set skill. See docs/nexusmods.md. appid 814380.
+#
+# Mod 1058 (Weapon Wheel) is self-contained: it bundles its own dinput8.dll hook
+# + a WeaponWheelResources/ folder that drop into the game root, driven by a
+# Proton dinput8 override (same pattern as GTA IV / MGS ASI loaders). USB library.
+#
+# Mod 418 (Sekiro The Easy) is deferred: it ships a Mod Engine `mods/param/...`
+# layout that needs the external Mod Engine loader, which would collide with
+# 1058's dinput8.dll and isn't verifiable headlessly. See docs/nexusmods.md.
+
+dg_sekiro_appid: "814380"
+
+dg_sekiro_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+dg_sekiro_game_dir: "{{ dg_sekiro_steam_library_root }}/steamapps/common/Sekiro"
+
+dg_sekiro_steam_root: "{{ dg_box_home }}/.local/share/Steam"
+dg_sekiro_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/sekiro"
+
+dg_sekiro_launch_options: 'WINEDLLOVERRIDES="dinput8=n,b" %command%'
+dg_sekiro_steam_localconfig: ""
+
+# Mods dropped whole into the game root (dinput8.dll + resource folders).
+dg_sekiro_mods:
+  - id: "1058"
+    file: "4106"
+    name: "Weapon Wheel"
+
+dg_sekiro_revert: false

@@ -1,0 +1,7 @@
+---
+- name: Install the Sekiro NexusMods set
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_sekiro_mods

@@ -1,0 +1,23 @@
+---
+# Remove each Sekiro mod using its manifest; restore any backed-up dinput8.dll.
+
+- name: Remove each installed mod via its manifest
+  ansible.builtin.shell: |
+    set -eu
+    game={{ dg_sekiro_game_dir | quote }}
+    manifest="$game/.dg-sekiro-{{ item.id }}.manifest"
+    [ -f "$manifest" ] || { echo "nochange"; exit 0; }
+    while IFS= read -r f; do
+      [ -n "$f" ] && rm -f "$game/$f"
+    done < "$manifest"
+    rm -f "$manifest"
+    if [ -e "$game/dinput8.dll.dg-orig" ]; then
+      mv -f "$game/dinput8.dll.dg-orig" "$game/dinput8.dll"
+    fi
+    [ -d "$game/WeaponWheelResources" ] && find "$game/WeaponWheelResources" -type d -empty -delete 2>/dev/null || true
+    echo "sekiro-reverted"
+  loop: "{{ dg_sekiro_mods }}"
+  loop_control:
+    label: "{{ item.id }} {{ item.name }}"
+  register: _sk_revert
+  changed_when: "'sekiro-reverted' in _sk_revert.stdout"

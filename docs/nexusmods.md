@@ -46,7 +46,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Resident Evil 4 (2005) | residentevil4 | `254700` | 2 | ✅ re4_tweaks 1.9.1 via install_re4_hd (mod 306 dropped — 2007-port `game.exe`, not the Steam UHD `bio4.exe`) |
 | Resident Evil 0 (HD Remaster) | residentevil0biohazard0hdremaster | `339340` | 2 | ✅ 1/2 (see below) |
 | RoboCop: Rogue City | robocoproguecity | `1681430` | 8 | ✅ 5/8 (see below) |
-| Sekiro: Shadows Die Twice | sekiro | `814380` | 2 | ⏳ |
+| Sekiro: Shadows Die Twice | sekiro | `814380` | 2 | ✅ 1/2 (see below) |
 | Marvel's Spider-Man Remastered | marvelsspidermanremastered | `1817070` | 8 | ⏳ |
 | Marvel's Spider-Man: Miles Morales | spidermanmilesmorales | `1817190` | 6 | ⏳ |
 | Streets of Rage 4 | streetsofrage4 | `985890` | 1 | ⏳ |
@@ -398,4 +398,14 @@ install headlessly by dropping the triplet in (manifest-tracked).
 | [7 Performance & Lighting](https://www.nexusmods.com/robocoproguecity/mods/7) | — | ⏸️ deferred — `Engine.ini`/`GameUserSettings.ini`/`Scalability.ini` config overlay; prefix-dependent and clobbers the user's own graphics settings |
 | [2 Ultra Plus](https://www.nexusmods.com/robocoproguecity/mods/2) | — | ⏸️ deferred — **UE4SS** Lua mod (needs the UE4SS injector); current file is the Game Pass/WinGDK build, wrong for the Steam Win64 build |
 | [49 New Game Plus](https://www.nexusmods.com/robocoproguecity/mods/49) | — | ⏸️ manual — `.sav` **save files** (repo Safety: never overwrite saves) |
+
+## ✅ Sekiro: Shadows Die Twice — `install_sekiro_mods`
+
+Role: `install_sekiro_mods` · appid `814380` (USB library). No anti-cheat
+(single-player), so a bundled `dinput8.dll` hook works with a Proton override.
+
+| Mod | Type | Notes |
+|---|---|---|
+| [1058 Weapon Wheel](https://www.nexusmods.com/sekiro/mods/1058) | bundled `dinput8.dll` | v1.2.1; drops `dinput8.dll` + `WeaponWheelResources/` into the game root; launch option `WINEDLLOVERRIDES="dinput8=n,b" %command%` |
+| [418 Sekiro The Easy](https://www.nexusmods.com/sekiro/mods/418) | — | ⏸️ deferred — ships a **Mod Engine** `mods/param/gameparam.parambnd.dcx` layout needing the external Mod Engine loader, which would collide with 1058's `dinput8.dll`; not verifiable headlessly |
 
