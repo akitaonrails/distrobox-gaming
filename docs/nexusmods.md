@@ -35,7 +35,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | MGS2 (Master Collection) | metalgearsolid2mc | `2131640` | 6 | ✅ 5/6 (see below) |
 | MGSV: Ground Zeroes | metalgearsolidvgz | `311340` | 2 | ⏸️ deferred (GzsTool/CE) |
 | MGS1 (Master Collection) | metalgearsolidmc | `2131630` | 2 | ✅ 1/2 (see below) |
-| MGSV: The Phantom Pain | metalgearsolidvtpp | `287700` | 6 | ⏳ |
+| MGSV: The Phantom Pain | metalgearsolidvtpp | `287700` | 5 | ⏸️ deferred (SnakeBite) |
 | Red Dead Redemption | reddeadredemption | `2668510` | 11 | ⏳ |
 | Red Dead Redemption 2 | reddeadredemption2 | `1174180` | 13 | ⏳ |
 | Resident Evil 4 (2023 Remake) | residentevil42023 | `2050650` | 2 | ⏳ |
@@ -86,6 +86,7 @@ an interactive GUI.
 | Metal Gear Rising: Revengeance (`235460`) | HD Textures (46) are **TexMod `.tpf`** (need the TexMod/uMod GUI wrapping the exe under Wine); File Limit Remover (444) is a **patcher `.exe`** run under Wine; Cheat Table (25) is a **Cheat Engine `.CT`** (manual CE under Proton). Only Skip Credits (66) is a trivial `winmm.dll` drop — do it + the tool steps in a manual pass. |
 
 | MGSV: Ground Zeroes (`311340`) | Improved Max Settings (11) needs **GzsTool** to unpack/repack the `data_02.dat` QAR archive (a .NET build-time transform); Infinite Ammo (31) is a **Cheat Engine `.CT`** (manual CE under Proton). Neither is a clean file drop. |
+| MGSV: The Phantom Pain (`287700`) | All 5 mods are **`.mgsv`** packages requiring the **SnakeBite Mod Manager** (.NET WPF GUI that merges into `master/0/00.dat` + tracks `snakebite.xml`) — no headless CLI. Game is v1.0.15.1; archives preserved under NAS `NexusMods/mgsvtpp/`. Manual SnakeBite pass — install these variants: **300** No More Timers (`nmt_115v3.mgsv`), **316** No Development Requirements, **327** New Female Faces & Hairs v2.4, **406** ICBINR → pick **`ICBINR - Vibrant.mgsv`**, **1011** Beyond Ultra → pick **`Beyond Ultra - EXTREME - With FXAA.mgsv`**. |
 
 ### 🔜 Queued follow-ups (after the whole list + deferred pass)
 
