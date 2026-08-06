@@ -1,0 +1,28 @@
+# GRANDIA HD Remaster mod set (opt-in role install_grandia_mods). Generated via
+# the nexus-mod-set skill. See docs/nexusmods.md.
+#
+# Both mods are loose-file operations on the game's content/ folder. No loader,
+# no ReShade, Proton-safe.
+#  - Mod 1 "Actual HD textures": overlays HD PNG atlases into content/FIELD/.
+#  - Mod 2 "Texture Picker + Intro Skip": its Windows .bat moves the smoothing-
+#    filter data to per-folder _backup (removing the filter → sharp originals),
+#    and optionally moves the intro movie. Reimplemented natively as reversible
+#    moves (dg_grandia_remove_filters / dg_grandia_skip_intro).
+
+dg_grandia_appid: "1034860"
+
+dg_grandia_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+dg_grandia_game_dir: "{{ dg_grandia_steam_library_root }}/steamapps/common/GRANDIA HD Remaster"
+dg_grandia_content_dir: "{{ dg_grandia_game_dir }}/content"
+
+dg_grandia_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/grandia"
+
+# Mod 2 toggles (its .bat menu options A and C):
+dg_grandia_remove_filters: true    # move smoothing-filter data to _backup (sharp originals)
+dg_grandia_skip_intro: true        # move content/movie/mov00.mp4 to _backup
+
+dg_grandia_hd_textures_mod: "1"
+
+dg_grandia_revert: false

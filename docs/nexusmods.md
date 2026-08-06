@@ -28,7 +28,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | FINAL FANTASY VII REMAKE Intergrade | finalfantasy7remake | `1462040` | 5 | ✅ (see below) |
 | FINAL FANTASY VII REBIRTH | finalfantasy7rebirth | `2909400` | 7 | ✅ 5/7 (see below) |
 | Grand Theft Auto V Enhanced | gta5enhanced | `3240220` | 7 | ⏸️ deferred (OpenIV/CodeWalker + SHV toolchain) |
-| GRANDIA HD Remaster | grandiahdremaster | `1034860` | 2 | ⏳ |
+| GRANDIA HD Remaster | grandiahdremaster | `1034860` | 2 | ✅ (see below) |
 | Metal Gear Rising: Revengeance | metalgearrisingrevengeance | `235460` | 4 | ⏳ |
 | MGS Δ: Snake Eater | metalgearsoliddeltasnakeeater | `2417610` | 3 | ⏳ |
 | MGS3 (Master Collection) | metalgearsolid3mc | `2131650` | 3 | ⏳ |
@@ -227,6 +227,16 @@ gameplay mods (`.pak`+`.ucas`+`.utoc` triplets) into `End/Content/Paks/~mods/`
 | [61 8 Materia+Skill Slots](https://www.nexusmods.com/finalfantasy7rebirth/mods/61) | MAX LV weapons+armors | ✅ |
 | [140 Fast ATB](https://www.nexusmods.com/finalfantasy7rebirth/mods/140) | Never Stop + Limit | ✅ |
 | [199 Stagger](https://www.nexusmods.com/finalfantasy7rebirth/mods/199) | Rate x2 | ✅ |
+
+## ✅ GRANDIA HD Remaster — `install_grandia_mods`
+
+Role: `install_grandia_mods` · appid `1034860` (USB library). Loose-file ops on
+`content/` (no loader/ReShade).
+
+| Mod | Type | Notes |
+|---|---|---|
+| [1 Actual HD Textures](https://www.nexusmods.com/grandiahdremaster/mods/1) | HD PNG atlases | overlaid into `content/FIELD/` |
+| [2 Texture Picker + Intro Skip](https://www.nexusmods.com/grandiahdremaster/mods/2) | filter/intro toggle (.bat) | reimplemented natively: `dg_grandia_remove_filters` (move filter data → `_backup`, sharp originals) + `dg_grandia_skip_intro` |
 | [392 Gameplay Enhancement](https://www.nexusmods.com/finalfantasy7rebirth/mods/392) | — | ⏸️ deferred (12 sub-items to curate; conflicts with 61) |
 | [3 Ultimate Engine Tweaks](https://www.nexusmods.com/finalfantasy7rebirth/mods/3) | — | ⏸️ deferred (FFVIIHook DLL + prefix Engine.ini + launch override) |
 

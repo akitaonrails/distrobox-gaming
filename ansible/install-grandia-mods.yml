@@ -1,0 +1,7 @@
+---
+- name: Install the GRANDIA HD Remaster NexusMods set
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_grandia_mods

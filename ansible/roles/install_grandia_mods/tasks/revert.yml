@@ -1,0 +1,30 @@
+---
+# Move the filter/intro files back from their _backup folders and drop markers.
+# HD textures (mod 1) overwrote game files — restore those via Steam Verify.
+
+- name: Move filter + intro files back from _backup
+  ansible.builtin.shell: |
+    set -eu
+    c={{ dg_grandia_content_dir | quote }}
+    for d in BATLE BIN FIELD movie; do
+      if [ -d "$c/$d/_backup" ]; then
+        find "$c/$d/_backup" -maxdepth 1 -type f -exec mv -f {} "$c/$d/" \; 2>/dev/null || true
+        rmdir "$c/$d/_backup" 2>/dev/null || true
+      fi
+    done
+    echo restored
+  register: _gr_rv
+  changed_when: "'restored' in _gr_rv.stdout"
+
+- name: Remove markers
+  ansible.builtin.file:
+    path: "{{ dg_grandia_content_dir }}/{{ item }}"
+    state: absent
+  loop:
+    - .dg-grandia-filters-removed
+    - .dg-grandia-intro-skipped
+    - .dg-grandia-hd-textures
+
+- name: Report revert
+  ansible.builtin.debug:
+    msg: "Grandia reverted: filter/intro files restored. Run Steam -> Verify integrity of game files to restore the HD textures (mod 1 overwrote them)."
