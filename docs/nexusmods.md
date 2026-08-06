@@ -33,7 +33,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | MGS Δ: Snake Eater | metalgearsoliddeltasnakeeater | `2417610` | 3 | ✅ (see below) |
 | MGS3 (Master Collection) | metalgearsolid3mc | `2131650` | 3 | ✅ 2/3 (see below) |
 | MGS2 (Master Collection) | metalgearsolid2mc | `2131640` | 6 | ✅ 5/6 (see below) |
-| MGSV: Ground Zeroes | metalgearsolidvgz | `311340` | 2 | ⏳ |
+| MGSV: Ground Zeroes | metalgearsolidvgz | `311340` | 2 | ⏸️ deferred (GzsTool/CE) |
 | MGS1 (Master Collection) | metalgearsolidmc | `2131630` | 2 | ⏳ |
 | MGSV: The Phantom Pain | metalgearsolidvtpp | `287700` | 6 | ⏳ |
 | Red Dead Redemption | reddeadredemption | `2668510` | 11 | ⏳ |
@@ -84,6 +84,12 @@ an interactive GUI.
 | Dark Souls Remastered (`570940`) — **mod 220 only** | DSR 2020 Textures (~6 GB) needs the **DSR-TPUP** .NET WinForms tool to unpack/override/repack the game's dvdbnd archives. Mod 293 (Easy mode) IS installed; mod 7 dropped (ReShade). |
 | Grand Theft Auto V Enhanced (`3240220`) | 5 of 7 (NextGen Euphoria 1 base, Better Fist Fighting 36, Addon Carpack 173, Real Vehicles 320, Skip Intro 216) inject into `.rpf` archives — need the **OpenIV / CodeWalker** GUI; the Script Hook V (Enhanced) + OpenRPF + mods/ toolchain is fragile under Proton. Headless-only: 354 Straight To Story (`.asi`, needs SHV) + 32 savegame (prefix profile). Carpack 173 needs game build v814.9+. |
 | Metal Gear Rising: Revengeance (`235460`) | HD Textures (46) are **TexMod `.tpf`** (need the TexMod/uMod GUI wrapping the exe under Wine); File Limit Remover (444) is a **patcher `.exe`** run under Wine; Cheat Table (25) is a **Cheat Engine `.CT`** (manual CE under Proton). Only Skip Credits (66) is a trivial `winmm.dll` drop — do it + the tool steps in a manual pass. |
+
+| MGSV: Ground Zeroes (`311340`) | Improved Max Settings (11) needs **GzsTool** to unpack/repack the `data_02.dat` QAR archive (a .NET build-time transform); Infinite Ammo (31) is a **Cheat Engine `.CT`** (manual CE under Proton). Neither is a clean file drop. |
+
+### 🔜 Queued follow-ups (after the whole list + deferred pass)
+
+- **FFVII 7th Heaven** — revisit the existing `install_7th_heaven` role and check whether all its mods can be automated the `nexus-mod-set` way (direct file placement), removing the dependency on the separate 7th Heaven / MateriaForge mod manager.
 
 ---
 
