@@ -41,8 +41,8 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Resident Evil 4 (2023 Remake) | residentevil42023 | `2050650` | 2 | ✅ 2/2 (see below) |
 | Resident Evil 2 (2019) | residentevil22019 | `883710` | 3 | ✅ 1/3 (see below) |
 | Resident Evil 3 (2020) | residentevil32020 | `952060` | 1 | ✅ 1/1 (see below) |
-| Resident Evil Requiem | residentevilrequiem | `3764200` | 3 | ✅ 1/3 (see below) |
-| Resident Evil Village | residentevilvillage | `1196590` | 4 | ✅ 2/4 (see below) |
+| Resident Evil Requiem | residentevilrequiem | `3764200` | 3 | ✅ 3/3 (Fluffy + REFramework) |
+| Resident Evil Village | residentevilvillage | `1196590` | 4 | ✅ 3/4 (Fluffy + REFramework; 184 save manual) |
 | Resident Evil 4 (2005) | residentevil4 | `254700` | 2 | ✅ re4_tweaks 1.9.1 via install_re4_hd (mod 306 dropped — 2007-port `game.exe`, not the Steam UHD `bio4.exe`) |
 | Resident Evil 0 (HD Remaster) | residentevil0biohazard0hdremaster | `339340` | 2 | ✅ 1/2 (see below) |
 | RoboCop: Rogue City | robocoproguecity | `1681430` | 8 | ✅ 5/8 (see below) |
@@ -66,6 +66,15 @@ Re-check if you later install these; they're in `tmp/nexusmods.txt`.
 | The Witcher 3 | witcher3 | not found in any Steam library |
 | WRC 7 | wrc7 | not found in any Steam library |
 | Colin McRae Rally 2 | colinmcraerally2 | not a Steam title (user-noted) — covered by `install_pc_racing` instead |
+
+### 🔌 Shared loaders (revisited deferred games)
+
+External mod-loaders that are proven under Proton, fetched from GitHub and dropped
+in like the bundled `dinput8` hooks — these un-defer the loader-dependent mods.
+
+| Loader | Role | Games / mods enabled |
+|---|---|---|
+| **REFramework** (praydog, universal RE Engine `dinput8.dll`) | `install_reframework` (tag `reframework`) | RE Village 651 Infinite Ammo; RE Requiem 25 Inf Ammo/HP (+aim-assist/auto-parry) & 100 Infinite CP. Loader staged on NAS under `NexusMods/_loaders/reframework/`; Lua drops into `<game>/reframework/autorun/`; launch option `WINEDLLOVERRIDES="dinput8=n,b" %command%`. |
 
 ### ⏸️ Deferred (blocked) — revisit at the end
 
@@ -385,7 +394,7 @@ Fluffy handler.
 | Mod | Type | Notes |
 |---|---|---|
 | [14 Stack Size Changes](https://www.nexusmods.com/residentevilrequiem/mods/14) | `natives/` overlay | v1.4; variant **"Stack Size (All)- 00999"** → `natives/STM/...` (999 stacks) |
-| [25 Inf Ammo & HP](https://www.nexusmods.com/residentevilrequiem/mods/25) · [100 Infinite CP](https://www.nexusmods.com/residentevilrequiem/mods/100) | — | ⏸️ deferred — **REFramework** Lua scripts (`reframework/autorun/*.lua`); need the REFramework loader (external `dinput8`/`dxgi` plugin + Proton `WINEDLLOVERRIDES`). REFramework works under Proton but isn't verifiable headlessly on this brand-new title — revisit as a follow-up. |
+| [25 Inf Ammo & HP](https://www.nexusmods.com/residentevilrequiem/mods/25) · [100 Infinite CP](https://www.nexusmods.com/residentevilrequiem/mods/100) | REFramework Lua | ✅ now installed via `install_reframework` (loader `dinput8.dll` + `reframework/autorun/*.lua`; mod 25 bundles infinite HP/ammo + aim-assist + auto-parry). Launch option `WINEDLLOVERRIDES="dinput8=n,b" %command%`. |
 
 ## ✅ Resident Evil Village — `install_revillage_mods`
 
@@ -396,7 +405,7 @@ Engine Fluffy handler.
 |---|---|---|
 | [299 Reworked Weapons Mod](https://www.nexusmods.com/residentevilvillage/mods/299) | `natives/` overlay | v1.01; `natives/stm/...` weapon spec data (ships a harmless `.bak`, tracked in the manifest) |
 | [457 Higher Resolution Enemies](https://www.nexusmods.com/residentevilvillage/mods/457) | `natives/` overlay | v1.0.0; ~1.5 GB, 237 `natives/stm/character/...` textures |
-| [651 Infinite Ammo](https://www.nexusmods.com/residentevilvillage/mods/651) | — | ⏸️ deferred — **REFramework** Lua (`reframework/autorun/Infinite Ammo.lua`); needs the REFramework loader (see RE Requiem note) |
+| [651 Infinite Ammo](https://www.nexusmods.com/residentevilvillage/mods/651) | REFramework Lua | ✅ now installed via `install_reframework` (`reframework/autorun/Infinite Ammo.lua` + loader `dinput8.dll`); launch option `WINEDLLOVERRIDES="dinput8=n,b" %command%` |
 | [184 Newgame Plus - WCX Gun Max Upgrade](https://www.nexusmods.com/residentevilvillage/mods/184) | — | ⏸️ manual — `data00*.bin` **save files** (repo Safety: never overwrite saves) |
 
 ## ✅ Resident Evil 0 (HD Remaster) — `install_re0_mods`

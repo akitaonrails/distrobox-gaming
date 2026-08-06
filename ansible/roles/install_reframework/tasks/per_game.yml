@@ -1,0 +1,137 @@
+---
+# Install REFramework's dinput8.dll + Lua mods into one RE Engine game, then set
+# the dinput8 launch override. `game` = one entry from dg_reframework_games.
+
+- name: "{{ game.key }}: check the game dir"
+  ansible.builtin.stat:
+    path: "{{ game.game_dir }}"
+  register: _rfg_dir
+
+- name: "{{ game.key }}: warn + skip when the game is not installed"
+  ansible.builtin.debug:
+    msg: "{{ game.game_dir }} not found (appid {{ game.appid }}); skipping REFramework for {{ game.key }}."
+  when: not _rfg_dir.stat.exists
+
+- name: "{{ game.key }}: install REFramework loader + mods"
+  when: _rfg_dir.stat.exists
+  block:
+    - name: "{{ game.key }}: install the REFramework loader (dinput8.dll)"
+      ansible.builtin.shell: |
+        set -eu
+        game={{ game.game_dir | quote }}
+        marker="$game/.dg-reframework-loader"
+        [ -f "$marker" ] && { echo "skip"; exit 0; }
+        dll="$game/{{ dg_reframework_loader_dll }}"
+        # Back up any pre-existing loader DLL once.
+        [ -e "$dll" ] && [ ! -e "$dll.dg-orig" ] && cp -a "$dll" "$dll.dg-orig"
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        7z x -y -o"$tmp" {{ (dg_reframework_staging_root + '/' + dg_reframework_asset) | quote }} >/dev/null
+        cp -f "$tmp/{{ dg_reframework_loader_dll }}" "$dll"
+        echo "installed" > "$marker"
+        echo "loader-installed"
+      register: _rfg_loader
+      changed_when: "'loader-installed' in _rfg_loader.stdout"
+
+    - name: "{{ game.key }}: download each Lua mod via the Nexus API (Premium key)"
+      ansible.builtin.command:
+        cmd: >-
+          {{ dg_project_root }}/scripts/nexus-download.py --game {{ game.domain }}
+          --mod {{ item.id }} --file {{ item.file }} --via api
+          --dest {{ (dg_reframework_mods_staging_root + '/' + game.key + '/' + item.id) | quote }}
+      loop: "{{ game.mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _rfg_dl
+      changed_when: "'saved' in _rfg_dl.stdout"
+      failed_when: false
+      no_log: true
+      when: lookup('ansible.builtin.env', 'NEXUS_MODS_API_KEY') | length > 0
+
+    - name: "{{ game.key }}: install each Lua mod into reframework/autorun"
+      ansible.builtin.shell: |
+        set -eu
+        game={{ game.game_dir | quote }}
+        manifest="$game/.dg-reframework-{{ item.id }}.manifest"
+        [ -f "$manifest" ] && { echo "skip"; exit 0; }
+        arch="$(find {{ (dg_reframework_mods_staging_root + '/' + game.key + '/' + item.id) | quote }} -type f \
+          \( -name '*.zip' -o -name '*.rar' -o -name '*.7z' \) | head -1)"
+        [ -n "$arch" ] || { echo "NO-ARCHIVE" >&2; exit 3; }
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        7z x -y -o"$tmp" "$arch" >/dev/null
+        rf="$(find "$tmp" -type d -iname reframework | head -1)"
+        if [ -n "$rf" ]; then
+          # Ships a reframework/ tree -> merge it into the game root.
+          src="$(dirname "$rf")"
+          ( cd "$src" && find reframework -type f ) > "$manifest.tmp"
+          rsync -a "$src/reframework/" "$game/reframework/"
+        else
+          # Bare .lua file(s) -> drop into reframework/autorun/.
+          mkdir -p "$game/reframework/autorun"
+          : > "$manifest.tmp"
+          find "$tmp" -name '*.lua' > "$tmp/.lualist"
+          [ -s "$tmp/.lualist" ] || { echo "NO-LUA" >&2; exit 4; }
+          while IFS= read -r f; do
+            [ -n "$f" ] || continue
+            cp -f "$f" "$game/reframework/autorun/"
+            echo "reframework/autorun/$(basename "$f")" >> "$manifest.tmp"
+          done < "$tmp/.lualist"
+        fi
+        mv "$manifest.tmp" "$manifest"
+        echo "lua-installed"
+      loop: "{{ game.mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _rfg_lua
+      changed_when: "'lua-installed' in _rfg_lua.stdout"
+
+    # --- Steam launch override (dinput8) ---
+    - name: "{{ game.key }}: auto-discover localconfig.vdf"
+      ansible.builtin.find:
+        paths: "{{ dg_reframework_steam_root }}/userdata"
+        patterns: localconfig.vdf
+        recurse: true
+      register: _rfg_localconfigs
+      when: dg_reframework_steam_localconfig | length == 0
+
+    - name: "{{ game.key }}: resolve the localconfig path"
+      ansible.builtin.set_fact:
+        _rfg_localconfig: >-
+          {{ dg_reframework_steam_localconfig if (dg_reframework_steam_localconfig | length > 0)
+             else (_rfg_localconfigs.files | map(attribute='path') | list | first
+                   if (_rfg_localconfigs.files | default([]) | length == 1) else '') }}
+
+    - name: "{{ game.key }}: check if Steam is running"
+      ansible.builtin.shell: |
+        pgrep -u "$(id -u)" -x steam >/dev/null || pgrep -u "$(id -u)" -f '/steam(webhelper)?( |$)' >/dev/null
+      register: _rfg_steam_running
+      changed_when: false
+      failed_when: false
+      check_mode: false
+      when: _rfg_localconfig | length > 0
+
+    - name: "{{ game.key }}: warn that the launch override was not set (Steam running)"
+      ansible.builtin.debug:
+        msg: >-
+          Steam is running; the dinput8 override was NOT set for {{ game.key }}.
+          Set it manually (appid {{ game.appid }} -> Launch Options ->
+          {{ dg_reframework_launch_options }}) or close Steam and re-run.
+      when:
+        - _rfg_localconfig | length > 0
+        - _rfg_steam_running.rc == 0
+
+    - name: "{{ game.key }}: set the dinput8 launch override"
+      ansible.builtin.command: >-
+        {{ dg_project_root }}/scripts/set-steam-launch-options.py
+        --localconfig {{ _rfg_localconfig | quote }}
+        --set {{ game.appid | quote }} {{ dg_reframework_launch_options | quote }}
+      register: _rfg_launch
+      changed_when: "'changed: true' in _rfg_launch.stdout"
+      when:
+        - _rfg_localconfig | length > 0
+        - _rfg_steam_running.rc != 0
+
+    - name: "{{ game.key }}: report"
+      ansible.builtin.debug:
+        msg:
+          - "{{ game.key }}: REFramework loader + {{ game.mods | map(attribute='name') | join(', ') }} installed (reframework/autorun/)."
+          - "{{ 'Launch override set.' if (_rfg_localconfig | length > 0 and _rfg_steam_running.rc != 0) else 'Set launch option manually: ' + dg_reframework_launch_options }}"

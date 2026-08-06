@@ -1,0 +1,7 @@
+---
+- name: Install REFramework loader + its RE Engine Lua mods
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_reframework

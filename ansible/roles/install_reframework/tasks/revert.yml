@@ -1,0 +1,36 @@
+---
+# Remove REFramework + its Lua mods from one game (`game` = a dg_reframework_games entry).
+
+- name: "{{ game.key }}: remove Lua mods via their manifests"
+  ansible.builtin.shell: |
+    set -eu
+    game={{ game.game_dir | quote }}
+    manifest="$game/.dg-reframework-{{ item.id }}.manifest"
+    [ -f "$manifest" ] || { echo "nochange"; exit 0; }
+    while IFS= read -r f; do
+      [ -n "$f" ] && rm -f "$game/$f"
+    done < "$manifest"
+    rm -f "$manifest"
+    echo "lua-reverted"
+  loop: "{{ game.mods }}"
+  loop_control:
+    label: "{{ item.id }} {{ item.name }}"
+  register: _rfr_lua
+  changed_when: "'lua-reverted' in _rfr_lua.stdout"
+
+- name: "{{ game.key }}: remove the REFramework loader"
+  ansible.builtin.shell: |
+    set -eu
+    game={{ game.game_dir | quote }}
+    dll="$game/{{ dg_reframework_loader_dll }}"
+    [ -f "$game/.dg-reframework-loader" ] || { echo "nochange"; exit 0; }
+    if [ -e "$dll.dg-orig" ]; then
+      mv -f "$dll.dg-orig" "$dll"
+    else
+      rm -f "$dll"
+    fi
+    rm -f "$game/.dg-reframework-loader"
+    [ -d "$game/reframework/autorun" ] && find "$game/reframework" -type d -empty -delete 2>/dev/null || true
+    echo "loader-reverted"
+  register: _rfr_loader
+  changed_when: "'loader-reverted' in _rfr_loader.stdout"

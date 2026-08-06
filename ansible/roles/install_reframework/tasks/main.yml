@@ -1,0 +1,40 @@
+---
+# REFramework loader + its RE Engine Lua mods (RE Village 651, RE Requiem 25/100).
+# See group_vars/all/reframework.yml and docs/nexusmods.md.
+
+- name: Revert REFramework when requested
+  ansible.builtin.include_tasks: revert.yml
+  loop: "{{ dg_reframework_games }}"
+  loop_control:
+    loop_var: game
+    label: "{{ game.key }}"
+  when: dg_reframework_revert | bool
+
+- name: Install REFramework + Lua mods
+  when: not (dg_reframework_revert | bool)
+  block:
+    - name: Ensure the REFramework staging dir exists
+      ansible.builtin.file:
+        path: "{{ dg_reframework_staging_root }}"
+        state: directory
+        mode: "0755"
+
+    - name: Check the staged REFramework.zip
+      ansible.builtin.stat:
+        path: "{{ dg_reframework_staging_root }}/{{ dg_reframework_asset }}"
+      register: _rf_zip
+
+    - name: Download REFramework.zip (reused from the NAS if already present)
+      ansible.builtin.get_url:
+        url: "{{ dg_reframework_url }}"
+        dest: "{{ dg_reframework_staging_root }}/{{ dg_reframework_asset }}"
+        mode: "0644"
+        timeout: 120
+      when: not _rf_zip.stat.exists
+
+    - name: Install REFramework + Lua per game
+      ansible.builtin.include_tasks: per_game.yml
+      loop: "{{ dg_reframework_games }}"
+      loop_control:
+        loop_var: game
+        label: "{{ game.key }} ({{ game.appid }})"

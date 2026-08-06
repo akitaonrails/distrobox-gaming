@@ -1,0 +1,48 @@
+# REFramework loader + its RE Engine Lua mods — opt-in role install_reframework.
+# See docs/nexusmods.md. REFramework (praydog) is a universal RE Engine mod
+# loader: one dinput8.dll drops into the game root, auto-detects the game, and
+# runs Lua scripts from <game>/reframework/autorun/. Proven under Proton/Steam
+# Deck; enable with a WINEDLLOVERRIDES="dinput8=n,b" launch option.
+#
+# This unlocks the REFramework Lua mods that install_revillage_mods and
+# install_rerequiem_mods had deferred (they need this loader).
+
+# Loader release (praydog/REFramework-nightly). Modern releases ship a single
+# universal REFramework.zip. Pinned for reproducibility; staged on the NAS and
+# reused before re-downloading.
+dg_reframework_repo: "praydog/REFramework-nightly"
+dg_reframework_tag: "nightly-01394-ec6c81fd39831b328027ae00e102bc9c9c3f8aa5"
+dg_reframework_asset: "REFramework.zip"
+dg_reframework_url: "https://github.com/{{ dg_reframework_repo }}/releases/download/{{ dg_reframework_tag }}/{{ dg_reframework_asset }}"
+dg_reframework_loader_dll: "dinput8.dll"
+
+dg_reframework_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/_loaders/reframework"
+dg_reframework_mods_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods"
+
+dg_reframework_launch_options: 'WINEDLLOVERRIDES="dinput8=n,b" %command%'
+dg_reframework_steam_root: "{{ dg_box_home }}/.local/share/Steam"
+dg_reframework_steam_localconfig: ""
+
+# Box vs USB library roots.
+dg_reframework_box_lib: "{{ dg_box_home }}/.local/share/Steam"
+dg_reframework_usb_lib: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+
+# Games that get REFramework + their Lua mods (already staged from Nexus).
+dg_reframework_games:
+  - key: revillage
+    appid: "1196590"
+    domain: residentevilvillage
+    game_dir: "{{ dg_reframework_box_lib }}/steamapps/common/Resident Evil Village BIOHAZARD VILLAGE"
+    mods:
+      - { id: "651", file: "1740", name: "Infinite Ammo" }
+  - key: rerequiem
+    appid: "3764200"
+    domain: residentevilrequiem
+    game_dir: "{{ dg_reframework_usb_lib }}/steamapps/common/RESIDENT EVIL requiem BIOHAZARD requiem"
+    mods:
+      - { id: "25",  file: "342", name: "Inf Ammo & HP" }
+      - { id: "100", file: "212", name: "Infinite CP" }
+
+dg_reframework_revert: false
