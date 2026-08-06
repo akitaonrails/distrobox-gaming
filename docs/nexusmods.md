@@ -54,6 +54,8 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | WRC 5 | wrc5 | `354160` | 1 | ⚠️ flagged — not installed (DLC-unlock crack, see below) |
 | UNCHARTED: Legacy of Thieves | unchartedlegacyofthievescollection | `1659420` | 5 | ✅ 2/5 (see below) |
 | Yakuza 0 (Director's Cut) | yakuza0 | `2988580` | 10 | ⏸️ deferred (edition mismatch / RMM) |
+| The Witcher 3: Wild Hunt (Next-Gen) | witcher3 | `292030` | 12 | ✅ 10/12 (see below) |
+| WRC 7 | wrc7 | `621830` | 1 | 🔧 EVOlution Mod (6 GB, downloading) |
 
 ### ⛔ Skipped — not installed in Steam (as of the 2026-08-06 scan)
 
@@ -63,8 +65,6 @@ Re-check if you later install these; they're in `tmp/nexusmods.txt`.
 |---|---|---|
 | Resident Evil HD Remaster (RE1) | residentevilbiohazardhdremaster | not found in any Steam library |
 | Metal Gear & Metal Gear 2 (MC) | metalgearandmetalgear2mc | not found in any Steam library |
-| The Witcher 3 | witcher3 | not found in any Steam library |
-| WRC 7 | wrc7 | not found in any Steam library |
 | Colin McRae Rally 2 | colinmcraerally2 | not a Steam title (user-noted) — covered by `install_pc_racing` instead |
 
 ### 🔌 Shared loaders (revisited deferred games)
@@ -481,6 +481,23 @@ role rsyncs them in and backs up any pre-existing file to `<file>.dg-orig`
 | [107 RenoDX](https://www.nexusmods.com/unchartedlegacyofthievescollection/mods/107) | — | ⛔ dropped — a **ReShade addon** (`.addon64`); ReShade excluded per project rule |
 | [2 27GB Reducer](https://www.nexusmods.com/unchartedlegacyofthievescollection/mods/2) | — | ⏭️ skipped — overwrites foreign-language voice `.psarc` with 6-byte empty stubs (destroys audio data); against repo Safety |
 | [22 Save File](https://www.nexusmods.com/unchartedlegacyofthievescollection/mods/22) | — | ⏸️ manual — user save data |
+
+## ✅ The Witcher 3: Wild Hunt (Next-Gen) — `install_witcher3_mods`
+
+Role: `install_witcher3_mods` · appid `292030` (**box** library; game is Next-Gen,
+`bin/x64_dx12`). W3 loads mods natively from `<game>/mods/mod<Name>/`, so these
+drop in headlessly (no loader). Manifest-tracked (whole mod folders).
+
+| Mod | Notes |
+|---|---|
+| [943 Map Quest Objectives](https://www.nexusmods.com/witcher3/mods/943) · [3 Over 9000 Weight](https://www.nexusmods.com/witcher3/mods/3) · [324 Fast Travel Anywhere](https://www.nexusmods.com/witcher3/mods/324) · [820 Always Full Exp](https://www.nexusmods.com/witcher3/mods/820) · [342 Indestructible Items](https://www.nexusmods.com/witcher3/mods/342) · [315 AutoLoot](https://www.nexusmods.com/witcher3/mods/315) · [352 No Fall Damage](https://www.nexusmods.com/witcher3/mods/352) | script/gameplay `mod*/` folders |
+| [657 Super Turbo Lighting (NGE)](https://www.nexusmods.com/witcher3/mods/657) · [1024 High Quality Faces](https://www.nexusmods.com/witcher3/mods/1024) | visual `mod*/` folders (NGE = Next-Gen build) |
+| [38 Increased Creature Loot](https://www.nexusmods.com/witcher3/mods/38) | FOMOD — installed the **`2_ICL`** variant (`modICL`) |
+| [1021 HD Reworked Project](https://www.nexusmods.com/witcher3/mods/1021) | ⚠️ flagged, not installed — the MAIN file is the **OldGen "Ultimate" v12 (~9.5 GB)**; edition mismatch on the Next-Gen game + huge. Confirm intent / prefer the Next-Gen HD Reworked link. |
+| [3580 HD Monsters Reworked](https://www.nexusmods.com/witcher3/mods/3580) | ⚠️ flagged, not installed — ~1.3 GB 2019 texture pack; confirm Next-Gen use. |
+
+Note: script mods that touch shared scripts (AutoLoot, Weight) may need **Script
+Merger** if they conflict in-game; installed as-is.
 
 ## ⚠️ WRC 5 — flagged, not installed
 

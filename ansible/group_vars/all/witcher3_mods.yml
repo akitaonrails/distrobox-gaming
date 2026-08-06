@@ -1,0 +1,35 @@
+# The Witcher 3: Wild Hunt (Next-Gen) mod set — opt-in role install_witcher3_mods.
+# Via the nexus-mod-set skill. See docs/nexusmods.md. appid 292030 (box library).
+#
+# W3 loads mods natively from <game>/mods/mod<Name>/ (and DLC from <game>/dlc/),
+# so these install headlessly by dropping the mod folder in — no loader. The game
+# here is Next-Gen (bin/x64_dx12 present). FOMOD packs expose variants; pick one
+# via `variant` (the subfolder holding the wanted mod folder).
+#
+# Flagged (NOT auto-installed) — big OldGen texture packs, size + Next-Gen risk:
+#   1021 HD Reworked Project **OldGen Edition** (Ultimate v12, ~9.5 GB) — the
+#        OldGen edition on a Next-Gen game is an edition mismatch; needs the
+#        user's go-ahead (and ideally the Next-Gen HD Reworked link instead).
+#   3580 HD Monsters Reworked (v3.0, ~1.3 GB, 2019) — large; confirm Next-Gen use.
+#
+# Note: script mods that touch shared game scripts (e.g. AutoLoot, Weight) may
+# need Script Merger if they conflict; dropped as-is here.
+
+dg_witcher3_appid: "292030"
+dg_witcher3_steam_library_root: "{{ dg_box_home }}/.local/share/Steam"
+dg_witcher3_game_dir: "{{ dg_witcher3_steam_library_root }}/steamapps/common/The Witcher 3"
+dg_witcher3_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/witcher3"
+
+dg_witcher3_mods:
+  - { id: "943",  file: "42698", name: "Map Quest Objectives" }
+  - { id: "3",    file: "21057", name: "Over 9000 Weight Limit" }
+  - { id: "324",  file: "14055", name: "Fast Travel From Anywhere" }
+  - { id: "820",  file: "45091", name: "Always Full Exp (Next-Gen)" }
+  - { id: "657",  file: "48112", name: "Super Turbo Lighting (NGE)" }
+  - { id: "1024", file: "12520", name: "High Quality Faces" }
+  - { id: "342",  file: "50323", name: "Indestructible Items (4.03)" }
+  - { id: "38",   file: "22070", name: "Increased Creature Loot", variant: "2_ICL" }
+  - { id: "315",  file: "9889",  name: "AutoLoot" }
+  - { id: "352",  file: "4812",  name: "No Fall Damage" }
+
+dg_witcher3_revert: false

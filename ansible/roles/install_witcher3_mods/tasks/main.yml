@@ -1,0 +1,80 @@
+---
+# The Witcher 3 (appid 292030) mod set — native mods/ folder drops.
+# See group_vars/all/witcher3_mods.yml and docs/nexusmods.md.
+
+- name: Revert the Witcher 3 mod set when requested
+  ansible.builtin.include_tasks: revert.yml
+  when: dg_witcher3_revert | bool
+
+- name: Install the Witcher 3 mod set
+  when: not (dg_witcher3_revert | bool)
+  block:
+    - name: Locate the Witcher 3 game dir
+      ansible.builtin.stat:
+        path: "{{ dg_witcher3_game_dir }}/content"
+      register: _w3_game
+
+    - name: Fail when Witcher 3 is not found
+      ansible.builtin.fail:
+        msg: "{{ dg_witcher3_game_dir }} not found (appid {{ dg_witcher3_appid }}). See docs/nexusmods.md."
+      when: not _w3_game.stat.exists
+
+    - name: Download each Witcher 3 mod via the Nexus API (Premium key)
+      ansible.builtin.command:
+        cmd: >-
+          {{ dg_project_root }}/scripts/nexus-download.py --game witcher3
+          --mod {{ item.id }} --file {{ item.file }} --via api
+          --dest {{ (dg_witcher3_staging_root + '/' + item.id + '/' + item.file) | quote }}
+      loop: "{{ dg_witcher3_mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _w3_dl
+      changed_when: "'saved' in _w3_dl.stdout"
+      failed_when: false
+      no_log: true
+      when: lookup('ansible.builtin.env', 'NEXUS_MODS_API_KEY') | length > 0
+
+    - name: Install each mod's mod*/dlc* folders (records a manifest)
+      ansible.builtin.shell: |
+        set -eu
+        game={{ dg_witcher3_game_dir | quote }}
+        variant={{ (item.variant | default('')) | quote }}
+        manifest="$game/.dg-witcher3-{{ item.id }}.manifest"
+        [ -f "$manifest" ] && { echo "skip"; exit 0; }
+        arch="$(find {{ (dg_witcher3_staging_root + '/' + item.id + '/' + item.file) | quote }} -type f \
+          \( -name '*.zip' -o -name '*.7z' -o -name '*.rar' \) | head -1)"
+        [ -n "$arch" ] || { echo "NO-ARCHIVE" >&2; exit 3; }
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        7z x -y -o"$tmp" "$arch" >/dev/null
+        root="$tmp"
+        if [ -n "$variant" ]; then
+          root="$(find "$tmp" -type d -name "$variant" | head -1)"
+          [ -n "$root" ] || { echo "NO-VARIANT" >&2; exit 4; }
+        fi
+        mkdir -p "$game/mods" "$game/dlc"
+        find "$root" -mindepth 1 -maxdepth 1 -type d \( -name 'mod*' -o -name 'dlc*' \) > "$tmp/.dirs"
+        [ -s "$tmp/.dirs" ] || { echo "NO-MODDIR" >&2; exit 5; }
+        : > "$manifest.tmp"
+        while IFS= read -r d; do
+          [ -n "$d" ] || continue
+          name="$(basename "$d")"
+          case "$name" in
+            dlc*) rel="dlc/$name" ;;
+            *)    rel="mods/$name" ;;
+          esac
+          rsync -a "$d/" "$game/$rel/"
+          echo "$rel" >> "$manifest.tmp"
+        done < "$tmp/.dirs"
+        mv "$manifest.tmp" "$manifest"
+        echo "w3-installed"
+      loop: "{{ dg_witcher3_mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}{{ ' [' + item.variant + ']' if item.variant is defined else '' }}"
+      register: _w3_install
+      changed_when: "'w3-installed' in _w3_install.stdout"
+
+    - name: Report completion
+      ansible.builtin.debug:
+        msg:
+          - "Witcher 3: installed {{ dg_witcher3_mods | map(attribute='name') | join(', ') }} into <game>/mods/."
+          - "Flagged (not installed): 1021 HD Reworked OldGen (~9.5 GB, edition mismatch) + 3580 HDMR (~1.3 GB). Revert: -e dg_witcher3_revert=true."

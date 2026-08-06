@@ -1,0 +1,7 @@
+---
+- name: Install the Witcher 3 NexusMods set
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_witcher3_mods

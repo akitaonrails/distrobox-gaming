@@ -1,0 +1,22 @@
+---
+# Remove each Witcher 3 mod's folders using its recorded manifest.
+
+- name: Remove each installed mod folder via its manifest
+  ansible.builtin.shell: |
+    set -eu
+    game={{ dg_witcher3_game_dir | quote }}
+    manifest="$game/.dg-witcher3-{{ item.id }}.manifest"
+    [ -f "$manifest" ] || { echo "nochange"; exit 0; }
+    while IFS= read -r rel; do
+      [ -n "$rel" ] || continue
+      case "$rel" in
+        mods/*|dlc/*) rm -rf "$game/$rel" ;;
+      esac
+    done < "$manifest"
+    rm -f "$manifest"
+    echo "w3-reverted"
+  loop: "{{ dg_witcher3_mods }}"
+  loop_control:
+    label: "{{ item.id }} {{ item.name }}"
+  register: _w3_revert
+  changed_when: "'w3-reverted' in _w3_revert.stdout"
