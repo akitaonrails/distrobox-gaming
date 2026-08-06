@@ -47,21 +47,20 @@
         arch="$(find {{ (dg_uncharted_staging_root + '/' + item.id) | quote }} -type f \
           \( -name '*.zip' -o -name '*.rar' -o -name '*.7z' \) | head -1)"
         [ -n "$arch" ] || { echo "NO-ARCHIVE" >&2; exit 3; }
-        tmp="$(mktemp -d)"; list="$(mktemp)"
-        trap 'rm -rf "$tmp" "$list"' EXIT
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
         7z x -y -o"$tmp" "$arch" >/dev/null
-        # Build the file list OUTSIDE the extraction dir so it can't self-include.
-        ( cd "$tmp" && find . -type f | sed 's|^\./||' ) > "$list"
-        [ -s "$list" ] || { echo "NO-FILES" >&2; exit 4; }
+        # Write the list to the game dir (NOT inside $tmp) so find cannot self-include it.
+        ( cd "$tmp" && find . -type f | sed 's|^\./||' ) > "$manifest.tmp"
+        [ -s "$manifest.tmp" ] || { echo "NO-FILES" >&2; exit 4; }
         # Back up any pre-existing target once, then copy the mod file over.
         while IFS= read -r rel; do
           [ -n "$rel" ] || continue
           if [ -e "$game/$rel" ] && [ ! -e "$game/$rel.dg-orig" ]; then
             cp -a "$game/$rel" "$game/$rel.dg-orig"
           fi
-        done < "$list"
+        done < "$manifest.tmp"
         rsync -a "$tmp/" "$game/"
-        cp -f "$list" "$manifest"
+        mv "$manifest.tmp" "$manifest"
         echo "uncharted-installed"
       loop: "{{ dg_uncharted_mods }}"
       loop_control:
