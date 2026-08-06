@@ -43,7 +43,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Resident Evil 3 (2020) | residentevil32020 | `952060` | 1 | ⏳ |
 | Resident Evil Requiem | residentevilrequiem | `3764200` | 3 | ⏳ |
 | Resident Evil Village | residentevilvillage | `1196590` | 4 | ⏳ |
-| Resident Evil 4 (2005) | residentevil4 | `254700` | 1 | ⏳ (see also install_re4_hd) |
+| Resident Evil 4 (2005) | residentevil4 | `254700` | 2 | ✅ re4_tweaks 1.9.1 via install_re4_hd (mod 306 dropped — wrong port) |
 | Resident Evil 0 (HD Remaster) | residentevil0biohazard0hdremaster | `339340` | 2 | ⏳ |
 | RoboCop: Rogue City | robocoproguecity | `1681430` | 8 | ⏳ |
 | Sekiro: Shadows Die Twice | sekiro | `814380` | 2 | ⏳ |

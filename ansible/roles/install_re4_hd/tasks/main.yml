@@ -81,6 +81,27 @@
       register: _re4_hd_bin32
       changed_when: _re4_hd_bin32.stdout | length > 0
 
+    - name: Update re4_tweaks to a newer standalone release (optional)
+      # Overlay a newer re4_tweaks (Nexus residentevil4/mods/101) dinput8.dll +
+      # default_settings/ over the HD-Project-bundled copy, PRESERVING the HD
+      # Project's dinput8.ini + setting_overrides/HDProject.ini + sideload/.
+      # Marker-gated by the release basename so reruns are idempotent.
+      ansible.builtin.shell: |
+        set -eu
+        zip={{ dg_re4_hd_re4tweaks_update_zip | quote }}
+        [ -n "$zip" ] && [ -f "$zip" ] || { echo "no-update"; exit 0; }
+        marker="{{ dg_re4_hd_game_dir }}/Bin32/.dg-re4tweaks-$(basename "$zip")"
+        [ -f "$marker" ] && { echo "up-to-date"; exit 0; }
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        7z x -y -o"$tmp" "$zip" >/dev/null
+        cp -f "$tmp/dinput8.dll" {{ (dg_re4_hd_game_dir + '/Bin32/dinput8.dll') | quote }}
+        [ -d "$tmp/re4_tweaks/default_settings" ] && cp -rf "$tmp/re4_tweaks/default_settings" {{ (dg_re4_hd_game_dir + '/Bin32/re4_tweaks/') | quote }} || true
+        touch "$marker"
+        echo "re4tweaks-updated"
+      register: _re4_hd_tweaks_update
+      changed_when: "'re4tweaks-updated' in _re4_hd_tweaks_update.stdout"
+      when: dg_re4_hd_re4tweaks_update_zip | length > 0
+
     - name: Check the BIO4 install marker
       ansible.builtin.stat:
         path: "{{ dg_re4_hd_game_dir }}/.dg-re4-hd-bio4-installed"
