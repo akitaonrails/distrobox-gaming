@@ -1,0 +1,47 @@
+---
+# Remove RE-UE4SS (dwmapi proxy + ue4ss/ tree, which includes the Lua mod) and
+# clear the launch option. Steam -> Verify integrity restores base files.
+
+- name: Remove UE4SS proxy + tree
+  ansible.builtin.file:
+    path: "{{ dg_wukong_win64_dir }}/{{ item }}"
+    state: absent
+  loop:
+    - dwmapi.dll
+    - ue4ss
+    - UE4SS-settings.ini
+
+- name: Remove markers
+  ansible.builtin.file:
+    path: "{{ dg_wukong_game_dir }}/{{ item }}"
+    state: absent
+  loop: "{{ ['.dg-wukong-ue4ss'] + (dg_wukong_mods | map(attribute='id') | map('regex_replace', '^', '.dg-wukong-mod-') | list) }}"
+
+- name: Auto-discover the in-box Steam localconfig.vdf (revert)
+  ansible.builtin.find:
+    paths: "{{ dg_wukong_steam_root }}/userdata"
+    patterns: localconfig.vdf
+    recurse: true
+  register: _wk_rv_localconfigs
+  when: dg_wukong_steam_localconfig | length == 0
+
+- name: Resolve localconfig for revert
+  ansible.builtin.set_fact:
+    _wk_rv_localconfig: >-
+      {{ dg_wukong_steam_localconfig if (dg_wukong_steam_localconfig | length > 0)
+         else (_wk_rv_localconfigs.files | map(attribute='path') | list | first
+               if (_wk_rv_localconfigs.files | default([]) | length == 1) else '') }}
+
+- name: Clear the Wukong launch options (best effort)
+  ansible.builtin.command: >-
+    {{ dg_project_root }}/scripts/set-steam-launch-options.py
+    --localconfig {{ _wk_rv_localconfig | quote }}
+    --set {{ dg_wukong_appid | quote }} ""
+  register: _wk_rv_launch
+  changed_when: "'changed: true' in _wk_rv_launch.stdout"
+  failed_when: false
+  when: _wk_rv_localconfig | length > 0
+
+- name: Report revert
+  ansible.builtin.debug:
+    msg: "Black Myth Wukong reverted: RE-UE4SS + mods removed, launch option cleared."

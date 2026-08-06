@@ -1,0 +1,7 @@
+---
+- name: Install the Black Myth Wukong NexusMods set (RE-UE4SS + Auto Regen)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_wukong_mods

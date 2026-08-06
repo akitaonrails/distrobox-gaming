@@ -1,0 +1,40 @@
+# Black Myth: Wukong mod set (opt-in role install_wukong_mods). Generated via
+# the nexus-mod-set skill. See docs/nexusmods.md.
+#
+# One mod: "Auto Regen", a UE4SS Lua gameplay mod. Requires the RE-UE4SS loader
+# (WukongUE4SS build) which drops a dwmapi.dll proxy + ue4ss/ into the game's
+# b1/Binaries/Win64/. No ReShade. Headless-installable (UE4SS is a file drop,
+# not a GUI); Proton loads the dwmapi proxy via a launch override.
+
+dg_wukong_appid: "2358720"
+
+dg_wukong_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+dg_wukong_game_dir: "{{ dg_wukong_steam_library_root }}/steamapps/common/BlackMythWukong"
+dg_wukong_win64_dir: "{{ dg_wukong_game_dir }}/b1/Binaries/Win64"
+
+dg_wukong_steam_root: "{{ dg_box_home }}/.local/share/Steam"
+dg_wukong_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/wukong"
+
+# RE-UE4SS loader (Nexus mod 19, WukongUE4SS build). Its zip root WukongUE4SS/
+# holds dwmapi.dll + ue4ss/; extract its contents into b1/Binaries/Win64/.
+dg_wukong_ue4ss_mod: "19"
+dg_wukong_ue4ss_file: "400"      # WukongUE4SS 1.3
+dg_wukong_ue4ss_dir: "19-ue4ss"
+
+# Proton must load UE4SS's native dwmapi.dll proxy.
+dg_wukong_launch_options: 'WINEDLLOVERRIDES="dwmapi=n,b" %command%'
+dg_wukong_steam_localconfig: ""
+dg_wukong_stop_steam: false
+
+# The mod. Its archive is game-dir-rooted (b1/Binaries/Win64/ue4ss/Mods/
+# BMWAutoRegen/ with Scripts/main.lua + enabled.txt), so it extracts into the
+# game dir. Tune regen in main.lua's VitalityConfig (rate 5-50).
+dg_wukong_mods:
+  - id: "1289"
+    name: "Auto Regen"
+    url: "https://www.nexusmods.com/blackmythwukong/mods/1289"
+    dir: "1289-auto-regen"
+
+dg_wukong_revert: false

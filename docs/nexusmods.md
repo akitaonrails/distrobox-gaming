@@ -21,7 +21,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Batman: Arkham Knight | batmanarkhamknight | `208650` | 2 | ⏸️ deferred (TFC GUI) |
 | Batman: Arkham City GOTY | batmanarkhamcity | `200260` | 3 | ⏸️ deferred (TFC GUI) |
 | Batman: Arkham Asylum GOTY | batmanarkhamasylum | `35140` | 2 | ⏸️ deferred (TFC GUI) |
-| Black Myth: Wukong | blackmythwukong | `2358720` | 1 | ⏳ |
+| Black Myth: Wukong | blackmythwukong | `2358720` | 1 | ✅ (see below) |
 | Bloodstained: RotN | bloodstainedritualofthenight | `692850` | 7 | ⏳ |
 | Dark Souls Remastered | darksoulsremastered | `570940` | 3 | ⏳ |
 | Elden Ring | eldenring | `1245620` | 1 | ⏳ |
@@ -140,4 +140,15 @@ available) + one weapon-stats variant (default keeps vanilla TLS/MPBM).
 | Mod | Type | Notes |
 |---|---|---|
 | [1400 Skies Rebalanced v1.2E](https://www.nexusmods.com/acecombat7skiesunknown/mods/1400) | plane/weapon rebalance (UE4 paks) | all plane paks + 1 weapon variant; `dg_ac7_edition` / `dg_ac7_weapon_variant` to change; Proton GE recommended for cutscenes |
+
+## ✅ Black Myth: Wukong — `install_wukong_mods`
+
+Role: `install_wukong_mods` · appid `2358720` (USB library) · loader: **RE-UE4SS**
+(WukongUE4SS 1.3). Auto Regen is a UE4SS Lua mod; the role drops the loader
+(`dwmapi.dll` + `ue4ss/`) into `b1/Binaries/Win64/`, installs the Lua mod, and
+sets the Proton `WINEDLLOVERRIDES="dwmapi=n,b"` override. No ReShade.
+
+| Mod | Type | Notes |
+|---|---|---|
+| [1289 Auto Regen](https://www.nexusmods.com/blackmythwukong/mods/1289) | UE4SS Lua (vital-stat regen) | tune rate in `ue4ss/Mods/BMWAutoRegen/Scripts/main.lua` (`VitalityConfig`, 5–50) |
 
