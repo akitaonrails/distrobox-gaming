@@ -1,0 +1,71 @@
+---
+# Uninstall the RE4 HD Project: restore the stock exe/Bin32, drop the
+# re4_tweaks files, and clear the Steam launch option. BIO4 was replaced with
+# --delete and is NOT restored here (no 13 GB backup is kept) — re-fetch stock
+# assets with Steam -> RE4 (2005) -> Properties -> Installed Files -> Verify
+# integrity of game files after this runs. Close Steam before reverting so it
+# doesn't rewrite localconfig.vdf on exit.
+
+- name: Check for the stock Bin32 backup
+  ansible.builtin.stat:
+    path: "{{ dg_re4_hd_backup_dir }}/Bin32-stock.tar.zst"
+  register: _re4_hd_rv_backup
+
+- name: Restore the stock Bin32 (un-patched exe + genuine steam_api.dll)
+  ansible.builtin.command:
+    cmd: >-
+      tar --use-compress-program=unzstd -xf
+      {{ (dg_re4_hd_backup_dir + '/Bin32-stock.tar.zst') | quote }}
+      -C {{ dg_re4_hd_game_dir | quote }}
+  changed_when: true
+  when: _re4_hd_rv_backup.stat.exists
+
+- name: Warn when no Bin32 backup exists to restore
+  ansible.builtin.debug:
+    msg: >-
+      No Bin32-stock.tar.zst under {{ dg_re4_hd_backup_dir }} — cannot restore
+      the un-patched exe. Use Steam -> Verify integrity of game files to
+      restore the whole install instead.
+  when: not _re4_hd_rv_backup.stat.exists
+
+- name: Remove the re4_tweaks payload added by the mod
+  ansible.builtin.file:
+    path: "{{ dg_re4_hd_game_dir }}/Bin32/{{ item }}"
+    state: absent
+  loop: "{{ dg_re4_hd_bin32_payload }}"
+
+- name: Remove the BIO4 install marker
+  ansible.builtin.file:
+    path: "{{ dg_re4_hd_game_dir }}/.dg-re4-hd-bio4-installed"
+    state: absent
+
+- name: Auto-discover the in-box Steam localconfig.vdf (revert)
+  ansible.builtin.find:
+    paths: "{{ dg_re4_hd_steam_root }}/userdata"
+    patterns: localconfig.vdf
+    recurse: true
+  register: _re4_hd_rv_localconfigs
+  when: dg_re4_hd_steam_localconfig | length == 0
+
+- name: Resolve the localconfig path for revert
+  ansible.builtin.set_fact:
+    _re4_hd_rv_localconfig: >-
+      {{ dg_re4_hd_steam_localconfig if (dg_re4_hd_steam_localconfig | length > 0)
+         else (_re4_hd_rv_localconfigs.files | map(attribute='path') | list | first
+               if (_re4_hd_rv_localconfigs.files | default([]) | length == 1) else '') }}
+
+- name: Clear the RE4 Steam launch options (best effort; close Steam first)
+  ansible.builtin.command: >-
+    {{ dg_project_root }}/scripts/set-steam-launch-options.py
+    --localconfig {{ _re4_hd_rv_localconfig | quote }}
+    --set {{ dg_re4_hd_appid | quote }} ""
+  register: _re4_hd_rv_launch
+  changed_when: "'changed: true' in _re4_hd_rv_launch.stdout"
+  failed_when: false
+  when: _re4_hd_rv_localconfig | length > 0
+
+- name: Report revert
+  ansible.builtin.debug:
+    msg:
+      - "RE4 HD Project reverted: stock Bin32 restored, re4_tweaks removed, launch options cleared."
+      - "IMPORTANT: BIO4 still holds the HD assets. Restore stock assets via Steam -> RE4 (2005) -> Properties -> Installed Files -> Verify integrity of game files."

@@ -1,0 +1,76 @@
+# Resident Evil 4 (2005) "Ultimate HD Edition" — the RE4 HD Project remaster.
+# Run with ansible/install-re4-hd.yml or
+# `ansible-playbook site.yml --tags re4_hd`. See docs/re4-hd.md.
+#
+# Requires the 2014 Steam port: appid 254700, now listed on the store as
+# "Resident Evil 4 (2005)". The 2023 remake (appid 2050650) is a DIFFERENT
+# game and is NOT supported by this mod.
+
+# Steam appid of the 2014 Ultimate HD Edition.
+dg_re4_hd_appid: "254700"
+
+# Steam library that holds the game. Mirrors the Metal Gear role: the external
+# USB library when configured, otherwise the in-box Steam library.
+dg_re4_hd_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+dg_re4_hd_game_dir: "{{ dg_re4_hd_steam_library_root }}/steamapps/common/Resident Evil 4"
+
+# Steam root that owns userdata/ (for launch options) — always the in-box
+# Steam install, even when the game sits in a secondary library.
+dg_re4_hd_steam_root: "{{ dg_box_home }}/.local/share/Steam"
+
+# Where YOU stage the HD Project after downloading it (MANUAL — see
+# docs/re4-hd.md). Must contain BIO4/ and Bin32/. Download the OFFICIAL
+# package from https://www.re4hd.com/ or the crack-free Internet Archive
+# mirror https://archive.org/details/re4HDProject.7z — do NOT use a scene
+# "repack" (those bundle a Steam emulator). The role filters known crack
+# files out regardless, but the official source is cleanest.
+dg_re4_hd_source: "{{ dg_external_games_root }}/mods/re4-hd-project"
+
+# Genuine HD-Project files copied out of the staged Bin32/ (ALLOW-list —
+# anything else there, e.g. a repack's steam_api.dll / 3DMGAME.ini / bio4.exe,
+# is ignored). dinput8.dll is re4_tweaks (the mod loader); dinput8.ini is its
+# HD-Project-tuned config; re4_tweaks/ holds the HD Project setting_overrides
+# and the sideloaded opening/event content.
+dg_re4_hd_bin32_payload:
+  - dinput8.dll
+  - dinput8.ini
+  - re4_tweaks
+
+# BIO4 entries never copied into the game even if a repack source ships them.
+# steam_appid.txt lets the game bypass Steam (part of the "alternative Steam").
+dg_re4_hd_bio4_excludes:
+  - steam_appid.txt
+
+# The game exe to LargeAddressAware-patch in place. We patch the GENUINE Steam
+# exe, never swap in a repack's. Idempotent — skipped when already patched.
+dg_re4_hd_game_exe: "{{ dg_re4_hd_game_dir }}/Bin32/bio4.exe"
+
+# Pristine Bin32 backup (small: stock bio4.exe + steam_api.dll) so a revert can
+# restore the un-patched exe. BIO4 is NOT tar'd (13 GB) — revert it with
+# Steam -> Verify integrity of game files (see docs/re4-hd.md).
+dg_re4_hd_backup_dir: "{{ dg_external_games_root }}/backups/re4-hd"
+
+# Steam launch options for appid 254700. WINEDLLOVERRIDES makes Proton load
+# the native (mod) dinput8.dll so re4_tweaks initializes under Linux.
+dg_re4_hd_launch_options: 'WINEDLLOVERRIDES="dinput8=n,b" %command%'
+
+# Steam userdata localconfig.vdf (account-specific). Left empty, the role
+# auto-discovers the single localconfig.vdf under the in-box Steam userdata/.
+# Set explicitly to override, e.g.
+# {{ dg_re4_hd_steam_root }}/userdata/<steamid>/config/localconfig.vdf
+dg_re4_hd_steam_localconfig: ""
+
+# Refuse to edit Steam localconfig while Steam runs. Stop Steam first, or set
+# true for a one-shot local run that shuts Steam down automatically.
+dg_re4_hd_stop_steam: false
+
+# Force a re-sync of the 38 GB BIO4 assets even when the install marker exists
+# (normally the marker skips the expensive NAS->NVMe rsync on reruns).
+dg_re4_hd_force_bio4: false
+
+# Set true (e.g. -e dg_re4_hd_revert=true) to UNINSTALL: restore the stock
+# Bin32, remove the re4_tweaks files, clear the launch option. Re-verify BIO4
+# in Steam afterwards. See docs/re4-hd.md.
+dg_re4_hd_revert: false

@@ -1,0 +1,193 @@
+---
+# Resident Evil 4 (2005) "Ultimate HD Edition" + the RE4 HD Project remaster.
+# See group_vars/all/re4_hd.yml for the knobs and docs/re4-hd.md for the full
+# write-up (what the mod is, how to stage it, how to revert).
+#
+# This overlays ONLY the genuine HD Project onto a legitimately-owned Steam
+# copy: the BIO4 HD assets + re4_tweaks, and a 4GB patch of the real exe. Any
+# "alternative Steam" bits a scene repack might carry (steam_api.dll emulator,
+# 3DMGAME.ini, steam_appid.txt, a pre-patched exe) are filtered out so real
+# Steam integration stays intact.
+
+- name: Revert the RE4 HD Project when requested
+  ansible.builtin.include_tasks: revert.yml
+  when: dg_re4_hd_revert | bool
+
+- name: Install the RE4 HD Project
+  when: not (dg_re4_hd_revert | bool)
+  block:
+    - name: Locate the RE4 (2005) Steam install
+      ansible.builtin.stat:
+        path: "{{ dg_re4_hd_game_dir }}/Bin32/bio4.exe"
+      register: _re4_hd_game
+
+    - name: Fail when RE4 (2005) is not installed
+      ansible.builtin.fail:
+        msg: >-
+          Resident Evil 4 (2005) (Steam appid {{ dg_re4_hd_appid }}) was not
+          found at {{ dg_re4_hd_game_dir }}. Install it from Steam first — the
+          store lists it as "Resident Evil 4 (2005)", NOT the 2023 remake
+          (appid 2050650) — or override dg_re4_hd_steam_library_root if it
+          lives in another library. See docs/re4-hd.md.
+      when: not _re4_hd_game.stat.exists
+
+    - name: Check the staged HD Project source
+      ansible.builtin.stat:
+        path: "{{ dg_re4_hd_source }}/BIO4"
+      register: _re4_hd_src_bio4
+
+    - name: Fail when the HD Project source is not staged
+      ansible.builtin.fail:
+        msg: >-
+          RE4 HD Project source not found at {{ dg_re4_hd_source }}/BIO4.
+          Download the OFFICIAL package from https://www.re4hd.com/ (or the
+          crack-free mirror https://archive.org/details/re4HDProject.7z) and
+          extract it so {{ dg_re4_hd_source }}/ contains BIO4/ and Bin32/, then
+          re-run. Do NOT use a scene repack. See docs/re4-hd.md.
+      when: not _re4_hd_src_bio4.stat.exists
+
+    - name: Ensure the RE4 backup dir exists
+      ansible.builtin.file:
+        path: "{{ dg_re4_hd_backup_dir }}"
+        state: directory
+        mode: "0755"
+
+    # Runs before the 4GB patch and before any overlay, so the tarball
+    # captures the pristine stock exe + genuine steam_api.dll. `creates`
+    # keeps it a one-time snapshot.
+    - name: Back up the pristine stock Bin32 (small; for revert)
+      ansible.builtin.command:
+        cmd: >-
+          tar --use-compress-program='zstd -T0 -3' -cf
+          {{ (dg_re4_hd_backup_dir + '/Bin32-stock.tar.zst') | quote }}
+          -C {{ dg_re4_hd_game_dir | quote }} Bin32
+        creates: "{{ dg_re4_hd_backup_dir }}/Bin32-stock.tar.zst"
+
+    - name: 4GB-patch (LargeAddressAware) the genuine bio4.exe
+      ansible.builtin.command:
+        cmd: >-
+          {{ dg_project_root }}/scripts/patch-laa.py
+          {{ dg_re4_hd_game_exe | quote }}
+      register: _re4_hd_laa
+      changed_when: "'changed: true' in _re4_hd_laa.stdout"
+
+    - name: Install the re4_tweaks payload into Bin32 (genuine mod files only)
+      ansible.builtin.command:
+        cmd: >-
+          rsync -a --info=NAME
+          {{ (dg_re4_hd_source + '/Bin32/' + item) | quote }}
+          {{ (dg_re4_hd_game_dir + '/Bin32/') | quote }}
+      loop: "{{ dg_re4_hd_bin32_payload }}"
+      register: _re4_hd_bin32
+      changed_when: _re4_hd_bin32.stdout | length > 0
+
+    - name: Check the BIO4 install marker
+      ansible.builtin.stat:
+        path: "{{ dg_re4_hd_game_dir }}/.dg-re4-hd-bio4-installed"
+      register: _re4_hd_bio4_marker
+
+    # Full replace (`--delete`) so no stock textures linger, minus the crack
+    # excludes. Marker-gated because this is a ~38 GB NAS->NVMe copy; rsync is
+    # itself idempotent but re-scanning 38 GB every run is wasteful.
+    - name: Install the HD Project BIO4 assets (full replace, crack-filtered)
+      ansible.builtin.command:
+        cmd: >-
+          rsync -a --delete
+          {% for x in dg_re4_hd_bio4_excludes %}--exclude={{ x | quote }} {% endfor %}
+          {{ (dg_re4_hd_source + '/BIO4/') | quote }}
+          {{ (dg_re4_hd_game_dir + '/BIO4/') | quote }}
+      changed_when: true
+      when: dg_re4_hd_force_bio4 | bool or not _re4_hd_bio4_marker.stat.exists
+
+    - name: Mark BIO4 as installed
+      ansible.builtin.copy:
+        dest: "{{ dg_re4_hd_game_dir }}/.dg-re4-hd-bio4-installed"
+        mode: "0644"
+        content: "RE4 HD Project BIO4 synced from {{ dg_re4_hd_source }}\n"
+      when: dg_re4_hd_force_bio4 | bool or not _re4_hd_bio4_marker.stat.exists
+
+    # --- Steam launch options (Proton dinput8 override) ---
+
+    - name: Auto-discover the in-box Steam localconfig.vdf
+      ansible.builtin.find:
+        paths: "{{ dg_re4_hd_steam_root }}/userdata"
+        patterns: localconfig.vdf
+        recurse: true
+      register: _re4_hd_localconfigs
+      when: dg_re4_hd_steam_localconfig | length == 0
+
+    - name: Resolve the effective Steam localconfig path
+      ansible.builtin.set_fact:
+        _re4_hd_localconfig: >-
+          {{ dg_re4_hd_steam_localconfig if (dg_re4_hd_steam_localconfig | length > 0)
+             else (_re4_hd_localconfigs.files | map(attribute='path') | list | first
+                   if (_re4_hd_localconfigs.files | default([]) | length == 1) else '') }}
+
+    - name: Check if Steam is running before editing launch options
+      ansible.builtin.shell: |
+        pgrep -u "$(id -u)" -x steam >/dev/null || pgrep -u "$(id -u)" -f '/steam(webhelper)?( |$)' >/dev/null
+      register: _re4_hd_steam_running
+      changed_when: false
+      failed_when: false
+      check_mode: false
+      when: _re4_hd_localconfig | length > 0
+
+    - name: Stop Steam before editing launch options
+      ansible.builtin.command: steam -shutdown
+      changed_when: true
+      failed_when: false
+      when:
+        - _re4_hd_localconfig | length > 0
+        - dg_re4_hd_stop_steam | bool
+        - _re4_hd_steam_running.rc == 0
+
+    - name: Wait for Steam to exit
+      ansible.builtin.shell: |
+        for _ in $(seq 1 30); do
+          if ! pgrep -u "$(id -u)" -x steam >/dev/null && ! pgrep -u "$(id -u)" -f '/steam(webhelper)?( |$)' >/dev/null; then
+            exit 0
+          fi
+          sleep 1
+        done
+        exit 1
+      changed_when: false
+      when:
+        - _re4_hd_localconfig | length > 0
+        - dg_re4_hd_stop_steam | bool
+        - _re4_hd_steam_running.rc == 0
+
+    - name: Refuse to edit launch options while Steam is running
+      ansible.builtin.fail:
+        msg: >-
+          Steam is running. Close it first or set dg_re4_hd_stop_steam=true
+          before editing {{ _re4_hd_localconfig }}.
+      when:
+        - _re4_hd_localconfig | length > 0
+        - not (dg_re4_hd_stop_steam | bool)
+        - _re4_hd_steam_running.rc == 0
+
+    - name: Set the RE4 Steam launch options (Proton dinput8 override)
+      ansible.builtin.command: >-
+        {{ dg_project_root }}/scripts/set-steam-launch-options.py
+        --localconfig {{ _re4_hd_localconfig | quote }}
+        --set {{ dg_re4_hd_appid | quote }} {{ dg_re4_hd_launch_options | quote }}
+      register: _re4_hd_launch
+      changed_when: "'changed: true' in _re4_hd_launch.stdout"
+      when: _re4_hd_localconfig | length > 0
+
+    - name: Report when launch options were skipped
+      ansible.builtin.debug:
+        msg: >-
+          No single Steam localconfig.vdf found under
+          {{ dg_re4_hd_steam_root }}/userdata. Set dg_re4_hd_steam_localconfig
+          and re-run, or add WINEDLLOVERRIDES="dinput8=n,b" %command% to RE4's
+          launch options manually in Steam. See docs/re4-hd.md.
+      when: _re4_hd_localconfig | length == 0
+
+    - name: Report RE4 HD Project completion
+      ansible.builtin.debug:
+        msg:
+          - "RE4 HD Project installed into {{ dg_re4_hd_game_dir }}."
+          - "Stock Bin32 backed up to {{ dg_re4_hd_backup_dir }}/Bin32-stock.tar.zst."
+          - "Launch 'Resident Evil 4 (2005)' from Steam."
+          - "Revert: ansible-playbook install-re4-hd.yml -e dg_re4_hd_revert=true (then Steam -> Verify integrity to restore stock BIO4)."
