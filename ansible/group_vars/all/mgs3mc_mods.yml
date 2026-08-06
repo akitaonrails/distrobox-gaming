@@ -35,4 +35,14 @@ dg_mgs3mc_mods:
   - { id: "139", name: "MGSHDFix", dir: "139" }
   - { id: "189", name: "MGS3 Community Bugfix Compilation (Base)", dir: "189" }
 
+# MGSHDFix 4.x won't run with a missing/old-format MGSHDFix.settings and does not
+# auto-generate one (its Config Tool must run once). This regenerates a valid
+# settings file offscreen via the Config Tool — idempotent + self-healing, so a
+# rebuild or an .asi update can't leave MGS3 stuck on the settings error again.
+dg_mgs3mc_regen_mgshdfix_settings: true
+dg_mgs3mc_prefix: "{{ dg_mgs3mc_steam_library_root }}/steamapps/compatdata/{{ dg_mgs3mc_appid }}/pfx"
+# Any recent Proton/GE wine works for the SDL3 Config Tool; override in host_vars
+# if your Proton version dir differs.
+dg_mgs3mc_config_tool_wine: "{{ dg_mgs3mc_steam_library_root }}/steamapps/common/Proton 11.0/files/bin/wine"
+
 dg_mgs3mc_revert: false

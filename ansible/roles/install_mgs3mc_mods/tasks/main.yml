@@ -120,6 +120,23 @@
         - _m3_localconfig | length > 0
         - _m3_steam_running.rc != 0
 
+    - name: Self-heal MGSHDFix.settings (regenerate via the Config Tool if missing/old-format)
+      ansible.builtin.shell: >
+        {{ dg_in_box }} bash -s --
+        {{ dg_mgs3mc_game_dir | quote }}
+        {{ dg_mgs3mc_prefix | quote }}
+        {{ dg_mgs3mc_config_tool_wine | quote }}
+        < {{ dg_project_root }}/scripts/regen-mgshdfix-settings.sh
+      register: _m3_regen
+      changed_when: "'regenerated' in _m3_regen.stdout"
+      failed_when: false   # non-fatal: a slow/cold prefix self-heals on a later run
+      when: dg_mgs3mc_regen_mgshdfix_settings | bool
+
+    - name: Report MGSHDFix settings state
+      ansible.builtin.debug:
+        msg: "MGSHDFix settings: {{ _m3_regen.stdout | default('(regen disabled)') | trim }}"
+      when: dg_mgs3mc_regen_mgshdfix_settings | bool
+
     - name: Report completion
       ansible.builtin.debug:
         msg:

@@ -35,4 +35,10 @@ dg_mgs2mc_mods:
   - { id: "122", name: "Upscaled UI and Menu Textures (2x)", dir: "122", file: "527", dest: root }
   - { id: "110", name: "Stillman Tutorials Always Skippable", dir: "110", dest: gcx }
 
+# MGSHDFix 4.x self-heal (see mgs3mc for the rationale): regenerate a valid
+# MGSHDFix.settings offscreen via the Config Tool if missing/old-format.
+dg_mgs2mc_regen_mgshdfix_settings: true
+dg_mgs2mc_prefix: "{{ dg_mgs2mc_steam_library_root }}/steamapps/compatdata/{{ dg_mgs2mc_appid }}/pfx"
+dg_mgs2mc_config_tool_wine: "{{ dg_mgs2mc_steam_library_root }}/steamapps/common/Proton 11.0/files/bin/wine"
+
 dg_mgs2mc_revert: false
