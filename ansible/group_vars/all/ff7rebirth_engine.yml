@@ -1,0 +1,28 @@
+# FF7 Rebirth "Ultimate Engine Tweaks" (mod 3) + FFVIIHook (mod 4) — opt-in role
+# install_ff7rebirth_engine. See docs/nexusmods.md. appid 2909400 (USB library).
+# Un-defers the FF7 Rebirth Engine.ini tweak (anti-stutter / performance / clarity).
+#
+# FFVIIHook is an xinput1_3.dll loader that drops into End/Binaries/Win64 (enabled
+# by WINEDLLOVERRIDES="xinput1_3=n,b"); the mod's Engine.ini goes into the UE
+# per-user config dir inside the Proton prefix. The No-VRR variant is the safe
+# default (VRR variant assumes a variable-refresh display).
+
+dg_ff7re_appid: "2909400"
+dg_ff7re_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+dg_ff7re_game_dir: "{{ dg_ff7re_steam_library_root }}/steamapps/common/FINAL FANTASY VII REBIRTH"
+dg_ff7re_win64_subdir: "End/Binaries/Win64"
+
+# UE per-user config inside the Proton prefix (project name is "End").
+dg_ff7re_prefix_config: "{{ dg_ff7re_steam_library_root }}/steamapps/compatdata/{{ dg_ff7re_appid }}/pfx/drive_c/users/steamuser/AppData/Local/End/Saved/Config/Windows"
+
+dg_ff7re_steam_root: "{{ dg_box_home }}/.local/share/Steam"
+dg_ff7re_launch_options: 'WINEDLLOVERRIDES="xinput1_3=n,b" %command%'
+dg_ff7re_steam_localconfig: ""
+
+dg_ff7re_ffviihook: { id: "4", file: "9565", name: "FFVIIHook v2.2i" }
+dg_ff7re_engineini: { id: "3", file: "9705", name: "Ultimate Engine Tweaks v131 (No VRR)" }
+dg_ff7re_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/ff7rebirth"
+
+dg_ff7re_revert: false

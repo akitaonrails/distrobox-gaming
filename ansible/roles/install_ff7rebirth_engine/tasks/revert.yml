@@ -1,0 +1,30 @@
+---
+# Remove FFVIIHook + the Engine.ini tweak; restore any backups.
+
+- name: Remove FFVIIHook (restore any original xinput1_3.dll)
+  ansible.builtin.shell: |
+    set -eu
+    game={{ dg_ff7re_game_dir | quote }}
+    dest="$game/{{ dg_ff7re_win64_subdir }}/xinput1_3.dll"
+    [ -f "$game/.dg-ff7re-ffviihook" ] || { echo "nochange"; exit 0; }
+    if [ -e "$dest.dg-orig" ]; then mv -f "$dest.dg-orig" "$dest"; else rm -f "$dest"; fi
+    rm -f "$game/.dg-ff7re-ffviihook"
+    echo "ffviihook-reverted"
+  register: _ff7re_rev_hook
+  changed_when: "'ffviihook-reverted' in _ff7re_rev_hook.stdout"
+
+- name: Remove the Engine.ini tweak (restore original / let the game regenerate)
+  ansible.builtin.shell: |
+    set -eu
+    cfg={{ dg_ff7re_prefix_config | quote }}
+    marker={{ (dg_ff7re_game_dir + '/.dg-ff7re-engineini') | quote }}
+    [ -f "$marker" ] || { echo "nochange"; exit 0; }
+    if [ -e "$cfg/Engine.ini.dg-orig" ]; then
+      mv -f "$cfg/Engine.ini.dg-orig" "$cfg/Engine.ini"
+    else
+      rm -f "$cfg/Engine.ini"
+    fi
+    rm -f "$marker"
+    echo "engineini-reverted"
+  register: _ff7re_rev_ini
+  changed_when: "'engineini-reverted' in _ff7re_rev_ini.stdout"

@@ -26,7 +26,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Dark Souls Remastered | darksoulsremastered | `570940` | 3 | ✅ #293 (see below); #220 deferred, #7 dropped |
 | Elden Ring | eldenring | `1245620` | 1 | ✅ (see below) |
 | FINAL FANTASY VII REMAKE Intergrade | finalfantasy7remake | `1462040` | 5 | ✅ (see below) |
-| FINAL FANTASY VII REBIRTH | finalfantasy7rebirth | `2909400` | 7 | ✅ 5/7 (see below) |
+| FINAL FANTASY VII REBIRTH | finalfantasy7rebirth | `2909400` | 7 | ✅ 6/7 (see below) |
 | Grand Theft Auto V Enhanced | gta5enhanced | `3240220` | 7 | ⏸️ deferred (OpenIV/CodeWalker + SHV toolchain) |
 | GRANDIA HD Remaster | grandiahdremaster | `1034860` | 2 | ✅ (see below) |
 | Metal Gear Rising: Revengeance | metalgearrisingrevengeance | `235460` | 4 | ⏸️ deferred (TexMod/patcher/CE) |
@@ -340,7 +340,7 @@ ecosystem; all headless drops. Load order 49 → 52 → 19/122 → 110.
 | [110 Stillman Skippable](https://www.nexusmods.com/metalgearsolid2mc/mods/110) | `.gcx` → `assets/gcx/eu/_bp` | EU path; incompatible with JP language pack |
 | [10 Snake Hair Fix](https://www.nexusmods.com/metalgearsolid2mc/mods/10) | — | ⛔ omitted (redundant — 52 bundles it) |
 | [392 Gameplay Enhancement](https://www.nexusmods.com/finalfantasy7rebirth/mods/392) | — | ⏸️ deferred (12 sub-items to curate; conflicts with 61) |
-| [3 Ultimate Engine Tweaks](https://www.nexusmods.com/finalfantasy7rebirth/mods/3) | — | ⏸️ deferred (FFVIIHook DLL + prefix Engine.ini + launch override) |
+| [3 Ultimate Engine Tweaks](https://www.nexusmods.com/finalfantasy7rebirth/mods/3) | FFVIIHook + Engine.ini | ✅ now installed via `install_ff7rebirth_engine`: FFVIIHook (`xinput1_3.dll`) → `End/Binaries/Win64`, the **No-VRR** Engine.ini → the prefix's `AppData/Local/End/Saved/Config/Windows/`, launch option `WINEDLLOVERRIDES="xinput1_3=n,b" %command%`. Update FFVIIHook after game patches; re-run if the game regenerates Engine.ini. |
 
 ## ✅ MGS1 (Master Collection) — `install_mgs1mc_mods`
 

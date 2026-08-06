@@ -1,0 +1,133 @@
+---
+# FF7 Rebirth (appid 2909400) — FFVIIHook loader + Ultimate Engine Tweaks Engine.ini.
+# See group_vars/all/ff7rebirth_engine.yml and docs/nexusmods.md.
+
+- name: Revert FF7 Rebirth engine tweaks when requested
+  ansible.builtin.include_tasks: revert.yml
+  when: dg_ff7re_revert | bool
+
+- name: Install FFVIIHook + Engine.ini
+  when: not (dg_ff7re_revert | bool)
+  block:
+    - name: Locate FF7 Rebirth Binaries/Win64
+      ansible.builtin.stat:
+        path: "{{ dg_ff7re_game_dir }}/{{ dg_ff7re_win64_subdir }}/ff7rebirth_.exe"
+      register: _ff7re_game
+
+    - name: Fail when FF7 Rebirth is not found
+      ansible.builtin.fail:
+        msg: "{{ dg_ff7re_game_dir }} not found (appid {{ dg_ff7re_appid }}). See docs/nexusmods.md."
+      when: not _ff7re_game.stat.exists
+
+    - name: Download FFVIIHook + the Engine.ini via the Nexus API (Premium key)
+      ansible.builtin.command:
+        cmd: >-
+          {{ dg_project_root }}/scripts/nexus-download.py --game finalfantasy7rebirth
+          --mod {{ item.id }} --file {{ item.file }} --via api
+          --dest {{ (dg_ff7re_staging_root + '/' + item.id + '/' + item.file) | quote }}
+      loop:
+        - "{{ dg_ff7re_ffviihook }}"
+        - "{{ dg_ff7re_engineini }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _ff7re_dl
+      changed_when: "'saved' in _ff7re_dl.stdout"
+      failed_when: false
+      no_log: true
+      when: lookup('ansible.builtin.env', 'NEXUS_MODS_API_KEY') | length > 0
+
+    - name: Install FFVIIHook (xinput1_3.dll) into End/Binaries/Win64
+      ansible.builtin.shell: |
+        set -eu
+        game={{ dg_ff7re_game_dir | quote }}
+        win64="{{ dg_ff7re_win64_subdir }}"
+        marker="$game/.dg-ff7re-ffviihook"
+        [ -f "$marker" ] && { echo "skip"; exit 0; }
+        arch="$(find {{ (dg_ff7re_staging_root + '/' + dg_ff7re_ffviihook.id + '/' + dg_ff7re_ffviihook.file) | quote }} -type f \
+          \( -name '*.zip' -o -name '*.7z' -o -name '*.rar' \) | head -1)"
+        [ -n "$arch" ] || { echo "NO-ARCHIVE" >&2; exit 3; }
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        7z x -y -o"$tmp" "$arch" >/dev/null
+        dll="$(find "$tmp" -name xinput1_3.dll | head -1)"
+        [ -n "$dll" ] || { echo "NO-DLL" >&2; exit 4; }
+        dest="$game/$win64/xinput1_3.dll"
+        [ -e "$dest" ] && [ ! -e "$dest.dg-orig" ] && cp -a "$dest" "$dest.dg-orig" || true
+        cp -f "$dll" "$dest"
+        echo "installed" > "$marker"
+        echo "ffviihook-installed"
+      register: _ff7re_hook
+      changed_when: "'ffviihook-installed' in _ff7re_hook.stdout"
+
+    - name: Install the Ultimate Engine Tweaks Engine.ini into the prefix config
+      ansible.builtin.shell: |
+        set -eu
+        cfg={{ dg_ff7re_prefix_config | quote }}
+        marker={{ (dg_ff7re_game_dir + '/.dg-ff7re-engineini') | quote }}
+        [ -f "$marker" ] && { echo "skip"; exit 0; }
+        arch="$(find {{ (dg_ff7re_staging_root + '/' + dg_ff7re_engineini.id + '/' + dg_ff7re_engineini.file) | quote }} -type f \
+          \( -name '*.zip' -o -name '*.7z' -o -name '*.rar' \) | head -1)"
+        [ -n "$arch" ] || { echo "NO-ARCHIVE" >&2; exit 3; }
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        7z x -y -o"$tmp" "$arch" >/dev/null
+        ini="$(find "$tmp" -iname 'Engine.ini' | head -1)"
+        [ -n "$ini" ] || { echo "NO-INI" >&2; exit 4; }
+        mkdir -p "$cfg"
+        [ -e "$cfg/Engine.ini" ] && [ ! -e "$cfg/Engine.ini.dg-orig" ] && cp -a "$cfg/Engine.ini" "$cfg/Engine.ini.dg-orig" || true
+        cp -f "$ini" "$cfg/Engine.ini"
+        echo "installed" > "$marker"
+        echo "engineini-installed"
+      register: _ff7re_ini
+      changed_when: "'engineini-installed' in _ff7re_ini.stdout"
+
+    # --- Steam launch override (xinput1_3) ---
+    - name: Auto-discover the in-box Steam localconfig.vdf
+      ansible.builtin.find:
+        paths: "{{ dg_ff7re_steam_root }}/userdata"
+        patterns: localconfig.vdf
+        recurse: true
+      register: _ff7re_localconfigs
+      when: dg_ff7re_steam_localconfig | length == 0
+
+    - name: Resolve the localconfig path
+      ansible.builtin.set_fact:
+        _ff7re_localconfig: >-
+          {{ dg_ff7re_steam_localconfig if (dg_ff7re_steam_localconfig | length > 0)
+             else (_ff7re_localconfigs.files | map(attribute='path') | list | first
+                   if (_ff7re_localconfigs.files | default([]) | length == 1) else '') }}
+
+    - name: Check if Steam is running
+      ansible.builtin.shell: |
+        pgrep -u "$(id -u)" -x steam >/dev/null || pgrep -u "$(id -u)" -f '/steam(webhelper)?( |$)' >/dev/null
+      register: _ff7re_steam_running
+      changed_when: false
+      failed_when: false
+      check_mode: false
+      when: _ff7re_localconfig | length > 0
+
+    - name: Warn that the launch override was not set (Steam running)
+      ansible.builtin.debug:
+        msg: >-
+          Steam is running; the xinput1_3 override was NOT set. Set it manually
+          (FF7 Rebirth -> Launch Options -> {{ dg_ff7re_launch_options }}) or close
+          Steam and re-run. The files are installed.
+      when:
+        - _ff7re_localconfig | length > 0
+        - _ff7re_steam_running.rc == 0
+
+    - name: Set the FF7 Rebirth Steam launch options (xinput1_3 override)
+      ansible.builtin.command: >-
+        {{ dg_project_root }}/scripts/set-steam-launch-options.py
+        --localconfig {{ _ff7re_localconfig | quote }}
+        --set {{ dg_ff7re_appid | quote }} {{ dg_ff7re_launch_options | quote }}
+      register: _ff7re_launch
+      changed_when: "'changed: true' in _ff7re_launch.stdout"
+      when:
+        - _ff7re_localconfig | length > 0
+        - _ff7re_steam_running.rc != 0
+
+    - name: Report
+      ansible.builtin.debug:
+        msg:
+          - "FF7 Rebirth: FFVIIHook (xinput1_3.dll) + Ultimate Engine Tweaks Engine.ini installed."
+          - "{{ 'Launch override set.' if (_ff7re_localconfig | length > 0 and _ff7re_steam_running.rc != 0) else 'Set launch option manually: ' + dg_ff7re_launch_options }}"
+          - "If the game overwrites Engine.ini on first launch, re-run this role. Revert: -e dg_ff7re_revert=true."

@@ -40,6 +40,7 @@
     - { role: install_eldenring_mods,    tags: [eldenring_mods, never] }
     - { role: install_ff7remake_mods,    tags: [ff7remake_mods, never] }
     - { role: install_ff7rebirth_mods,   tags: [ff7rebirth_mods, never] }
+    - { role: install_ff7rebirth_engine, tags: [ff7rebirth_engine, never] }
     - { role: install_grandia_mods,      tags: [grandia_mods, never] }
     - { role: install_mgsdelta_mods,     tags: [mgsdelta_mods, never] }
     - { role: install_mgs3mc_mods,       tags: [mgs3mc_mods, never] }
