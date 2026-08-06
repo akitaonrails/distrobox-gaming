@@ -1,0 +1,29 @@
+# Red Dead Redemption ASI mods — opt-in role install_rdr_asi. See docs/nexusmods.md.
+# appid 2668510 (USB library). Un-defers the ASI-loader RDR mods: RDRFix (719).
+#
+# RDR PC has no built-in ASI loader, so we drop Ultimate ASI Loader's dinput8.dll
+# next to RDR.exe (proven under Proton with WINEDLLOVERRIDES="dinput8=n,b"); it
+# then loads any *.asi in the game root — here RDRFix (intro skip, FPS-cap
+# removal, ultrawide black-bar fix, physics timestep fix, post-fx toggles).
+
+dg_rdr_asi_appid: "2668510"
+dg_rdr_asi_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+dg_rdr_asi_game_dir: "{{ dg_rdr_asi_steam_library_root }}/steamapps/common/Red Dead Redemption"
+
+dg_rdr_asi_steam_root: "{{ dg_box_home }}/.local/share/Steam"
+dg_rdr_asi_launch_options: 'WINEDLLOVERRIDES="dinput8=n,b" %command%'
+dg_rdr_asi_steam_localconfig: ""
+
+# Ultimate ASI Loader (ThirteenAG) — x64 build ships as dinput8.dll.
+dg_rdr_asi_ual_url: "https://github.com/ThirteenAG/Ultimate-ASI-Loader/releases/download/v9.7.2/Ultimate-ASI-Loader_x64.zip"
+dg_rdr_asi_ual_asset: "Ultimate-ASI-Loader_x64.zip"
+dg_rdr_asi_ual_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/_loaders/ualoader"
+dg_rdr_asi_ual_dll: "dinput8.dll"
+
+dg_rdr_asi_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/rdr"
+dg_rdr_asi_mods:
+  - { id: "719", file: "1596", name: "RDRFix" }
+
+dg_rdr_asi_revert: false

@@ -1,0 +1,40 @@
+---
+# Remove RDRFix + the ASI loader from the RDR game root.
+
+- name: Remove each ASI mod via its manifest
+  ansible.builtin.shell: |
+    set -eu
+    game={{ dg_rdr_asi_game_dir | quote }}
+    manifest="$game/.dg-rdr-asi-{{ item.id }}.manifest"
+    [ -f "$manifest" ] || { echo "nochange"; exit 0; }
+    while IFS= read -r name; do
+      [ -n "$name" ] || continue
+      if [ -e "$game/$name.dg-orig" ]; then
+        mv -f "$game/$name.dg-orig" "$game/$name"
+      else
+        rm -f "$game/$name"
+      fi
+    done < "$manifest"
+    rm -f "$manifest"
+    echo "asi-reverted"
+  loop: "{{ dg_rdr_asi_mods }}"
+  loop_control:
+    label: "{{ item.id }} {{ item.name }}"
+  register: _rdra_rev_mod
+  changed_when: "'asi-reverted' in _rdra_rev_mod.stdout"
+
+- name: Remove the ASI loader
+  ansible.builtin.shell: |
+    set -eu
+    game={{ dg_rdr_asi_game_dir | quote }}
+    dll="{{ dg_rdr_asi_ual_dll }}"
+    [ -f "$game/.dg-rdr-asi-loader" ] || { echo "nochange"; exit 0; }
+    if [ -e "$game/$dll.dg-orig" ]; then
+      mv -f "$game/$dll.dg-orig" "$game/$dll"
+    else
+      rm -f "$game/$dll"
+    fi
+    rm -f "$game/RDRFix.log" "$game/.dg-rdr-asi-loader"
+    echo "loader-reverted"
+  register: _rdra_rev_loader
+  changed_when: "'loader-reverted' in _rdra_rev_loader.stdout"

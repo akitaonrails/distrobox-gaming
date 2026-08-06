@@ -36,7 +36,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | MGSV: Ground Zeroes | metalgearsolidvgz | `311340` | 2 | ⏸️ deferred (GzsTool/CE) |
 | MGS1 (Master Collection) | metalgearsolidmc | `2131630` | 2 | ✅ 1/2 (see below) |
 | MGSV: The Phantom Pain | metalgearsolidvtpp | `287700` | 5 | ⏸️ deferred (SnakeBite) |
-| Red Dead Redemption | reddeadredemption | `2668510` | 11 | ✅ 2/11 (see below) |
+| Red Dead Redemption | reddeadredemption | `2668510` | 11 | ✅ 3/11 (see below) |
 | Red Dead Redemption 2 | reddeadredemption2 | `1174180` | 13 | ⏸️ deferred (ScriptHook/LML) |
 | Resident Evil 4 (2023 Remake) | residentevil42023 | `2050650` | 2 | ✅ 2/2 (see below) |
 | Resident Evil 2 (2019) | residentevil22019 | `883710` | 3 | ✅ 1/3 (see below) |
@@ -77,6 +77,7 @@ in like the bundled `dinput8` hooks — these un-defer the loader-dependent mods
 | **REFramework** (praydog, universal RE Engine `dinput8.dll`) | `install_reframework` (tag `reframework`) | RE Village 651 Infinite Ammo; RE Requiem 25 Inf Ammo/HP (+aim-assist/auto-parry) & 100 Infinite CP. Loader staged on NAS under `NexusMods/_loaders/reframework/`; Lua drops into `<game>/reframework/autorun/`; launch option `WINEDLLOVERRIDES="dinput8=n,b" %command%`. |
 | **UE4SS** (RE-UE4SS, `dwmapi.dll` UE4/5 script loader) | `install_ue4ss` (tag `ue4ss`) | RoboCop 2 Ultra Plus (self-contained — the Steam file bundles UE4SS); TXR 87 Ultradynamic (UE4SS core v3.0.1 + mod `Mods/` overlay). Core staged under `NexusMods/_loaders/ue4ss/`; installs into `<game>/…/Binaries/Win64`; launch option `WINEDLLOVERRIDES="dwmapi=n,b" %command%`. Watch: use the game's **Steam/Win64** mod file, not the Game Pass/WinGDK one. |
 | **Sekiro Mod Engine** (katalash, `dinput8.dll` + `modengine.ini`) | `install_sekiro_modengine` (tag `sekiro_modengine`) | Sekiro 418 The Easy (param override from `<game>/mods/`). ModEngine2 does **not** support Sekiro; this original ModEngine chainloads the Weapon Wheel (`chainDInput8DLLPath="\weaponwheel.dll"`) so both run. Revert before `install_sekiro_mods`. |
+| **Ultimate ASI Loader** (ThirteenAG, x64 `dinput8.dll`) | `install_rdr_asi` (tag `rdr_asi`) | RDR 719 RDRFix (`.asi` next to `RDR.exe`). Loader staged under `NexusMods/_loaders/ualoader/`; launch option `WINEDLLOVERRIDES="dinput8=n,b" %command%`. Generic ASI host — reusable for other `.asi` mods. |
 
 ### 🖱️ GUI mod-manager tools (staged; manual pass)
 
@@ -371,7 +372,7 @@ replacement archive are clean drop-ins — the role backs up each original as
 | [66 SMIC Textures](https://www.nexusmods.com/reddeadredemption/mods/66) | — | ⏸️ deferred — loose `.wtd`, needs MagicRDR injection into a parent `.rpf` |
 | [303 Fast Horse](https://www.nexusmods.com/reddeadredemption/mods/303) | — | ⏸️ deferred — `hrssimtune.xml`, needs MagicRDR injection (pick the "Fast horse" MAIN vs Faster/Fastest variants) |
 | [140 Unlimited Deadeye](https://www.nexusmods.com/reddeadredemption/mods/140) | — | ⏸️ deferred — `playertune.xml`, needs MagicRDR injection |
-| [719 RDRFix](https://www.nexusmods.com/reddeadredemption/mods/719) | — | ⏸️ deferred — `.asi` (SkipIntro/UnlockFPS/no-letterbox); needs an **ASI loader** (Ultimate ASI Loader) under Proton |
+| [719 RDRFix](https://www.nexusmods.com/reddeadredemption/mods/719) | ASI (via `install_rdr_asi`) | ✅ now installed — Ultimate ASI Loader (`dinput8.dll`) + `RDRFix.asi`/`.ini` next to `RDR.exe`; launch option `WINEDLLOVERRIDES="dinput8=n,b" %command%`. v1.3 (intro skip, FPS-cap removal, ultrawide bars, physics-timestep fix, post-fx toggles). Edit `RDRFix.ini`. The more complete of the "similar" fixes (supersedes FusionFix). |
 | [475 Basic Trainer](https://www.nexusmods.com/reddeadredemption/mods/475) | — | ⏸️ deferred — `.red` script, needs a mod-menu/script loader |
 | [114 Starter Save](https://www.nexusmods.com/reddeadredemption/mods/114) · [515 100% Saves](https://www.nexusmods.com/reddeadredemption/mods/515) | — | ⏸️ manual — user save data (repo Safety: never overwrite saves) |
 

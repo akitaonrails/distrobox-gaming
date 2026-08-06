@@ -46,6 +46,7 @@
     - { role: install_mgs2mc_mods,       tags: [mgs2mc_mods, never] }
     - { role: install_mgs1mc_mods,       tags: [mgs1mc_mods, never] }
     - { role: install_rdr_mods,          tags: [rdr_mods, never] }
+    - { role: install_rdr_asi,           tags: [rdr_asi, never] }
     - { role: install_re4r_mods,         tags: [re4r_mods, never] }
     - { role: install_re2_mods,          tags: [re2_mods, never] }
     - { role: install_re3_mods,          tags: [re3_mods, never] }
