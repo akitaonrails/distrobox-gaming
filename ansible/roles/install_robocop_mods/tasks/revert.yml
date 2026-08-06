@@ -1,0 +1,21 @@
+---
+# Remove each RoboCop ~mods pak triplet using its recorded manifest.
+
+- name: Remove each installed pak via its manifest
+  ansible.builtin.shell: |
+    set -eu
+    game={{ dg_robocop_game_dir | quote }}
+    mods_dir="$game/{{ dg_robocop_mods_subdir }}"
+    manifest="$game/.dg-robocop-{{ item.id }}.manifest"
+    [ -f "$manifest" ] || { echo "nochange"; exit 0; }
+    while IFS= read -r f; do
+      [ -n "$f" ] && rm -f "$mods_dir/$f"
+    done < "$manifest"
+    rm -f "$manifest"
+    rmdir "$mods_dir" 2>/dev/null || true
+    echo "robocop-reverted"
+  loop: "{{ dg_robocop_mods }}"
+  loop_control:
+    label: "{{ item.id }} {{ item.name }}"
+  register: _rc_revert
+  changed_when: "'robocop-reverted' in _rc_revert.stdout"

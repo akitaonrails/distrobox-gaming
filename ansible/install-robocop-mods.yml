@@ -1,0 +1,7 @@
+---
+- name: Install the RoboCop Rogue City NexusMods set
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_robocop_mods

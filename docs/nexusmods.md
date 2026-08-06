@@ -45,7 +45,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Resident Evil Village | residentevilvillage | `1196590` | 4 | ✅ 2/4 (see below) |
 | Resident Evil 4 (2005) | residentevil4 | `254700` | 2 | ✅ re4_tweaks 1.9.1 via install_re4_hd (mod 306 dropped — 2007-port `game.exe`, not the Steam UHD `bio4.exe`) |
 | Resident Evil 0 (HD Remaster) | residentevil0biohazard0hdremaster | `339340` | 2 | ✅ 1/2 (see below) |
-| RoboCop: Rogue City | robocoproguecity | `1681430` | 8 | ⏳ |
+| RoboCop: Rogue City | robocoproguecity | `1681430` | 8 | ✅ 5/8 (see below) |
 | Sekiro: Shadows Die Twice | sekiro | `814380` | 2 | ⏳ |
 | Marvel's Spider-Man Remastered | marvelsspidermanremastered | `1817070` | 8 | ⏳ |
 | Marvel's Spider-Man: Miles Morales | spidermanmilesmorales | `1817190` | 6 | ⏳ |
@@ -384,4 +384,18 @@ archives — so the mod installs by copying its `nativePC/` tree in (manifest-tr
 |---|---|---|
 | [39 Item Box](https://www.nexusmods.com/residentevil0biohazard0hdremaster/mods/39) | `nativePC/` overlay | v0.5.2; adds a shared item box (8 `nativePC/arc/message/msg_*_box.arc` files) |
 | [58 re0ct](https://www.nexusmods.com/residentevil0biohazard0hdremaster/mods/58) | — | ⏸️ manual — **Cheat Engine table** (`re0hd_v14.CT`); needs the Cheat Engine GUI under Proton |
+
+## ✅ RoboCop: Rogue City — `install_robocop_mods`
+
+Role: `install_robocop_mods` · appid `1681430` (USB library). UE5 game — loads
+loose `.pak`/`.ucas`/`.utoc` triplets from `Game/Content/Paks/~mods/`, so these
+install headlessly by dropping the triplet in (manifest-tracked).
+
+| Mod | Type | Notes |
+|---|---|---|
+| [1 No-Intro / Splash Fix](https://www.nexusmods.com/robocoproguecity/mods/1) | `~mods` pak | v0.3; skips startup logos |
+| [43 Old Man](https://www.nexusmods.com/robocoproguecity/mods/43) · [44 Casey Wong](https://www.nexusmods.com/robocoproguecity/mods/44) · [47 Sgt Reed](https://www.nexusmods.com/robocoproguecity/mods/47) · [50 Anne Lewis](https://www.nexusmods.com/robocoproguecity/mods/50) | `~mods` pak triplet | movie-accurate voice packs (`_P.pak` + `.ucas` + `.utoc`) |
+| [7 Performance & Lighting](https://www.nexusmods.com/robocoproguecity/mods/7) | — | ⏸️ deferred — `Engine.ini`/`GameUserSettings.ini`/`Scalability.ini` config overlay; prefix-dependent and clobbers the user's own graphics settings |
+| [2 Ultra Plus](https://www.nexusmods.com/robocoproguecity/mods/2) | — | ⏸️ deferred — **UE4SS** Lua mod (needs the UE4SS injector); current file is the Game Pass/WinGDK build, wrong for the Steam Win64 build |
+| [49 New Game Plus](https://www.nexusmods.com/robocoproguecity/mods/49) | — | ⏸️ manual — `.sav` **save files** (repo Safety: never overwrite saves) |
 

@@ -1,0 +1,32 @@
+# RoboCop: Rogue City mod set — opt-in role install_robocop_mods.
+# Generated via the nexus-mod-set skill. See docs/nexusmods.md. appid 1681430.
+#
+# UE5 game: loads loose paks from Game/Content/Paks/~mods/ (the IoStore
+# .pak/.ucas/.utoc triplets), so these install headlessly by dropping the triplet
+# into that folder. USB Steam library.
+#
+# Installed: 1 No-Intro + the 4 movie-voice packs (43/44/47/50). Excluded:
+#   7  Performance & Lighting -> Engine.ini/GameUserSettings/Scalability config
+#      overlay; prefix-dependent + clobbers the user's own graphics settings.
+#   2  Ultra Plus -> UE4SS Lua mod (needs the UE4SS injector); the current file
+#      is the Game Pass/WinGDK build, wrong for the Steam Win64 build.
+#   49 New Game Plus -> .sav SAVE files — manual (repo Safety: never touch saves).
+
+dg_robocop_appid: "1681430"
+
+dg_robocop_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+dg_robocop_game_dir: "{{ dg_robocop_steam_library_root }}/steamapps/common/Robocop Rogue City"
+dg_robocop_mods_subdir: "Game/Content/Paks/~mods"
+
+dg_robocop_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/robocop"
+
+dg_robocop_mods:
+  - { id: "1",  file: "246", name: "No-Intro / Splash Fix" }
+  - { id: "43", file: "89",  name: "Old Man Movie Voice" }
+  - { id: "44", file: "92",  name: "Casey Wong Movie Voice" }
+  - { id: "47", file: "108", name: "Sgt Reed Movie Voice" }
+  - { id: "50", file: "117", name: "Anne Lewis Movie Voice" }
+
+dg_robocop_revert: false
