@@ -40,7 +40,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Red Dead Redemption 2 | reddeadredemption2 | `1174180` | 13 | ⏸️ deferred (ScriptHook/LML) |
 | Resident Evil 4 (2023 Remake) | residentevil42023 | `2050650` | 2 | ✅ 2/2 (see below) |
 | Resident Evil 2 (2019) | residentevil22019 | `883710` | 3 | ✅ 1/3 (see below) |
-| Resident Evil 3 (2020) | residentevil32020 | `952060` | 1 | ⏳ |
+| Resident Evil 3 (2020) | residentevil32020 | `952060` | 1 | ✅ 1/1 (see below) |
 | Resident Evil Requiem | residentevilrequiem | `3764200` | 3 | ⏳ |
 | Resident Evil Village | residentevilvillage | `1196590` | 4 | ⏳ |
 | Resident Evil 4 (2005) | residentevil4 | `254700` | 2 | ✅ re4_tweaks 1.9.1 via install_re4_hd (mod 306 dropped — wrong port) |
@@ -342,4 +342,13 @@ USB). Same RE Engine Fluffy natives/pak handler as RE4R.
 |---|---|---|
 | [1627 Infinite Ammo](https://www.nexusmods.com/residentevil22019/mods/1627) | `natives/` overlay | v1.1 (2024); `natives/stm/...` — RT-build compatible |
 | [182 Weapon & Ammo Overhaul](https://www.nexusmods.com/residentevil22019/mods/182) · [205 Full Pack Ammo](https://www.nexusmods.com/residentevil22019/mods/205) | — | ⏭️ skipped — 2019-era, use the legacy `natives/x64/` layout + old `.scn.19` scene files that the current **ray-tracing build ignores** (it reads `natives/stm/`). Revisit only on the `raytracing_off` classic branch; 182 also needs a variant pick (WAO full-pack vs less-ammo vs keyitem). |
+
+## ✅ Resident Evil 3 (2020) — `install_re3_mods`
+
+Role: `install_re3_mods` · appid `952060` (**box** Steam library). Same RE Engine
+Fluffy handler.
+
+| Mod | Type | Notes |
+|---|---|---|
+| [990 Infinite Ammo](https://www.nexusmods.com/residentevil32020/mods/990) | `natives/` overlay | pinned the **`1.0-RT`** file (3405) → `natives/stm/` for the ray-tracing build (the non-RT file 3407 targets the classic branch) |
 

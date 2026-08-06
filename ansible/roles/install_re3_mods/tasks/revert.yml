@@ -1,0 +1,20 @@
+---
+# Remove each RE3 overlay using its recorded manifest.
+
+- name: Remove each installed overlay via its manifest
+  ansible.builtin.shell: |
+    set -eu
+    game={{ dg_re3_game_dir | quote }}
+    manifest="$game/.dg-re3-{{ item.id }}.manifest"
+    [ -f "$manifest" ] || { echo "nochange"; exit 0; }
+    while IFS= read -r f; do
+      [ -n "$f" ] && rm -f "$game/$f"
+    done < "$manifest"
+    rm -f "$manifest"
+    [ -d "$game/natives" ] && find "$game/natives" -type d -empty -delete 2>/dev/null || true
+    echo "re3-reverted"
+  loop: "{{ dg_re3_mods }}"
+  loop_control:
+    label: "{{ item.id }} {{ item.name }}"
+  register: _re3_revert
+  changed_when: "'re3-reverted' in _re3_revert.stdout"

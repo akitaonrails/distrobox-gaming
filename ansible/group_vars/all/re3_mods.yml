@@ -1,0 +1,21 @@
+# Resident Evil 3 (2020) mod set — opt-in role install_re3_mods.
+# Generated via the nexus-mod-set skill. See docs/nexusmods.md. appid 952060.
+#
+# Same RE Engine Fluffy mechanism as install_re4r_mods. RE3 is in the BOX Steam
+# library (not USB) — library root hardcoded. Mod 990 ships two MAIN files; we
+# pin the "1.0-RT" one (file 3405, natives/stm) for the current ray-tracing build.
+
+dg_re3_appid: "952060"
+
+dg_re3_steam_library_root: "{{ dg_box_home }}/.local/share/Steam"
+dg_re3_game_dir: "{{ dg_re3_steam_library_root }}/steamapps/common/RE3"
+
+dg_re3_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/re3"
+
+dg_re3_mods:
+  - id: "990"
+    file: "3405"
+    name: "Infinite Ammo (RT)"
+    variant: ""
+
+dg_re3_revert: false
