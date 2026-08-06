@@ -1,0 +1,7 @@
+---
+- name: Install the MGS Delta Snake Eater NexusMods set
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_mgsdelta_mods

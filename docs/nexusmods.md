@@ -30,7 +30,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Grand Theft Auto V Enhanced | gta5enhanced | `3240220` | 7 | ⏸️ deferred (OpenIV/CodeWalker + SHV toolchain) |
 | GRANDIA HD Remaster | grandiahdremaster | `1034860` | 2 | ✅ (see below) |
 | Metal Gear Rising: Revengeance | metalgearrisingrevengeance | `235460` | 4 | ⏸️ deferred (TexMod/patcher/CE) |
-| MGS Δ: Snake Eater | metalgearsoliddeltasnakeeater | `2417610` | 3 | ⏳ |
+| MGS Δ: Snake Eater | metalgearsoliddeltasnakeeater | `2417610` | 3 | ✅ (see below) |
 | MGS3 (Master Collection) | metalgearsolid3mc | `2131650` | 3 | ⏳ |
 | MGS2 (Master Collection) | metalgearsolid2mc | `2131640` | 6 | ⏳ |
 | MGSV: Ground Zeroes | metalgearsolidvgz | `311340` | 2 | ⏳ |
@@ -238,6 +238,17 @@ Role: `install_grandia_mods` · appid `1034860` (USB library). Loose-file ops on
 |---|---|---|
 | [1 Actual HD Textures](https://www.nexusmods.com/grandiahdremaster/mods/1) | HD PNG atlases | overlaid into `content/FIELD/` |
 | [2 Texture Picker + Intro Skip](https://www.nexusmods.com/grandiahdremaster/mods/2) | filter/intro toggle (.bat) | reimplemented natively: `dg_grandia_remove_filters` (move filter data → `_backup`, sharp originals) + `dg_grandia_skip_intro` |
+
+## ✅ MGS Δ: Snake Eater — `install_mgsdelta_mods`
+
+Role: `install_mgsdelta_mods` · appid `2417610` (USB library, UE5). Three
+mechanisms, all headless.
+
+| Mod | Type | Notes |
+|---|---|---|
+| [17 Camera Tweaks](https://www.nexusmods.com/metalgearsoliddeltasnakeeater/mods/17) | UE5 pak → `~mods` | `dg_mgsdelta_camera_variant` = `117` Camera FoV (default) / `119` / `118`; `dg_mgsdelta_install_guns_scope` optional |
+| [27 MGSDeltaFix](https://www.nexusmods.com/metalgearsoliddeltasnakeeater/mods/27) | ASI (`dsound.dll`) → Binaries/Win64 | needs launch option `WINEDLLOVERRIDES="dsound=n,b" %command%` |
+| [14 Ultimate Engine Tweaks](https://www.nexusmods.com/metalgearsoliddeltasnakeeater/mods/14) | `Engine.ini` → Proton prefix (read-only) | needs the prefix (launch game once first); No-VRR default |
 | [392 Gameplay Enhancement](https://www.nexusmods.com/finalfantasy7rebirth/mods/392) | — | ⏸️ deferred (12 sub-items to curate; conflicts with 61) |
 | [3 Ultimate Engine Tweaks](https://www.nexusmods.com/finalfantasy7rebirth/mods/3) | — | ⏸️ deferred (FFVIIHook DLL + prefix Engine.ini + launch override) |
 

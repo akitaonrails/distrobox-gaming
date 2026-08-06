@@ -1,0 +1,38 @@
+# MGS Delta: Snake Eater mod set (opt-in role install_mgsdelta_mods). Generated
+# via the nexus-mod-set skill. See docs/nexusmods.md. UE5 game (appid 2417610).
+# Note the doubled folder: common/MGSDelta/MGSDelta/ is the UE project root.
+#
+# Three mechanisms, all headless:
+#  - 17 Camera Tweaks: UE5 pak -> Content/Paks/~mods/ (variant choice).
+#  - 27 MGSDeltaFix: Ultimate ASI Loader (dsound.dll) + .asi -> Binaries/Win64/,
+#    plus the Proton launch override WINEDLLOVERRIDES="dsound=n,b".
+#  - 14 Ultimate Engine Tweaks: Engine.ini into the Proton PREFIX config dir,
+#    set read-only. Needs the prefix to exist (launch the game once first).
+
+dg_mgsdelta_appid: "2417610"
+
+dg_mgsdelta_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+dg_mgsdelta_game_dir: "{{ dg_mgsdelta_steam_library_root }}/steamapps/common/MGSDelta/MGSDelta"
+dg_mgsdelta_paks_mods_dir: "{{ dg_mgsdelta_game_dir }}/Content/Paks/~mods"
+dg_mgsdelta_win64_dir: "{{ dg_mgsdelta_game_dir }}/Binaries/Win64"
+dg_mgsdelta_prefix_config_dir: "{{ dg_mgsdelta_steam_library_root }}/steamapps/compatdata/{{ dg_mgsdelta_appid }}/pfx/drive_c/users/steamuser/AppData/Local/MGSDelta/Saved/Config/Windows"
+
+dg_mgsdelta_steam_root: "{{ dg_box_home }}/.local/share/Steam"
+dg_mgsdelta_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/mgsdelta"
+
+# Mod 17 Camera Tweaks main variant (pick one): "117" Camera FoV (widened, default),
+# "119" Farther Camera (vanilla FoV), "118" Even Farther Camera.
+dg_mgsdelta_camera_variant: "117"
+dg_mgsdelta_install_guns_scope: false      # optional add-on pak 116
+
+# Mod 14 Engine.ini variant: match "No VRR" (default) or "VRR" in the filename.
+dg_mgsdelta_engine_variant: "No VRR"
+
+# Mod 27 needs Proton to load the ASI loader's dsound.dll.
+dg_mgsdelta_launch_options: 'WINEDLLOVERRIDES="dsound=n,b" %command%'
+dg_mgsdelta_steam_localconfig: ""
+dg_mgsdelta_stop_steam: false
+
+dg_mgsdelta_revert: false

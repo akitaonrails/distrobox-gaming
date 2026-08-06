@@ -1,0 +1,52 @@
+---
+# Remove MGS Delta mods: MGSDeltaFix (Win64), camera paks (~mods), Engine.ini
+# (prefix), and markers; clear the launch option.
+
+- name: Remove MGS Delta mod files
+  ansible.builtin.shell: |
+    set -eu
+    game={{ dg_mgsdelta_game_dir | quote }}
+    win64={{ dg_mgsdelta_win64_dir | quote }}
+    mods={{ dg_mgsdelta_paks_mods_dir | quote }}
+    rm -f "$win64/dsound.dll" "$win64/MGSDeltaFix.asi" "$win64/MGSDeltaFix.ini" "$game/.dg-mgsdelta-fix"
+    for mk in "$game"/.dg-mgsdelta-camera-*; do
+      [ -f "$mk" ] || continue
+      while IFS= read -r stem; do
+        [ -n "$stem" ] && for ext in pak ucas utoc; do rm -f "$mods/$stem.$ext"; done
+      done < "$mk"
+      rm -f "$mk"
+    done
+    reg={{ (dg_mgsdelta_prefix_config_dir + '/Engine.ini') | quote }}
+    if [ -f "$reg" ]; then chmod 0644 "$reg" 2>/dev/null || true; rm -f "$reg"; fi
+    echo reverted
+  register: _mgd_rv
+  changed_when: "'reverted' in _mgd_rv.stdout"
+
+- name: Auto-discover the in-box Steam localconfig.vdf (revert)
+  ansible.builtin.find:
+    paths: "{{ dg_mgsdelta_steam_root }}/userdata"
+    patterns: localconfig.vdf
+    recurse: true
+  register: _mgd_rv_localconfigs
+  when: dg_mgsdelta_steam_localconfig | length == 0
+
+- name: Resolve localconfig for revert
+  ansible.builtin.set_fact:
+    _mgd_rv_localconfig: >-
+      {{ dg_mgsdelta_steam_localconfig if (dg_mgsdelta_steam_localconfig | length > 0)
+         else (_mgd_rv_localconfigs.files | map(attribute='path') | list | first
+               if (_mgd_rv_localconfigs.files | default([]) | length == 1) else '') }}
+
+- name: Clear the MGS Delta launch options (best effort)
+  ansible.builtin.command: >-
+    {{ dg_project_root }}/scripts/set-steam-launch-options.py
+    --localconfig {{ _mgd_rv_localconfig | quote }}
+    --set {{ dg_mgsdelta_appid | quote }} ""
+  register: _mgd_rv_launch
+  changed_when: "'changed: true' in _mgd_rv_launch.stdout"
+  failed_when: false
+  when: _mgd_rv_localconfig | length > 0
+
+- name: Report revert
+  ansible.builtin.debug:
+    msg: "MGS Delta mods reverted (MGSDeltaFix + camera paks + Engine.ini removed)."

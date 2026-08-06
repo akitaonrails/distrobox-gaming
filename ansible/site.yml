@@ -41,6 +41,7 @@
     - { role: install_ff7remake_mods,    tags: [ff7remake_mods, never] }
     - { role: install_ff7rebirth_mods,   tags: [ff7rebirth_mods, never] }
     - { role: install_grandia_mods,      tags: [grandia_mods, never] }
+    - { role: install_mgsdelta_mods,     tags: [mgsdelta_mods, never] }
     - { role: steam_lib32_nvidia,        tags: [steam_lib32_nvidia, never] }
     - { role: steam_trainers,            tags: [steam_trainers, never] }
     - { role: install_render96ex,        tags: [render96ex, never] }

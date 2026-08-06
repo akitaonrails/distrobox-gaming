@@ -1,0 +1,204 @@
+---
+# MGS Delta: Snake Eater (appid 2417610) mod set — pak + ASI + prefix Engine.ini.
+# See group_vars/all/mgsdelta_mods.yml and docs/nexusmods.md.
+
+- name: Revert the MGS Delta mod set when requested
+  ansible.builtin.include_tasks: revert.yml
+  when: dg_mgsdelta_revert | bool
+
+- name: Install the MGS Delta mod set
+  when: not (dg_mgsdelta_revert | bool)
+  block:
+    - name: Locate the MGS Delta Win64 dir
+      ansible.builtin.stat:
+        path: "{{ dg_mgsdelta_win64_dir }}"
+      register: _mgd_win64
+
+    - name: Fail when MGS Delta is not found
+      ansible.builtin.fail:
+        msg: >-
+          {{ dg_mgsdelta_win64_dir }} not found (appid {{ dg_mgsdelta_appid }}).
+          Install the game + mount the USB library, or override
+          dg_mgsdelta_steam_library_root. See docs/nexusmods.md.
+      when: not _mgd_win64.stat.exists
+
+    - name: Ensure the ~mods folder exists
+      ansible.builtin.file:
+        path: "{{ dg_mgsdelta_paks_mods_dir }}"
+        state: directory
+        mode: "0755"
+
+    # --- Mod 17: Camera Tweaks (pak into ~mods) ---
+
+    - name: Download Camera Tweaks (+ optional Guns Scope) via the Nexus API
+      ansible.builtin.command:
+        cmd: >-
+          {{ dg_project_root }}/scripts/nexus-download.py
+          --game metalgearsoliddeltasnakeeater --mod 17 --file {{ item }} --via api
+          --dest {{ (dg_mgsdelta_staging_root + '/17-camera-' + item) | quote }}
+      loop: "{{ [dg_mgsdelta_camera_variant] + (['116'] if (dg_mgsdelta_install_guns_scope | bool) else []) }}"
+      loop_control:
+        label: "mod 17 file {{ item }}"
+      register: _mgd_cam_dl
+      changed_when: "'saved' in _mgd_cam_dl.stdout"
+      failed_when: false
+      no_log: true
+      when: lookup('ansible.builtin.env', 'NEXUS_MODS_API_KEY') | length > 0
+
+    - name: Install Camera Tweaks paks into ~mods/
+      ansible.builtin.shell: |
+        set -eu
+        marker="{{ dg_mgsdelta_game_dir }}/.dg-mgsdelta-camera-{{ item }}"
+        [ -f "$marker" ] && { echo "skip {{ item }}"; exit 0; }
+        d="{{ dg_mgsdelta_staging_root }}/17-camera-{{ item }}"
+        arch="$(find "$d" -maxdepth 1 -type f \( -name '*.zip' -o -name '*.7z' -o -name '*.rar' \) | head -1)"
+        [ -n "$arch" ] || { echo "not staged {{ item }}"; exit 5; }
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        7z x -y -o"$tmp" "$arch" >/dev/null
+        find "$tmp" \( -name '*.pak' -o -name '*.ucas' -o -name '*.utoc' \) -exec cp -f {} {{ dg_mgsdelta_paks_mods_dir | quote }}/ \;
+        find "$tmp" -name '*.pak' -exec basename {} .pak \; > "$marker"
+        echo "installed camera {{ item }}"
+      loop: "{{ [dg_mgsdelta_camera_variant] + (['116'] if (dg_mgsdelta_install_guns_scope | bool) else []) }}"
+      loop_control:
+        label: "camera {{ item }}"
+      register: _mgd_cam
+      changed_when: "'installed' in _mgd_cam.stdout"
+
+    # --- Mod 27: MGSDeltaFix (ASI into Binaries/Win64) ---
+
+    - name: Download MGSDeltaFix via the Nexus API
+      ansible.builtin.command:
+        cmd: >-
+          {{ dg_project_root }}/scripts/nexus-download.py
+          --game metalgearsoliddeltasnakeeater --mod 27 --via api
+          --dest {{ (dg_mgsdelta_staging_root + '/27-mgsdeltafix') | quote }}
+      register: _mgd_fix_dl
+      changed_when: "'saved' in _mgd_fix_dl.stdout"
+      failed_when: false
+      no_log: true
+      when: lookup('ansible.builtin.env', 'NEXUS_MODS_API_KEY') | length > 0
+
+    - name: Check MGSDeltaFix marker
+      ansible.builtin.stat:
+        path: "{{ dg_mgsdelta_game_dir }}/.dg-mgsdelta-fix"
+      register: _mgd_fix_marker
+
+    - name: Install MGSDeltaFix into Binaries/Win64
+      ansible.builtin.shell: |
+        set -eu
+        arch="$(find {{ (dg_mgsdelta_staging_root + '/27-mgsdeltafix') | quote }} -maxdepth 1 -type f -name '*.zip' | head -1)"
+        [ -n "$arch" ] || { echo "not staged"; exit 5; }
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        7z x -y -o"$tmp" "$arch" >/dev/null
+        rsync -a "$tmp"/ {{ dg_mgsdelta_win64_dir | quote }}/
+        echo "mgsdeltafix-installed"
+      register: _mgd_fix
+      changed_when: "'mgsdeltafix-installed' in _mgd_fix.stdout"
+      when: not _mgd_fix_marker.stat.exists
+
+    - name: Write MGSDeltaFix marker
+      ansible.builtin.copy:
+        dest: "{{ dg_mgsdelta_game_dir }}/.dg-mgsdelta-fix"
+        content: "MGSDeltaFix installed into Binaries/Win64\n"
+        mode: "0644"
+      when: not _mgd_fix_marker.stat.exists
+
+    # --- Mod 14: Ultimate Engine Tweaks (Engine.ini into the prefix) ---
+
+    - name: Download Ultimate Engine Tweaks (both VRR/No-VRR) via the Nexus API
+      ansible.builtin.command:
+        cmd: >-
+          {{ dg_project_root }}/scripts/nexus-download.py
+          --game metalgearsoliddeltasnakeeater --mod 14 --via api
+          --dest {{ (dg_mgsdelta_staging_root + '/14-engine') | quote }}
+      register: _mgd_eng_dl
+      changed_when: "'saved' in _mgd_eng_dl.stdout"
+      failed_when: false
+      no_log: true
+      when: lookup('ansible.builtin.env', 'NEXUS_MODS_API_KEY') | length > 0
+
+    - name: Check the Proton prefix config dir exists (game launched once)
+      ansible.builtin.stat:
+        path: "{{ dg_mgsdelta_prefix_config_dir | dirname | dirname }}"
+      register: _mgd_prefix
+
+    - name: Warn when the prefix isn't ready for Engine.ini
+      ansible.builtin.debug:
+        msg: >-
+          MGS Delta's Proton prefix config path isn't present yet. Launch the
+          game once (to generate it), then re-run — the Engine.ini (mod 14) will
+          be placed at {{ dg_mgsdelta_prefix_config_dir }} and set read-only.
+      when: not _mgd_prefix.stat.exists
+
+    - name: Install the Engine.ini into the prefix (read-only)
+      ansible.builtin.shell: |
+        set -eu
+        variant="{{ dg_mgsdelta_engine_variant }}"
+        arch="$(find {{ (dg_mgsdelta_staging_root + '/14-engine') | quote }} -maxdepth 1 -type f -name "*($variant)*.zip" | head -1)"
+        [ -n "$arch" ] || { echo "variant not staged"; exit 5; }
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        7z x -y -o"$tmp" "$arch" >/dev/null
+        ini="$(find "$tmp" -name 'Engine.ini' | head -1)"
+        [ -n "$ini" ] || { echo "no Engine.ini"; exit 4; }
+        mkdir -p {{ dg_mgsdelta_prefix_config_dir | quote }}
+        install -m 0644 "$ini" {{ (dg_mgsdelta_prefix_config_dir + '/Engine.ini') | quote }}
+        chmod 0444 {{ (dg_mgsdelta_prefix_config_dir + '/Engine.ini') | quote }}
+        echo "engine-ini-installed"
+      register: _mgd_eng
+      changed_when: "'engine-ini-installed' in _mgd_eng.stdout"
+      when: _mgd_prefix.stat.exists
+
+    # --- Steam launch options (dsound override for MGSDeltaFix) ---
+
+    - name: Auto-discover the in-box Steam localconfig.vdf
+      ansible.builtin.find:
+        paths: "{{ dg_mgsdelta_steam_root }}/userdata"
+        patterns: localconfig.vdf
+        recurse: true
+      register: _mgd_localconfigs
+      when: dg_mgsdelta_steam_localconfig | length == 0
+
+    - name: Resolve the effective localconfig path
+      ansible.builtin.set_fact:
+        _mgd_localconfig: >-
+          {{ dg_mgsdelta_steam_localconfig if (dg_mgsdelta_steam_localconfig | length > 0)
+             else (_mgd_localconfigs.files | map(attribute='path') | list | first
+                   if (_mgd_localconfigs.files | default([]) | length == 1) else '') }}
+
+    - name: Check if Steam is running
+      ansible.builtin.shell: |
+        pgrep -u "$(id -u)" -x steam >/dev/null || pgrep -u "$(id -u)" -f '/steam(webhelper)?( |$)' >/dev/null
+      register: _mgd_steam_running
+      changed_when: false
+      failed_when: false
+      check_mode: false
+      when: _mgd_localconfig | length > 0
+
+    - name: Warn that launch options were not set (Steam running)
+      ansible.builtin.debug:
+        msg: >-
+          Steam is running, so the dsound override was NOT set. Set it manually
+          (MGS Delta -> Launch Options -> {{ dg_mgsdelta_launch_options }}) or
+          close Steam and re-run. The mods are installed.
+      when:
+        - _mgd_localconfig | length > 0
+        - not (dg_mgsdelta_stop_steam | bool)
+        - _mgd_steam_running.rc == 0
+
+    - name: Set the MGS Delta Steam launch options (dsound override)
+      ansible.builtin.command: >-
+        {{ dg_project_root }}/scripts/set-steam-launch-options.py
+        --localconfig {{ _mgd_localconfig | quote }}
+        --set {{ dg_mgsdelta_appid | quote }} {{ dg_mgsdelta_launch_options | quote }}
+      register: _mgd_launch
+      changed_when: "'changed: true' in _mgd_launch.stdout"
+      when:
+        - _mgd_localconfig | length > 0
+        - _mgd_steam_running.rc != 0
+
+    - name: Report completion
+      ansible.builtin.debug:
+        msg:
+          - "MGS Delta: Camera Tweaks (pak) + MGSDeltaFix (ASI) installed; Engine.ini {{ 'placed read-only' if _mgd_prefix.stat.exists else 'PENDING (launch game once, re-run)' }}."
+          - "{{ 'dsound launch override set.' if (_mgd_localconfig | length > 0 and _mgd_steam_running.rc != 0) else 'Set launch option manually: ' + dg_mgsdelta_launch_options }}"
+          - "Revert: -e dg_mgsdelta_revert=true."
