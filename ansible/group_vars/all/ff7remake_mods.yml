@@ -1,0 +1,32 @@
+# FINAL FANTASY VII REMAKE INTERGRADE mod set (opt-in install_ff7remake_mods).
+# Generated via the nexus-mod-set skill. See docs/nexusmods.md.
+#
+# All mods are UE4 .pak DataTable mods copied into End/Content/Paks/~mods/. No
+# loader, no deps, no ReShade. Proton-safe pure file copy.
+#
+# CONFLICT: mod 85 (Equipment Rebalance) and mod 586 (Gameplay Enhancement) both
+# rewrite equipment stats — mutually exclusive. This role uses the recommended
+# "Overhaul" profile: 586 (the actively-maintained superset) + 251 + 630 + 479,
+# and DROPS 85. For the "Modular" profile instead, swap the 586 entry for 85
+# (file 2050/... — its 3 variants) and remove 586.
+
+dg_ff7remake_appid: "1462040"
+
+dg_ff7remake_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+dg_ff7remake_game_dir: "{{ dg_ff7remake_steam_library_root }}/steamapps/common/FINAL FANTASY VII REMAKE"
+# Literal ~mods (tilde is mid-path, not shell-expanded).
+dg_ff7remake_paks_mods_dir: "{{ dg_ff7remake_game_dir }}/End/Content/Paks/~mods"
+
+dg_ff7remake_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/ff7remake"
+
+# Each entry pins the CHOSEN variant file (these mods ship many mutually-
+# exclusive files; install exactly one .pak each).
+dg_ff7remake_mods:
+  - { id: "586", name: "Gameplay Enhancement (Full Package, v12-Final)", dir: "586-gameplay", file: "5947" }
+  - { id: "251", name: "Lv99 (with other mods)", dir: "251-lv99", file: "1179" }
+  - { id: "630", name: "Summon Easy and Unlimited", dir: "630-summon", file: "3065" }
+  - { id: "479", name: "Invincible Motorcycle (Jessie kiss scene)", dir: "479-motorcycle", file: "1725" }
+
+dg_ff7remake_revert: false

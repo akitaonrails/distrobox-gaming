@@ -25,7 +25,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Bloodstained: RotN | bloodstainedritualofthenight | `692850` | 7 | ✅ (see below) |
 | Dark Souls Remastered | darksoulsremastered | `570940` | 3 | ✅ #293 (see below); #220 deferred, #7 dropped |
 | Elden Ring | eldenring | `1245620` | 1 | ✅ (see below) |
-| FINAL FANTASY VII REMAKE Intergrade | finalfantasy7remake | `1462040` | 5 | ⏳ |
+| FINAL FANTASY VII REMAKE Intergrade | finalfantasy7remake | `1462040` | 5 | ✅ (see below) |
 | FINAL FANTASY VII REBIRTH | finalfantasy7rebirth | `2909400` | 7 | ⏳ |
 | Grand Theft Auto V Enhanced | gta5enhanced | `3240220` | 7 | ⏳ |
 | GRANDIA HD Remaster | grandiahdremaster | `1034860` | 2 | ⏳ |
@@ -196,4 +196,20 @@ for a clean EAC bypass, load via ModEngine2 on Proton (elden-proton) instead.
 | Mod | Type | Notes |
 |---|---|---|
 | [146 Easy Mode](https://www.nexusmods.com/eldenring/mods/146) | difficulty (`regulation.bin`) | `dg_eldenring_variant` = `default` (10× rune, default) / `damage` / `personal` |
+
+## ✅ FINAL FANTASY VII REMAKE Intergrade — `install_ff7remake_mods`
+
+Role: `install_ff7remake_mods` · appid `1462040` (USB library). UE4 `.pak`
+DataTable mods into `End/Content/Paks/~mods/` (auto-mounted, no loader/ReShade).
+**Conflict: 85 ⟂ 586** (both rewrite equipment) — role uses the **Overhaul**
+profile (586 + 251 + 630 + 479, **85 dropped**). Each mod ships many variants;
+the pinned picks:
+
+| Mod | Variant | |
+|---|---|---|
+| [586 Gameplay Enhancement](https://www.nexusmods.com/finalfantasy7remake/mods/586) | Full Package (All Items, v12-Final) | ✅ |
+| [251 Lv99](https://www.nexusmods.com/finalfantasy7remake/mods/251) | "with other mods" (compat) | ✅ |
+| [630 Summon Easy](https://www.nexusmods.com/finalfantasy7remake/mods/630) | Easy and Unlimited (v2) | ✅ |
+| [479 Invincible Motorcycle](https://www.nexusmods.com/finalfantasy7remake/mods/479) | single file | ✅ |
+| [85 Equipment Rebalance](https://www.nexusmods.com/finalfantasy7remake/mods/85) | — | ⛔ dropped (conflicts with 586) |
 

@@ -1,0 +1,89 @@
+---
+# FF7 Remake Intergrade (appid 1462040) mod set — UE4 .pak mods into
+# End/Content/Paks/~mods/. See group_vars/all/ff7remake_mods.yml.
+
+- name: Revert the FF7 Remake mod set when requested
+  ansible.builtin.include_tasks: revert.yml
+  when: dg_ff7remake_revert | bool
+
+- name: Install the FF7 Remake mod set
+  when: not (dg_ff7remake_revert | bool)
+  block:
+    - name: Locate the FF7 Remake Paks folder
+      ansible.builtin.stat:
+        path: "{{ dg_ff7remake_game_dir }}/End/Content/Paks"
+      register: _ff7_paks
+
+    - name: Fail when FF7 Remake is not found
+      ansible.builtin.fail:
+        msg: >-
+          FF7 Remake Paks folder not found under {{ dg_ff7remake_game_dir }}
+          (appid {{ dg_ff7remake_appid }}). Install it + mount the USB library,
+          or override dg_ff7remake_steam_library_root. See docs/nexusmods.md.
+      when: not _ff7_paks.stat.exists
+
+    - name: Ensure the ~mods folder exists
+      ansible.builtin.file:
+        path: "{{ dg_ff7remake_paks_mods_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Download each chosen mod variant via the Nexus API (Premium key)
+      ansible.builtin.command:
+        cmd: >-
+          {{ dg_project_root }}/scripts/nexus-download.py --game finalfantasy7remake
+          --mod {{ item.id }} --file {{ item.file }} --via api
+          --dest {{ (dg_ff7remake_staging_root + '/' + item.dir) | quote }}
+      loop: "{{ dg_ff7remake_mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _ff7_dl
+      changed_when: "'saved' in _ff7_dl.stdout"
+      failed_when: false
+      no_log: true
+      when: lookup('ansible.builtin.env', 'NEXUS_MODS_API_KEY') | length > 0
+
+    - name: Find each staged mod archive
+      ansible.builtin.find:
+        paths: "{{ dg_ff7remake_staging_root }}/{{ item.dir }}"
+        patterns: ["*.zip", "*.7z", "*.rar"]
+      loop: "{{ dg_ff7remake_mods }}"
+      loop_control:
+        label: "{{ item.id }}"
+      register: _ff7_staged
+
+    - name: Fail with a manifest when a mod is not staged
+      ansible.builtin.fail:
+        msg: |
+          Stage these FF7 Remake mods (set NEXUS_MODS_API_KEY or download):
+          {% for r in _ff7_staged.results %}
+          {% if r.matched == 0 %}  - {{ r.item.id }} {{ r.item.name }} — https://www.nexusmods.com/finalfantasy7remake/mods/{{ r.item.id }} -> {{ dg_ff7remake_staging_root }}/{{ r.item.dir }}/
+          {% endif %}
+          {% endfor %}
+      when: _ff7_staged.results | selectattr('matched', 'equalto', 0) | list | length > 0
+
+    - name: Install each mod's .pak into ~mods/
+      ansible.builtin.shell: |
+        set -eu
+        marker="{{ dg_ff7remake_game_dir }}/.dg-ff7remake-mod-{{ item.id }}"
+        [ -f "$marker" ] && { echo "skip {{ item.id }}"; exit 0; }
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        arch="$(find {{ (dg_ff7remake_staging_root + '/' + item.dir) | quote }} -maxdepth 1 -type f \( -name '*.zip' -o -name '*.7z' -o -name '*.rar' \) | head -1)"
+        7z x -y -o"$tmp" "$arch" >/dev/null
+        pak="$(find "$tmp" -name '*.pak' | head -1)"
+        [ -n "$pak" ] || { echo "no .pak in {{ item.id }}"; exit 4; }
+        cp -f "$pak" {{ dg_ff7remake_paks_mods_dir | quote }}/
+        printf '%s\n' "$(basename "$pak")" > "$marker"
+        echo "installed {{ item.id }} ($(basename "$pak"))"
+      loop: "{{ dg_ff7remake_mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _ff7_install
+      changed_when: "'installed' in _ff7_install.stdout"
+
+    - name: Report completion
+      ansible.builtin.debug:
+        msg:
+          - "FF7 Remake: {{ dg_ff7remake_mods | length }} paks installed into ~mods/ (Overhaul profile: 586+251+630+479; 85 dropped)."
+          - "UE4 auto-mounts them — no launch options. Verify in-game (586 Full Package + 251 Lv99 may overlap player-growth; the 'with other mods' 251 variant minimizes it)."
+          - "Revert: -e dg_ff7remake_revert=true."

@@ -1,0 +1,21 @@
+---
+# Remove the installed .paks from ~mods/ (each marker records its pak filename).
+
+- name: Remove each installed pak + marker
+  ansible.builtin.shell: |
+    set -eu
+    marker="{{ dg_ff7remake_game_dir }}/.dg-ff7remake-mod-{{ item.id }}"
+    [ -f "$marker" ] || { echo "not installed {{ item.id }}"; exit 0; }
+    pak="$(head -1 "$marker")"
+    [ -n "$pak" ] && rm -f {{ dg_ff7remake_paks_mods_dir | quote }}/"$pak"
+    rm -f "$marker"
+    echo "removed {{ item.id }}"
+  loop: "{{ dg_ff7remake_mods }}"
+  loop_control:
+    label: "{{ item.id }}"
+  register: _ff7_rv
+  changed_when: "'removed' in _ff7_rv.stdout"
+
+- name: Report revert
+  ansible.builtin.debug:
+    msg: "FF7 Remake mods removed from ~mods/."
