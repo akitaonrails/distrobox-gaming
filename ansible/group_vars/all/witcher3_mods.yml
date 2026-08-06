@@ -19,6 +19,9 @@ dg_witcher3_appid: "292030"
 dg_witcher3_steam_library_root: "{{ dg_box_home }}/.local/share/Steam"
 dg_witcher3_game_dir: "{{ dg_witcher3_steam_library_root }}/steamapps/common/The Witcher 3"
 dg_witcher3_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/witcher3"
+# Extraction scratch on the NAS (the HDMR parts extract to multi-GB — must not
+# land on a small /tmp tmpfs).
+dg_witcher3_extract_root: "{{ dg_witcher3_staging_root }}/_extract"
 
 dg_witcher3_mods:
   - { id: "943",  file: "42698", name: "Map Quest Objectives" }
@@ -31,5 +34,11 @@ dg_witcher3_mods:
   - { id: "38",   file: "22070", name: "Increased Creature Loot", variant: "2_ICL" }
   - { id: "315",  file: "9889",  name: "AutoLoot" }
   - { id: "352",  file: "4812",  name: "No Fall Damage" }
+  # HD Monsters Reworked v5.0 **Next-Gen** (newest/most-supported; monster
+  # textures only, no conflict). Multi-part; dl_mod is the real Nexus id, id is a
+  # unique manifest key. (1021 HD Reworked is OldGen-only -> skipped, not here.)
+  - { id: "3580a", dl_mod: "3580", file: "48352", name: "HD Monsters Reworked 5.0 NG (Part 1)" }
+  - { id: "3580b", dl_mod: "3580", file: "48353", name: "HD Monsters Reworked 5.0 NG (Part 2)" }
+  - { id: "3580c", dl_mod: "3580", file: "47980", name: "HDMR 5.0 NG LOD Optimization" }
 
 dg_witcher3_revert: false

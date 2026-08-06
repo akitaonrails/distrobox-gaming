@@ -23,7 +23,7 @@
       ansible.builtin.command:
         cmd: >-
           {{ dg_project_root }}/scripts/nexus-download.py --game witcher3
-          --mod {{ item.id }} --file {{ item.file }} --via api
+          --mod {{ item.dl_mod | default(item.id) }} --file {{ item.file }} --via api
           --dest {{ (dg_witcher3_staging_root + '/' + item.id + '/' + item.file) | quote }}
       loop: "{{ dg_witcher3_mods }}"
       loop_control:
@@ -44,7 +44,8 @@
         arch="$(find {{ (dg_witcher3_staging_root + '/' + item.id + '/' + item.file) | quote }} -type f \
           \( -name '*.zip' -o -name '*.7z' -o -name '*.rar' \) | head -1)"
         [ -n "$arch" ] || { echo "NO-ARCHIVE" >&2; exit 3; }
-        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        mkdir -p {{ dg_witcher3_extract_root | quote }}
+        tmp="$(mktemp -d -p {{ dg_witcher3_extract_root | quote }})"; trap 'rm -rf "$tmp"' EXIT
         7z x -y -o"$tmp" "$arch" >/dev/null
         root="$tmp"
         if [ -n "$variant" ]; then
@@ -77,4 +78,4 @@
       ansible.builtin.debug:
         msg:
           - "Witcher 3: installed {{ dg_witcher3_mods | map(attribute='name') | join(', ') }} into <game>/mods/."
-          - "Flagged (not installed): 1021 HD Reworked OldGen (~9.5 GB, edition mismatch) + 3580 HDMR (~1.3 GB). Revert: -e dg_witcher3_revert=true."
+          - "Skipped: 1021 HD Reworked (OldGen-only edition, no Next-Gen version). Revert: -e dg_witcher3_revert=true."
