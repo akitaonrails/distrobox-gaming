@@ -1,0 +1,22 @@
+---
+# Remove each installed pak triplet (.pak/.ucas/.utoc) from ~mods/ (each marker
+# records the pak stem).
+
+- name: Remove each installed pak triplet + marker
+  ansible.builtin.shell: |
+    set -eu
+    marker="{{ dg_ff7rebirth_game_dir }}/.dg-ff7rebirth-mod-{{ item.id }}"
+    [ -f "$marker" ] || { echo "not installed {{ item.id }}"; exit 0; }
+    stem="$(head -1 "$marker")"
+    for ext in pak ucas utoc; do rm -f {{ dg_ff7rebirth_paks_mods_dir | quote }}/"$stem.$ext"; done
+    rm -f "$marker"
+    echo "removed {{ item.id }}"
+  loop: "{{ dg_ff7rebirth_mods }}"
+  loop_control:
+    label: "{{ item.id }}"
+  register: _ffr_rv
+  changed_when: "'removed' in _ffr_rv.stdout"
+
+- name: Report revert
+  ansible.builtin.debug:
+    msg: "FF7 Rebirth mods removed from ~mods/."

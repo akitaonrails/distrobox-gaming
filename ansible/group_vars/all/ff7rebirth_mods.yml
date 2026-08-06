@@ -1,0 +1,31 @@
+# FINAL FANTASY VII REBIRTH mod set (opt-in install_ff7rebirth_mods). Generated
+# via the nexus-mod-set skill. See docs/nexusmods.md.
+#
+# The 5 gameplay pak mods install as UE4 IoStore triplets (.pak + .ucas + .utoc)
+# into End/Content/Paks/~mods/. No loader, no ReShade. Proton-safe file copy.
+#
+# DEFERRED (revisit at end): mod 392 Gameplay Enhancement (12 sub-items needing
+# per-item curation, and its equipment items conflict with mod 61); mod 3
+# Ultimate Engine Tweaks (needs the FFVIIHook DLL in End/Binaries/Win64 + an
+# Engine.ini in the Proton PREFIX + a WINEDLLOVERRIDES launch option, and must
+# be re-updated after every game patch — a fragile multi-part layer).
+
+dg_ff7rebirth_appid: "2909400"
+
+dg_ff7rebirth_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+dg_ff7rebirth_game_dir: "{{ dg_ff7rebirth_steam_library_root }}/steamapps/common/FINAL FANTASY VII REBIRTH"
+dg_ff7rebirth_paks_mods_dir: "{{ dg_ff7rebirth_game_dir }}/End/Content/Paks/~mods"
+
+dg_ff7rebirth_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/ff7rebirth"
+
+# Chosen variant file id per mod (these ship many mutually-exclusive files).
+dg_ff7rebirth_mods:
+  - { id: "74",  name: "Most Combative Team Members", dir: "74-combative", file: "4103" }
+  - { id: "157", name: "100% Steal and Drop Rate", dir: "157-steal-drop", file: "471" }
+  - { id: "61",  name: "8 Materia+Skill Slots MAX LV (weapons+armors)", dir: "61-slots", file: "513" }
+  - { id: "140", name: "Fast ATB Never Stop and Limit", dir: "140-fast-atb", file: "803" }
+  - { id: "199", name: "Stagger Rate x2", dir: "199-stagger", file: "628" }
+
+dg_ff7rebirth_revert: false

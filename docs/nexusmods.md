@@ -26,7 +26,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Dark Souls Remastered | darksoulsremastered | `570940` | 3 | ✅ #293 (see below); #220 deferred, #7 dropped |
 | Elden Ring | eldenring | `1245620` | 1 | ✅ (see below) |
 | FINAL FANTASY VII REMAKE Intergrade | finalfantasy7remake | `1462040` | 5 | ✅ (see below) |
-| FINAL FANTASY VII REBIRTH | finalfantasy7rebirth | `2909400` | 7 | ⏳ |
+| FINAL FANTASY VII REBIRTH | finalfantasy7rebirth | `2909400` | 7 | ✅ 5/7 (see below) |
 | Grand Theft Auto V Enhanced | gta5enhanced | `3240220` | 7 | ⏳ |
 | GRANDIA HD Remaster | grandiahdremaster | `1034860` | 2 | ⏳ |
 | Metal Gear Rising: Revengeance | metalgearrisingrevengeance | `235460` | 4 | ⏳ |
@@ -212,4 +212,20 @@ the pinned picks:
 | [630 Summon Easy](https://www.nexusmods.com/finalfantasy7remake/mods/630) | Easy and Unlimited (v2) | ✅ |
 | [479 Invincible Motorcycle](https://www.nexusmods.com/finalfantasy7remake/mods/479) | single file | ✅ |
 | [85 Equipment Rebalance](https://www.nexusmods.com/finalfantasy7remake/mods/85) | — | ⛔ dropped (conflicts with 586) |
+
+## ✅ FINAL FANTASY VII REBIRTH — `install_ff7rebirth_mods`
+
+Role: `install_ff7rebirth_mods` · appid `2909400` (USB library). 5 UE4 IoStore
+gameplay mods (`.pak`+`.ucas`+`.utoc` triplets) into `End/Content/Paks/~mods/`
+(no loader/ReShade). 2 of 7 deferred.
+
+| Mod | Variant | |
+|---|---|---|
+| [74 Most Combative Team](https://www.nexusmods.com/finalfantasy7rebirth/mods/74) | single | ✅ |
+| [157 100% Steal/Drop](https://www.nexusmods.com/finalfantasy7rebirth/mods/157) | single | ✅ |
+| [61 8 Materia+Skill Slots](https://www.nexusmods.com/finalfantasy7rebirth/mods/61) | MAX LV weapons+armors | ✅ |
+| [140 Fast ATB](https://www.nexusmods.com/finalfantasy7rebirth/mods/140) | Never Stop + Limit | ✅ |
+| [199 Stagger](https://www.nexusmods.com/finalfantasy7rebirth/mods/199) | Rate x2 | ✅ |
+| [392 Gameplay Enhancement](https://www.nexusmods.com/finalfantasy7rebirth/mods/392) | — | ⏸️ deferred (12 sub-items to curate; conflicts with 61) |
+| [3 Ultimate Engine Tweaks](https://www.nexusmods.com/finalfantasy7rebirth/mods/3) | — | ⏸️ deferred (FFVIIHook DLL + prefix Engine.ini + launch override) |
 

@@ -1,0 +1,90 @@
+---
+# FF7 Rebirth (appid 2909400) mod set — UE4 IoStore pak triplets (.pak/.ucas/
+# .utoc) into End/Content/Paks/~mods/. See group_vars/all/ff7rebirth_mods.yml.
+
+- name: Revert the FF7 Rebirth mod set when requested
+  ansible.builtin.include_tasks: revert.yml
+  when: dg_ff7rebirth_revert | bool
+
+- name: Install the FF7 Rebirth mod set
+  when: not (dg_ff7rebirth_revert | bool)
+  block:
+    - name: Locate the FF7 Rebirth Paks folder
+      ansible.builtin.stat:
+        path: "{{ dg_ff7rebirth_game_dir }}/End/Content/Paks"
+      register: _ffr_paks
+
+    - name: Fail when FF7 Rebirth is not found
+      ansible.builtin.fail:
+        msg: >-
+          FF7 Rebirth Paks folder not found under {{ dg_ff7rebirth_game_dir }}
+          (appid {{ dg_ff7rebirth_appid }}). Install it + mount the USB library,
+          or override dg_ff7rebirth_steam_library_root. See docs/nexusmods.md.
+      when: not _ffr_paks.stat.exists
+
+    - name: Ensure the ~mods folder exists
+      ansible.builtin.file:
+        path: "{{ dg_ff7rebirth_paks_mods_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Download each chosen mod variant via the Nexus API (Premium key)
+      ansible.builtin.command:
+        cmd: >-
+          {{ dg_project_root }}/scripts/nexus-download.py --game finalfantasy7rebirth
+          --mod {{ item.id }} --file {{ item.file }} --via api
+          --dest {{ (dg_ff7rebirth_staging_root + '/' + item.dir) | quote }}
+      loop: "{{ dg_ff7rebirth_mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _ffr_dl
+      changed_when: "'saved' in _ffr_dl.stdout"
+      failed_when: false
+      no_log: true
+      when: lookup('ansible.builtin.env', 'NEXUS_MODS_API_KEY') | length > 0
+
+    - name: Find each staged mod archive
+      ansible.builtin.find:
+        paths: "{{ dg_ff7rebirth_staging_root }}/{{ item.dir }}"
+        patterns: ["*.zip", "*.7z", "*.rar"]
+      loop: "{{ dg_ff7rebirth_mods }}"
+      loop_control:
+        label: "{{ item.id }}"
+      register: _ffr_staged
+
+    - name: Fail with a manifest when a mod is not staged
+      ansible.builtin.fail:
+        msg: |
+          Stage these FF7 Rebirth mods (set NEXUS_MODS_API_KEY or download):
+          {% for r in _ffr_staged.results %}
+          {% if r.matched == 0 %}  - {{ r.item.id }} {{ r.item.name }} — https://www.nexusmods.com/finalfantasy7rebirth/mods/{{ r.item.id }} -> {{ dg_ff7rebirth_staging_root }}/{{ r.item.dir }}/
+          {% endif %}
+          {% endfor %}
+      when: _ffr_staged.results | selectattr('matched', 'equalto', 0) | list | length > 0
+
+    - name: Install each mod's pak triplet into ~mods/
+      ansible.builtin.shell: |
+        set -eu
+        marker="{{ dg_ff7rebirth_game_dir }}/.dg-ff7rebirth-mod-{{ item.id }}"
+        [ -f "$marker" ] && { echo "skip {{ item.id }}"; exit 0; }
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        arch="$(find {{ (dg_ff7rebirth_staging_root + '/' + item.dir) | quote }} -maxdepth 1 -type f \( -name '*.zip' -o -name '*.7z' -o -name '*.rar' \) | head -1)"
+        7z x -y -o"$tmp" "$arch" >/dev/null
+        pak="$(find "$tmp" -name '*.pak' | head -1)"
+        [ -n "$pak" ] || { echo "no .pak in {{ item.id }}"; exit 4; }
+        stem="$(basename "$pak" .pak)"
+        find "$tmp" \( -name '*.pak' -o -name '*.ucas' -o -name '*.utoc' \) -exec cp -f {} {{ dg_ff7rebirth_paks_mods_dir | quote }}/ \;
+        printf '%s\n' "$stem" > "$marker"
+        echo "installed {{ item.id }} ($stem)"
+      loop: "{{ dg_ff7rebirth_mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _ffr_install
+      changed_when: "'installed' in _ffr_install.stdout"
+
+    - name: Report completion
+      ansible.builtin.debug:
+        msg:
+          - "FF7 Rebirth: {{ dg_ff7rebirth_mods | length }} gameplay mods installed into ~mods/."
+          - "UE4 auto-mounts them — no launch options. If two paks silently override each other, they share a pakchunk id (Mod Pakchunk Patcher, mod 627)."
+          - "Deferred: 392 Gameplay Enhancement (needs sub-item curation, conflicts with 61); 3 Ultimate Engine Tweaks (FFVIIHook + prefix Engine.ini layer). Revert: -e dg_ff7rebirth_revert=true."
