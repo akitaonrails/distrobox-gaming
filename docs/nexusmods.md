@@ -46,7 +46,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Resident Evil 4 (2005) | residentevil4 | `254700` | 2 | ✅ re4_tweaks 1.9.1 via install_re4_hd (mod 306 dropped — 2007-port `game.exe`, not the Steam UHD `bio4.exe`) |
 | Resident Evil 0 (HD Remaster) | residentevil0biohazard0hdremaster | `339340` | 2 | ✅ 1/2 (see below) |
 | RoboCop: Rogue City | robocoproguecity | `1681430` | 8 | ✅ 6/8 (~mods + UE4SS; 7/49 config) |
-| Sekiro: Shadows Die Twice | sekiro | `814380` | 2 | ✅ 1/2 (see below) |
+| Sekiro: Shadows Die Twice | sekiro | `814380` | 2 | ✅ 2/2 (Weapon Wheel + Mod Engine) |
 | Marvel's Spider-Man Remastered | marvelsspidermanremastered | `1817070` | 8 | ⏸️ deferred (Overstrike GUI) |
 | Marvel's Spider-Man: Miles Morales | spidermanmilesmorales | `1817190` | 6 | ⏸️ deferred (Overstrike GUI) |
 | Streets of Rage 4 | streetsofrage4 | `985890` | 1 | ✅ mod 133 (REIGNITED) via existing `install_sor4_reignited` |
@@ -76,6 +76,7 @@ in like the bundled `dinput8` hooks — these un-defer the loader-dependent mods
 |---|---|---|
 | **REFramework** (praydog, universal RE Engine `dinput8.dll`) | `install_reframework` (tag `reframework`) | RE Village 651 Infinite Ammo; RE Requiem 25 Inf Ammo/HP (+aim-assist/auto-parry) & 100 Infinite CP. Loader staged on NAS under `NexusMods/_loaders/reframework/`; Lua drops into `<game>/reframework/autorun/`; launch option `WINEDLLOVERRIDES="dinput8=n,b" %command%`. |
 | **UE4SS** (RE-UE4SS, `dwmapi.dll` UE4/5 script loader) | `install_ue4ss` (tag `ue4ss`) | RoboCop 2 Ultra Plus (self-contained — the Steam file bundles UE4SS); TXR 87 Ultradynamic (UE4SS core v3.0.1 + mod `Mods/` overlay). Core staged under `NexusMods/_loaders/ue4ss/`; installs into `<game>/…/Binaries/Win64`; launch option `WINEDLLOVERRIDES="dwmapi=n,b" %command%`. Watch: use the game's **Steam/Win64** mod file, not the Game Pass/WinGDK one. |
+| **Sekiro Mod Engine** (katalash, `dinput8.dll` + `modengine.ini`) | `install_sekiro_modengine` (tag `sekiro_modengine`) | Sekiro 418 The Easy (param override from `<game>/mods/`). ModEngine2 does **not** support Sekiro; this original ModEngine chainloads the Weapon Wheel (`chainDInput8DLLPath="\weaponwheel.dll"`) so both run. Revert before `install_sekiro_mods`. |
 
 ### ⏸️ Deferred (blocked) — revisit at the end
 
@@ -442,7 +443,7 @@ Role: `install_sekiro_mods` · appid `814380` (USB library). No anti-cheat
 | Mod | Type | Notes |
 |---|---|---|
 | [1058 Weapon Wheel](https://www.nexusmods.com/sekiro/mods/1058) | bundled `dinput8.dll` | v1.2.1; drops `dinput8.dll` + `WeaponWheelResources/` into the game root; launch option `WINEDLLOVERRIDES="dinput8=n,b" %command%` |
-| [418 Sekiro The Easy](https://www.nexusmods.com/sekiro/mods/418) | — | ⏸️ deferred — ships a **Mod Engine** `mods/param/gameparam.parambnd.dcx` layout needing the external Mod Engine loader, which would collide with 1058's `dinput8.dll`; not verifiable headlessly |
+| [418 Sekiro The Easy](https://www.nexusmods.com/sekiro/mods/418) | Sekiro Mod Engine | ✅ now installed via `install_sekiro_modengine`. ModEngine2 doesn't support Sekiro, so this uses **Sekiro Mod Engine** (katalash, `dinput8.dll` + `modengine.ini`, mods from `<game>/mods/`). It coexists with the Weapon Wheel by **dinput8 chainloading**: ModEngine becomes `dinput8.dll`, the Weapon Wheel is renamed `weaponwheel.dll` and set as `chainDInput8DLLPath`. Revert this role **before** `install_sekiro_mods`. |
 
 ## ✅ Streets of Rage 4 — existing `install_sor4_reignited`
 

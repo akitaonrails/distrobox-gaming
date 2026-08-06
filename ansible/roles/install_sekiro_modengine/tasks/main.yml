@@ -1,0 +1,108 @@
+---
+# Sekiro Mod Engine (dinput8 loader) + param mods, chainloading the Weapon Wheel.
+# See group_vars/all/sekiro_modengine.yml and docs/nexusmods.md.
+
+- name: Revert Sekiro Mod Engine when requested
+  ansible.builtin.include_tasks: revert.yml
+  when: dg_sekiro_me_revert | bool
+
+- name: Install Sekiro Mod Engine + param mods
+  when: not (dg_sekiro_me_revert | bool)
+  block:
+    - name: Locate Sekiro
+      ansible.builtin.stat:
+        path: "{{ dg_sekiro_me_game_dir }}/sekiro.exe"
+      register: _sme_game
+
+    - name: Fail when Sekiro is not found
+      ansible.builtin.fail:
+        msg: "{{ dg_sekiro_me_game_dir }} not found (appid {{ dg_sekiro_me_appid }}). See docs/nexusmods.md."
+      when: not _sme_game.stat.exists
+
+    - name: Download the Sekiro Mod Engine loader + param mods (Premium key)
+      ansible.builtin.command:
+        cmd: >-
+          {{ dg_project_root }}/scripts/nexus-download.py --game sekiro
+          --mod {{ item.id }} --file {{ item.file }} --via api
+          --dest {{ (dg_sekiro_me_staging_root + '/' + item.id + '/' + item.file) | quote }}
+      loop: "{{ [dg_sekiro_me_loader] + dg_sekiro_me_mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _sme_dl
+      changed_when: "'saved' in _sme_dl.stdout"
+      failed_when: false
+      no_log: true
+      when: lookup('ansible.builtin.env', 'NEXUS_MODS_API_KEY') | length > 0
+
+    - name: Install the Mod Engine loader (chainloading the Weapon Wheel dinput8)
+      ansible.builtin.shell: |
+        set -eu
+        game={{ dg_sekiro_me_game_dir | quote }}
+        chain_dll={{ dg_sekiro_me_chain_dll | quote }}
+        marker="$game/.dg-sekiro-modengine"
+        [ -f "$marker" ] && { echo "skip=$(cat "$marker")"; exit 0; }
+        arch="$(find {{ (dg_sekiro_me_staging_root + '/' + dg_sekiro_me_loader.id + '/' + dg_sekiro_me_loader.file) | quote }} -type f \
+          \( -name '*.zip' -o -name '*.7z' -o -name '*.rar' \) | head -1)"
+        [ -n "$arch" ] || { echo "NO-ARCHIVE" >&2; exit 3; }
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        7z x -y -o"$tmp" "$arch" >/dev/null
+        me_dll="$(find "$tmp" -name dinput8.dll | head -1)"
+        [ -n "$me_dll" ] || { echo "NO-DINPUT8" >&2; exit 4; }
+        chain=0
+        # A pre-existing dinput8.dll (no ModEngine marker) is the Weapon Wheel -> chainload it.
+        if [ -e "$game/dinput8.dll" ]; then
+          mv -f "$game/dinput8.dll" "$game/$chain_dll"
+          chain=1
+        fi
+        cp -f "$me_dll" "$game/dinput8.dll"
+        echo "$chain" > "$marker"
+        echo "modengine-installed chain=$chain"
+      register: _sme_loader
+      changed_when: "'modengine-installed' in _sme_loader.stdout"
+
+    - name: Read whether the Weapon Wheel was chainloaded
+      ansible.builtin.slurp:
+        src: "{{ dg_sekiro_me_game_dir }}/.dg-sekiro-modengine"
+      register: _sme_marker
+
+    - name: Set the chain fact
+      ansible.builtin.set_fact:
+        _sme_chain: "{{ (_sme_marker.content | b64decode | trim) == '1' }}"
+
+    - name: Render modengine.ini
+      ansible.builtin.template:
+        src: modengine.ini.j2
+        dest: "{{ dg_sekiro_me_game_dir }}/modengine.ini"
+        mode: "0644"
+        backup: true
+
+    - name: Install each param mod into <game>/mods (records a manifest)
+      ansible.builtin.shell: |
+        set -eu
+        game={{ dg_sekiro_me_game_dir | quote }}
+        manifest="$game/.dg-sekiro-me-{{ item.id }}.manifest"
+        [ -f "$manifest" ] && { echo "skip"; exit 0; }
+        arch="$(find {{ (dg_sekiro_me_staging_root + '/' + item.id + '/' + item.file) | quote }} -type f \
+          \( -name '*.zip' -o -name '*.7z' -o -name '*.rar' \) | head -1)"
+        [ -n "$arch" ] || { echo "NO-ARCHIVE" >&2; exit 3; }
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        7z x -y -o"$tmp" "$arch" >/dev/null
+        md="$(find "$tmp" -type d -name mods | head -1)"
+        [ -n "$md" ] || { echo "NO-MODS-DIR" >&2; exit 4; }
+        src="$(dirname "$md")"
+        ( cd "$src" && find mods -type f ) > "$manifest.tmp"
+        rsync -a "$src/mods/" "$game/mods/"
+        mv "$manifest.tmp" "$manifest"
+        echo "param-installed"
+      loop: "{{ dg_sekiro_me_mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _sme_param
+      changed_when: "'param-installed' in _sme_param.stdout"
+
+    - name: Report
+      ansible.builtin.debug:
+        msg:
+          - "Sekiro Mod Engine installed (mods from <game>/mods/); Weapon Wheel chainloaded: {{ _sme_chain }}."
+          - "Param mods: {{ dg_sekiro_me_mods | map(attribute='name') | join(', ') }}. Launch option (from install_sekiro_mods): WINEDLLOVERRIDES=\"dinput8=n,b\" %command%."
+          - "Revert THIS before install_sekiro_mods: -e dg_sekiro_me_revert=true."

@@ -1,0 +1,14 @@
+; Mod Engine configuration - managed by install_sekiro_modengine (dg_*).
+[misc]
+skipLogos=1
+; Chainload the Weapon Wheel dinput8 mod (empty when it is not installed).
+chainDInput8DLLPath="{{ '\\' + dg_sekiro_me_chain_dll if _sme_chain | bool else '' }}"
+
+[files]
+loadUXMFiles=0
+useModOverrideDirectory=1
+modOverrideDirectory="\mods"
+cacheFilePaths=1
+
+[debug]
+showDebugLog=0

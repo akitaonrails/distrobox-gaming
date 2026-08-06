@@ -1,0 +1,30 @@
+# Sekiro Mod Engine (katalash) + param mods — opt-in role install_sekiro_modengine.
+# See docs/nexusmods.md. appid 814380 (USB library).
+#
+# ModEngine2 does NOT support Sekiro (only ER/DS3/AC6), so Sekiro uses the
+# original Sekiro Mod Engine: a dinput8.dll loader + modengine.ini that loads
+# loose file overrides from <game>/mods/. It collides with the Weapon Wheel's
+# own dinput8.dll (install_sekiro_mods), so we chainload it: ModEngine becomes
+# dinput8.dll, the Weapon Wheel is renamed to weaponwheel.dll, and
+# chainDInput8DLLPath points at it — both run together.
+#
+# REVERT ORDER: revert THIS role before install_sekiro_mods (this restores
+# dinput8.dll back to the Weapon Wheel).
+
+dg_sekiro_me_appid: "814380"
+dg_sekiro_me_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+dg_sekiro_me_game_dir: "{{ dg_sekiro_me_steam_library_root }}/steamapps/common/Sekiro"
+dg_sekiro_me_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/sekiro"
+
+dg_sekiro_me_chain_dll: "weaponwheel.dll"
+
+# Sekiro Mod Engine loader (Nexus sekiro/mods/6).
+dg_sekiro_me_loader: { id: "6", file: "2743", name: "Sekiro Mod Engine" }
+
+# Param/override mods loaded from <game>/mods/ (each archive carries a mods/ tree).
+dg_sekiro_me_mods:
+  - { id: "418", file: "1649", name: "Sekiro The Easy" }
+
+dg_sekiro_me_revert: false

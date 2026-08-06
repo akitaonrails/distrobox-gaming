@@ -1,0 +1,38 @@
+---
+# Remove Sekiro Mod Engine + param mods; restore the Weapon Wheel as dinput8.dll.
+
+- name: Remove each param mod via its manifest
+  ansible.builtin.shell: |
+    set -eu
+    game={{ dg_sekiro_me_game_dir | quote }}
+    manifest="$game/.dg-sekiro-me-{{ item.id }}.manifest"
+    [ -f "$manifest" ] || { echo "nochange"; exit 0; }
+    while IFS= read -r f; do
+      [ -n "$f" ] && rm -f "$game/$f"
+    done < "$manifest"
+    rm -f "$manifest"
+    [ -d "$game/mods" ] && find "$game/mods" -type d -empty -delete 2>/dev/null || true
+    echo "param-reverted"
+  loop: "{{ dg_sekiro_me_mods }}"
+  loop_control:
+    label: "{{ item.id }} {{ item.name }}"
+  register: _smer_param
+  changed_when: "'param-reverted' in _smer_param.stdout"
+
+- name: Remove the Mod Engine loader and restore the Weapon Wheel dinput8
+  ansible.builtin.shell: |
+    set -eu
+    game={{ dg_sekiro_me_game_dir | quote }}
+    chain_dll={{ dg_sekiro_me_chain_dll | quote }}
+    marker="$game/.dg-sekiro-modengine"
+    [ -f "$marker" ] || { echo "nochange"; exit 0; }
+    chain="$(cat "$marker")"
+    rm -f "$game/dinput8.dll" "$game/modengine.ini"
+    # Restore the Weapon Wheel back to dinput8.dll when it had been chained.
+    if [ "$chain" = "1" ] && [ -e "$game/$chain_dll" ]; then
+      mv -f "$game/$chain_dll" "$game/dinput8.dll"
+    fi
+    rm -f "$marker" "$game/modengine.ini.dg-orig" 2>/dev/null || true
+    echo "modengine-reverted"
+  register: _smer_loader
+  changed_when: "'modengine-reverted' in _smer_loader.stdout"

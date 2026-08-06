@@ -1,0 +1,7 @@
+---
+- name: Install Sekiro Mod Engine + param mods (chainloading the Weapon Wheel)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_sekiro_modengine
