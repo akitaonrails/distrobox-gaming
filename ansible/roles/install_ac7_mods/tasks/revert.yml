@@ -1,0 +1,23 @@
+---
+# Remove the Skies Rebalanced paks from ~mods/ and drop the marker. Leaves any
+# other mods in ~mods/ intact (only skiesrebalanced_* paks are removed).
+
+- name: Remove Skies Rebalanced paks from ~mods/
+  ansible.builtin.shell: |
+    set -eu
+    rm -f {{ dg_ac7_paks_mods_dir | quote }}/skiesrebalanced_*.pak
+    echo removed
+  register: _ac7_rv
+  changed_when: "'removed' in _ac7_rv.stdout"
+
+- name: Remove install markers
+  ansible.builtin.file:
+    path: "{{ dg_ac7_game_dir }}/.dg-ac7-skiesrebalanced-{{ item }}"
+    state: absent
+  loop:
+    - NON-DRIFT
+    - DRIFT
+
+- name: Report revert
+  ansible.builtin.debug:
+    msg: "Ace Combat 7 Skies Rebalanced paks removed from ~mods/."

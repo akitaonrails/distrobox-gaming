@@ -1,0 +1,101 @@
+---
+# Ace Combat 7 (appid 502500) mod set — Skies Rebalanced UE4 paks into
+# Game/Content/Paks/~mods/. See group_vars/all/ac7_mods.yml and docs/nexusmods.md.
+
+- name: Revert the Ace Combat 7 mod set when requested
+  ansible.builtin.include_tasks: revert.yml
+  when: dg_ac7_revert | bool
+
+- name: Install the Ace Combat 7 mod set
+  when: not (dg_ac7_revert | bool)
+  block:
+    - name: Locate the Ace Combat 7 Paks folder
+      ansible.builtin.stat:
+        path: "{{ dg_ac7_game_dir }}/Game/Content/Paks"
+      register: _ac7_paks
+
+    - name: Fail when Ace Combat 7 is not found
+      ansible.builtin.fail:
+        msg: >-
+          Ace Combat 7 Paks folder not found under {{ dg_ac7_game_dir }} (appid
+          {{ dg_ac7_appid }}). Install it + mount the USB library, or override
+          dg_ac7_steam_library_root. See docs/nexusmods.md.
+      when: not _ac7_paks.stat.exists
+
+    - name: Ensure the ~mods folder exists
+      ansible.builtin.file:
+        path: "{{ dg_ac7_paks_mods_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Download the mod via the Nexus API (Premium key) — both editions
+      ansible.builtin.command:
+        cmd: >-
+          {{ dg_project_root }}/scripts/nexus-download.py
+          --game acecombat7skiesunknown --mod {{ item.id }} --via api
+          --dest {{ (dg_ac7_staging_root + '/' + item.dir) | quote }}
+      loop: "{{ dg_ac7_mods }}"
+      loop_control:
+        label: "{{ item.id }}"
+      register: _ac7_dl
+      changed_when: "'saved' in _ac7_dl.stdout"
+      failed_when: false
+      no_log: true
+      when: lookup('ansible.builtin.env', 'NEXUS_MODS_API_KEY') | length > 0
+
+    - name: Find the chosen-edition archive
+      ansible.builtin.find:
+        paths: "{{ dg_ac7_staging_root }}/{{ dg_ac7_mods[0].dir }}"
+        patterns: "*({{ dg_ac7_edition }} EDITION)*"
+        use_regex: false
+      register: _ac7_edition_archive
+
+    - name: Fail when the chosen-edition archive is not staged
+      ansible.builtin.fail:
+        msg: >-
+          Skies Rebalanced "{{ dg_ac7_edition }} EDITION" archive not found in
+          {{ dg_ac7_staging_root }}/{{ dg_ac7_mods[0].dir }}/. Set
+          NEXUS_MODS_API_KEY, or download mod 1400 there. dg_ac7_edition must be
+          NON-DRIFT or DRIFT.
+      when: _ac7_edition_archive.matched == 0
+
+    # Install: all planestatschange/*.pak + the ONE chosen weapon variant
+    # (+ optional ammocount / PSM bonus) into ~mods/. Marker-gated.
+    - name: Check the install marker
+      ansible.builtin.stat:
+        path: "{{ dg_ac7_game_dir }}/.dg-ac7-skiesrebalanced-{{ dg_ac7_edition }}"
+      register: _ac7_marker
+
+    - name: Install Skies Rebalanced paks into ~mods/
+      ansible.builtin.shell: |
+        set -eu
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        7z x -y -o"$tmp" {{ _ac7_edition_archive.files[0].path | quote }} >/dev/null
+        base="$(find "$tmp" -maxdepth 1 -type d -name 'SKIES_REBALANCED*' | head -1)"
+        dst={{ dg_ac7_paks_mods_dir | quote }}
+        cp -f "$base/planestatschange/"*.pak "$dst/"
+        cp -f "$base/weaponstatsandammochange/"{{ dg_ac7_weapon_variant | quote }} "$dst/"
+        {% if dg_ac7_install_ammocount | bool %}
+        cp -f "$base/weaponstatsandammochange/skiesrebalanced_weaponammocountchange_P.pak" "$dst/" || true
+        {% endif %}
+        {% if dg_ac7_install_psm_bonus | bool %}
+        find "$base" -path '*PSM*_P.pak' -exec cp -f {} "$dst/" \; || true
+        {% endif %}
+        echo "installed $(ls "$dst"/skiesrebalanced_*.pak 2>/dev/null | wc -l) paks"
+      register: _ac7_install
+      changed_when: "'installed' in _ac7_install.stdout"
+      when: not _ac7_marker.stat.exists
+
+    - name: Write the install marker
+      ansible.builtin.copy:
+        dest: "{{ dg_ac7_game_dir }}/.dg-ac7-skiesrebalanced-{{ dg_ac7_edition }}"
+        content: "Skies Rebalanced v1.2E ({{ dg_ac7_edition }}) weapon={{ dg_ac7_weapon_variant }}\n"
+        mode: "0644"
+      when: not _ac7_marker.stat.exists
+
+    - name: Report completion
+      ansible.builtin.debug:
+        msg:
+          - "Skies Rebalanced ({{ dg_ac7_edition }} edition) installed into {{ dg_ac7_paks_mods_dir }}/."
+          - "UE4 auto-mounts these paks — no launch options needed. Launch AC7 (Proton GE recommended for cutscene codecs)."
+          - "Switch edition/weapon: -e dg_ac7_edition=DRIFT (then revert + re-run), or set dg_ac7_weapon_variant. Revert: -e dg_ac7_revert=true."

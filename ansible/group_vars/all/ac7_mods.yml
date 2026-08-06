@@ -1,0 +1,35 @@
+# Ace Combat 7 mod set (opt-in role install_ac7_mods). Generated via the
+# nexus-mod-set skill. See docs/nexusmods.md.
+#
+# One mod: "Skies Rebalanced" v1.2E — a UE4 gameplay/balance mod (loose _P.pak
+# files). No loader, no dependencies, no ReShade. UE4 auto-mounts paks dropped
+# in Game/Content/Paks/~mods/, so this is a pure file-copy role, Proton-safe.
+
+dg_ac7_appid: "502500"
+
+dg_ac7_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+dg_ac7_game_dir: "{{ dg_ac7_steam_library_root }}/steamapps/common/ACE COMBAT 7"
+dg_ac7_paks_mods_dir: "{{ dg_ac7_game_dir }}/Game/Content/Paks/~mods"
+
+dg_ac7_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/acecombat7"
+
+# CHOICES (Skies Rebalanced ships options; pick one of each):
+#  - edition: "NON-DRIFT" (standard flight model, default) or "DRIFT" (arcade
+#    high-G turn). Selects which downloaded MAIN archive is used.
+#  - weapon_variant: one weaponstatschange pak (installing more than one would
+#    conflict). Default keeps vanilla TLS tickrate + MPBM explosion.
+dg_ac7_edition: "NON-DRIFT"
+dg_ac7_weapon_variant: "skiesrebalanced_weaponstatschange(keep TLS tickrate and MPBM default explosion)_P.pak"
+# Optional extra paks (off by default):
+dg_ac7_install_ammocount: false     # weaponammocountchange_P.pak
+dg_ac7_install_psm_bonus: false     # BONUS PSM-capable Darkstar
+
+dg_ac7_mods:
+  - id: "1400"
+    name: "Skies Rebalanced v1.2E"
+    url: "https://www.nexusmods.com/acecombat7skiesunknown/mods/1400"
+    dir: "1400-skies-rebalanced"
+
+dg_ac7_revert: false

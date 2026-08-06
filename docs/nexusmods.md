@@ -17,7 +17,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | GTA IV: Complete Edition | gta4 | `12210` | 9 | ✅ (see below) |
 | Art of Rally | artofrally | `550320` | 4 | 🔧 built — verify in-game |
 | Alex Kidd in Miracle World DX | alexkiddinmiracleworlddx | `1333470` | 1 | ✅ (see below) |
-| Ace Combat 7 | acecombat7skiesunknown | `502500` | 1 | ⏳ |
+| Ace Combat 7 | acecombat7skiesunknown | `502500` | 1 | ✅ (see below) |
 | Batman: Arkham Knight | batmanarkhamknight | `208650` | 2 | ⏳ |
 | Batman: Arkham City GOTY | batmanarkhamcity | `200260` | 3 | ⏳ |
 | Batman: Arkham Asylum GOTY | batmanarkhamasylum | `35140` | 2 | ⏳ |
@@ -113,4 +113,16 @@ swapping the game's managed `Assembly-CSharp.dll` (stock backed up for revert).
 | Mod | Type | Notes |
 |---|---|---|
 | [1 Enhanced (Nixos) v3.0](https://www.nexusmods.com/alexkiddinmiracleworlddx/mods/1) | difficulty rebalance (DLL swap) | after install, enable **Settings → reduced hitboxes** in-game; re-run after any Steam game update (it overwrites the DLL) |
+
+## ✅ Ace Combat 7 — `install_ac7_mods`
+
+Role: `install_ac7_mods` · appid `502500` (USB library). One mod, **Skies
+Rebalanced v1.2E** — a plane/weapon rebalance shipped as UE4 `_P.pak` files;
+installed by copying into `Game/Content/Paks/~mods/` (UE4 auto-mounts, no loader,
+no ReShade). Choices baked as vars: **NON-DRIFT edition** (default; `DRIFT`
+available) + one weapon-stats variant (default keeps vanilla TLS/MPBM).
+
+| Mod | Type | Notes |
+|---|---|---|
+| [1400 Skies Rebalanced v1.2E](https://www.nexusmods.com/acecombat7skiesunknown/mods/1400) | plane/weapon rebalance (UE4 paks) | all plane paks + 1 weapon variant; `dg_ac7_edition` / `dg_ac7_weapon_variant` to change; Proton GE recommended for cutscenes |
 

@@ -33,6 +33,7 @@
     - { role: install_gta4_mods,         tags: [gta4_mods, never] }
     - { role: install_artofrally_mods,   tags: [artofrally_mods, never] }
     - { role: install_alexkidddx_mods,   tags: [alexkidddx_mods, never] }
+    - { role: install_ac7_mods,          tags: [ac7_mods, never] }
     - { role: steam_lib32_nvidia,        tags: [steam_lib32_nvidia, never] }
     - { role: steam_trainers,            tags: [steam_trainers, never] }
     - { role: install_render96ex,        tags: [render96ex, never] }
