@@ -32,7 +32,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Metal Gear Rising: Revengeance | metalgearrisingrevengeance | `235460` | 4 | ⏸️ deferred (TexMod/patcher/CE) |
 | MGS Δ: Snake Eater | metalgearsoliddeltasnakeeater | `2417610` | 3 | ✅ (see below) |
 | MGS3 (Master Collection) | metalgearsolid3mc | `2131650` | 3 | ✅ 2/3 (see below) |
-| MGS2 (Master Collection) | metalgearsolid2mc | `2131640` | 6 | ⏳ |
+| MGS2 (Master Collection) | metalgearsolid2mc | `2131640` | 6 | ✅ 5/6 (see below) |
 | MGSV: Ground Zeroes | metalgearsolidvgz | `311340` | 2 | ⏳ |
 | MGS1 (Master Collection) | metalgearsolidmc | `2131630` | 2 | ⏳ |
 | MGSV: The Phantom Pain | metalgearsolidvtpp | `287700` | 6 | ⏳ |
@@ -260,6 +260,20 @@ Bugfix extract into the game root; MGSHDFix loads via a `wininet/winhttp` proxy.
 | [139 MGSHDFix](https://www.nexusmods.com/metalgearsolid3mc/mods/139) | ASI resolution/widescreen fix | launch option `WINEDLLOVERRIDES="wininet,winhttp=n,b" %command%`; set in-game res/upscaling to Default |
 | [189 Community Bugfix (Base)](https://www.nexusmods.com/metalgearsolid3mc/mods/189) | loose CTXR texture fixes | requires 139 |
 | [26 NG+ saves](https://www.nexusmods.com/metalgearsolid3mc/mods/26) | savegames | ⚠️ manual (safety: don't auto-overwrite saves; needs save folder + NA/EU choice) |
+
+## ✅ MGS2 (Master Collection) — `install_mgs2mc_mods`
+
+Role: `install_mgs2mc_mods` · appid `2131640` (USB library). Same MGSHDFix
+ecosystem; all headless drops. Load order 49 → 52 → 19/122 → 110.
+
+| Mod | Type | Notes |
+|---|---|---|
+| [49 MGSHDFix](https://www.nexusmods.com/metalgearsolid2mc/mods/49) | ASI fix | launch option `WINEDLLOVERRIDES="wininet,winhttp=n,b" %command%` |
+| [52 Community Bugfix (Base)](https://www.nexusmods.com/metalgearsolid2mc/mods/52) | CTXR textures/fixes | needs 49; recommends Better Audio Mod (off-set) |
+| [19 KojiPro Posters](https://www.nexusmods.com/metalgearsolid2mc/mods/19) | HD posters | after 52 |
+| [122 UI Textures](https://www.nexusmods.com/metalgearsolid2mc/mods/122) | UI upscale | 2× variant |
+| [110 Stillman Skippable](https://www.nexusmods.com/metalgearsolid2mc/mods/110) | `.gcx` → `assets/gcx/eu/_bp` | EU path; incompatible with JP language pack |
+| [10 Snake Hair Fix](https://www.nexusmods.com/metalgearsolid2mc/mods/10) | — | ⛔ omitted (redundant — 52 bundles it) |
 | [392 Gameplay Enhancement](https://www.nexusmods.com/finalfantasy7rebirth/mods/392) | — | ⏸️ deferred (12 sub-items to curate; conflicts with 61) |
 | [3 Ultimate Engine Tweaks](https://www.nexusmods.com/finalfantasy7rebirth/mods/3) | — | ⏸️ deferred (FFVIIHook DLL + prefix Engine.ini + launch override) |
 

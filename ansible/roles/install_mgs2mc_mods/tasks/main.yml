@@ -1,0 +1,139 @@
+---
+# MGS2 Master Collection (appid 2131640) mod set. See group_vars/all/mgs2mc_mods.yml.
+
+- name: Revert the MGS2 MC mod set when requested
+  ansible.builtin.include_tasks: revert.yml
+  when: dg_mgs2mc_revert | bool
+
+- name: Install the MGS2 MC mod set
+  when: not (dg_mgs2mc_revert | bool)
+  block:
+    - name: Locate the MGS2 game dir
+      ansible.builtin.stat:
+        path: "{{ dg_mgs2mc_game_dir }}/assets"
+      register: _m2_game
+
+    - name: Fail when MGS2 MC is not found
+      ansible.builtin.fail:
+        msg: >-
+          {{ dg_mgs2mc_game_dir }} not found (appid {{ dg_mgs2mc_appid }}).
+          Install it + mount the USB library, or override
+          dg_mgs2mc_steam_library_root. See docs/nexusmods.md.
+      when: not _m2_game.stat.exists
+
+    - name: Download each mod via the Nexus API (Premium key)
+      ansible.builtin.command:
+        cmd: >-
+          {{ dg_project_root }}/scripts/nexus-download.py --game metalgearsolid2mc
+          --mod {{ item.id }} {{ ('--file ' + item.file) if (item.file is defined) else '' }} --via api
+          --dest {{ (dg_mgs2mc_staging_root + '/' + item.dir) | quote }}
+      loop: "{{ dg_mgs2mc_mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _m2_dl
+      changed_when: "'saved' in _m2_dl.stdout"
+      failed_when: false
+      no_log: true
+      when: lookup('ansible.builtin.env', 'NEXUS_MODS_API_KEY') | length > 0
+
+    - name: Find each staged archive
+      ansible.builtin.find:
+        paths: "{{ dg_mgs2mc_staging_root }}/{{ item.dir }}"
+        patterns: ["*.zip", "*.7z", "*.rar"]
+      loop: "{{ dg_mgs2mc_mods }}"
+      loop_control:
+        label: "{{ item.id }}"
+      register: _m2_staged
+
+    - name: Fail with a manifest when a mod is not staged
+      ansible.builtin.fail:
+        msg: |
+          Stage these MGS2 MC mods (set NEXUS_MODS_API_KEY or download):
+          {% for r in _m2_staged.results %}
+          {% if r.matched == 0 %}  - {{ r.item.id }} {{ r.item.name }} — https://www.nexusmods.com/metalgearsolid2mc/mods/{{ r.item.id }} -> {{ dg_mgs2mc_staging_root }}/{{ r.item.dir }}/
+          {% endif %}
+          {% endfor %}
+      when: _m2_staged.results | selectattr('matched', 'equalto', 0) | list | length > 0
+
+    - name: Install each mod (root extract or .gcx drop)
+      ansible.builtin.shell: |
+        set -eu
+        marker="{{ dg_mgs2mc_game_dir }}/.dg-mgs2mc-mod-{{ item.id }}"
+        [ -f "$marker" ] && { echo "skip {{ item.id }}"; exit 0; }
+        arch="$(find {{ (dg_mgs2mc_staging_root + '/' + item.dir) | quote }} -maxdepth 1 -type f \( -name '*.zip' -o -name '*.7z' -o -name '*.rar' \) | head -1)"
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        7z x -y -o"$tmp" "$arch" >/dev/null
+        {% if item.dest == 'gcx' %}
+        gcx="$(find "$tmp" -name '*.gcx' | head -1)"
+        [ -n "$gcx" ] || { echo "no .gcx in {{ item.id }}"; exit 4; }
+        mkdir -p {{ dg_mgs2mc_gcx_dir | quote }}
+        cp -f "$gcx" {{ dg_mgs2mc_gcx_dir | quote }}/
+        {% else %}
+        # strip a single wrapper dir if present, else use the archive root
+        n="$(find "$tmp" -mindepth 1 -maxdepth 1 | wc -l)"
+        d="$(find "$tmp" -mindepth 1 -maxdepth 1 -type d | head -1)"
+        if [ "$n" = 1 ] && [ -n "$d" ]; then src="$d/"; else src="$tmp/"; fi
+        rsync -a "$src" {{ dg_mgs2mc_game_dir | quote }}/
+        {% endif %}
+        touch "$marker"; echo "installed {{ item.id }}"
+      loop: "{{ dg_mgs2mc_mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _m2_install
+      changed_when: "'installed' in _m2_install.stdout"
+
+    # --- Steam launch options (wininet/winhttp for MGSHDFix) ---
+
+    - name: Auto-discover the in-box Steam localconfig.vdf
+      ansible.builtin.find:
+        paths: "{{ dg_mgs2mc_steam_root }}/userdata"
+        patterns: localconfig.vdf
+        recurse: true
+      register: _m2_localconfigs
+      when: dg_mgs2mc_steam_localconfig | length == 0
+
+    - name: Resolve the effective localconfig path
+      ansible.builtin.set_fact:
+        _m2_localconfig: >-
+          {{ dg_mgs2mc_steam_localconfig if (dg_mgs2mc_steam_localconfig | length > 0)
+             else (_m2_localconfigs.files | map(attribute='path') | list | first
+                   if (_m2_localconfigs.files | default([]) | length == 1) else '') }}
+
+    - name: Check if Steam is running
+      ansible.builtin.shell: |
+        pgrep -u "$(id -u)" -x steam >/dev/null || pgrep -u "$(id -u)" -f '/steam(webhelper)?( |$)' >/dev/null
+      register: _m2_steam_running
+      changed_when: false
+      failed_when: false
+      check_mode: false
+      when: _m2_localconfig | length > 0
+
+    - name: Warn that launch options were not set (Steam running)
+      ansible.builtin.debug:
+        msg: >-
+          Steam is running; the wininet/winhttp override was NOT set. Set it
+          manually (MGS2 -> Launch Options -> {{ dg_mgs2mc_launch_options }}) or
+          close Steam and re-run. The mods are installed.
+      when:
+        - _m2_localconfig | length > 0
+        - not (dg_mgs2mc_stop_steam | bool)
+        - _m2_steam_running.rc == 0
+
+    - name: Set the MGS2 Steam launch options (MGSHDFix override)
+      ansible.builtin.command: >-
+        {{ dg_project_root }}/scripts/set-steam-launch-options.py
+        --localconfig {{ _m2_localconfig | quote }}
+        --set {{ dg_mgs2mc_appid | quote }} {{ dg_mgs2mc_launch_options | quote }}
+      register: _m2_launch
+      changed_when: "'changed: true' in _m2_launch.stdout"
+      when:
+        - _m2_localconfig | length > 0
+        - _m2_steam_running.rc != 0
+
+    - name: Report completion
+      ansible.builtin.debug:
+        msg:
+          - "MGS2 MC: MGSHDFix + Community Bugfix + posters + UI textures + Stillman-skip installed (10 omitted as redundant)."
+          - "In the launcher set Internal Resolution + Upscaling to Default. 52 also recommends Knight_Killer's Better Audio Mod (add manually)."
+          - "{{ 'Launch override set.' if (_m2_localconfig | length > 0 and _m2_steam_running.rc != 0) else 'Set launch option manually: ' + dg_mgs2mc_launch_options }}"
+          - "Revert: -e dg_mgs2mc_revert=true."

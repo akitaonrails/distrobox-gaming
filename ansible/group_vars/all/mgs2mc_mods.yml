@@ -1,0 +1,38 @@
+# MGS2 Master Collection mod set (opt-in role install_mgs2mc_mods). Generated
+# via the nexus-mod-set skill. See docs/nexusmods.md. Standalone appid 2131640.
+#
+# All headless file drops. 49 MGSHDFix (base ASI loader, wininet/winhttp proxy)
+# + 52 Community Bugfix (Base) + 19 KojiPro Posters + 122 UI Textures (2x) all
+# extract into the game root; 110 Stillman is a single .gcx into assets/gcx/eu/_bp.
+# No ReShade.
+#
+# Mod 10 (Snake Hair Fix) is OMITTED — mod 52 already bundles it (redundant).
+# Off-set note: mod 52 also recommends Knight_Killer's MGS2 Better Audio Mod
+# (not among the requested links) — add it manually if wanted.
+# 110 targets the EU (_bp) path and is incompatible with the JP language pack.
+
+dg_mgs2mc_appid: "2131640"
+
+dg_mgs2mc_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+dg_mgs2mc_game_dir: "{{ dg_mgs2mc_steam_library_root }}/steamapps/common/MGS2"
+dg_mgs2mc_gcx_dir: "{{ dg_mgs2mc_game_dir }}/assets/gcx/eu/_bp"
+
+dg_mgs2mc_steam_root: "{{ dg_box_home }}/.local/share/Steam"
+dg_mgs2mc_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/mgs2mc"
+
+dg_mgs2mc_launch_options: 'WINEDLLOVERRIDES="wininet,winhttp=n,b" %command%'
+dg_mgs2mc_steam_localconfig: ""
+dg_mgs2mc_stop_steam: false
+
+# dest: "root" = extract into game root (single wrapper dir is stripped);
+#       "gcx"  = copy the .gcx into assets/gcx/eu/_bp.
+dg_mgs2mc_mods:
+  - { id: "49",  name: "MGSHDFix", dir: "49", dest: root }
+  - { id: "52",  name: "Community Bugfix Compilation (Base)", dir: "52", file: "528", dest: root }
+  - { id: "19",  name: "Higher Resolution KojiPro Posters", dir: "19", dest: root }
+  - { id: "122", name: "Upscaled UI and Menu Textures (2x)", dir: "122", file: "527", dest: root }
+  - { id: "110", name: "Stillman Tutorials Always Skippable", dir: "110", dest: gcx }
+
+dg_mgs2mc_revert: false

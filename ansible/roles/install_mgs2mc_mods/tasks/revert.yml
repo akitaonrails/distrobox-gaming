@@ -1,0 +1,52 @@
+---
+# Remove MGSHDFix + the Stillman .gcx + markers; clear the launch option. The
+# texture mods (52/19/122) overwrote game assets — restore via Steam Verify.
+
+- name: Remove MGSHDFix loader + plugins + the Stillman gcx
+  ansible.builtin.file:
+    path: "{{ dg_mgs2mc_game_dir }}/{{ item }}"
+    state: absent
+  loop:
+    - wininet.dll
+    - winhttp.dll
+    - plugins/MGSHDFix.asi
+    - plugins/MGSHDFix.ini
+    - plugins/MGSHDFix Config Tool.exe
+    - assets/gcx/eu/_bp/w14a.gcx
+
+- name: Remove markers
+  ansible.builtin.file:
+    path: "{{ dg_mgs2mc_game_dir }}/.dg-mgs2mc-mod-{{ item.id }}"
+    state: absent
+  loop: "{{ dg_mgs2mc_mods }}"
+  loop_control:
+    label: "{{ item.id }}"
+
+- name: Auto-discover the in-box Steam localconfig.vdf (revert)
+  ansible.builtin.find:
+    paths: "{{ dg_mgs2mc_steam_root }}/userdata"
+    patterns: localconfig.vdf
+    recurse: true
+  register: _m2_rv_localconfigs
+  when: dg_mgs2mc_steam_localconfig | length == 0
+
+- name: Resolve localconfig for revert
+  ansible.builtin.set_fact:
+    _m2_rv_localconfig: >-
+      {{ dg_mgs2mc_steam_localconfig if (dg_mgs2mc_steam_localconfig | length > 0)
+         else (_m2_rv_localconfigs.files | map(attribute='path') | list | first
+               if (_m2_rv_localconfigs.files | default([]) | length == 1) else '') }}
+
+- name: Clear the MGS2 launch options (best effort)
+  ansible.builtin.command: >-
+    {{ dg_project_root }}/scripts/set-steam-launch-options.py
+    --localconfig {{ _m2_rv_localconfig | quote }}
+    --set {{ dg_mgs2mc_appid | quote }} ""
+  register: _m2_rv_launch
+  changed_when: "'changed: true' in _m2_rv_launch.stdout"
+  failed_when: false
+  when: _m2_rv_localconfig | length > 0
+
+- name: Report revert
+  ansible.builtin.debug:
+    msg: "MGS2 MC reverted: MGSHDFix + Stillman gcx removed, launch option cleared. Run Steam -> Verify integrity to restore the texture mods."
