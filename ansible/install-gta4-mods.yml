@@ -1,0 +1,7 @@
+---
+- name: Install the GTA IV (Complete Edition) curated mod set
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_gta4_mods

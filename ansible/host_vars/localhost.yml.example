@@ -50,6 +50,19 @@
 # dg_mgs_master_steam_library_root: "{{ dg_external_usb_games_root }}"
 # dg_mgs_master_steam_localconfig: /home/me/.local/share/Steam/userdata/<steamid>/config/localconfig.vdf
 #
+# RE4 HD Project (opt-in role install_re4_hd / --tags re4_hd). Overlays the
+# HD remaster onto Steam "Resident Evil 4 (2005)" (appid 254700, NOT the 2023
+# remake). Stage the OFFICIAL download (BIO4/ + Bin32/) here; see docs/re4-hd.md.
+# dg_re4_hd_source: "{{ dg_external_games_root }}/mods/re4-hd-project"
+# dg_re4_hd_steam_localconfig: /home/me/.local/share/Steam/userdata/<steamid>/config/localconfig.vdf
+#
+# GTA IV mod set (opt-in role install_gta4_mods / --tags gta4_mods). Requires
+# GTA IV Complete Edition (appid 12210, GTAIV.exe 1.2.0.59). Stage the manual
+# Nexus downloads under dg_gta4_staging_root; see docs/gta4-mods.md.
+# dg_gta4_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/gta4"
+# dg_gta4_steam_library_root: /run/media/me/STEAM   # if GTA IV is on a USB lib
+# dg_gta4_steam_localconfig: /home/me/.local/share/Steam/userdata/<steamid>/config/localconfig.vdf
+#
 # shadPS4 DLC/addon install dir (kept OUTSIDE the PS4 game tree so
 # ES-DE's .bin scan doesn't pick up addon files as fake games).
 # dg_shadps4_addon_install_dir: "{{ dg_emudeck_root }}/roms_rare/ps4-addons"

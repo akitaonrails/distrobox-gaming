@@ -1,0 +1,160 @@
+# GTA IV mod set (opt-in role install_gta4_mods). Generated via the
+# nexus-mod-set skill. Run with ansible/install-gta4-mods.yml or
+# `ansible-playbook site.yml --tags gta4_mods`. See docs/gta4-mods.md.
+#
+# Requires GTA IV: The Complete Edition — Steam appid 12210, GTAIV.exe version
+# 1.2.0.59. The role asserts that version and refuses to run on anything else.
+# DO NOT downgrade: this whole set is FusionFix-based and targets CE.
+
+dg_gta4_appid: "12210"
+dg_gta4_required_version: "1.2.0.59"
+
+# Steam library holding GTA IV. Default: the external USB library (CE is
+# installed there on this box). Override if it lives elsewhere.
+dg_gta4_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+# CE ships the game (and GTAIV.exe) under a GTAIV/ subfolder — that is the mod
+# root where FusionFix's loader DLLs, plugins/, and update/ overloader live.
+dg_gta4_game_dir: "{{ dg_gta4_steam_library_root }}/steamapps/common/Grand Theft Auto IV/GTAIV"
+dg_gta4_game_exe: "{{ dg_gta4_game_dir }}/GTAIV.exe"
+
+# FusionFix's "Fusion Overloader" reads mod files from this folder (confirmed
+# from the FusionFix v5.0.1 archive). Content mods map into update/<rpf-path>,
+# so no .rpf editing / OpenIV is needed for texture & data mods.
+dg_gta4_overloader_dir: "{{ dg_gta4_game_dir }}/update"
+
+# Steam root that owns userdata/ (launch options) — the in-box Steam install.
+dg_gta4_steam_root: "{{ dg_box_home }}/.local/share/Steam"
+
+# Canonical preserve + staging root on the NAS. The role auto-downloads each
+# mod here via the Nexus API when NEXUS_MODS_API_KEY is set (Premium); anything
+# already present is reused, and originals are never deleted.
+dg_gta4_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/gta4"
+
+# FusionFix — THE foundation (ASI loader + Overloader). Hotlinkable from GitHub,
+# pinned by sha256, cached in the preserve dir.
+dg_gta4_fusionfix_version: "v5.0.1"
+dg_gta4_fusionfix_archive: "GTAIV.EFLC.FusionFix-v5.0.1.zip"
+dg_gta4_fusionfix_url: "https://github.com/ThirteenAG/GTAIV.EFLC.FusionFix/releases/download/v5.0.1/GTAIV.EFLC.FusionFix.zip"
+dg_gta4_fusionfix_sha256: "3c202398c133392be985854654f169514e055812cc302ef24e6aa97495975b41"
+
+# Steam launch options — Proton must load FusionFix's native dinput8.dll.
+dg_gta4_launch_options: 'WINEDLLOVERRIDES="dinput8=n,b" %command%'
+dg_gta4_steam_localconfig: ""
+dg_gta4_stop_steam: false
+
+# protontricks verbs the role reminds you to apply (FusionFix needs D3DX9).
+dg_gta4_protontricks_verbs:
+  - d3dx9_43
+
+# Archive contents that mark a staged Nexus zip as NOT legit (Steam emulator /
+# scene crack / unexpected installer). The inspect step fails if it sees these.
+dg_gta4_archive_red_flags:
+  - steam_api.dll
+  - steam_api64.dll
+  - steam_appid.txt
+  - 3dmgame.ini
+  - codex
+  - autorun.inf
+
+dg_gta4_handling_priority: "195"   # 195 Realistic Handling applied last / wins
+
+# ---------------------------------------------------------------------------
+# Ordered mod catalog. Each entry:
+#   id/name/url  - identity + Nexus page (download manifest)
+#   file         - Nexus file_id chosen for THIS install (CE variants picked)
+#   dir          - staging subdir under dg_gta4_staging_root
+#   installs     - copy rules applied in order: src (path inside the archive,
+#                  trailing / = merge dir contents) -> dest (path under the game
+#                  dir; content mods target update/<rpf-path> for the overloader)
+#   manual/needs_openiv - flagged mods the role does NOT auto-install (documented
+#                  in docs/gta4-mods.md) because they need OpenIV or a framework
+#                  step that can't be done/verified headlessly on Linux.
+# Order: FusionFix (foundation) -> textures -> data files last, 195 handling LAST.
+# ---------------------------------------------------------------------------
+dg_gta4_mods:
+  - id: "716"
+    name: "Fusion Fix"
+    url: "https://www.nexusmods.com/gta4/mods/716"
+    type: foundation
+
+  - id: "282"
+    name: "Higher Resolution Vehicle Pack (Complete Edition)"
+    url: "https://www.nexusmods.com/gta4/mods/282"
+    file: "2627"
+    dir: "282-vehicle-textures"
+    installs:
+      - { src: "update/", dest: "update/" }
+
+  - id: "357"
+    name: "Higher Resolution Miscellaneous Pack"
+    url: "https://www.nexusmods.com/gta4/mods/357"
+    file: "1172"
+    dir: "357-misc-textures"
+    installs:
+      - { src: "update/", dest: "update/" }
+
+  - id: "311"
+    name: "Higher Resolution Radio Logos (Complete Edition)"
+    url: "https://www.nexusmods.com/gta4/mods/311"
+    file: "666"
+    dir: "311-radio-logos"
+    installs:
+      - { src: "update/", dest: "update/" }
+
+  - id: "258"
+    name: "GTA IV Trilogy HD Upscaled Protagonists"
+    url: "https://www.nexusmods.com/gta4/mods/258"
+    file: "513"
+    dir: "258-hd-protagonists"
+    installs:
+      - { src: "GTAIV/", dest: "update/" }
+
+  - id: "263"
+    name: "Rivers of Blood v9.1 HD (Fusion Fix build)"
+    url: "https://www.nexusmods.com/gta4/mods/263"
+    file: "2438"
+    dir: "263-rivers-of-blood"
+    installs:
+      - { src: "Rivers of Blood v 9.1 HD/update/", dest: "update/" }
+
+  - id: "702"
+    name: "over 200 new Add-On Vehicles in Traffic"
+    url: "https://www.nexusmods.com/gta4/mods/702"
+    file: "1602"
+    dir: "702-addon-vehicles"
+    manual: true
+    note: >-
+      Uses the Liberty's Legacy add-on-vehicle framework (vehicle models +
+      Lists) and ships a full FusionFix.ini. Multi-step framework install that
+      can't be verified headlessly — install from its 'GTAIV - manual install'
+      folder by hand and merge its plugins/FusionFix.ini keys. See docs.
+
+  - id: "272"
+    name: "Realistic Weapon Overhaul Mod"
+    url: "https://www.nexusmods.com/gta4/mods/272"
+    file: "971"
+    dir: "272-weapon-overhaul"
+    needs_openiv: true
+    note: >-
+      Weapon stats/models install via the overloader, but the WEAPONS audio
+      must be imported into pc/audio/Sfx/resident.rpf with OpenIV (a Windows
+      GUI step). The role installs the overloader-able parts only.
+    installs:
+      - { src: "Realistic Weapon Overhaul Mod/WeaponInfo.xml", dest: "update/common/data/" }
+      - { src: "Realistic Weapon Overhaul Mod/weapons.img", dest: "update/pc/models/cdimages/" }
+      - { src: "Realistic Weapon Overhaul Mod/anim.img", dest: "update/pc/anim/" }
+
+  - id: "195"
+    name: "Realistic Handling and Physics v1.1"
+    url: "https://www.nexusmods.com/gta4/mods/195"
+    file: "470"
+    dir: "195-realistic-handling"
+    installs:   # applied LAST -> handling.dat wins over 702's add-on entries
+      - { src: "Realistic Handling & Physics v1.1 GTA IV & EFLC/common/", dest: "update/common/" }
+      - { src: "Realistic Handling & Physics v1.1 GTA IV & EFLC/pc/", dest: "update/pc/" }
+
+# Set true (e.g. -e dg_gta4_revert=true) to UNINSTALL: remove FusionFix + the
+# overloader update/ tree, clear the launch option. See docs/gta4-mods.md.
+dg_gta4_revert: false

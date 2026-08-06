@@ -29,6 +29,8 @@
     - { role: install_sor4_reignited,    tags: [sor4_reignited, never] }
     - { role: install_prboom_plus_rt,    tags: [prboom_rt, doom_rt, never] }
     - { role: metal_gear_master_collection, tags: [metal_gear_master_collection, never] }
+    - { role: install_re4_hd,            tags: [re4_hd, never] }
+    - { role: install_gta4_mods,         tags: [gta4_mods, never] }
     - { role: steam_lib32_nvidia,        tags: [steam_lib32_nvidia, never] }
     - { role: steam_trainers,            tags: [steam_trainers, never] }
     - { role: install_render96ex,        tags: [render96ex, never] }

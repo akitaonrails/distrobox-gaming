@@ -1,0 +1,66 @@
+---
+# Uninstall the GTA IV mod set: remove FusionFix (loader DLLs + plugins) and the
+# whole `update/` overloader tree (all mod content on CE — the base Complete
+# Edition ships no update/ folder), drop the markers, and clear the launch
+# option. Run Steam -> GTA IV -> Verify integrity of game files afterwards as a
+# backstop. Close Steam first so it doesn't rewrite localconfig.vdf on exit.
+
+- name: Remove FusionFix loader + plugin files
+  ansible.builtin.file:
+    path: "{{ dg_gta4_game_dir }}/{{ item }}"
+    state: absent
+  loop:
+    - d3d9.dll
+    - dinput8.dll
+    - plugins/GTAIV.EFLC.FusionFix.asi
+    - plugins/GTAIV.EFLC.FusionFix.ini
+
+- name: Remove the overloader (update/) tree and all mod content
+  ansible.builtin.file:
+    path: "{{ dg_gta4_game_dir }}/update"
+    state: absent
+
+- name: Remove the FusionFix install marker
+  ansible.builtin.file:
+    path: "{{ dg_gta4_game_dir }}/.dg-fusionfix-{{ dg_gta4_fusionfix_version }}"
+    state: absent
+
+- name: Remove per-mod install markers
+  ansible.builtin.file:
+    path: "{{ dg_gta4_game_dir }}/.dg-gta4-mod-{{ item.id }}"
+    state: absent
+  loop: "{{ dg_gta4_mods | rejectattr('type', 'equalto', 'foundation') | list }}"
+  loop_control:
+    label: "{{ item.id }}"
+
+- name: Auto-discover the in-box Steam localconfig.vdf (revert)
+  ansible.builtin.find:
+    paths: "{{ dg_gta4_steam_root }}/userdata"
+    patterns: localconfig.vdf
+    recurse: true
+  register: _gta4_rv_localconfigs
+  when: dg_gta4_steam_localconfig | length == 0
+
+- name: Resolve the localconfig path for revert
+  ansible.builtin.set_fact:
+    _gta4_rv_localconfig: >-
+      {{ dg_gta4_steam_localconfig if (dg_gta4_steam_localconfig | length > 0)
+         else (_gta4_rv_localconfigs.files | map(attribute='path') | list | first
+               if (_gta4_rv_localconfigs.files | default([]) | length == 1) else '') }}
+
+- name: Clear the GTA IV Steam launch options (best effort; close Steam first)
+  ansible.builtin.command: >-
+    {{ dg_project_root }}/scripts/set-steam-launch-options.py
+    --localconfig {{ _gta4_rv_localconfig | quote }}
+    --set {{ dg_gta4_appid | quote }} ""
+  register: _gta4_rv_launch
+  changed_when: "'changed: true' in _gta4_rv_launch.stdout"
+  failed_when: false
+  when: _gta4_rv_localconfig | length > 0
+
+- name: Report revert
+  ansible.builtin.debug:
+    msg:
+      - "GTA IV mod set reverted: FusionFix + update/ removed, launch options cleared."
+      - "Run Steam -> Grand Theft Auto IV -> Properties -> Installed Files -> Verify integrity of game files as a backstop."
+      - "Preserved Nexus archives on the NAS ({{ dg_gta4_staging_root }}) are left untouched."

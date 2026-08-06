@@ -29,6 +29,7 @@ the upstream release is deleted.
 | Wine 9.19 (CMR experiments) | archive.archlinux.org | `install_pc_racing` |
 | Streets of Rage Remake v5.2 rev550 (SorR.exe under Wine) | Internet Archive mirror `sorrv-52-rev-550_202401/SORRv52_rev550.rar` (sha1-pinned; the official MEGA link isn't checksummable, and the AUR pkg is only v5.1) | `install_sorr` / `dg_sorr_*` |
 | Streets of Rage 4: REIGNITED gameplay mod (modded `bigfile`) | gitlab.com/fuzzyetdeadly/sor4-reignited (`assets/SOR4-Reignited-v1.0.0.zip`, sha256-pinned). Replaces `Streets of Rage 4/data/bigfile`; keeps a `bigfile.vanilla-backup`; needs the game's v8 patch | `install_sor4_reignited` / `dg_sor4_reignited_*` |
+| GTA IV FusionFix (ASI loader + Overloader foundation for the GTA IV mod set) | github.com/ThirteenAG/GTAIV.EFLC.FusionFix releases (`v5.0.1`, sha256-pinned); cached under `dg_gta4_staging_root` | `install_gta4_mods` / `dg_gta4_fusionfix_*` |
 
 ## 2. AUTO — "latest" via API (moving target)
 
@@ -70,6 +71,8 @@ with guidance if absent.
 | Dolphin/Azahar HD texture pack zips (8 packs) | per-pack community threads (see [hd-textures.md](hd-textures.md)) | `dg_hd_dolphin_archive_root`, `dg_hd_azahar_archive_root` |
 | Project Forza Plus (FM2/3/4 mods) | author's Google Drive (links in [project-forza.md](project-forza.md)) | `dg_rom_heavy_root/xbox360/` |
 | PS3 update PKGs | nopaystation / ps3.aldostools.org (helper: `install_dlcs/files/check_ps3_updates.py`) | `dg_ps3_dlc_source` |
+| RE4 HD Project 1.1 (BIO4 HD assets + re4_tweaks, ~34 GB) — for Steam RE4 2005 / appid 254700, NOT the remake | [re4hd.com](https://www.re4hd.com/) (official) or crack-free mirror [archive.org/details/re4HDProject.7z](https://archive.org/details/re4HDProject.7z). Do NOT use a scene repack. | `dg_re4_hd_source` |
+| GTA IV mod set — 8 NexusMods (282/195/716→GitHub/263/357/272/702/311/258) for CE 1.2.0.59 | nexusmods.com/gta4 (free account = manual per-mod download; role prints a staging manifest). Preserved on the NAS. | `dg_gta4_staging_root` (`ROMS_FINAL/PC/NexusMods/gta4/`) |
 
 ## 5. MANUAL — no reliable public URL (source yourself)
 

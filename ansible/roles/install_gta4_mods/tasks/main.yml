@@ -1,0 +1,260 @@
+---
+# GTA IV (Complete Edition, appid 12210, GTAIV.exe 1.2.0.59) curated mod set.
+# Generated via the nexus-mod-set skill. See group_vars/all/gta4_mods.yml for
+# the ordered catalog and docs/gta4-mods.md for the full write-up.
+#
+# FusionFix is the foundation (auto-fetched from GitHub). The other mods are
+# auto-downloaded via the Nexus API when NEXUS_MODS_API_KEY is set (Premium),
+# else staged manually. Content installs into FusionFix's `update/` overloader
+# (no OpenIV / .rpf editing) via per-mod copy rules; two mods that genuinely
+# need OpenIV / a framework step are flagged and reported, not faked.
+
+- name: Revert the GTA IV mod set when requested
+  ansible.builtin.include_tasks: revert.yml
+  when: dg_gta4_revert | bool
+
+- name: Install the GTA IV mod set
+  when: not (dg_gta4_revert | bool)
+  block:
+    - name: Select the content mods (everything except the foundation)
+      ansible.builtin.set_fact:
+        _gta4_content_mods: "{{ dg_gta4_mods | rejectattr('type', 'equalto', 'foundation') | list }}"
+
+    # --- Preflight: game present and EXACTLY the required version ---
+
+    - name: Locate GTAIV.exe
+      ansible.builtin.stat:
+        path: "{{ dg_gta4_game_exe }}"
+      register: _gta4_exe
+
+    - name: Fail when GTA IV is not installed
+      ansible.builtin.fail:
+        msg: >-
+          GTAIV.exe not found at {{ dg_gta4_game_exe }}. Install "Grand Theft
+          Auto IV: The Complete Edition" (Steam appid {{ dg_gta4_appid }}), or
+          override dg_gta4_steam_library_root if it lives in another library
+          (e.g. an unmounted USB drive). See docs/gta4-mods.md.
+      when: not _gta4_exe.stat.exists
+
+    - name: Read the installed GTA IV version
+      ansible.builtin.command:
+        cmd: >-
+          {{ dg_project_root }}/scripts/pe-version.py
+          {{ dg_gta4_game_exe | quote }} --expect {{ dg_gta4_required_version }}
+      register: _gta4_version
+      changed_when: false
+      failed_when: false
+
+    - name: Fail when the GTA IV version does not match the mod set
+      ansible.builtin.fail:
+        msg: >-
+          This mod set requires GTA IV Complete Edition
+          {{ dg_gta4_required_version }}, but the installed GTAIV.exe reports
+          "{{ _gta4_version.stdout | trim }}". Do NOT downgrade for this set —
+          the mods are FusionFix-based and target CE. See docs/gta4-mods.md.
+      when: _gta4_version.rc != 0
+
+    # --- Foundation: FusionFix (auto GitHub, cached + preserved on the NAS) ---
+
+    - name: Ensure the FusionFix staging dir exists
+      ansible.builtin.file:
+        path: "{{ dg_gta4_staging_root }}/716-fusionfix"
+        state: directory
+        mode: "0755"
+
+    - name: Download + preserve FusionFix {{ dg_gta4_fusionfix_version }} (reused if present)
+      ansible.builtin.get_url:
+        url: "{{ dg_gta4_fusionfix_url }}"
+        dest: "{{ dg_gta4_staging_root }}/716-fusionfix/{{ dg_gta4_fusionfix_archive }}"
+        checksum: "sha256:{{ dg_gta4_fusionfix_sha256 }}"
+        mode: "0644"
+
+    - name: Check the FusionFix install marker
+      ansible.builtin.stat:
+        path: "{{ dg_gta4_game_dir }}/.dg-fusionfix-{{ dg_gta4_fusionfix_version }}"
+      register: _gta4_ff_marker
+
+    - name: Install FusionFix into the game root (loader + plugins + update/)
+      ansible.builtin.unarchive:
+        src: "{{ dg_gta4_staging_root }}/716-fusionfix/{{ dg_gta4_fusionfix_archive }}"
+        dest: "{{ dg_gta4_game_dir }}"
+        remote_src: true
+      when: not _gta4_ff_marker.stat.exists
+
+    - name: Write the FusionFix install marker
+      ansible.builtin.copy:
+        dest: "{{ dg_gta4_game_dir }}/.dg-fusionfix-{{ dg_gta4_fusionfix_version }}"
+        mode: "0644"
+        content: "FusionFix {{ dg_gta4_fusionfix_version }} sha256={{ dg_gta4_fusionfix_sha256 }}\n"
+      when: not _gta4_ff_marker.stat.exists
+
+    # --- Content mods: auto-download (Premium), verify staged, inspect, install ---
+
+    - name: Auto-download mods via the Nexus API when a Premium key is present
+      ansible.builtin.command:
+        cmd: >-
+          {{ dg_project_root }}/scripts/nexus-download.py --game gta4
+          --mod {{ item.id }} --file {{ item.file }} --via api
+          --dest {{ (dg_gta4_staging_root + '/' + item.dir) | quote }}
+      loop: "{{ _gta4_content_mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _gta4_dl
+      changed_when: "'saved' in _gta4_dl.stdout"
+      failed_when: false
+      no_log: true
+      when: lookup('ansible.builtin.env', 'NEXUS_MODS_API_KEY') | length > 0
+
+    - name: Find each staged content-mod archive
+      ansible.builtin.find:
+        paths: "{{ dg_gta4_staging_root }}/{{ item.dir }}"
+        patterns: ["*.zip", "*.7z", "*.rar"]
+      loop: "{{ _gta4_content_mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _gta4_staged
+
+    - name: Fail with a download manifest when mods are not staged
+      ansible.builtin.fail:
+        msg: |
+          Stage these Nexus mods first — set NEXUS_MODS_API_KEY (Premium) for
+          auto-download, or download each in a browser into its subdir under
+          {{ dg_gta4_staging_root }}/ :
+          {% for r in _gta4_staged.results %}
+          {% if r.matched == 0 %}
+            - {{ r.item.id }}  {{ r.item.name }}
+              {{ r.item.url }}
+              -> {{ dg_gta4_staging_root }}/{{ r.item.dir }}/
+          {% endif %}
+          {% endfor %}
+      when: _gta4_staged.results | selectattr('matched', 'equalto', 0) | list | length > 0
+
+    - name: Inspect staged archives for crack / red-flag files (legitimacy check)
+      ansible.builtin.shell: |
+        set -eu
+        rc=0
+        listing="$(7z l -ba {{ item.files | map(attribute='path') | map('quote') | join(' ') }} 2>/dev/null || true)"
+        for rf in {{ dg_gta4_archive_red_flags | map('quote') | join(' ') }}; do
+          if printf '%s\n' "$listing" | grep -qiE "(^|[/ ])$rf(\$|[/ ])"; then
+            echo "RED FLAG in {{ item.item.id }}: contains $rf"; rc=3
+          fi
+        done
+        [ "$rc" = 0 ] && echo "ok {{ item.item.id }}"
+        exit "$rc"
+      loop: "{{ _gta4_staged.results }}"
+      loop_control:
+        label: "{{ item.item.id }}"
+      register: _gta4_inspect
+      changed_when: false
+      failed_when: _gta4_inspect.rc == 3
+
+    # Install the overloader-friendly mods via their per-archive copy rules
+    # (catalog order; 195 handling lands last and wins handling.dat). Mods
+    # flagged `manual` are skipped here and reported below. Marker-gated inside
+    # the shell so reruns skip completed mods.
+    - name: Install content mods into the overloader (per-archive copy rules)
+      ansible.builtin.shell: |
+        set -eu
+        marker="{{ dg_gta4_game_dir }}/.dg-gta4-mod-{{ item.id }}"
+        [ -f "$marker" ] && { echo "skip {{ item.id }} (already installed)"; exit 0; }
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        arch="$(find {{ (dg_gta4_staging_root + '/' + item.dir) | quote }} -maxdepth 1 -type f \( -name '*.zip' -o -name '*.7z' -o -name '*.rar' \) | head -1)"
+        7z x -y -o"$tmp" "$arch" >/dev/null
+        {% for rule in item.installs %}
+        mkdir -p {{ (dg_gta4_game_dir + '/' + rule.dest) | quote }}
+        rsync -a "$tmp/"{{ rule.src | quote }} {{ (dg_gta4_game_dir + '/' + rule.dest) | quote }}
+        {% endfor %}
+        printf '%s\n' "{{ item.name }} ({{ item.url }})" > "$marker"
+        echo "installed {{ item.id }}"
+      loop: "{{ _gta4_content_mods | rejectattr('manual', 'defined') | selectattr('installs', 'defined') | list }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _gta4_install
+      changed_when: "'installed' in _gta4_install.stdout"
+
+    - name: Report mods that need a manual / OpenIV step (not auto-installed)
+      ansible.builtin.debug:
+        msg: "MANUAL: {{ item.id }} {{ item.name }} — {{ item.note | default('see docs/gta4-mods.md') }}"
+      loop: >-
+        {{ (_gta4_content_mods | selectattr('manual', 'defined') | list)
+           + (_gta4_content_mods | selectattr('needs_openiv', 'defined') | list) }}
+      loop_control:
+        label: "{{ item.id }}"
+
+    # --- Steam launch options (Proton dinput8 override) ---
+
+    - name: Auto-discover the in-box Steam localconfig.vdf
+      ansible.builtin.find:
+        paths: "{{ dg_gta4_steam_root }}/userdata"
+        patterns: localconfig.vdf
+        recurse: true
+      register: _gta4_localconfigs
+      when: dg_gta4_steam_localconfig | length == 0
+
+    - name: Resolve the effective Steam localconfig path
+      ansible.builtin.set_fact:
+        _gta4_localconfig: >-
+          {{ dg_gta4_steam_localconfig if (dg_gta4_steam_localconfig | length > 0)
+             else (_gta4_localconfigs.files | map(attribute='path') | list | first
+                   if (_gta4_localconfigs.files | default([]) | length == 1) else '') }}
+
+    - name: Check if Steam is running before editing launch options
+      ansible.builtin.shell: |
+        pgrep -u "$(id -u)" -x steam >/dev/null || pgrep -u "$(id -u)" -f '/steam(webhelper)?( |$)' >/dev/null
+      register: _gta4_steam_running
+      changed_when: false
+      failed_when: false
+      check_mode: false
+      when: _gta4_localconfig | length > 0
+
+    - name: Refuse to edit launch options while Steam is running
+      ansible.builtin.fail:
+        msg: >-
+          Steam is running. Close it first or set dg_gta4_stop_steam=true before
+          editing {{ _gta4_localconfig }}.
+      when:
+        - _gta4_localconfig | length > 0
+        - not (dg_gta4_stop_steam | bool)
+        - _gta4_steam_running.rc == 0
+
+    - name: Stop Steam before editing launch options
+      ansible.builtin.command: steam -shutdown
+      changed_when: true
+      failed_when: false
+      when:
+        - _gta4_localconfig | length > 0
+        - dg_gta4_stop_steam | bool
+        - _gta4_steam_running.rc == 0
+
+    - name: Wait for Steam to exit
+      ansible.builtin.shell: |
+        for _ in $(seq 1 30); do
+          if ! pgrep -u "$(id -u)" -x steam >/dev/null && ! pgrep -u "$(id -u)" -f '/steam(webhelper)?( |$)' >/dev/null; then
+            exit 0
+          fi
+          sleep 1
+        done
+        exit 1
+      changed_when: false
+      when:
+        - _gta4_localconfig | length > 0
+        - dg_gta4_stop_steam | bool
+        - _gta4_steam_running.rc == 0
+
+    - name: Set the GTA IV Steam launch options (Proton dinput8 override)
+      ansible.builtin.command: >-
+        {{ dg_project_root }}/scripts/set-steam-launch-options.py
+        --localconfig {{ _gta4_localconfig | quote }}
+        --set {{ dg_gta4_appid | quote }} {{ dg_gta4_launch_options | quote }}
+      register: _gta4_launch
+      changed_when: "'changed: true' in _gta4_launch.stdout"
+      when: _gta4_localconfig | length > 0
+
+    - name: Report completion + manual follow-ups
+      ansible.builtin.debug:
+        msg:
+          - "GTA IV mod set installed into {{ dg_gta4_game_dir }} (overloader: update/)."
+          - "{{ 'Launch options set for appid ' + dg_gta4_appid if (_gta4_localconfig | length > 0) else 'NO localconfig.vdf found — add ' + dg_gta4_launch_options + ' to GTA IV launch options manually in Steam.' }}"
+          - "MANUAL: apply FusionFix's D3DX9 dep to the prefix — protontricks {{ dg_gta4_appid }} {{ dg_gta4_protontricks_verbs | join(' ') }}"
+          - "MANUAL mods (need OpenIV / framework): 272 weapon audio, 702 add-on vehicles — see docs/gta4-mods.md."
+          - "Revert: ansible-playbook install-gta4-mods.yml -e dg_gta4_revert=true"
