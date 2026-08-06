@@ -23,7 +23,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Batman: Arkham Asylum GOTY | batmanarkhamasylum | `35140` | 2 | ⏸️ deferred (TFC GUI) |
 | Black Myth: Wukong | blackmythwukong | `2358720` | 1 | ✅ (see below) |
 | Bloodstained: RotN | bloodstainedritualofthenight | `692850` | 7 | ✅ (see below) |
-| Dark Souls Remastered | darksoulsremastered | `570940` | 3 | ⏳ |
+| Dark Souls Remastered | darksoulsremastered | `570940` | 3 | ✅ #293 (see below); #220 deferred, #7 dropped |
 | Elden Ring | eldenring | `1245620` | 1 | ⏳ |
 | FINAL FANTASY VII REMAKE Intergrade | finalfantasy7remake | `1462040` | 5 | ⏳ |
 | FINAL FANTASY VII REBIRTH | finalfantasy7rebirth | `2909400` | 7 | ⏳ |
@@ -81,6 +81,7 @@ an interactive GUI.
 | Batman: Arkham Knight (`208650`) | Community Patch (mod 5) is **TFC Installer** format (`.upk.PackagePatch` + `GameProfile.xml`). Mod 50 (Batmobiles) alone IS a trivial `DLC/`-folder drop — do that one directly if wanted. |
 | Batman: Arkham City GOTY (`200260`) | Community Patch (mod 1) is TFC. HD Texture Pack (407) / cheats (428) may be droppable — check in the manual pass. |
 | Batman: Arkham Asylum GOTY (`35140`) | Both mods (Reborn HD 1, 4K Remastered 36) are TFC / `Advanced Launcher` (`BmLauncher.exe`) GUI-installed. |
+| Dark Souls Remastered (`570940`) — **mod 220 only** | DSR 2020 Textures (~6 GB) needs the **DSR-TPUP** .NET WinForms tool to unpack/override/repack the game's dvdbnd archives. Mod 293 (Easy mode) IS installed; mod 7 dropped (ReShade). |
 
 ---
 
@@ -170,4 +171,18 @@ successors exist if a table regresses on the current build.
 | [33 Max Stack Plus](https://www.nexusmods.com/bloodstainedritualofthenight/mods/33) | 999 stacks | ✅ |
 | [38 Drop Rate Plus](https://www.nexusmods.com/bloodstainedritualofthenight/mods/38) | 100% drops | ✅ default |
 | [67 Improved Drop Rates](https://www.nexusmods.com/bloodstainedritualofthenight/mods/67) | +10% drops | alt (`droprate=67`) — conflicts with 38 |
+
+## ✅ Dark Souls: Remastered — `install_dsr_mods`
+
+Role: `install_dsr_mods` · appid `570940` (in-box library). Swaps the game's
+`param/GameParam/GameParam.parambnd.dcx` for the **Easy mode** (#293) variant
+(stock backed up). No loader, no ReShade. **Play OFFLINE** — a modded character
+online risks a FromSoftware soft-ban (DSR has no client anti-cheat, so it runs
+modded under Proton fine).
+
+| Mod | Type | Notes |
+|---|---|---|
+| [293 Easy mode](https://www.nexusmods.com/darksoulsremastered/mods/293) | difficulty (GameParam) | `dg_dsr_easymode_variant` = 50 (default) / 70 / 95 % damage reduction |
+| [220 DSR 2020 Textures](https://www.nexusmods.com/darksoulsremastered/mods/220) | HD textures | ⏸️ deferred — needs the DSR-TPUP .NET repack GUI |
+| [7 Enhanced Lighting](https://www.nexusmods.com/darksoulsremastered/mods/7) | ReShade preset | ⛔ dropped (no-ReShade rule) |
 

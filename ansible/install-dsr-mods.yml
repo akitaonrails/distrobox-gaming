@@ -1,0 +1,7 @@
+---
+- name: Install the Dark Souls Remastered NexusMods set (Easy mode)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_dsr_mods

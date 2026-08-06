@@ -1,0 +1,87 @@
+---
+# Dark Souls: Remastered (appid 570940) mod set — Easy mode GameParam swap.
+# See group_vars/all/dsr_mods.yml and docs/nexusmods.md.
+
+- name: Revert the DSR mod when requested
+  ansible.builtin.include_tasks: revert.yml
+  when: dg_dsr_revert | bool
+
+- name: Install the DSR mod
+  when: not (dg_dsr_revert | bool)
+  block:
+    - name: Locate the game's GameParam
+      ansible.builtin.stat:
+        path: "{{ dg_dsr_gameparam }}"
+      register: _dsr_param
+
+    - name: Fail when Dark Souls Remastered is not found
+      ansible.builtin.fail:
+        msg: >-
+          {{ dg_dsr_gameparam }} not found (appid {{ dg_dsr_appid }}). Install
+          the game, or override dg_dsr_steam_library_root. See docs/nexusmods.md.
+      when: not _dsr_param.stat.exists
+
+    - name: Ensure the backup dir exists
+      ansible.builtin.file:
+        path: "{{ dg_dsr_backup_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Back up the stock GameParam
+      ansible.builtin.copy:
+        src: "{{ dg_dsr_gameparam }}"
+        dest: "{{ dg_dsr_backup_dir }}/GameParam.parambnd.dcx.stock"
+        remote_src: true
+        force: false
+        mode: "0644"
+
+    - name: Download the chosen Easy mode variant via the Nexus API (Premium key)
+      ansible.builtin.command:
+        cmd: >-
+          {{ dg_project_root }}/scripts/nexus-download.py --game darksoulsremastered
+          --mod 293 --file {{ dg_dsr_easymode_files[dg_dsr_easymode_variant] }} --via api
+          --dest {{ (dg_dsr_staging_root + '/293-easymode-' + dg_dsr_easymode_variant) | quote }}
+      register: _dsr_dl
+      changed_when: "'saved' in _dsr_dl.stdout"
+      failed_when: false
+      no_log: true
+      when: lookup('ansible.builtin.env', 'NEXUS_MODS_API_KEY') | length > 0
+
+    - name: Find the staged variant archive
+      ansible.builtin.find:
+        paths: "{{ dg_dsr_staging_root }}/293-easymode-{{ dg_dsr_easymode_variant }}"
+        patterns: ["*.rar", "*.zip", "*.7z"]
+      register: _dsr_staged
+
+    - name: Fail when the variant is not staged
+      ansible.builtin.fail:
+        msg: >-
+          DSR Easy mode variant {{ dg_dsr_easymode_variant }} not staged. Set
+          NEXUS_MODS_API_KEY or download darksoulsremastered/mods/293 (file
+          {{ dg_dsr_easymode_files[dg_dsr_easymode_variant] }}) into
+          {{ dg_dsr_staging_root }}/293-easymode-{{ dg_dsr_easymode_variant }}/.
+      when: _dsr_staged.matched == 0
+
+    - name: Install the Easy mode GameParam (marker-gated)
+      ansible.builtin.shell: |
+        set -eu
+        marker="{{ dg_dsr_game_dir }}/.dg-dsr-easymode"
+        want="{{ dg_dsr_easymode_variant }}"
+        [ -f "$marker" ] && [ "$(cat "$marker")" = "$want" ] && { echo "up-to-date"; exit 0; }
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        7z x -y -o"$tmp" {{ _dsr_staged.files[0].path | quote }} >/dev/null
+        dcx="$(find "$tmp" -name 'GameParam.parambnd.dcx' | head -1)"
+        [ -n "$dcx" ] || { echo "no GameParam in archive"; exit 4; }
+        cp -f "$dcx" {{ dg_dsr_gameparam | quote }}
+        printf '%s' "$want" > "$marker"
+        echo "installed easymode-$want"
+      register: _dsr_install
+      changed_when: "'installed' in _dsr_install.stdout"
+
+    - name: Report completion
+      ansible.builtin.debug:
+        msg:
+          - "DSR Easy mode ({{ dg_dsr_easymode_variant }}% damage reduction) installed."
+          - "PLAY OFFLINE (set the in-game network option to Offline — a modded character online risks a soft-ban)."
+          - "Change variant: -e dg_dsr_easymode_variant=70 (or 95). Revert: -e dg_dsr_revert=true."
+          - "Deferred: #220 DSR 2020 Textures (needs DSR-TPUP .NET repack GUI). Dropped: #7 (ReShade)."

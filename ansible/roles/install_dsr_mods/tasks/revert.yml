@@ -1,0 +1,29 @@
+---
+# Restore the stock GameParam and drop the marker.
+
+- name: Check for the stock GameParam backup
+  ansible.builtin.stat:
+    path: "{{ dg_dsr_backup_dir }}/GameParam.parambnd.dcx.stock"
+  register: _dsr_rv_backup
+
+- name: Restore the stock GameParam
+  ansible.builtin.copy:
+    src: "{{ dg_dsr_backup_dir }}/GameParam.parambnd.dcx.stock"
+    dest: "{{ dg_dsr_gameparam }}"
+    remote_src: true
+    mode: "0644"
+  when: _dsr_rv_backup.stat.exists
+
+- name: Warn when no backup exists
+  ansible.builtin.debug:
+    msg: "No stock GameParam backup — use Steam -> Verify integrity of game files to restore."
+  when: not _dsr_rv_backup.stat.exists
+
+- name: Remove the marker
+  ansible.builtin.file:
+    path: "{{ dg_dsr_game_dir }}/.dg-dsr-easymode"
+    state: absent
+
+- name: Report revert
+  ansible.builtin.debug:
+    msg: "DSR Easy mode reverted: stock GameParam restored."

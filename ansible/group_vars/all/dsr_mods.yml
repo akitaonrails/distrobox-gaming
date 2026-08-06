@@ -1,0 +1,31 @@
+# Dark Souls: Remastered mod set (opt-in role install_dsr_mods). Generated via
+# the nexus-mod-set skill. See docs/nexusmods.md.
+#
+# Of the 3 requested mods: #7 Enhanced Lighting = ReShade (DROPPED, user avoids
+# ReShade); #220 DSR 2020 Textures needs the DSR-TPUP .NET repack GUI (DEFERRED
+# — heavy Windows tool, revisit at end); #293 Easy mode is a trivial
+# GameParam.parambnd.dcx swap — installed here. No loader, no ReShade.
+#
+# IMPORTANT: #293 alters gameplay params — set the game to OFFLINE mode before
+# playing (a modded character online risks a FromSoftware soft-ban). DSR has no
+# client-side anti-cheat, so it runs modded fine under Proton.
+
+dg_dsr_appid: "570940"
+
+# DSR is in the IN-BOX Steam library here (not the USB drive).
+dg_dsr_steam_library_root: "{{ dg_box_home }}/.local/share/Steam"
+dg_dsr_game_dir: "{{ dg_dsr_steam_library_root }}/steamapps/common/DARK SOULS REMASTERED"
+dg_dsr_gameparam: "{{ dg_dsr_game_dir }}/param/GameParam/GameParam.parambnd.dcx"
+
+dg_dsr_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/darksouls-remastered"
+dg_dsr_backup_dir: "{{ dg_external_games_root }}/backups/darksouls-remastered"
+
+# Easy mode (#293) damage-reduction variant: "50" (base/moderate, default), "70",
+# or "95" (% damage taken reduced). Maps to the Nexus file id.
+dg_dsr_easymode_variant: "50"
+dg_dsr_easymode_files:
+  "50": "915"
+  "70": "916"
+  "95": "917"
+
+dg_dsr_revert: false
