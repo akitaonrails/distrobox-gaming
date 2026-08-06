@@ -37,6 +37,7 @@
     - { role: install_wukong_mods,       tags: [wukong_mods, never] }
     - { role: install_bloodstained_mods, tags: [bloodstained_mods, never] }
     - { role: install_dsr_mods,          tags: [dsr_mods, never] }
+    - { role: install_eldenring_mods,    tags: [eldenring_mods, never] }
     - { role: steam_lib32_nvidia,        tags: [steam_lib32_nvidia, never] }
     - { role: steam_trainers,            tags: [steam_trainers, never] }
     - { role: install_render96ex,        tags: [render96ex, never] }

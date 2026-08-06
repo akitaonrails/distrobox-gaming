@@ -1,0 +1,37 @@
+# Elden Ring mod set (opt-in role install_eldenring_mods). Generated via the
+# nexus-mod-set skill. See docs/nexusmods.md.
+#
+# One mod: #146 "Easy Mode (DLC supported)" — a regulation.bin param swap (no
+# ReShade, no DLL). Installed by direct replacement of Game/regulation.bin
+# (stock backed up), the simplest reproducible path.
+#
+# IMPORTANT — play OFFLINE. A modded regulation online = permanent ban. Elden
+# Ring has EAC; the direct-replacement file loads fine offline. For a cleaner
+# EAC bypass, load it via ModEngine2 on Proton (github.com/Cloudef/elden-proton)
+# — drop the same regulation.bin into ModEngine2's mod/ folder instead. Also
+# version-sensitive: the mod targets game hotfix 1.12.2 + SotE; a game patch can
+# desync it.
+
+dg_eldenring_appid: "1245620"
+
+# Elden Ring is on the external USB library here.
+dg_eldenring_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+dg_eldenring_game_dir: "{{ dg_eldenring_steam_library_root }}/steamapps/common/ELDEN RING"
+dg_eldenring_regulation: "{{ dg_eldenring_game_dir }}/Game/regulation.bin"
+
+dg_eldenring_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/eldenring"
+dg_eldenring_backup_dir: "{{ dg_external_games_root }}/backups/eldenring"
+
+# Easy Mode variant (mutually exclusive — one regulation can be active):
+#  "damage"   = 01 Damage Edit Only (~50% damage reduction)
+#  "default"  = 02 Default (50% damage + 10x runes + 2x flask heal) — author's default
+#  "personal" = 03 Personal Edit (everything: no FP/weight, 1-material upgrades, +10 stats...)
+dg_eldenring_variant: "default"
+dg_eldenring_files:
+  "damage": "47055"
+  "default": "47056"
+  "personal": "47057"
+
+dg_eldenring_revert: false

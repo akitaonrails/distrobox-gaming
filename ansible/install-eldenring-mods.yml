@@ -1,0 +1,7 @@
+---
+- name: Install the Elden Ring NexusMods set (Easy Mode)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_eldenring_mods

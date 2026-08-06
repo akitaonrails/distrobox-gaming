@@ -24,7 +24,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Black Myth: Wukong | blackmythwukong | `2358720` | 1 | ✅ (see below) |
 | Bloodstained: RotN | bloodstainedritualofthenight | `692850` | 7 | ✅ (see below) |
 | Dark Souls Remastered | darksoulsremastered | `570940` | 3 | ✅ #293 (see below); #220 deferred, #7 dropped |
-| Elden Ring | eldenring | `1245620` | 1 | ⏳ |
+| Elden Ring | eldenring | `1245620` | 1 | ✅ (see below) |
 | FINAL FANTASY VII REMAKE Intergrade | finalfantasy7remake | `1462040` | 5 | ⏳ |
 | FINAL FANTASY VII REBIRTH | finalfantasy7rebirth | `2909400` | 7 | ⏳ |
 | Grand Theft Auto V Enhanced | gta5enhanced | `3240220` | 7 | ⏳ |
@@ -185,4 +185,15 @@ modded under Proton fine).
 | [293 Easy mode](https://www.nexusmods.com/darksoulsremastered/mods/293) | difficulty (GameParam) | `dg_dsr_easymode_variant` = 50 (default) / 70 / 95 % damage reduction |
 | [220 DSR 2020 Textures](https://www.nexusmods.com/darksoulsremastered/mods/220) | HD textures | ⏸️ deferred — needs the DSR-TPUP .NET repack GUI |
 | [7 Enhanced Lighting](https://www.nexusmods.com/darksoulsremastered/mods/7) | ReShade preset | ⛔ dropped (no-ReShade rule) |
+
+## ✅ Elden Ring — `install_eldenring_mods`
+
+Role: `install_eldenring_mods` · appid `1245620` (USB library). Swaps
+`Game/regulation.bin` for the **Easy Mode** (#146) variant (stock backed up).
+No ReShade. **Play OFFLINE** (modded online = ban). Targets game **1.12.2 + SotE**;
+for a clean EAC bypass, load via ModEngine2 on Proton (elden-proton) instead.
+
+| Mod | Type | Notes |
+|---|---|---|
+| [146 Easy Mode](https://www.nexusmods.com/eldenring/mods/146) | difficulty (`regulation.bin`) | `dg_eldenring_variant` = `default` (10× rune, default) / `damage` / `personal` |
 

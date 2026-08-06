@@ -1,0 +1,29 @@
+---
+# Restore the stock regulation.bin and drop the marker.
+
+- name: Check for the stock regulation.bin backup
+  ansible.builtin.stat:
+    path: "{{ dg_eldenring_backup_dir }}/regulation.bin.stock"
+  register: _er_rv_backup
+
+- name: Restore the stock regulation.bin
+  ansible.builtin.copy:
+    src: "{{ dg_eldenring_backup_dir }}/regulation.bin.stock"
+    dest: "{{ dg_eldenring_regulation }}"
+    remote_src: true
+    mode: "0644"
+  when: _er_rv_backup.stat.exists
+
+- name: Warn when no backup exists
+  ansible.builtin.debug:
+    msg: "No stock regulation.bin backup — use Steam -> Verify integrity of game files to restore."
+  when: not _er_rv_backup.stat.exists
+
+- name: Remove the marker
+  ansible.builtin.file:
+    path: "{{ dg_eldenring_game_dir }}/Game/.dg-eldenring-easymode"
+    state: absent
+
+- name: Report revert
+  ansible.builtin.debug:
+    msg: "Elden Ring Easy Mode reverted: stock regulation.bin restored."
