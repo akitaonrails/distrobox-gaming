@@ -11,9 +11,11 @@ dg_re4_hd_appid: "254700"
 
 # Steam library that holds the game. Mirrors the Metal Gear role: the external
 # USB library when configured, otherwise the in-box Steam library.
-dg_re4_hd_steam_library_root: >-
-  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
-     else dg_box_home + '/.local/share/Steam' }}
+# RE4 (2005) installs to the IN-BOX Steam library here. Default to it directly
+# and do NOT prefer dg_external_usb_games_root — that USB drive holds OTHER
+# games, and preferring it sent the role to the wrong library. Override if yours
+# differs.
+dg_re4_hd_steam_library_root: "{{ dg_box_home }}/.local/share/Steam"
 dg_re4_hd_game_dir: "{{ dg_re4_hd_steam_library_root }}/steamapps/common/Resident Evil 4"
 
 # Steam root that owns userdata/ (for launch options) — always the in-box
