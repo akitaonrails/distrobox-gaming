@@ -18,9 +18,9 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Art of Rally | artofrally | `550320` | 4 | 🔧 built — verify in-game |
 | Alex Kidd in Miracle World DX | alexkiddinmiracleworlddx | `1333470` | 1 | ✅ (see below) |
 | Ace Combat 7 | acecombat7skiesunknown | `502500` | 1 | ✅ (see below) |
-| Batman: Arkham Knight | batmanarkhamknight | `208650` | 2 | ⏳ |
-| Batman: Arkham City GOTY | batmanarkhamcity | `200260` | 3 | ⏳ |
-| Batman: Arkham Asylum GOTY | batmanarkhamasylum | `35140` | 2 | ⏳ |
+| Batman: Arkham Knight | batmanarkhamknight | `208650` | 2 | ⏸️ deferred (TFC GUI) |
+| Batman: Arkham City GOTY | batmanarkhamcity | `200260` | 3 | ⏸️ deferred (TFC GUI) |
+| Batman: Arkham Asylum GOTY | batmanarkhamasylum | `35140` | 2 | ⏸️ deferred (TFC GUI) |
 | Black Myth: Wukong | blackmythwukong | `2358720` | 1 | ⏳ |
 | Bloodstained: RotN | bloodstainedritualofthenight | `692850` | 7 | ⏳ |
 | Dark Souls Remastered | darksoulsremastered | `570940` | 3 | ⏳ |
@@ -66,6 +66,21 @@ Re-check if you later install these; they're in `tmp/nexusmods.txt`.
 | The Witcher 3 | witcher3 | not found in any Steam library |
 | WRC 7 | wrc7 | not found in any Steam library |
 | Colin McRae Rally 2 | colinmcraerally2 | not a Steam title (user-noted) — covered by `install_pc_racing` instead |
+
+### ⏸️ Deferred (blocked) — revisit at the end
+
+Games whose mods need an interactive **Windows GUI tool** that isn't
+headless-automatable. Mods are downloaded + preserved on the NAS; do these in a
+manual pass (run the tool under Proton). The Arkham family uses the **TFC
+Installer** / **Advanced Launcher** ecosystem — `GameProfile.xml`-driven .NET
+GUIs that inject textures/patches into base UPKs; the role framework can't drive
+an interactive GUI.
+
+| Game | Blocker |
+|---|---|
+| Batman: Arkham Knight (`208650`) | Community Patch (mod 5) is **TFC Installer** format (`.upk.PackagePatch` + `GameProfile.xml`). Mod 50 (Batmobiles) alone IS a trivial `DLC/`-folder drop — do that one directly if wanted. |
+| Batman: Arkham City GOTY (`200260`) | Community Patch (mod 1) is TFC. HD Texture Pack (407) / cheats (428) may be droppable — check in the manual pass. |
+| Batman: Arkham Asylum GOTY (`35140`) | Both mods (Reborn HD 1, 4K Remastered 36) are TFC / `Advanced Launcher` (`BmLauncher.exe`) GUI-installed. |
 
 ---
 
