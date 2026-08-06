@@ -1,0 +1,38 @@
+# Red Dead Redemption (2023 PC port) mod set — opt-in role install_rdr_mods.
+# Generated via the nexus-mod-set skill. See docs/nexusmods.md. appid 2668510.
+#
+# RDR's PC port stores its .rpf archives LOOSE under <game>/game/, so mods that
+# ship a complete replacement .rpf are clean drop-ins (we back up the original as
+# <name>.rpf.dg-orig first, so revert restores it). Only mods 20 and 89 qualify.
+#
+# Excluded (see docs/nexusmods.md for the full rationale):
+#   21   RDR Reimagined  -> ReShade preset (reshade-shaders/*.fx) — dropped
+#   525  RDR2 Minimap    -> needs MagicRDR to inject into mapres.rpf/fonts.rpf
+#   66   SMIC textures   -> loose .wtd, needs MagicRDR injection into a parent rpf
+#   303  Fast Horse      -> hrssimtune.xml, needs MagicRDR injection
+#   140  Unlimited Deadeye -> playertune.xml, needs MagicRDR injection
+#   719  RDRFix          -> .asi, needs an ASI loader (Ultimate ASI Loader)
+#   475  Basic Trainer   -> .red script, needs a script/mod-menu loader
+#   114/515 saves        -> user save data (repo Safety: never overwrite) — manual
+
+dg_rdr_appid: "2668510"
+
+dg_rdr_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+dg_rdr_game_dir: "{{ dg_rdr_steam_library_root }}/steamapps/common/Red Dead Redemption"
+
+dg_rdr_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/rdr"
+
+# Each mod ships one complete .rpf that replaces the same-named file under game/.
+dg_rdr_mods:
+  - id: "20"
+    file: "19"
+    name: "Fast Launch"
+    rpf: "tune_d11generic.rpf"
+  - id: "89"
+    file: "119"
+    name: "RDR2 Camera"
+    rpf: "camera.rpf"
+
+dg_rdr_revert: false

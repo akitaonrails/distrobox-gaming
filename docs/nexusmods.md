@@ -36,7 +36,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | MGSV: Ground Zeroes | metalgearsolidvgz | `311340` | 2 | ⏸️ deferred (GzsTool/CE) |
 | MGS1 (Master Collection) | metalgearsolidmc | `2131630` | 2 | ✅ 1/2 (see below) |
 | MGSV: The Phantom Pain | metalgearsolidvtpp | `287700` | 5 | ⏸️ deferred (SnakeBite) |
-| Red Dead Redemption | reddeadredemption | `2668510` | 11 | ⏳ |
+| Red Dead Redemption | reddeadredemption | `2668510` | 11 | ✅ 2/11 (see below) |
 | Red Dead Redemption 2 | reddeadredemption2 | `1174180` | 13 | ⏳ |
 | Resident Evil 4 (2023 Remake) | residentevil42023 | `2050650` | 2 | ⏳ |
 | Resident Evil 2 (2019) | residentevil22019 | `883710` | 3 | ⏳ |
@@ -296,4 +296,25 @@ tune widescreen/resolution/FMV.
 |---|---|---|
 | [5 MGSM2Fix](https://www.nexusmods.com/metalgearsolidmc/mods/5) | ASI loader/fix | launch option `WINEDLLOVERRIDES="dinput8=n,b;d3d11=n,b" %command%` (dinput8+d3d11, **not** wininet/winhttp) |
 | [3 HD RetroArch CRT Shader](https://www.nexusmods.com/metalgearsolidmc/mods/3) | — | ⛔ dropped — ReShade-tagged; pipeline needs RetroArch Windowcast + Windows PowerToys + NVIDIA Profile Inspector + interactive GUI setup, PC-only |
+
+## ✅ Red Dead Redemption — `install_rdr_mods`
+
+Role: `install_rdr_mods` · appid `2668510` (USB library). The 2023 PC port keeps
+its `.rpf` archives **loose** under `<game>/game/`, so mods that ship a complete
+replacement archive are clean drop-ins — the role backs up each original as
+`<name>.rpf.dg-orig` (revert restores it). Only 2 of 11 qualify; the rest need
+**MagicRDR** (GUI archive injection), an ASI/script loader, or are save data.
+
+| Mod | Type | Notes |
+|---|---|---|
+| [20 Fast Launch](https://www.nexusmods.com/reddeadredemption/mods/20) | full `.rpf` swap | replaces `game/tune_d11generic.rpf` (skips boot logos) |
+| [89 RDR2 Camera](https://www.nexusmods.com/reddeadredemption/mods/89) | full `.rpf` swap | replaces `game/camera.rpf` (RDR2-style camera; MAIN file, not the "closer" variant) |
+| [21 RDR Reimagined](https://www.nexusmods.com/reddeadredemption/mods/21) | — | ⛔ dropped — ReShade preset (`reshade-shaders/*.fx`) |
+| [525 RDR2 Minimap](https://www.nexusmods.com/reddeadredemption/mods/525) | — | ⏸️ deferred — readme requires **MagicRDR** to inject into `mapres.rpf` + `fonts.rpf` |
+| [66 SMIC Textures](https://www.nexusmods.com/reddeadredemption/mods/66) | — | ⏸️ deferred — loose `.wtd`, needs MagicRDR injection into a parent `.rpf` |
+| [303 Fast Horse](https://www.nexusmods.com/reddeadredemption/mods/303) | — | ⏸️ deferred — `hrssimtune.xml`, needs MagicRDR injection (pick the "Fast horse" MAIN vs Faster/Fastest variants) |
+| [140 Unlimited Deadeye](https://www.nexusmods.com/reddeadredemption/mods/140) | — | ⏸️ deferred — `playertune.xml`, needs MagicRDR injection |
+| [719 RDRFix](https://www.nexusmods.com/reddeadredemption/mods/719) | — | ⏸️ deferred — `.asi` (SkipIntro/UnlockFPS/no-letterbox); needs an **ASI loader** (Ultimate ASI Loader) under Proton |
+| [475 Basic Trainer](https://www.nexusmods.com/reddeadredemption/mods/475) | — | ⏸️ deferred — `.red` script, needs a mod-menu/script loader |
+| [114 Starter Save](https://www.nexusmods.com/reddeadredemption/mods/114) · [515 100% Saves](https://www.nexusmods.com/reddeadredemption/mods/515) | — | ⏸️ manual — user save data (repo Safety: never overwrite saves) |
 

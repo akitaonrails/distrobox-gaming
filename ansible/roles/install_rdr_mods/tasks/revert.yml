@@ -1,0 +1,21 @@
+---
+# Restore each RDR game/*.rpf from its .dg-orig backup and drop the markers.
+
+- name: Restore each modded .rpf from its backup
+  ansible.builtin.shell: |
+    set -eu
+    game_rpf="{{ dg_rdr_game_dir }}/game/{{ item.rpf }}"
+    marker="{{ dg_rdr_game_dir }}/game/.dg-rdr-{{ item.id }}"
+    changed=0
+    if [ -e "$game_rpf.dg-orig" ]; then
+      cp -f "$game_rpf.dg-orig" "$game_rpf"
+      rm -f "$game_rpf.dg-orig"
+      changed=1
+    fi
+    rm -f "$marker"
+    [ "$changed" = 1 ] && echo "rdr-reverted" || echo "nochange"
+  loop: "{{ dg_rdr_mods }}"
+  loop_control:
+    label: "{{ item.id }} {{ item.name }}"
+  register: _rdr_revert
+  changed_when: "'rdr-reverted' in _rdr_revert.stdout"
