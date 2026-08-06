@@ -47,8 +47,8 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Resident Evil 0 (HD Remaster) | residentevil0biohazard0hdremaster | `339340` | 2 | ✅ 1/2 (see below) |
 | RoboCop: Rogue City | robocoproguecity | `1681430` | 8 | ✅ 5/8 (see below) |
 | Sekiro: Shadows Die Twice | sekiro | `814380` | 2 | ✅ 1/2 (see below) |
-| Marvel's Spider-Man Remastered | marvelsspidermanremastered | `1817070` | 8 | ⏳ |
-| Marvel's Spider-Man: Miles Morales | spidermanmilesmorales | `1817190` | 6 | ⏳ |
+| Marvel's Spider-Man Remastered | marvelsspidermanremastered | `1817070` | 8 | ⏸️ deferred (Overstrike GUI) |
+| Marvel's Spider-Man: Miles Morales | spidermanmilesmorales | `1817190` | 6 | ⏸️ deferred (Overstrike GUI) |
 | Streets of Rage 4 | streetsofrage4 | `985890` | 1 | ⏳ |
 | Tokyo Xtreme Racer | tokyoxtremeracer | `2634950` | 4 | ⏳ |
 | WRC 5 | wrc5 | `354160` | 1 | ⏳ |
@@ -87,6 +87,7 @@ an interactive GUI.
 
 | MGSV: Ground Zeroes (`311340`) | Improved Max Settings (11) needs **GzsTool** to unpack/repack the `data_02.dat` QAR archive (a .NET build-time transform); Infinite Ammo (31) is a **Cheat Engine `.CT`** (manual CE under Proton). Neither is a clean file drop. |
 | MGSV: The Phantom Pain (`287700`) | All 5 mods are **`.mgsv`** packages requiring the **SnakeBite Mod Manager** (.NET WPF GUI that merges into `master/0/00.dat` + tracks `snakebite.xml`) — no headless CLI. Game is v1.0.15.1; archives preserved under NAS `NexusMods/mgsvtpp/`. Manual SnakeBite pass — install these variants: **300** No More Timers (`nmt_115v3.mgsv`), **316** No Development Requirements, **327** New Female Faces & Hairs v2.4, **406** ICBINR → pick **`ICBINR - Vibrant.mgsv`**, **1011** Beyond Ultra → pick **`Beyond Ultra - EXTREME - With FXAA.mgsv`**. |
+| Marvel's Spider-Man Remastered (`1817070`) & Miles Morales (`1817190`) | Every listed mod is a **`.smpcmod`** / **`.mmpcmod`** / `.modular` package installed by the **Overstrike / "Modding Tool"** GUI, which patches the game's Insomniac-engine `asset_archive/*.toc`. The engine has **no loose-file loading**, so there's no headless path (unlike RE Engine natives). Archives preserved under NAS `NexusMods/spiderman-r/` + `spiderman-mm/`. Manual pass: run Overstrike under Proton, add the `.smpcmod`/`.mmpcmod` files, Install. Remastered: 1291 Real Brands, 3179 Expressive Combat, 3550 Tenacious, 2520 Infinite Web Gadget, 2868 Traversal Tweaks, 3200 Expressive Web Climbing, 634 NYC Lighting, 2524 Ultimate Spidey. Miles: 81 TaMT, 29 Unnerfed, 216 Realistic NYC, 26 Infinite Web Zip, 155 Infinite Camo, 317 Infinite Gadget Ammo. |
 | Red Dead Redemption 2 (`1174180`) | No clean drop-in subset — every functional mod needs an external loader whose **Proton compatibility can't be verified headlessly**. **Script Hook RDR2** (`dinput8` ASI loader from dev-c.com) drives the `.asi` mods: 233 Rampage, 1662 Enhanced Brawling, 1675 A.E.M, 3465 Auto Looting, 1245 Reveal Map, 842 Better Horses, 1970 No Auto Horse Equipping, 3302 Auto Crafting, 1828 No VRAM Warning (Scripthook V2 file). **Lenny's Mod Loader (LML)** drives 1389 Remove Black Bars (`install.xml`), 2189 Terrain Textures Overhaul (**13.6 GB**), 5495 Spawns Fix (`gameconfig.xml`). 8 Intro Completed Save = user save data (manual). Manual pass: install ScriptHook RDR2 + LML under a GUI Proton session, verify they load, then drop each mod. |
 
 ### 🔜 Queued follow-ups (after the whole list + deferred pass)
