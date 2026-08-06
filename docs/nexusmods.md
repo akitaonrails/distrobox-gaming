@@ -38,7 +38,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | MGSV: The Phantom Pain | metalgearsolidvtpp | `287700` | 5 | ⏸️ deferred (SnakeBite) |
 | Red Dead Redemption | reddeadredemption | `2668510` | 11 | ✅ 2/11 (see below) |
 | Red Dead Redemption 2 | reddeadredemption2 | `1174180` | 13 | ⏸️ deferred (ScriptHook/LML) |
-| Resident Evil 4 (2023 Remake) | residentevil42023 | `2050650` | 2 | ⏳ |
+| Resident Evil 4 (2023 Remake) | residentevil42023 | `2050650` | 2 | ✅ 2/2 (see below) |
 | Resident Evil 2 (2019) | residentevil22019 | `883710` | 3 | ⏳ |
 | Resident Evil 3 (2020) | residentevil32020 | `952060` | 1 | ⏳ |
 | Resident Evil Requiem | residentevilrequiem | `3764200` | 3 | ⏳ |
@@ -318,4 +318,18 @@ replacement archive are clean drop-ins — the role backs up each original as
 | [719 RDRFix](https://www.nexusmods.com/reddeadredemption/mods/719) | — | ⏸️ deferred — `.asi` (SkipIntro/UnlockFPS/no-letterbox); needs an **ASI loader** (Ultimate ASI Loader) under Proton |
 | [475 Basic Trainer](https://www.nexusmods.com/reddeadredemption/mods/475) | — | ⏸️ deferred — `.red` script, needs a mod-menu/script loader |
 | [114 Starter Save](https://www.nexusmods.com/reddeadredemption/mods/114) · [515 100% Saves](https://www.nexusmods.com/reddeadredemption/mods/515) | — | ⏸️ manual — user save data (repo Safety: never overwrite saves) |
+
+## ✅ Resident Evil 4 (2023 Remake) — `install_re4r_mods`
+
+Role: `install_re4r_mods` · appid `2050650` (USB library). RE Engine loads loose
+`<game>/natives/` files and numbered `re_chunk_000.pak.patch_NNN.pak` archives
+over the base paks, so **Fluffy Mod Manager** packages install headlessly — no
+Fluffy GUI. The role copies a `natives/` tree in, or a `.pak` to a free high slot
+(`pak_slot` 900+), tracking each in a `.dg-re4r-<id>.manifest` for clean revert.
+This same natives/pak mechanism is reused for RE2/RE3/Village/Requiem.
+
+| Mod | Type | Notes |
+|---|---|---|
+| [117 Stack Size Changes](https://www.nexusmods.com/residentevil42023/mods/117) | patch `.pak` | v1.10; variant **"Stack Size (All)- 0999"** → `patch_900.pak` (999 stacks, no herb change) |
+| [3429 Infinite Ammo](https://www.nexusmods.com/residentevil42023/mods/3429) | `natives/` overlay | v1.5; 5 loose `natives/STM/...` files |
 

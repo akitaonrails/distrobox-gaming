@@ -1,0 +1,36 @@
+# Resident Evil 4 (2023 Remake) mod set — opt-in role install_re4r_mods.
+# Generated via the nexus-mod-set skill. See docs/nexusmods.md. appid 2050650.
+#
+# Fluffy Mod Manager packages ship one of two payloads next to modinfo.ini:
+#   * a natives/ tree  -> RE Engine loads loose files from <game>/natives/ over
+#     the re_chunk_000.pak* archives, so we copy the tree into the game root.
+#   * a single .pak     -> a patch archive; RE Engine loads
+#     re_chunk_000.pak.patch_NNN.pak by number, so we copy it to a free high slot
+#     (pak_slot, 900+ to override the base paks).
+# Either way no Fluffy GUI is needed. The role records a per-mod manifest of the
+# files it added so revert removes exactly those (base game ships no natives/).
+
+dg_re4r_appid: "2050650"
+
+dg_re4r_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+# Note the double space in the install dir name (verified via appmanifest).
+dg_re4r_game_dir: "{{ dg_re4r_steam_library_root }}/steamapps/common/RESIDENT EVIL 4  BIOHAZARD RE4"
+
+dg_re4r_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/re4r"
+
+# variant = substring matched against the modinfo.ini path inside the archive
+# (empty = the sole modinfo.ini at the archive root).
+dg_re4r_mods:
+  - id: "117"
+    file: "11753"
+    name: "Stack Size Changes (All 999)"
+    variant: "Stack Size (All)- 0999"
+    pak_slot: "900"
+  - id: "3429"
+    file: "17850"
+    name: "Infinite Ammo"
+    variant: ""
+
+dg_re4r_revert: false

@@ -1,0 +1,21 @@
+---
+# Remove each RE4R natives/ overlay using its recorded manifest.
+
+- name: Remove each installed overlay via its manifest
+  ansible.builtin.shell: |
+    set -eu
+    game={{ dg_re4r_game_dir | quote }}
+    manifest="$game/.dg-re4r-{{ item.id }}.manifest"
+    [ -f "$manifest" ] || { echo "nochange"; exit 0; }
+    while IFS= read -r f; do
+      [ -n "$f" ] && rm -f "$game/$f"
+    done < "$manifest"
+    rm -f "$manifest"
+    # Prune now-empty natives/ subdirs (leave other mods' files intact).
+    [ -d "$game/natives" ] && find "$game/natives" -type d -empty -delete 2>/dev/null || true
+    echo "re4r-reverted"
+  loop: "{{ dg_re4r_mods }}"
+  loop_control:
+    label: "{{ item.id }} {{ item.name }}"
+  register: _re4r_revert
+  changed_when: "'re4r-reverted' in _re4r_revert.stdout"

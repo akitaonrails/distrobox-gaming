@@ -1,0 +1,85 @@
+---
+# Resident Evil 4 Remake (appid 2050650) mod set — Fluffy natives/ overlays.
+# See group_vars/all/re4r_mods.yml and docs/nexusmods.md.
+
+- name: Revert the RE4R mod set when requested
+  ansible.builtin.include_tasks: revert.yml
+  when: dg_re4r_revert | bool
+
+- name: Install the RE4R mod set
+  when: not (dg_re4r_revert | bool)
+  block:
+    - name: Locate the RE4R game dir
+      ansible.builtin.stat:
+        path: "{{ dg_re4r_game_dir }}"
+      register: _re4r_game
+
+    - name: Fail when RE4R is not found
+      ansible.builtin.fail:
+        msg: >-
+          {{ dg_re4r_game_dir }} not found (appid {{ dg_re4r_appid }}).
+          Install RE4R + mount the USB library, or override
+          dg_re4r_steam_library_root. See docs/nexusmods.md.
+      when: not _re4r_game.stat.exists
+
+    - name: Download each RE4R mod via the Nexus API (Premium key)
+      ansible.builtin.command:
+        cmd: >-
+          {{ dg_project_root }}/scripts/nexus-download.py --game residentevil42023
+          --mod {{ item.id }} --file {{ item.file }} --via api
+          --dest {{ (dg_re4r_staging_root + '/' + item.id) | quote }}
+      loop: "{{ dg_re4r_mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _re4r_dl
+      changed_when: "'saved' in _re4r_dl.stdout"
+      failed_when: false
+      no_log: true
+      when: lookup('ansible.builtin.env', 'NEXUS_MODS_API_KEY') | length > 0
+
+    - name: Install each Fluffy natives/ overlay (records a manifest)
+      ansible.builtin.shell: |
+        set -eu
+        game={{ dg_re4r_game_dir | quote }}
+        manifest="$game/.dg-re4r-{{ item.id }}.manifest"
+        [ -f "$manifest" ] && { echo "skip"; exit 0; }
+        arch="$(find {{ (dg_re4r_staging_root + '/' + item.id) | quote }} -type f \
+          \( -name '*.zip' -o -name '*.rar' -o -name '*.7z' \) | head -1)"
+        [ -n "$arch" ] || { echo "NO-ARCHIVE" >&2; exit 3; }
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        7z x -y -o"$tmp" "$arch" >/dev/null
+        variant={{ item.variant | quote }}
+        if [ -n "$variant" ]; then
+          mi="$(find "$tmp" -path "*$variant/modinfo.ini" | head -1)"
+        else
+          mi="$(find "$tmp" -name modinfo.ini | head -1)"
+        fi
+        [ -n "$mi" ] || { echo "NO-MODINFO" >&2; exit 4; }
+        src="$(dirname "$mi")"
+        if [ -d "$src/natives" ]; then
+          # Loose natives/ overlay.
+          ( cd "$src" && find natives -type f ) > "$manifest.tmp"
+          rsync -a "$src/natives/" "$game/natives/"
+        elif ls "$src"/*.pak >/dev/null 2>&1; then
+          # Patch .pak -> free high slot.
+          slot={{ (item.pak_slot | default('900')) | quote }}
+          pak="$(ls "$src"/*.pak | head -1)"
+          rel="re_chunk_000.pak.patch_${slot}.pak"
+          cp -f "$pak" "$game/$rel"
+          echo "$rel" > "$manifest.tmp"
+        else
+          echo "NO-PAYLOAD" >&2; exit 5
+        fi
+        mv "$manifest.tmp" "$manifest"
+        echo "re4r-installed"
+      loop: "{{ dg_re4r_mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}{{ ' [' + item.variant + ']' if item.variant else '' }}"
+      register: _re4r_install
+      changed_when: "'re4r-installed' in _re4r_install.stdout"
+
+    - name: Report completion
+      ansible.builtin.debug:
+        msg:
+          - "RE4R: installed {{ dg_re4r_mods | map(attribute='name') | join(', ') }} (Fluffy natives/ overlays + patch .pak slots)."
+          - "Files tracked in .dg-re4r-<id>.manifest; revert with -e dg_re4r_revert=true."
