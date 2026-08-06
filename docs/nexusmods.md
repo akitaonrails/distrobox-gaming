@@ -42,17 +42,17 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Resident Evil 2 (2019) | residentevil22019 | `883710` | 3 | ✅ 1/3 (see below) |
 | Resident Evil 3 (2020) | residentevil32020 | `952060` | 1 | ✅ 1/1 (see below) |
 | Resident Evil Requiem | residentevilrequiem | `3764200` | 3 | ✅ 3/3 (Fluffy + REFramework) |
-| Resident Evil Village | residentevilvillage | `1196590` | 4 | ✅ 3/4 (Fluffy + REFramework; 184 save manual) |
+| Resident Evil Village | residentevilvillage | `1196590` | 4 | ✅ 4/4 (Fluffy + REFramework + save) |
 | Resident Evil 4 (2005) | residentevil4 | `254700` | 2 | ✅ re4_tweaks 1.9.1 via install_re4_hd (mod 306 dropped — 2007-port `game.exe`, not the Steam UHD `bio4.exe`) |
 | Resident Evil 0 (HD Remaster) | residentevil0biohazard0hdremaster | `339340` | 2 | ✅ 1/2 (see below) |
-| RoboCop: Rogue City | robocoproguecity | `1681430` | 8 | ✅ 6/8 (~mods + UE4SS; 7/49 config) |
+| RoboCop: Rogue City | robocoproguecity | `1681430` | 8 | ✅ 7/8 (~mods + UE4SS + save; 7 config) |
 | Sekiro: Shadows Die Twice | sekiro | `814380` | 2 | ✅ 2/2 (Weapon Wheel + Mod Engine) |
 | Marvel's Spider-Man Remastered | marvelsspidermanremastered | `1817070` | 8 | ⏸️ deferred (Overstrike GUI) |
 | Marvel's Spider-Man: Miles Morales | spidermanmilesmorales | `1817190` | 6 | ⏸️ deferred (Overstrike GUI) |
 | Streets of Rage 4 | streetsofrage4 | `985890` | 1 | ✅ mod 133 (REIGNITED) via existing `install_sor4_reignited` |
-| Tokyo Xtreme Racer | tokyoxtremeracer | `2634950` | 3 | ✅ 2/3 (~mods + UE4SS; 5 save manual) |
+| Tokyo Xtreme Racer | tokyoxtremeracer | `2634950` | 3 | ✅ 3/3 (~mods + UE4SS + save) |
 | WRC 5 | wrc5 | `354160` | 1 | ⚠️ flagged — not installed (DLC-unlock crack, see below) |
-| UNCHARTED: Legacy of Thieves | unchartedlegacyofthievescollection | `1659420` | 5 | ✅ 2/5 (see below) |
+| UNCHARTED: Legacy of Thieves | unchartedlegacyofthievescollection | `1659420` | 5 | ✅ 3/5 (see below) |
 | Yakuza 0 (Director's Cut) | yakuza0 | `2988580` | 10 | ⏸️ deferred (edition mismatch / RMM) |
 | The Witcher 3: Wild Hunt (Next-Gen) | witcher3 | `292030` | 12 | ✅ 11/12 (see below) |
 | WRC 7 | wrc7 | `621830` | 1 | ✅ 1/1 (EVOlution Mod 4.0, see below) |
@@ -98,6 +98,24 @@ not a baked patch.)
 | **SnakeBite** `0.8` (`SnakeBite.Installer.exe`) | MGSV: The Phantom Pain (`287700`) | Install SnakeBite, point it at MGS_TPP, add the `.mgsv` files from `NexusMods/mgsvtpp/` (300, 316, 327, 406→Vibrant, 1011→Extreme), Build. |
 | **Overstrike** `v1.7.5` (`Overstrike_v1.7.5.zip`) | Spider-Man Remastered (`1817070`) + Miles Morales (`1817190`) | Run Overstrike, add the `.smpcmod`/`.mmpcmod` files from `NexusMods/spiderman-r/` + `spiderman-mm/`, Install (patches the `.toc`). |
 | **Ryu Mod Manager** (source-only, `mosamadeeb/RyuModManager`) | Yakuza 0 (`2988580`) | ⚠️ not staged — no release binary, **and** this box has the *Director's Cut* while the `yakuza0` `.par` mods target the original (edition mismatch). Build from source only if you accept that risk. |
+
+### 💾 Save-file mods (placed manually, with backups)
+
+Save mods are user progress, not code/assets — placed **directly** into each
+game's save dir (NOT via a `site.yml` role, so a rebuild won't re-clobber saves),
+with the original backed up alongside as `*.dg-save-backup`. The user authorised
+overwriting on top of existing saves. **Caveat:** saves can be profile-ID-bound,
+`SaveIndex`-dependent, or Steam-Cloud-managed, so some may not load even when
+placed correctly — verify in-game; restore from the backup if not.
+
+| Mod | Game | Placed at | Note |
+|---|---|---|---|
+| [TXR 5 All Perks + Money](https://www.nexusmods.com/tokyoxtremeracer/mods/5) | TXR (`2634950`) | prefix `…/TokyoXtremeRacer/Saved/SaveGames/<id>/UserData_00.sav` | ✅ clean single-file replace (hash-verified); fresh mtime for Steam Cloud |
+| [RE Village 184 Newgame Plus](https://www.nexusmods.com/residentevilvillage/mods/184) | RE Village (`1196590`) | Steam Cloud `userdata/<id>/1196590/remote/win64_save/` | ✅ placed (`data00-1.bin`, `data001Slot.bin`) — non-standard filenames, verify it loads |
+| [Uncharted 22 Save File](https://www.nexusmods.com/unchartedlegacyofthievescollection/mods/22) | Uncharted (`1659420`) | prefix `…/users/65294540/Uncharted4/saves/` (16 files) | ✅ placed — numbered slots may be profile-ID-bound |
+| [RoboCop 49 New Game Plus](https://www.nexusmods.com/robocoproguecity/mods/49) | RoboCop (`1681430`) | prefix `…/RoboCop/Saved/SaveGames/` (50 `.sav`) | ✅ placed — may need `SaveIndex.sav` to list them |
+| [MGS3 26 NG+ saves](https://www.nexusmods.com/metalgearsolid3mc/mods/26) | MGS3 MC (`2131650`) | — | ⏸️ **blocked** — Steam Cloud container files (`STE…`); no `userdata` save dir exists yet. Save once in-game, then re-run. |
+| [RDR 114 Starter](https://www.nexusmods.com/reddeadredemption/mods/114) · [515 100%](https://www.nexusmods.com/reddeadredemption/mods/515) | RDR (`2668510`) | — | ⏸️ **blocked** — no profile/save dir created yet (`RDR2SAVE*.SAV`). Save once in-game, then re-run. |
 
 ### ⏸️ Deferred (blocked) — revisit at the end
 
