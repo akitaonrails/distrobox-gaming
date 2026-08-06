@@ -49,7 +49,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Sekiro: Shadows Die Twice | sekiro | `814380` | 2 | ✅ 1/2 (see below) |
 | Marvel's Spider-Man Remastered | marvelsspidermanremastered | `1817070` | 8 | ⏸️ deferred (Overstrike GUI) |
 | Marvel's Spider-Man: Miles Morales | spidermanmilesmorales | `1817190` | 6 | ⏸️ deferred (Overstrike GUI) |
-| Streets of Rage 4 | streetsofrage4 | `985890` | 1 | ⏳ |
+| Streets of Rage 4 | streetsofrage4 | `985890` | 1 | ✅ mod 133 (REIGNITED) via existing `install_sor4_reignited` |
 | Tokyo Xtreme Racer | tokyoxtremeracer | `2634950` | 4 | ⏳ |
 | WRC 5 | wrc5 | `354160` | 1 | ⏳ |
 | UNCHARTED: Legacy of Thieves | unchartedlegacyofthievescollection | `1659420` | 5 | ⏳ |
@@ -409,4 +409,14 @@ Role: `install_sekiro_mods` · appid `814380` (USB library). No anti-cheat
 |---|---|---|
 | [1058 Weapon Wheel](https://www.nexusmods.com/sekiro/mods/1058) | bundled `dinput8.dll` | v1.2.1; drops `dinput8.dll` + `WeaponWheelResources/` into the game root; launch option `WINEDLLOVERRIDES="dinput8=n,b" %command%` |
 | [418 Sekiro The Easy](https://www.nexusmods.com/sekiro/mods/418) | — | ⏸️ deferred — ships a **Mod Engine** `mods/param/gameparam.parambnd.dcx` layout needing the external Mod Engine loader, which would collide with 1058's `dinput8.dll`; not verifiable headlessly |
+
+## ✅ Streets of Rage 4 — existing `install_sor4_reignited`
+
+Mod [133 REIGNITED](https://www.nexusmods.com/streetsofrage4/mods/133) was already
+covered before this project by the `install_sor4_reignited` role (tag
+`sor4_reignited`), which replaces SOR4's encrypted `data/bigfile` (vanilla backed
+up). It is pinned to **v1.0.0** (from the author's GitLab). Nexus is now at
+**v2.0.0** — not auto-bumped: the mod is built against a specific game patch, so
+updating the `bigfile` must match the installed SOR4 version and can't be verified
+headlessly. Bump `dg_sor4_reignited_version` + the bigfile sha256 deliberately.
 
