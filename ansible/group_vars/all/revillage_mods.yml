@@ -1,0 +1,29 @@
+# Resident Evil Village mod set — opt-in role install_revillage_mods.
+# Generated via the nexus-mod-set skill. See docs/nexusmods.md. appid 1196590.
+#
+# Same RE Engine Fluffy mechanism as install_re4r_mods. RE Village is in the BOX
+# Steam library (not USB) — library root hardcoded.
+#
+# Installed: 299 Reworked Weapons + 457 Higher Resolution Enemies (both Fluffy
+# natives/stm overlays; 457 is ~1.5 GB of enemy textures). Excluded:
+#   651 Infinite Ammo -> REFramework Lua (reframework/autorun/*.lua) — deferred
+#   184 Newgame Plus  -> data00*.bin SAVE files — manual (repo Safety: no saves)
+
+dg_revillage_appid: "1196590"
+
+dg_revillage_steam_library_root: "{{ dg_box_home }}/.local/share/Steam"
+dg_revillage_game_dir: "{{ dg_revillage_steam_library_root }}/steamapps/common/Resident Evil Village BIOHAZARD VILLAGE"
+
+dg_revillage_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/revillage"
+
+dg_revillage_mods:
+  - id: "299"
+    file: "785"
+    name: "Reworked Weapons Mod"
+    variant: ""
+  - id: "457"
+    file: "1184"
+    name: "Higher Resolution Enemies"
+    variant: ""
+
+dg_revillage_revert: false

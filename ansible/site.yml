@@ -50,6 +50,7 @@
     - { role: install_re2_mods,          tags: [re2_mods, never] }
     - { role: install_re3_mods,          tags: [re3_mods, never] }
     - { role: install_rerequiem_mods,    tags: [rerequiem_mods, never] }
+    - { role: install_revillage_mods,    tags: [revillage_mods, never] }
     - { role: steam_lib32_nvidia,        tags: [steam_lib32_nvidia, never] }
     - { role: steam_trainers,            tags: [steam_trainers, never] }
     - { role: install_render96ex,        tags: [render96ex, never] }

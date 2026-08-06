@@ -42,7 +42,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Resident Evil 2 (2019) | residentevil22019 | `883710` | 3 | ✅ 1/3 (see below) |
 | Resident Evil 3 (2020) | residentevil32020 | `952060` | 1 | ✅ 1/1 (see below) |
 | Resident Evil Requiem | residentevilrequiem | `3764200` | 3 | ✅ 1/3 (see below) |
-| Resident Evil Village | residentevilvillage | `1196590` | 4 | ⏳ |
+| Resident Evil Village | residentevilvillage | `1196590` | 4 | ✅ 2/4 (see below) |
 | Resident Evil 4 (2005) | residentevil4 | `254700` | 2 | ✅ re4_tweaks 1.9.1 via install_re4_hd (mod 306 dropped — wrong port) |
 | Resident Evil 0 (HD Remaster) | residentevil0biohazard0hdremaster | `339340` | 2 | ⏳ |
 | RoboCop: Rogue City | robocoproguecity | `1681430` | 8 | ⏳ |
@@ -361,4 +361,16 @@ Fluffy handler.
 |---|---|---|
 | [14 Stack Size Changes](https://www.nexusmods.com/residentevilrequiem/mods/14) | `natives/` overlay | v1.4; variant **"Stack Size (All)- 00999"** → `natives/STM/...` (999 stacks) |
 | [25 Inf Ammo & HP](https://www.nexusmods.com/residentevilrequiem/mods/25) · [100 Infinite CP](https://www.nexusmods.com/residentevilrequiem/mods/100) | — | ⏸️ deferred — **REFramework** Lua scripts (`reframework/autorun/*.lua`); need the REFramework loader (external `dinput8`/`dxgi` plugin + Proton `WINEDLLOVERRIDES`). REFramework works under Proton but isn't verifiable headlessly on this brand-new title — revisit as a follow-up. |
+
+## ✅ Resident Evil Village — `install_revillage_mods`
+
+Role: `install_revillage_mods` · appid `1196590` (**box** Steam library). Same RE
+Engine Fluffy handler.
+
+| Mod | Type | Notes |
+|---|---|---|
+| [299 Reworked Weapons Mod](https://www.nexusmods.com/residentevilvillage/mods/299) | `natives/` overlay | v1.01; `natives/stm/...` weapon spec data (ships a harmless `.bak`, tracked in the manifest) |
+| [457 Higher Resolution Enemies](https://www.nexusmods.com/residentevilvillage/mods/457) | `natives/` overlay | v1.0.0; ~1.5 GB, 237 `natives/stm/character/...` textures |
+| [651 Infinite Ammo](https://www.nexusmods.com/residentevilvillage/mods/651) | — | ⏸️ deferred — **REFramework** Lua (`reframework/autorun/Infinite Ammo.lua`); needs the REFramework loader (see RE Requiem note) |
+| [184 Newgame Plus - WCX Gun Max Upgrade](https://www.nexusmods.com/residentevilvillage/mods/184) | — | ⏸️ manual — `data00*.bin` **save files** (repo Safety: never overwrite saves) |
 

@@ -1,0 +1,20 @@
+---
+# Remove each RE Village overlay using its recorded manifest.
+
+- name: Remove each installed overlay via its manifest
+  ansible.builtin.shell: |
+    set -eu
+    game={{ dg_revillage_game_dir | quote }}
+    manifest="$game/.dg-revillage-{{ item.id }}.manifest"
+    [ -f "$manifest" ] || { echo "nochange"; exit 0; }
+    while IFS= read -r f; do
+      [ -n "$f" ] && rm -f "$game/$f"
+    done < "$manifest"
+    rm -f "$manifest"
+    [ -d "$game/natives" ] && find "$game/natives" -type d -empty -delete 2>/dev/null || true
+    echo "revillage-reverted"
+  loop: "{{ dg_revillage_mods }}"
+  loop_control:
+    label: "{{ item.id }} {{ item.name }}"
+  register: _rev_revert
+  changed_when: "'revillage-reverted' in _rev_revert.stdout"
