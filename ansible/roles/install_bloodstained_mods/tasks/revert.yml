@@ -1,0 +1,22 @@
+---
+# Remove the installed .paks from ~mods/ (each marker records its pak filename)
+# and drop the markers. Leaves any other paks in ~mods/ intact.
+
+- name: Remove each installed pak + marker
+  ansible.builtin.shell: |
+    set -eu
+    marker="{{ dg_bloodstained_game_dir }}/.dg-bloodstained-mod-{{ item.id }}"
+    [ -f "$marker" ] || { echo "not installed {{ item.id }}"; exit 0; }
+    pak="$(head -1 "$marker")"
+    [ -n "$pak" ] && rm -f {{ dg_bloodstained_paks_mods_dir | quote }}/"$pak"
+    rm -f "$marker"
+    echo "removed {{ item.id }}"
+  loop: "{{ dg_bloodstained_mods }}"
+  loop_control:
+    label: "{{ item.id }}"
+  register: _bs_rv
+  changed_when: "'removed' in _bs_rv.stdout"
+
+- name: Report revert
+  ansible.builtin.debug:
+    msg: "Bloodstained mods removed from ~mods/."

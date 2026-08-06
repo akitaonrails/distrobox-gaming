@@ -1,0 +1,96 @@
+---
+# Bloodstained: RotN (appid 692850) mod set — UE4 .pak DataTable mods into
+# BloodstainedRotN/Content/Paks/~mods/. See group_vars/all/bloodstained_mods.yml.
+
+- name: Revert the Bloodstained mod set when requested
+  ansible.builtin.include_tasks: revert.yml
+  when: dg_bloodstained_revert | bool
+
+- name: Install the Bloodstained mod set
+  when: not (dg_bloodstained_revert | bool)
+  block:
+    - name: Build the effective mod list (all non-drop-rate + the chosen drop-rate)
+      ansible.builtin.set_fact:
+        _bs_mods: >-
+          {{ (dg_bloodstained_mods | rejectattr('droprate', 'defined') | list)
+             + (dg_bloodstained_mods | selectattr('droprate', 'defined')
+                | selectattr('id', 'equalto', dg_bloodstained_droprate) | list) }}
+
+    - name: Locate the Bloodstained Paks folder
+      ansible.builtin.stat:
+        path: "{{ dg_bloodstained_game_dir }}/BloodstainedRotN/Content/Paks"
+      register: _bs_paks
+
+    - name: Fail when Bloodstained is not found
+      ansible.builtin.fail:
+        msg: >-
+          Bloodstained Paks folder not found under {{ dg_bloodstained_game_dir }}
+          (appid {{ dg_bloodstained_appid }}). Install it + mount the USB library,
+          or override dg_bloodstained_steam_library_root. See docs/nexusmods.md.
+      when: not _bs_paks.stat.exists
+
+    - name: Ensure the ~mods folder exists
+      ansible.builtin.file:
+        path: "{{ dg_bloodstained_paks_mods_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Download each chosen mod via the Nexus API (Premium key)
+      ansible.builtin.command:
+        cmd: >-
+          {{ dg_project_root }}/scripts/nexus-download.py
+          --game bloodstainedritualofthenight --mod {{ item.id }} --via api
+          --dest {{ (dg_bloodstained_staging_root + '/' + item.dir) | quote }}
+      loop: "{{ _bs_mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _bs_dl
+      changed_when: "'saved' in _bs_dl.stdout"
+      failed_when: false
+      no_log: true
+      when: lookup('ansible.builtin.env', 'NEXUS_MODS_API_KEY') | length > 0
+
+    - name: Find each staged mod archive
+      ansible.builtin.find:
+        paths: "{{ dg_bloodstained_staging_root }}/{{ item.dir }}"
+        patterns: ["*.zip", "*.7z", "*.rar"]
+      loop: "{{ _bs_mods }}"
+      loop_control:
+        label: "{{ item.id }}"
+      register: _bs_staged
+
+    - name: Fail with a manifest when a chosen mod is not staged
+      ansible.builtin.fail:
+        msg: |
+          Stage these Bloodstained mods (set NEXUS_MODS_API_KEY or download):
+          {% for r in _bs_staged.results %}
+          {% if r.matched == 0 %}  - {{ r.item.id }} {{ r.item.name }} — https://www.nexusmods.com/bloodstainedritualofthenight/mods/{{ r.item.id }} -> {{ dg_bloodstained_staging_root }}/{{ r.item.dir }}/
+          {% endif %}
+          {% endfor %}
+      when: _bs_staged.results | selectattr('matched', 'equalto', 0) | list | length > 0
+
+    - name: Install each mod's .pak into ~mods/
+      ansible.builtin.shell: |
+        set -eu
+        marker="{{ dg_bloodstained_game_dir }}/.dg-bloodstained-mod-{{ item.id }}"
+        [ -f "$marker" ] && { echo "skip {{ item.id }}"; exit 0; }
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        arch="$(find {{ (dg_bloodstained_staging_root + '/' + item.dir) | quote }} -maxdepth 1 -type f \( -name '*.zip' -o -name '*.7z' -o -name '*.rar' \) | head -1)"
+        7z x -y -o"$tmp" "$arch" >/dev/null
+        pak="$(find "$tmp" -name '*.pak' | head -1)"
+        [ -n "$pak" ] || { echo "no .pak in {{ item.id }}"; exit 4; }
+        cp -f "$pak" {{ dg_bloodstained_paks_mods_dir | quote }}/
+        printf '%s\n' "$(basename "$pak")" > "$marker"
+        echo "installed {{ item.id }} ($(basename "$pak"))"
+      loop: "{{ _bs_mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _bs_install
+      changed_when: "'installed' in _bs_install.stdout"
+
+    - name: Report completion
+      ansible.builtin.debug:
+        msg:
+          - "Bloodstained: {{ _bs_mods | length }} paks installed into ~mods/ (drop-rate = mod {{ dg_bloodstained_droprate }})."
+          - "UE4 auto-mounts them — no launch options. Switch drop-rate: -e dg_bloodstained_droprate=67 (revert first). Revert: -e dg_bloodstained_revert=true."
+          - "NOTE: these are launch-era (~v1.0) DataTable paks; on the current build they can revert later table rows — see docs/nexusmods.md for maintained successors."

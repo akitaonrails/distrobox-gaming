@@ -22,7 +22,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Batman: Arkham City GOTY | batmanarkhamcity | `200260` | 3 | ⏸️ deferred (TFC GUI) |
 | Batman: Arkham Asylum GOTY | batmanarkhamasylum | `35140` | 2 | ⏸️ deferred (TFC GUI) |
 | Black Myth: Wukong | blackmythwukong | `2358720` | 1 | ✅ (see below) |
-| Bloodstained: RotN | bloodstainedritualofthenight | `692850` | 7 | ⏳ |
+| Bloodstained: RotN | bloodstainedritualofthenight | `692850` | 7 | ✅ (see below) |
 | Dark Souls Remastered | darksoulsremastered | `570940` | 3 | ⏳ |
 | Elden Ring | eldenring | `1245620` | 1 | ⏳ |
 | FINAL FANTASY VII REMAKE Intergrade | finalfantasy7remake | `1462040` | 5 | ⏳ |
@@ -151,4 +151,23 @@ sets the Proton `WINEDLLOVERRIDES="dwmapi=n,b"` override. No ReShade.
 | Mod | Type | Notes |
 |---|---|---|
 | [1289 Auto Regen](https://www.nexusmods.com/blackmythwukong/mods/1289) | UE4SS Lua (vital-stat regen) | tune rate in `ue4ss/Mods/BMWAutoRegen/Scripts/main.lua` (`VitalityConfig`, 5–50) |
+
+## ✅ Bloodstained: Ritual of the Night — `install_bloodstained_mods`
+
+Role: `install_bloodstained_mods` · appid `692850` (USB library). 7 UE4 `.pak`
+DataTable mods copied into `BloodstainedRotN/Content/Paks/~mods/` (auto-mounted,
+no loader/deps/ReShade). **Mods 67 & 38 conflict** (same drop asset) — role
+installs one via `dg_bloodstained_droprate` (default `38` = 100%). **Caveat:**
+these are launch-era ~v1.0 paks (overwrite whole DataTables); maintained v1.31+
+successors exist if a table regresses on the current build.
+
+| Mod | Type | |
+|---|---|---|
+| [68 Improved Descriptions](https://www.nexusmods.com/bloodstainedritualofthenight/mods/68) | UI text | ✅ |
+| [64 Faster Movement](https://www.nexusmods.com/bloodstainedritualofthenight/mods/64) | +15% move | ✅ |
+| [60 Fast Techniques](https://www.nexusmods.com/bloodstainedritualofthenight/mods/60) | quick mastery | ✅ |
+| [65 Improved Crafting](https://www.nexusmods.com/bloodstainedritualofthenight/mods/65) | crafting economy | ✅ |
+| [33 Max Stack Plus](https://www.nexusmods.com/bloodstainedritualofthenight/mods/33) | 999 stacks | ✅ |
+| [38 Drop Rate Plus](https://www.nexusmods.com/bloodstainedritualofthenight/mods/38) | 100% drops | ✅ default |
+| [67 Improved Drop Rates](https://www.nexusmods.com/bloodstainedritualofthenight/mods/67) | +10% drops | alt (`droprate=67`) — conflicts with 38 |
 

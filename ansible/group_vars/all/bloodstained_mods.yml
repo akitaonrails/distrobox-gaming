@@ -1,0 +1,37 @@
+# Bloodstained: Ritual of the Night mod set (opt-in install_bloodstained_mods).
+# Generated via the nexus-mod-set skill. See docs/nexusmods.md.
+#
+# All 7 mods are single UE4 .pak DataTable-overwrite mods. No loader, no deps,
+# no ReShade. Pure file copy into <game>/BloodstainedRotN/Content/Paks/~mods/;
+# UE4 auto-mounts unsigned paks there. Proton-safe.
+#
+# NOTE (launch-era paks): these are the original ~v1.0 (2019) builds the user
+# listed. Each overwrites an entire DataTable, so on the current Steam build they
+# can revert later-added rows in that table. Maintained v1.31+ successors exist
+# on Nexus (68->173, 64->187, 67->174, 65->175, 33->165) if you hit issues.
+
+dg_bloodstained_appid: "692850"
+
+dg_bloodstained_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+dg_bloodstained_game_dir: "{{ dg_bloodstained_steam_library_root }}/steamapps/common/Bloodstained Ritual of the Night"
+dg_bloodstained_paks_mods_dir: "{{ dg_bloodstained_game_dir }}/BloodstainedRotN/Content/Paks/~mods"
+
+dg_bloodstained_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/bloodstained"
+
+# Mods 67 (Improved Drop Rates +10%) and 38 (Drop Rate Plus 100%) overwrite the
+# SAME drop asset — mutually exclusive. Pick one: "38" (100%, default, matches
+# this convenience-focused set) or "67" (+10%, keeps RNG).
+dg_bloodstained_droprate: "38"
+
+dg_bloodstained_mods:
+  - { id: "68", name: "Improved Descriptions", dir: "68-descriptions" }
+  - { id: "64", name: "Faster Movement", dir: "64-faster-movement" }
+  - { id: "60", name: "Fast Techniques (Quick Mastery)", dir: "60-quick-technique" }
+  - { id: "65", name: "Improved Crafting", dir: "65-improved-crafting" }
+  - { id: "33", name: "Max Stack Plus (999)", dir: "33-max-stack" }
+  - { id: "38", name: "Drop Rate Plus (100%)", dir: "38-droprate-plus", droprate: true }
+  - { id: "67", name: "Improved Drop Rates (+10%)", dir: "67-improved-droprate", droprate: true }
+
+dg_bloodstained_revert: false
