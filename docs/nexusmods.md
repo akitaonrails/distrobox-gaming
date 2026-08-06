@@ -41,7 +41,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Resident Evil 4 (2023 Remake) | residentevil42023 | `2050650` | 2 | ✅ 2/2 (see below) |
 | Resident Evil 2 (2019) | residentevil22019 | `883710` | 3 | ✅ 1/3 (see below) |
 | Resident Evil 3 (2020) | residentevil32020 | `952060` | 1 | ✅ 1/1 (see below) |
-| Resident Evil Requiem | residentevilrequiem | `3764200` | 3 | ⏳ |
+| Resident Evil Requiem | residentevilrequiem | `3764200` | 3 | ✅ 1/3 (see below) |
 | Resident Evil Village | residentevilvillage | `1196590` | 4 | ⏳ |
 | Resident Evil 4 (2005) | residentevil4 | `254700` | 2 | ✅ re4_tweaks 1.9.1 via install_re4_hd (mod 306 dropped — wrong port) |
 | Resident Evil 0 (HD Remaster) | residentevil0biohazard0hdremaster | `339340` | 2 | ⏳ |
@@ -351,4 +351,14 @@ Fluffy handler.
 | Mod | Type | Notes |
 |---|---|---|
 | [990 Infinite Ammo](https://www.nexusmods.com/residentevil32020/mods/990) | `natives/` overlay | pinned the **`1.0-RT`** file (3405) → `natives/stm/` for the ray-tracing build (the non-RT file 3407 targets the classic branch) |
+
+## ✅ Resident Evil Requiem (RE9) — `install_rerequiem_mods`
+
+Role: `install_rerequiem_mods` · appid `3764200` (USB library). Same RE Engine
+Fluffy handler.
+
+| Mod | Type | Notes |
+|---|---|---|
+| [14 Stack Size Changes](https://www.nexusmods.com/residentevilrequiem/mods/14) | `natives/` overlay | v1.4; variant **"Stack Size (All)- 00999"** → `natives/STM/...` (999 stacks) |
+| [25 Inf Ammo & HP](https://www.nexusmods.com/residentevilrequiem/mods/25) · [100 Infinite CP](https://www.nexusmods.com/residentevilrequiem/mods/100) | — | ⏸️ deferred — **REFramework** Lua scripts (`reframework/autorun/*.lua`); need the REFramework loader (external `dinput8`/`dxgi` plugin + Proton `WINEDLLOVERRIDES`). REFramework works under Proton but isn't verifiable headlessly on this brand-new title — revisit as a follow-up. |
 

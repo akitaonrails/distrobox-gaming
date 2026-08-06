@@ -1,0 +1,28 @@
+# Resident Evil Requiem (RE9) mod set — opt-in role install_rerequiem_mods.
+# Generated via the nexus-mod-set skill. See docs/nexusmods.md. appid 3764200.
+#
+# Same RE Engine Fluffy mechanism as install_re4r_mods (natives/ overlay or .pak).
+# RE Requiem is in the USB Steam library.
+#
+# Only mod 14 (Fluffy) is installed. Mods 25 (inf ammo/hp) and 100 (infinite CP)
+# are REFramework Lua scripts (reframework/autorun/*.lua) that require the
+# REFramework loader (external dinput8/dxgi plugin + a Proton WINEDLLOVERRIDES);
+# deferred — REFramework works under Proton but isn't verifiable headlessly on
+# this brand-new title. See docs/nexusmods.md.
+
+dg_rerequiem_appid: "3764200"
+
+dg_rerequiem_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+dg_rerequiem_game_dir: "{{ dg_rerequiem_steam_library_root }}/steamapps/common/RESIDENT EVIL requiem BIOHAZARD requiem"
+
+dg_rerequiem_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/rerequiem"
+
+dg_rerequiem_mods:
+  - id: "14"
+    file: "5779"
+    name: "Stack Size (All 999)"
+    variant: "Stack Size (All)- 00999"
+
+dg_rerequiem_revert: false

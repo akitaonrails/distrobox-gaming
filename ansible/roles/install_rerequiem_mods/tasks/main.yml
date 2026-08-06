@@ -1,0 +1,83 @@
+---
+# Resident Evil Requiem (appid 3764200) mod set — Fluffy natives/ + patch .pak.
+# See group_vars/all/rerequiem_mods.yml and docs/nexusmods.md.
+
+- name: Revert the RE Requiem mod set when requested
+  ansible.builtin.include_tasks: revert.yml
+  when: dg_rerequiem_revert | bool
+
+- name: Install the RE Requiem mod set
+  when: not (dg_rerequiem_revert | bool)
+  block:
+    - name: Locate the RE Requiem game dir
+      ansible.builtin.stat:
+        path: "{{ dg_rerequiem_game_dir }}"
+      register: _rerq_game
+
+    - name: Fail when RE Requiem is not found
+      ansible.builtin.fail:
+        msg: >-
+          {{ dg_rerequiem_game_dir }} not found (appid {{ dg_rerequiem_appid }}).
+          Install it + mount the USB library, or override
+          dg_rerequiem_steam_library_root. See docs/nexusmods.md.
+      when: not _rerq_game.stat.exists
+
+    - name: Download each RE Requiem mod via the Nexus API (Premium key)
+      ansible.builtin.command:
+        cmd: >-
+          {{ dg_project_root }}/scripts/nexus-download.py --game residentevilrequiem
+          --mod {{ item.id }} --file {{ item.file }} --via api
+          --dest {{ (dg_rerequiem_staging_root + '/' + item.id) | quote }}
+      loop: "{{ dg_rerequiem_mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}"
+      register: _rerq_dl
+      changed_when: "'saved' in _rerq_dl.stdout"
+      failed_when: false
+      no_log: true
+      when: lookup('ansible.builtin.env', 'NEXUS_MODS_API_KEY') | length > 0
+
+    - name: Install each Fluffy overlay (natives/ tree or patch .pak)
+      ansible.builtin.shell: |
+        set -eu
+        game={{ dg_rerequiem_game_dir | quote }}
+        manifest="$game/.dg-rerequiem-{{ item.id }}.manifest"
+        [ -f "$manifest" ] && { echo "skip"; exit 0; }
+        arch="$(find {{ (dg_rerequiem_staging_root + '/' + item.id) | quote }} -type f \
+          \( -name '*.zip' -o -name '*.rar' -o -name '*.7z' \) | head -1)"
+        [ -n "$arch" ] || { echo "NO-ARCHIVE" >&2; exit 3; }
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        7z x -y -o"$tmp" "$arch" >/dev/null
+        variant={{ item.variant | quote }}
+        if [ -n "$variant" ]; then
+          mi="$(find "$tmp" -path "*$variant/modinfo.ini" | head -1)"
+        else
+          mi="$(find "$tmp" -name modinfo.ini | head -1)"
+        fi
+        [ -n "$mi" ] || { echo "NO-MODINFO" >&2; exit 4; }
+        src="$(dirname "$mi")"
+        if [ -d "$src/natives" ]; then
+          ( cd "$src" && find natives -type f ) > "$manifest.tmp"
+          rsync -a "$src/natives/" "$game/natives/"
+        elif ls "$src"/*.pak >/dev/null 2>&1; then
+          slot={{ (item.pak_slot | default('900')) | quote }}
+          pak="$(ls "$src"/*.pak | head -1)"
+          rel="re_chunk_000.pak.patch_${slot}.pak"
+          cp -f "$pak" "$game/$rel"
+          echo "$rel" > "$manifest.tmp"
+        else
+          echo "NO-PAYLOAD" >&2; exit 5
+        fi
+        mv "$manifest.tmp" "$manifest"
+        echo "rerequiem-installed"
+      loop: "{{ dg_rerequiem_mods }}"
+      loop_control:
+        label: "{{ item.id }} {{ item.name }}{{ ' [' + item.variant + ']' if item.variant else '' }}"
+      register: _rerq_install
+      changed_when: "'rerequiem-installed' in _rerq_install.stdout"
+
+    - name: Report completion
+      ansible.builtin.debug:
+        msg:
+          - "RE Requiem: installed {{ dg_rerequiem_mods | map(attribute='name') | join(', ') }} (Fluffy natives/STM)."
+          - "Deferred: 25 inf ammo/hp + 100 infinite CP (REFramework Lua). Revert: -e dg_rerequiem_revert=true."
