@@ -82,6 +82,22 @@ cd "$runtime_dir"
 export PRBOOM_DATA_DIR="$runtime_dir"
 export LD_LIBRARY_PATH="$release_dir${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
+# Focus the main HORIZONTAL monitor before launch. prboom-plus-rt is an SDL2
+# Vulkan app; its exclusive fullscreen surface targets the FOCUSED monitor, so
+# if focus is on the portrait DP-2 (or any non-primary output) the window opens
+# off the visible area — audio plays but nothing is drawn. hyprctl isn't in the
+# box, so talk to the Hyprland socket directly via python3 (best-effort,
+# harmless off Hyprland). Same approach as seed_configs' supermodel-launch.
+main_output="${DG_MAIN_OUTPUT:-DP-1}"
+if command -v python3 >/dev/null 2>&1 && [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+  python3 - "$main_output" <<'PY' >/dev/null 2>&1 || true
+import socket, os, sys
+sig = os.environ["HYPRLAND_INSTANCE_SIGNATURE"]; xdg = os.environ["XDG_RUNTIME_DIR"]
+s = socket.socket(socket.AF_UNIX); s.connect(f"{xdg}/hypr/{sig}/.socket.sock")
+s.sendall(f"dispatch focusmonitor {sys.argv[1]}".encode()); s.recv(64)
+PY
+fi
+
 set +e
 "$renderer" \
   -config "$config" \
