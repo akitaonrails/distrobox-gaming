@@ -136,5 +136,12 @@ is staged on the NAS so it can be repeated verbatim.
 | `Super Mario Sunburn (v2).iso` | GMSE03 | redump base + `super_mario_sunburn_v2.7z` |
 | `Super Mario Eclipse (v1.0.6).iso` | GMSE04 | redump base + `super_mario_eclipse_106_de_10.7z` |
 
+Eclipse also has a **9.2 GB HD texture pack** (v5.0.0, from
+`iZePlayzYT/SuperMarioEclipse-TexturePacks`, hosted on Dropbox). It's extracted
+to the NAS under `HD-textures/dolphin-textures/extracted/super-mario-eclipse/…/
+Load/Textures/GMSE04/` and symlinked into `~/.local/share/dolphin-emu/Load/
+Textures/GMSE04` (Dolphin's global `HiresTextures = True` loads it). See
+`docs/hd-textures.md`.
+
 See also [rom-hack-patching.md](rom-hack-patching.md) for the general
 xdelta/IPS rules.

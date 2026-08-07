@@ -66,6 +66,12 @@ first time each texture is touched.
 | Majora's Mask 3D 4K 3.0b-1 | Azahar | `00040000000D6E00`, `0004000000125500`, `125600` |
 | Ocarina of Time 3D 4K 4.0 | Azahar | `0004000000033400`, `033500`, `033600` |
 | Super Mario 3D Land 4K 1.2.0b | Azahar | `0004000000053F00`, `054000` |
+| Super Mario Eclipse HD v5.0.0 † | Dolphin | `GMSE04` |
+
+† Not from Henriko's Patreon — this one is the community
+`iZePlayzYT/SuperMarioEclipse-TexturePacks` v5.0.0 (9.2 GB Dropbox download),
+for the Super Mario Eclipse romhack ISO built in `docs/nkit-to-redump.md`. Same
+NAS-extracted + symlinked layout as the rest; `GMSE04` is Eclipse's disc ID.
 
 Dolphin's 3-char IDs are "match-any-region" — Dolphin matches the
 prefix against the full 6-char `<GameID><Region><Maker>` form of the
