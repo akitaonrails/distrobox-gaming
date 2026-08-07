@@ -136,9 +136,10 @@
         {{ dg_mgs2mc_game_dir | quote }}
         {{ dg_mgs2mc_prefix | quote }}
         {{ dg_mgs2mc_config_tool_wine | quote }}
+        {{ dg_mgs2mc_settings_fallback | quote }}
         < {{ dg_project_root }}/scripts/regen-mgshdfix-settings.sh
       register: _m2_regen
-      changed_when: "'regenerated' in _m2_regen.stdout"
+      changed_when: "'regenerated' in _m2_regen.stdout or 'copied-from-sibling' in _m2_regen.stdout"
       failed_when: false   # non-fatal: a slow/cold prefix self-heals on a later run
       when: dg_mgs2mc_regen_mgshdfix_settings | bool
 

@@ -44,5 +44,6 @@ dg_mgs3mc_prefix: "{{ dg_mgs3mc_steam_library_root }}/steamapps/compatdata/{{ dg
 # Any recent Proton/GE wine works for the SDL3 Config Tool; override in host_vars
 # if your Proton version dir differs.
 dg_mgs3mc_config_tool_wine: "{{ dg_mgs3mc_steam_library_root }}/steamapps/common/Proton 11.0/files/bin/wine"
+dg_mgs3mc_settings_fallback: "{{ dg_mgs3mc_steam_library_root }}/steamapps/common/MGS2/plugins/MGSHDFix.settings"
 
 dg_mgs3mc_revert: false

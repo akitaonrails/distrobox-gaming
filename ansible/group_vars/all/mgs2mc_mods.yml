@@ -40,5 +40,8 @@ dg_mgs2mc_mods:
 dg_mgs2mc_regen_mgshdfix_settings: true
 dg_mgs2mc_prefix: "{{ dg_mgs2mc_steam_library_root }}/steamapps/compatdata/{{ dg_mgs2mc_appid }}/pfx"
 dg_mgs2mc_config_tool_wine: "{{ dg_mgs2mc_steam_library_root }}/steamapps/common/Proton 11.0/files/bin/wine"
+# Fallback if MGS2's Config Tool won't run (it is finicky): copy MGS3's valid
+# universal settings. Same MGSHDFix version -> same format.
+dg_mgs2mc_settings_fallback: "{{ dg_mgs2mc_steam_library_root }}/steamapps/common/MGS3/plugins/MGSHDFix.settings"
 
 dg_mgs2mc_revert: false

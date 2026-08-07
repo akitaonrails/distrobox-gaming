@@ -10,13 +10,19 @@
 # Idempotent: if a valid settings (containing a [Debugging] section) already
 # exists it does nothing. Safe to run every playbook — it self-heals drift.
 #
+# The MGSHDFix.settings file is universal across MGS2/MGS3 (same MGSHDFix
+# version), so if the Config Tool can't run (e.g. MGS2's Config Tool refuses to
+# start in its prefix) an optional <fallback_settings> from the sibling game is
+# copied instead — plain INI, no game-lock.
+#
 # Usage (typically piped into the box via `bash -s`):
-#   regen-mgshdfix-settings.sh <game_dir> <wineprefix> <proton_wine>
+#   regen-mgshdfix-settings.sh <game_dir> <wineprefix> <proton_wine> [fallback_settings]
 set -euo pipefail
 
 game="${1:?game_dir required}"
 pfx="${2:?wineprefix required}"
 wine="${3:?proton wine path required}"
+fallback="${4:-}"
 plugins="$game/plugins"
 
 [ -f "$plugins/MGSHDFix.asi" ] || { echo "skip: MGSHDFix not installed"; exit 0; }
@@ -38,6 +44,9 @@ kill "$wp" 2>/dev/null || true; sleep 1; kill -9 "$wp" 2>/dev/null || true
 
 if grep -qE '^\[Debugging\]' MGSHDFix.settings 2>/dev/null; then
   echo "regenerated ($(grep -cE '^\[' MGSHDFix.settings) sections)"
+elif [ -n "$fallback" ] && [ -f "$fallback" ] && grep -qE '^\[Debugging\]' "$fallback"; then
+  cp -f "$fallback" MGSHDFix.settings
+  echo "copied-from-sibling ($fallback)"
 else
-  echo "FAILED to regenerate (see /tmp/mgshdfix_cfgtool.log in the box)"; exit 1
+  echo "FAILED to regenerate (see /tmp/mgshdfix_cfgtool.log in the box; no valid sibling settings to fall back to)"; exit 1
 fi
