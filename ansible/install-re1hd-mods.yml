@@ -1,0 +1,7 @@
+---
+- name: Install the Resident Evil HD Remaster (RE1) NexusMods set
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_re1hd_mods

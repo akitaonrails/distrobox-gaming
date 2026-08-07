@@ -1,0 +1,37 @@
+---
+# Remove each RE1 HD nativePC/ overlay via its manifest, and restore any
+# patched exe from its .original backup.
+
+- name: Remove each nativePC/ overlay via its manifest
+  ansible.builtin.shell: |
+    set -eu
+    game={{ dg_re1hd_game_dir | quote }}
+    manifest="$game/.dg-re1hd-{{ item.id }}.manifest"
+    [ -f "$manifest" ] || { echo "nochange"; exit 0; }
+    while IFS= read -r f; do
+      [ -n "$f" ] && rm -f "$game/$f"
+    done < "$manifest"
+    rm -f "$manifest"
+    [ -d "$game/nativePC" ] && find "$game/nativePC" -type d -empty -delete 2>/dev/null || true
+    echo "re1hd-reverted"
+  loop: "{{ dg_re1hd_mods | selectattr('type', 'equalto', 'nativepc') | list }}"
+  loop_control:
+    label: "{{ item.id }} {{ item.name }}"
+  register: _re1_revert_np
+  changed_when: "'re1hd-reverted' in _re1_revert_np.stdout"
+
+- name: Restore each patched exe from its .original backup
+  ansible.builtin.shell: |
+    set -eu
+    game={{ dg_re1hd_game_dir | quote }}
+    exe="{{ item.exe }}"
+    marker="$game/.dg-re1hd-{{ item.id }}.exe"
+    [ -f "$marker" ] || { echo "nochange"; exit 0; }
+    [ -f "$game/$exe.original" ] && mv -f "$game/$exe.original" "$game/$exe"
+    rm -f "$marker"
+    echo "re1hd-exe-reverted"
+  loop: "{{ dg_re1hd_mods | selectattr('type', 'equalto', 'exe') | list }}"
+  loop_control:
+    label: "{{ item.id }} {{ item.name }}"
+  register: _re1_revert_exe
+  changed_when: "'re1hd-exe-reverted' in _re1_revert_exe.stdout"

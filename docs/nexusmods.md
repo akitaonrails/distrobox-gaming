@@ -57,15 +57,16 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | The Witcher 3: Wild Hunt (Next-Gen) | witcher3 | `292030` | 12 | ✅ 11/12 (see below) |
 | WRC 7 | wrc7 | `621830` | 1 | ✅ 1/1 (EVOlution Mod 4.0, see below) |
 
-### ⛔ Skipped — not installed in Steam (as of the 2026-08-06 scan)
+### ✅ Revisited after later installs (2026-08-07)
 
-Re-check if you later install these; they're in `tmp/nexusmods.txt`.
+These three were originally skipped as "not installed"; the user installed
+them, so they're now handled:
 
-| Game | Nexus domain | Reason |
+| Game | Nexus domain | Status |
 |---|---|---|
-| Resident Evil HD Remaster (RE1) | residentevilbiohazardhdremaster | not found in any Steam library |
-| Metal Gear & Metal Gear 2 (MC) | metalgearandmetalgear2mc | not found in any Steam library |
-| Colin McRae Rally 2 | colinmcraerally2 | not a Steam title (user-noted) — covered by `install_pc_racing` instead |
+| Resident Evil HD Remaster (RE1) | residentevilbiohazardhdremaster | ✅ `install_re1hd_mods` — 102 RESCALE + 20 Retcon Pack (nativePC/ overlays) + 113 Infinite Save (patched `bhd.exe`). Installed 2026-08-07. See below. |
+| Metal Gear & Metal Gear 2 (MC) | metalgearandmetalgear2mc | ✅ mod 9 = **MGSHDFix**, already installed by `install_metal_gear_master_collection` (pins 3.1.0 for MG/MG2; ships a settings file so no self-heal needed — unlike MGS2/MGS3's 4.0.2). Nothing extra to do. |
+| Colin McRae Rally 2 | colinmcraerally2 | ✅ mod 1 = **Official WRC Liveries** (car textures/liveries/HUD), now a `strip_prefix` overlay patch on the `colin-mcrae-rally-2` game in `install_pc_racing` (`docs/pc-racing.md`). Not a Steam title. |
 
 ### 🔌 Shared loaders (revisited deferred games)
 
@@ -165,7 +166,6 @@ an interactive GUI.
 | Dark Souls Remastered (`570940`) — **mod 220 only** | DSR 2020 Textures (~6 GB) needs the **DSR-TPUP** .NET WinForms tool to unpack/override/repack the game's dvdbnd archives. Mod 293 (Easy mode) IS installed; mod 7 dropped (ReShade). |
 | Grand Theft Auto V Enhanced (`3240220`) | 5 of 7 (NextGen Euphoria 1 base, Better Fist Fighting 36, Addon Carpack 173, Real Vehicles 320, Skip Intro 216) inject into `.rpf` archives — need the **OpenIV / CodeWalker** GUI; the Script Hook V (Enhanced) + OpenRPF + mods/ toolchain is fragile under Proton. Headless-only: 354 Straight To Story (`.asi`, needs SHV) + 32 savegame (prefix profile). Carpack 173 needs game build v814.9+. |
 | Metal Gear Rising: Revengeance (`235460`) | HD Textures (46) are **TexMod `.tpf`** (need the TexMod/uMod GUI wrapping the exe under Wine); File Limit Remover (444) is a **patcher `.exe`** run under Wine; Cheat Table (25) is a **Cheat Engine `.CT`** (manual CE under Proton). Only Skip Credits (66) is a trivial `winmm.dll` drop — do it + the tool steps in a manual pass. |
-
 | MGSV: Ground Zeroes (`311340`) | Improved Max Settings (11) needs **GzsTool** to unpack/repack the `data_02.dat` QAR archive (a .NET build-time transform); Infinite Ammo (31) is a **Cheat Engine `.CT`** (manual CE under Proton). Neither is a clean file drop. |
 | MGSV: The Phantom Pain (`287700`) | All 5 mods are **`.mgsv`** packages requiring the **SnakeBite Mod Manager** (.NET WPF GUI that merges into `master/0/00.dat` + tracks `snakebite.xml`) — no headless CLI. Game is v1.0.15.1; archives preserved under NAS `NexusMods/mgsvtpp/`. Manual SnakeBite pass — install these variants: **300** No More Timers (`nmt_115v3.mgsv`), **316** No Development Requirements, **327** New Female Faces & Hairs v2.4, **406** ICBINR → pick **`ICBINR - Vibrant.mgsv`**, **1011** Beyond Ultra → pick **`Beyond Ultra - EXTREME - With FXAA.mgsv`**. |
 | Yakuza 0 — **Director's Cut** (`2988580`) | **Edition mismatch + loader risk.** The Nexus `yakuza0` mods target the **original Yakuza 0** (`638970`, *not installed here*); the user has the **Director's Cut** (`2988580`). All 10 are **Ryu Mod Manager (RMM)** mods (`bootpar/`, `mod-meta.yaml`, `.par` replacements) that need RMM's `d3d11.dll`/YakuzaParless loader in a `mods/` folder. The DC uses the same OoE `.par` engine but relocated under `runtime/`, is a newer build, and has **online features** — so RMM's exe hook + original-Y0 `.par` overrides may not apply and could break online/the account. Unverifiable headlessly → deferred for a careful manual pass (confirm intent, set up RMM against the DC exe under Proton, test offline). Mods: 459 5x Multiplier, 563, 7 4K Font, 9, 250, 120, 12 Rebalanced, 513, 8, 862. Archives preserved under NAS `NexusMods/yakuza0/`. |
@@ -524,6 +524,20 @@ archives — so the mod installs by copying its `nativePC/` tree in (manifest-tr
 |---|---|---|
 | [39 Item Box](https://www.nexusmods.com/residentevil0biohazard0hdremaster/mods/39) | `nativePC/` overlay | v0.5.2; adds a shared item box (8 `nativePC/arc/message/msg_*_box.arc` files) |
 | [58 re0ct](https://www.nexusmods.com/residentevil0biohazard0hdremaster/mods/58) | — | ⏸️ manual — **Cheat Engine table** (`re0hd_v14.CT`); needs the Cheat Engine GUI under Proton |
+
+## ✅ Resident Evil HD Remaster (RE1) — `install_re1hd_mods`
+
+Role: `install_re1hd_mods` · appid `304240` (**box** Steam library, folder
+`Resident Evil Biohazard HD REMASTER`). Same **MT Framework** engine as RE0, so
+texture/model mods are `nativePC/` overlays (manifest-tracked). Installed
+2026-08-07. Run `ansible-playbook install-re1hd-mods.yml`; revert with
+`-e dg_re1hd_revert=true`.
+
+| Mod | Type | Notes |
+|---|---|---|
+| [102 RESCALE](https://www.nexusmods.com/residentevilbiohazardhdremaster/mods/102) | `nativePC/` overlay | v1.0; background restoration (~4.9k `nativePC/arc/...` files across both mods) |
+| [20 Retcon Pack (REmaster)](https://www.nexusmods.com/residentevilbiohazardhdremaster/mods/20) | `nativePC/` overlay | v2.2; character retcon fixes. Archive wraps `nativePC/` in a `Retcon Pack/` folder — the installer finds `nativePC/` at any depth, so it's handled automatically |
+| [113 Infinite Save](https://www.nexusmods.com/residentevilbiohazardhdremaster/mods/113) | patched exe | replaces `bhd.exe` (save without ink ribbons); original backed up to `bhd.exe.original` |
 
 ## ✅ RoboCop: Rogue City — `install_robocop_mods`
 

@@ -1,0 +1,38 @@
+# Resident Evil HD Remaster (RE1, appid 304240) mod set — opt-in role
+# install_re1hd_mods. Generated via the nexus-mod-set pattern. See
+# docs/nexusmods.md.
+#
+# RE1 HD Remaster runs on MT Framework, exactly like RE0 HD (install_re0_mods):
+# it loads loose files from <game>/nativePC/ over its .arc archives, so texture/
+# model mods install by overlaying their nativePC/ tree into the game root.
+#   - 102 RESCALE      — background restoration (nativePC/arc/... overlay)
+#   - 20  Retcon Pack  — character retcon fixes (wraps nativePC/ in a "Retcon
+#                        Pack/" folder; the installer finds nativePC/ at any
+#                        depth so the wrapper is handled automatically)
+#   - 113 Infinite Save — a patched main executable (bhd.exe), a drop-in exe
+#                        replacement (not a nativePC overlay); the original is
+#                        backed up to bhd.exe.original.
+#
+# RE1 HD is in the BOX Steam library (not USB). Archives preserved under
+# dg_re1hd_staging_root and reused on rebuild.
+
+dg_re1hd_appid: "304240"
+
+dg_re1hd_steam_library_root: "{{ dg_box_home }}/.local/share/Steam"
+dg_re1hd_game_dir: "{{ dg_re1hd_steam_library_root }}/steamapps/common/Resident Evil Biohazard HD REMASTER"
+
+dg_re1hd_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/re1hd"
+
+dg_re1hd_mods:
+  - id: "102"
+    name: "RESCALE (background restoration)"
+    type: nativepc
+  - id: "20"
+    name: "Retcon Pack (REmaster)"
+    type: nativepc
+  - id: "113"
+    name: "Infinite Save (bhd.exe patch)"
+    type: exe
+    exe: "bhd.exe"
+
+dg_re1hd_revert: false
