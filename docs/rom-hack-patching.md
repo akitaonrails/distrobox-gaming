@@ -4,6 +4,12 @@ How ROM hacks are applied to the NAS library, using the Sonic
 Advance 3 SP install as the reference case (v1.02 → v1.03 upgrade,
 2026-07-08).
 
+> **GameCube hacks that demand a Redump ISO** (Super Mario Sunburn /
+> Eclipse, etc.) but you only have an **NKIT** dump: see
+> [nkit-to-redump.md](nkit-to-redump.md) for restoring the pristine
+> base first (NKit + Mono + per-game recovery files), then apply the
+> xdelta as below.
+
 ## The golden rules
 
 1. **Patches apply to the pristine base ROM, not a patched one.**
