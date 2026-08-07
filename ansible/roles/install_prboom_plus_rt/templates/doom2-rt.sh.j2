@@ -99,16 +99,38 @@ PY
 fi
 
 set +e
-"$renderer" \
-  -config "$config" \
-  -save "$save_dir" \
-  -shotdir "$screenshot_dir" \
-  -width {{ dg_prboom_rt_width }} \
-  -height {{ dg_prboom_rt_height }} \
-  -fullscreen \
-  -iwadrt "$metainfo" \
-  -iwad "$iwad" \
-  "$@"
+# PrBoom-Plus-RT never commits a frame to Hyprland's Wayland WSI directly: the
+# game loop and audio run, but its Vulkan surface never maps (the "audio, no
+# window" symptom). Nested in gamescope it gets a real swapchain and presents.
+# gamescope inherits the desktop-entry's forced NVIDIA ICD, so it renders on
+# the RTX (the same GPU as the compositor here) — no iGPU grab like Supermodel.
+# -f fullscreens the gamescope window on the focused monitor (DP-1, focused
+# above); the renderer draws windowed at the render size into it. Fall back to
+# the native path if gamescope is somehow absent.
+if command -v gamescope >/dev/null 2>&1; then
+  gamescope -f -w {{ dg_prboom_rt_width }} -h {{ dg_prboom_rt_height }} -- \
+    "$renderer" \
+    -config "$config" \
+    -save "$save_dir" \
+    -shotdir "$screenshot_dir" \
+    -width {{ dg_prboom_rt_width }} \
+    -height {{ dg_prboom_rt_height }} \
+    -window \
+    -iwadrt "$metainfo" \
+    -iwad "$iwad" \
+    "$@"
+else
+  "$renderer" \
+    -config "$config" \
+    -save "$save_dir" \
+    -shotdir "$screenshot_dir" \
+    -width {{ dg_prboom_rt_width }} \
+    -height {{ dg_prboom_rt_height }} \
+    -fullscreen \
+    -iwadrt "$metainfo" \
+    -iwad "$iwad" \
+    "$@"
+fi
 launch_status=$?
 set -e
 exit "$launch_status"

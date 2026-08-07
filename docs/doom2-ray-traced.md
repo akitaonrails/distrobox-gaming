@@ -58,6 +58,24 @@ SHA256 `732c05a87b6dcf7ec73fee74871ac3e2f9b3770436df2c27abc00a8e5557bb9d`.
 If the persistent cache is empty, put the official zip at
 `dg_prboom_rt_addon_source`; the role fails closed on any mismatch.
 
+## Display: gamescope is required (audio-but-no-window fix)
+
+The launcher runs the renderer **nested in gamescope** (`gamescope -f -w W -h H
+-- prboom-plus-rt … -window`), and focuses DP-1 first. This is not optional on
+this Hyprland/NVIDIA host: launched directly, PrBoom-Plus-RT's game loop and
+audio run but its Vulkan surface **never commits a frame to Hyprland's Wayland
+WSI**, so no window ever maps — you hear the game but see nothing (it is *not*
+off-screen; `hyprctl clients` shows no toplevel at all). Nested in gamescope the
+renderer gets a real swapchain and presents into a normal Hyprland window.
+
+gamescope inherits the desktop-entry's forced NVIDIA ICD
+(`VK_ICD_FILENAMES=…/nvidia_icd.json`), so it renders on the RTX 5090 — the same
+GPU Hyprland's compositor uses (`AQ_DRM_DEVICES=/dev/dri/card1`). That's why it
+does **not** hit the iGPU-grab problem that forces Supermodel onto the native
+path: here both the compositor and the game are already on the discrete GPU.
+The launcher falls back to the native `-fullscreen` path only if `gamescope` is
+missing (which won't present — install gamescope).
+
 ## Controller policy
 
 PrBoom's built-in SDL joystick path only reads two axes and eight buttons, so it
