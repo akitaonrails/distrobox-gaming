@@ -79,6 +79,23 @@ in like the bundled `dinput8` hooks — these un-defer the loader-dependent mods
 | **Sekiro Mod Engine** (katalash, `dinput8.dll` + `modengine.ini`) | `install_sekiro_modengine` (tag `sekiro_modengine`) | Sekiro 418 The Easy (param override from `<game>/mods/`). ModEngine2 does **not** support Sekiro; this original ModEngine chainloads the Weapon Wheel (`chainDInput8DLLPath="\weaponwheel.dll"`) so both run. Revert before `install_sekiro_mods`. |
 | **Ultimate ASI Loader** (ThirteenAG, x64 `dinput8.dll`) | `install_rdr_asi` (tag `rdr_asi`) | RDR 719 RDRFix (`.asi` next to `RDR.exe`). Loader staged under `NexusMods/_loaders/ualoader/`; launch option `WINEDLLOVERRIDES="dinput8=n,b" %command%`. Generic ASI host — reusable for other `.asi` mods. |
 
+### 🎮 In-game overlays & hotkeys (installed mods)
+
+Quick reference for the mods that expose an in-game menu or hotkeys — everything
+else configures via a text file (noted) with no overlay.
+
+| Game — mod | Key(s) | What it does |
+|---|---|---|
+| **RE Village 651 · RE Requiem 25/100** (REFramework) | **Insert** | Opens the REFramework menu; the Lua mods (Infinite Ammo/HP, aim-assist, auto-parry, Infinite CP) toggle under *Script Generated UI* |
+| **RoboCop — Ultra Plus** (UE4SS) | **F12** apply · **ALT+F12** toggle dynamic FPS · **ALT+F2** reset to defaults | Edit `…/ue4ss/Mods/UltraPlusExtensions/scripts/config/*.ini`, then F12 to apply. UE4SS console = **F10** if enabled in `UE4SS-settings.ini`. |
+| **TXR — Ultradynamic** (UE4SS) | UE4SS console **F10** (if enabled) | Day-night/weather runs automatically; tweak via its `Mods/` config |
+| **RE4 2005 — re4_tweaks** | in-game **config overlay hotkey** (see `re4_tweaks/*.ini`, `F1` on many builds) | HD/UI/gameplay tweak panel |
+| **MGS2 · MGS3 — MGSHDFix** | **Insert** toggle vector-line fixes · **End** cycle wireframe (debug) | Resolution/widescreen/FPS via the *MGSHDFix Config Tool* (GUI), not hotkeys |
+| **Sekiro — Weapon Wheel** (1058) | a weapon-select **wheel** (bind configurable — see the mod page) | Quick weapon/prosthetic swap |
+| **RDR — RDRFix** | none | edit `RDRFix.ini` (intro-skip, FPS cap, ultrawide, FOV, post-fx) |
+| **MGS1 — MGSM2Fix** | none (in-game menu via its own hotkeys) | edit `MGSM2Fix.ini` (resolution/widescreen) |
+| **FF7 Rebirth — Engine.ini** · **Sekiro — The Easy** · **RE2/RE3 Infinite Ammo** | none | apply on launch; no overlay |
+
 ### 🖱️ GUI mod-manager tools (staged; manual pass)
 
 `install_modtools` (tag `modtools`) only **downloads + version-pins** the Windows
@@ -379,6 +396,11 @@ Bugfix extract into the game root; MGSHDFix loads via a `wininet/winhttp` proxy.
 
 Role: `install_mgs2mc_mods` · appid `2131640` (USB library). Same MGSHDFix
 ecosystem; all headless drops. Load order 49 → 52 → 19/122 → 110.
+
+> **MGSHDFix settings** — same self-heal as MGS3 (see that section). MGS2's own
+> Config Tool refuses to start in its prefix, so the role **falls back to copying
+> MGS3's valid `MGSHDFix.settings`** (universal, plain INI). Launch MGS2 under
+> **GE-Proton** too if its cutscenes are silent (same MP4/AAC issue as MGS3).
 
 | Mod | Type | Notes |
 |---|---|---|

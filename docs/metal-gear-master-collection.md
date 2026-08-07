@@ -67,11 +67,20 @@ the internal render height to `2160` in `MGSM2Fix.ini`. The in-game resolution
 still needs to be set to a high-resolution mode, such as **High** or **Max**, for
 MGSM2Fix's internal override to apply.
 
-For MGS2 and MGS3, the role writes `plugins/MGSHDFix.settings` to use
-borderless-windowed 3840x2160 output and 3840x2160 internal render resolution.
-Open each game's launcher and set **Internal Resolution** and **Internal
-Upscaling** to **Default / Original** so the game's built-in FSR/upscaling does
-not fight MGSHDFix. The config tools live under each game's `plugins/` folder:
+For MGS2 and MGS3, **MGSHDFix is effectively 4.0.2** — this role pins a `3.1.0`
+base, but the NexusMods roles `install_mgs2mc_mods`/`install_mgs3mc_mods` overlay
+the current `.asi` from Nexus (4.0.2), which supersedes it. 4.0.2 does **not**
+ship a settings file and won't run without one (its Config Tool must generate it
+once). The MGS roles now **self-heal** this: `scripts/regen-mgshdfix-settings.sh`
+runs the Config Tool offscreen to (re)generate `plugins/MGSHDFix.settings`, and
+falls back to copying the sibling game's valid settings if a prefix's Config Tool
+won't start (MGS2's does not). In-game, set **Internal Resolution** and **Internal
+Upscaling** to **Default / Original** so the built-in FSR doesn't fight MGSHDFix;
+open `plugins/MGSHDFix Config Tool.exe` (with a display) to customise.
+
+**Cutscene audio:** the `movie/*.sdt` files are MP4 (H.264 + AAC); Proton's
+built-in Media Foundation can't decode AAC, so cutscenes play silent — run MGS2/
+MGS3 under **GE-Proton** (bundles the codec). See `docs/nexusmods.md`.
 
 ```text
 MGS2/plugins/MGSHDFix Config Tool.exe

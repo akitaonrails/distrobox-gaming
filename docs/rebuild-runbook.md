@@ -69,6 +69,20 @@ ansible-playbook site.yml --tags verify      # post-setup assertions
 `configure` renders desktop entries only. Run `scripts/install-host-launchers.sh`
 from the repository root on the host to install or refresh Walker menu entries.
 
+### NexusMods mod-set roles (per-game, opt-in)
+
+The `install_<game>_mods` roles, the shared loaders (`install_reframework`,
+`install_ue4ss`, `install_sekiro_modengine`, `install_rdr_asi`,
+`install_ff7rebirth_engine`), and the GUI-tool staging (`install_modtools`) are
+all `never`-tagged opt-ins — run each via its `ansible-playbook install-<name>.yml`
+or `site.yml --tags <name>`. **`docs/nexusmods.md` is the authoritative inventory**
+(what each installs, per-game status, deferred/GUI-tool items, save-mod placement,
+and the Proton gotchas + their fixes: the Rockstar-Launcher install-script hang,
+MGS3 GE-Proton cutscene audio, MGSHDFix settings self-heal). Downloaded loaders/
+tools are preserved under `ROMS_FINAL/PC/NexusMods/_loaders/` and reused on
+rebuild (no re-download). Their per-game Nexus mods are under
+`ROMS_FINAL/PC/NexusMods/<game>/`.
+
 ### Resetting configs without rebuilding
 
 ```sh
