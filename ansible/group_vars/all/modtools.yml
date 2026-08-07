@@ -19,9 +19,33 @@ dg_modtools:
     repo: "Tkachov/Overstrike"
     url: "https://github.com/Tkachov/Overstrike/releases/download/OS/v1.7.5/Overstrike_v1.7.5.zip"
     dest_file: "Overstrike_v1.7.5.zip"
+  - key: gzstool
+    name: "GzsTool (MGSV Ground Zeroes .dat/QAR repack)"
+    repo: "Atvaark/GzsTool"
+    url: "https://github.com/Atvaark/GzsTool/releases/download/v0.6.0/GzsTool.v0.6.0.zip"
+    dest_file: "GzsTool.v0.6.0.zip"
+  - key: magicrdr
+    name: "MagicRDR (Red Dead Redemption .rpf/.ares editor)"
+    repo: "Foxxyyy/Magic-RDR"
+    url: "https://github.com/Foxxyyy/Magic-RDR/releases/download/v1.3.10/MagicRDR_v1.3.10.zip"
+    dest_file: "MagicRDR_v1.3.10.zip"
+  - key: dotnet7
+    name: ".NET 7.0 Desktop Runtime x64 (Overstrike needs this in its prefix)"
+    repo: "microsoft/dotnet"
+    url: "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/7.0.20/windowsdesktop-runtime-7.0.20-win-x64.exe"
+    dest_file: "windowsdesktop-runtime-7.0.20-win-x64.exe"
 
-# RyuModManager (Yakuza) ships no release binary — build from source
-# (github.com/mosamadeeb/RyuModManager). Also moot here: this box has Yakuza 0
-# **Director's Cut**, not the original the yakuza0 .par mods target (edition
-# mismatch), so RMM is not staged.
+# Tools sourced from Nexus (downloaded via scripts/nexus-download.py, Premium key).
+dg_modtools_nexus:
+  - key: dsr-tpup
+    name: "DSR-TPUP / Texture Packer & Unpacker (Dark Souls Remastered)"
+    game: darksoulsremastered
+    mod: "9"
+
+# NOT staged (documented in docs/nexusmods.md instead):
+# - Cheat Engine (RE0 / MGR / MGSV GZ): gated behind cheatengine.org and its
+#   installer bundles adware — fetch it manually and decline the offers.
+# - OpenIV (GTA V): manual EULA download from openiv.com.
+# - RyuModManager (Yakuza): no release binary (build from source); moot anyway —
+#   this box has Yakuza 0 Director's Cut, not the original the mods target.
 dg_modtools_rmm_repo: "mosamadeeb/RyuModManager"

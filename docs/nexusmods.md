@@ -93,11 +93,25 @@ on another PC, since the patched files then work under Proton. Revert = Steam �
 Verify integrity. (RMM is the exception — it installs a persistent runtime loader,
 not a baked patch.)
 
-| Tool (staged) | Game(s) | Manual pass |
+**Running a tool** (in the `gaming` box, in a game's Proton prefix):
+```
+distrobox enter gaming -- env WINEPREFIX="<lib>/steamapps/compatdata/<APPID>/pfx" WINEDEBUG=-all \
+  "<box_home>/.local/share/Steam/compatibilitytools.d/GE-Proton11-1/files/bin/wine" "<TOOL.EXE>"
+```
+GE‑Proton's wine bundles the .NET/media bits these need. Alternative: add the
+`.exe` as a Non‑Steam Game → set GE‑Proton → launch from Steam.
+
+| Tool (staged under `_loaders/`) | Game(s) | Manual pass |
 |---|---|---|
-| **SnakeBite** `0.8` (`SnakeBite.Installer.exe`) | MGSV: The Phantom Pain (`287700`) | Install SnakeBite, point it at MGS_TPP, add the `.mgsv` files from `NexusMods/mgsvtpp/` (300, 316, 327, 406→Vibrant, 1011→Extreme), Build. |
-| **Overstrike** `v1.7.5` (`Overstrike_v1.7.5.zip`) | Spider-Man Remastered (`1817070`) + Miles Morales (`1817190`) | Run Overstrike, add the `.smpcmod`/`.mmpcmod` files from `NexusMods/spiderman-r/` + `spiderman-mm/`, Install (patches the `.toc`). |
-| **Ryu Mod Manager** (source-only, `mosamadeeb/RyuModManager`) | Yakuza 0 (`2988580`) | ⚠️ not staged — no release binary, **and** this box has the *Director's Cut* while the `yakuza0` `.par` mods target the original (edition mismatch). Build from source only if you accept that risk. |
+| **SnakeBite** `0.8` (`SnakeBite.Installer.exe`) | MGSV: The Phantom Pain (`287700`) | Install SnakeBite (installed ✅), point it at MGS_TPP, add the `.mgsv` files from `NexusMods/mgsvtpp/` (300, 316, 327, 406→Vibrant, 1011→Extreme), Build. |
+| **Overstrike** `v1.7.5` (`overstrike/app/Overstrike.exe`) | Spider-Man Remastered (`1817070`) + Miles Morales (`1817190`) | Needs **.NET 7.0 Desktop Runtime** — the `dotnet7` installer is staged and was installed into the `1817070` prefix (`… /install /quiet /norestart`); do the same for `1817190`. Then run Overstrike, add the `.smpcmod`/`.mmpcmod` files from `NexusMods/spiderman-r/` + `spiderman-mm/`, Install. |
+| **GzsTool** `v0.6.0` (`GzsTool.v0.6.0.zip`) | MGSV: Ground Zeroes (`311340`) | Unpack/repack the `data_02.dat` QAR archive for the Improved Max Settings mod. |
+| **MagicRDR** `v1.3.10` (`MagicRDR_v1.3.10.zip`) | Red Dead Redemption (`2668510`) | Open `mapres.rpf`/`fonts.rpf`/`common.rpf` and inject the deferred RDR mods (525 minimap, 66 SMIC, 303 fast-horse, 140 deadeye). |
+| **DSR-TPUP** `1.5` (`dsr-tpup/`) | Dark Souls Remastered (`570940`) | Run `DSR-TPUP.exe` → Repack, for the DSR 2020 Textures (mod 220, ~6 GB, fetch separately). |
+| **Cheat Engine** | RE0 (`339340`), MGR (`235460`), MGSV GZ (`311340`) | ⚠️ **not staged** — gated behind cheatengine.org and its installer bundles adware; fetch manually and decline the offers. Load the `.CT` table + attach. |
+| **OpenIV** | GTA V Enhanced (`3240220`) | ⚠️ **not staged** — manual EULA download from openiv.com. |
+| **Ryu Mod Manager** (`mosamadeeb/RyuModManager`) | Yakuza 0 (`2988580`) | ⚠️ **not staged** — no release binary, and this box has the *Director's Cut* vs the original the `yakuza0` `.par` mods target (edition mismatch). |
+| **TFC Installer / Advanced Launcher** | Batman Arkham Knight/City/Asylum | ships **inside** each mod's archive — run from there. |
 
 ### 💾 Save-file mods (placed manually, with backups)
 
