@@ -904,6 +904,15 @@
       7z e -y -o"$game_dir" "$patch_src" {{ item.1.extract_files | map('quote') | join(' ') }} >/dev/null
       {% elif item.1.extract_flat | default(false) -%}
       7z e -y -o"$game_dir" "$patch_src" >/dev/null
+      {% elif item.1.strip_prefix is defined -%}
+      # Archive wraps its files in a top folder ("{{ item.1.strip_prefix }}");
+      # extract to a temp dir and overlay the stripped tree onto the game dir so
+      # the mod's data subdirs land directly over the game's own (textures,
+      # cars, liveries, HUD, etc.) instead of nesting under the wrapper.
+      _tmp="$(mktemp -d)"
+      7z x -y -o"$_tmp" "$patch_src" >/dev/null
+      rsync -a "$_tmp/{{ item.1.strip_prefix }}/" "$game_dir/"
+      rm -rf "$_tmp"
       {% else -%}
       7z x -y -o"$game_dir" "$patch_src" >/dev/null
       {% endif -%}

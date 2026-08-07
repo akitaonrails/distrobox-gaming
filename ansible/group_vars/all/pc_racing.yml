@@ -329,6 +329,17 @@ dg_pc_racing_games:
         source: "{{ dg_pc_racing_cache_root }}/silentpatch_cmr2.zip"
         backup_exe: "CMR2.exe"
         creates: "SPCMR2.dll"
+      # Official WRC Liveries (Nexus colinmcraerally2 mod 1): replaces car
+      # textures, liveries, HUD and localized credits. The archive wraps
+      # everything in a "Colin McRae Rally 2.0/" folder whose Game/, FrontEnd/
+      # and CountrySpecific/ subtrees mirror the installed game layout — so
+      # strip_prefix overlays them directly over the install (no re-master of
+      # the .exe; pure data replacement). Preserved on the NAS under
+      # NexusMods/cmr2/; re-stage there on a from-scratch rebuild.
+      - name: wrc-liveries
+        source: "{{ dg_roms_final_root }}/PC/NexusMods/cmr2/Official WRC Liveries-1-1-0-1703499888.zip"
+        strip_prefix: "Colin McRae Rally 2.0"
+        creates: ".dg-wrc-liveries"
     ini:
       - file: "SPCMR2.ini"
         key: Region

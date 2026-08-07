@@ -411,6 +411,15 @@ reverted same day) — 1440p + Hyprland's 1.5x stretch to the panel is the
 performance/quality sweet spot. `Window=0`/`Borderless=0` keeps the game in
 fullscreen mode inside the Wine virtual desktop.
 
+**Official WRC Liveries** (Nexus `colinmcraerally2` mod 1) is applied on top as
+a second patch — a pure data overlay that replaces car textures, liveries, HUD
+and localized credits. The archive wraps everything in a `Colin McRae Rally
+2.0/` folder, so the patch uses the role's `strip_prefix` mode (extract to a
+temp dir, `rsync` the stripped tree over the install). The 715 MB archive is
+preserved on the NAS under `NexusMods/cmr2/`; re-stage it there for a
+from-scratch rebuild. Revert = restore the base `Game/`, `FrontEnd/` and
+`CountrySpecific/` files (reinstall) and delete `.dg-wrc-liveries`.
+
 **Wine virtual desktop is mandatory.** Without `wine explorer /desktop=...`,
 CMR2's intro video plays but the 3D menu surface never composites to the
 window — symptom: audio works, screen freezes on the last video frame. This
