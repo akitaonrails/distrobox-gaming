@@ -138,6 +138,15 @@ dg_retroarch_core_options:
   - path: "{{ dg_retroarch_dir }}/config/melonDS/melonDS.opt"
     settings:
       - { key: melonds_opengl_renderer, value: '"enabled"' }
+  # ParaLLEl-N64 runs the heavy SM64 romhacks that crash Mupen64Plus-Next
+  # (Last Impact, Star Road). Its default GLideN64 plugin is OpenGL, which
+  # black-screens under RetroArch's global Vulkan video driver (same trap as
+  # melonDS above). Use the ParaLLEl-RDP Vulkan renderer + LLE ParaLLEl-RSP
+  # (HLE RSP was the original crash/black-screen cause for these hacks).
+  - path: "{{ dg_retroarch_dir }}/config/ParaLLEl N64/ParaLLEl N64.opt"
+    settings:
+      - { key: parallel-n64-gfxplugin, value: '"parallel"' }
+      - { key: parallel-n64-rspplugin, value: '"parallel"' }
 dg_retroarch_cores:
   - melonds
   - bsnes
