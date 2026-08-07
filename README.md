@@ -1,12 +1,24 @@
 # Distrobox Gaming
 
 Ansible playbooks for an Arch-based distrobox named `gaming`. Sets up ES-DE,
-standalone emulators (shadPS4, Dolphin, PCSX2, DuckStation, Flycast, xemu,
-RPCS3, PPSSPP, Eden, Cemu, Vita3K), RetroArch cores, host-side Walker desktop
-launcher rendering/install scripts, DLC/patch batch installers for PS3 and Switch, per-game RPCS3
-optimization configs, optional Wine-managed Xenia Manager for Xbox 360,
-Hedge Mod Manager for Sonic mods, optional native Unleashed Recompiled for
-Sonic Unleashed, and a minimal zsh + starship shell inside the box.
+standalone emulators (shadPS4 for PS4, Dolphin for GC/Wii, PCSX2 for PS2,
+DuckStation for PS1, Flycast for Dreamcast, xemu for Xbox, RPCS3 for PS3,
+PPSSPP for PSP, Azahar for 3DS, Eden for Switch, Cemu for Wii U, RetroArch, and
+Supermodel for Sega Model 3), RetroArch cores, host-side Walker desktop
+launcher rendering/install scripts, DLC/patch batch installers for PS3 and
+Switch, per-game RPCS3 optimization configs, optional Wine-managed Xenia
+Manager for Xbox 360, Hedge Mod Manager for Sonic mods, optional native
+Unleashed Recompiled for Sonic Unleashed, and a minimal zsh + starship shell
+inside the box.
+
+Beyond the core emulators, a large set of **opt-in** roles (all `never`-tagged,
+or run via a standalone `install-*.yml` playbook) add: Sega arcade (Model 1/2/3
+via Wine frontends + Supermodel), native recomp/decomp ports (Ship of Harkinian,
+2Ship2Harkinian, Starship, Render96ex, SpaghettiKart, Sonic P-06, Unleashed
+Recomp, PrBoom-Plus Doom II RT), Windows/Wine games (Colin McRae Rally, OutRun
+2006, Sega Rally, GT5 Master Mod, Metal Gear Master Collection fixes, and more),
+and reproducible **NexusMods mod-set** roles per game. See `docs/nexusmods.md`,
+`docs/external-installers.md`, and `docs/rebuild-runbook.md`.
 
 ## Quick Start
 
@@ -462,26 +474,43 @@ docs/                               # historical notes and focused docs
 
 ## Documentation
 
+Core setup & rebuild:
+
+- [Rebuild Runbook](docs/rebuild-runbook.md) — from-scratch rebuild, opt-in tags, standalone playbooks
+- [External Installers](docs/external-installers.md) — download inventory for the opt-in Windows/Wine games and tools
+- [Controller Hotkeys](docs/controller-hotkeys.md) · [Input Latency](docs/input-latency.md) · [Hyprland Gaming](docs/hyprland-gaming.md)
+- [Flycast Resolution](docs/flycast-resolution.md)
+
+Mods, patches & HD textures:
+
+- **[NexusMods mod sets](docs/nexusmods.md)** — authoritative inventory of the per-game `install_<game>_mods` roles, shared loaders, GUI-tool/deferred items, and Proton gotchas
+- [ROM-hack patching (xdelta/IPS)](docs/rom-hack-patching.md) · **[GameCube NKIT→redump recovery](docs/nkit-to-redump.md)**
+- [HD texture packs](docs/hd-textures.md) (Dolphin/Azahar, NAS-symlinked)
+- [Metal Gear Master Collection fixes](docs/metal-gear-master-collection.md)
+- [RE4 HD Project](docs/re4-hd.md) · [FFVII 7th Heaven](docs/ffvii-7th-heaven.md) · [GTA IV mods](docs/gta4-mods.md)
+- [Cheats and trainers](docs/cheats-and-trainers.md) · [Mario Maker levels](docs/mario-maker-levels.md)
+
+Windows / Wine games:
+
+- [PC Racing Games](docs/pc-racing.md) — Colin McRae Rally, OutRun 2006, Sega Rally, DiRT
+- **[Driveclub shadPS4](docs/driveclub-shadps4.md)** — working v1.00 recipe, all dead ends captured
+- [GT5 Master Mod](docs/gt5-master-mod.md) · [Project Forza Plus (FM2/3/4/FH1 on Xenia)](docs/project-forza.md)
+- [Sonic Project '06](docs/sonic-p06.md) · [Hedge Mod Manager](docs/hedge-mod-manager.md) · [Dusk / Twilight Princess](docs/dusk-twilight-princess.md)
+
+Arcade & ray-traced ports:
+
+- [Sega Arcade (Model 1/2/3)](docs/sega-arcade.md) · [Arcade easy settings](docs/arcade-easy-settings.md)
+- [Doom II: Ray Traced](docs/doom2-ray-traced.md) · [Ray-traced classics](docs/ray-traced-classics.md)
+
+Xbox 360 & per-game tuning:
+
+- [Xenia Manager](docs/xenia-manager.md) · [Xbox 360 Title Updates](docs/xbox360-title-updates.md) · [Xbox 360 PGR3 / PGR4](docs/xbox360-pgr.md)
+- [GT2 (DuckStation)](docs/gt2-duckstation.md) · [GT3 (PCSX2)](docs/gt3-pcsx2.md) · [GT4 Spec II (PCSX2)](docs/gt4-spec-ii.md) · [GT5/GT6 (RPCS3)](docs/gt5-rpcs3.md)
+- [PS3 library](docs/ps3-library.md) · [Azahar 3DS](docs/azahar-3ds.md) · [PS1 60 FPS patches](docs/ps1-60fps-patches.md)
+
 Historical notes:
 
-- [Setup Notes](docs/distrobox-gaming-prompts.md)
-- [Package Strategy](docs/distrobox-gaming-packages.md)
-
-Focused docs:
-
-- **[Driveclub shadPS4](docs/driveclub-shadps4.md)** — working v1.00 install recipe via DriveClubFS, all dead ends captured (read before touching Driveclub again)
-- [Flycast Resolution](docs/flycast-resolution.md)
-- [Controller Hotkeys](docs/controller-hotkeys.md)
-- [Rebuild Runbook](docs/rebuild-runbook.md)
-- [Xenia Manager](docs/xenia-manager.md)
-- [Hedge Mod Manager](docs/hedge-mod-manager.md)
-- [PC Racing Games](docs/pc-racing.md)
-- [Sonic Project '06](docs/sonic-p06.md)
-- [Project Forza Plus (FM2/3/4/FH1 on Xenia)](docs/project-forza.md)
-- [Xbox 360 Title Updates](docs/xbox360-title-updates.md) — archive.org batch fetch + Xenia Manager install flow
-- [Xbox 360 PGR3 / PGR4](docs/xbox360-pgr.md)
-- [GT4 Spec II on PCSX2](docs/gt4-spec-ii.md)
-- [PS1 60 FPS patches (Colin McRae Rally)](docs/ps1-60fps-patches.md)
+- [Setup Notes](docs/distrobox-gaming-prompts.md) · [Package Strategy](docs/distrobox-gaming-packages.md)
 
 ## Safety Rules
 
