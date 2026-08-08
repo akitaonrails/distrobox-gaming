@@ -112,6 +112,13 @@ dg_pc_racing_games:
     source_dir: "{{ dg_pc_racing_source_root }}/CMRally"
     launch_exe: "Rally.exe"
     installed_path: "{{ dg_pc_racing_install_root }}/colin-mcrae-rally-1"
+    # CMR1 (1998, DX6) renders via wined3d -> OpenGL (UseEGL=N pins GLX). On this
+    # dual-GPU box GLX defaults to the AMD iGPU/llvmpipe -> black; force the
+    # NVIDIA GLX vendor + PRIME offload so OpenGL runs on the RTX. The GL analog
+    # of Revo's Vulkan-ICD pin. Verified 2026-08-08.
+    game_env:
+      __NV_PRIME_RENDER_OFFLOAD: "1"
+      __GLX_VENDOR_LIBRARY_NAME: nvidia
     # Keep the pack's Windows-user helper files out of the install.
     disabled_files:
       - "_Colin McRae C Drive Reg Fix.reg"
@@ -834,6 +841,13 @@ dg_pc_racing_games:
     source_dir: "{{ dg_pc_racing_source_root }}/SEGA-Rally-Revo_Win_EN-FR-DE-ES-IT-PL_Full-Rip/Sega Rally"
     launch_exe: "SEGA Rally.exe"
     installed_path: "{{ dg_pc_racing_install_root }}/sega-rally-revo"
+    # Force the NVIDIA-only Vulkan ICD so DXVK cannot land on the AMD iGPU
+    # (= black screen on this dual-GPU box). The old "native DXVK picks the RTX
+    # because it's Vulkan device 0" assumption breaks when a mesa/NVIDIA/DXVK
+    # update reshuffles device enumeration; pinning the ICD removes the iGPU
+    # from Vulkan entirely. Verified 2026-08-08.
+    game_env:
+      VK_ICD_FILENAMES: /usr/share/vulkan/icd.d/nvidia_icd.json
     # Pinned to the wine-11.8 sidecar (same runner CMR2 uses): system
     # wine 11.13 (2026-07-12 upgrade) regressed this game to a black
     # screen — process alive, DXVK initialized, dsound mixing, but only
