@@ -108,7 +108,7 @@ set +e
 # above); the renderer draws windowed at the render size into it. Fall back to
 # the native path if gamescope is somehow absent.
 if command -v gamescope >/dev/null 2>&1; then
-  gamescope -f -w {{ dg_prboom_rt_width }} -h {{ dg_prboom_rt_height }} -- \
+  gamescope -f -w {{ dg_prboom_rt_width }} -h {{ dg_prboom_rt_height }} --force-grab-cursor -- \
     "$renderer" \
     -config "$config" \
     -save "$save_dir" \

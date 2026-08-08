@@ -76,6 +76,13 @@ path: here both the compositor and the game are already on the discrete GPU.
 The launcher falls back to the native `-fullscreen` path only if `gamescope` is
 missing (which won't present — install gamescope).
 
+gamescope is launched with **`--force-grab-cursor`** ("always use relative mouse
+mode instead of flipping dependent on cursor visibility"). Without it, gamescope
+toggles the pointer between relative and absolute based on cursor visibility, and
+PrBoom's mouse-look escapes to the top screen edge and locks there (camera looks
+up and won't move). Forcing relative mode keeps mouse-look — and the right
+stick's AntiMicroX→mouse look — working correctly.
+
 ## Controller policy
 
 PrBoom's built-in SDL joystick path only reads two axes and eight buttons, so it
