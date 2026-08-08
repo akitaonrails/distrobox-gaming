@@ -1,0 +1,18 @@
+---
+# Restore the stock WRC 4 DATA.MIX from its backup.
+
+- name: Restore DATA.MIX from backup
+  ansible.builtin.shell: |
+    set -eu
+    game={{ dg_wrc4_game_dir | quote }}
+    target="$game/{{ item.target }}"
+    marker="$game/.dg-wrc4-{{ item.id }}"
+    [ -f "$marker" ] || { echo "nochange"; exit 0; }
+    if [ -f "$target.dg-orig" ]; then mv -f "$target.dg-orig" "$target"; fi
+    rm -f "$marker"
+    echo "wrc4-reverted"
+  loop: "{{ dg_wrc4_mods }}"
+  loop_control:
+    label: "{{ item.id }} {{ item.name }}"
+  register: _wrc4_revert
+  changed_when: "'wrc4-reverted' in _wrc4_revert.stdout"

@@ -55,6 +55,7 @@
     - { role: install_revillage_mods,    tags: [revillage_mods, never] }
     - { role: install_re0_mods,          tags: [re0_mods, never] }
     - { role: install_re1hd_mods,        tags: [re1hd_mods, never] }
+    - { role: install_wrc4_mods,         tags: [wrc4_mods, never] }
     - { role: install_robocop_mods,      tags: [robocop_mods, never] }
     - { role: install_sekiro_mods,       tags: [sekiro_mods, never] }
     - { role: install_txr_mods,          tags: [txr_mods, never] }

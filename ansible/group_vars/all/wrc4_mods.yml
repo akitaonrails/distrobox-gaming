@@ -1,0 +1,33 @@
+# WRC 4 FIA World Rally Championship (appid 256330) mod set — opt-in role
+# install_wrc4_mods. Built via the nexus-mod-set skill. See docs/wrc4-mods.md.
+#
+# The single mod (Nexus wrc4 mod 1, "Loose camera + more realistic tyres" by Sal,
+# based on themoddingsal) is a straight replacement of the game's DATA.MIX — the
+# container the game packs its tyre-physics and camera tuning into. Install =
+# back up the stock DATA.MIX once, drop the mod's DATA.MIX into the game root.
+# No loader, no script hook, no anti-cheat; fully reversible.
+#
+# WRC 4 is DELISTED from Steam; it lives in the USB Steam library, so the game
+# dir defaults to dg_external_usb_games_root (fall back to the box library).
+
+dg_wrc4_appid: "256330"
+dg_wrc4_required_version: "1.0.0.0"
+
+dg_wrc4_steam_library_root: >-
+  {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
+     else dg_box_home + '/.local/share/Steam' }}
+dg_wrc4_game_dir: "{{ dg_wrc4_steam_library_root }}/steamapps/common/WRC 4"
+
+dg_wrc4_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/wrc4"
+
+# Camera-looseness variant of mod 1 (both are MAIN downloads):
+#   file 2 = "Loose camera 0.7"  (default — looser, best for reducing motion
+#                                 sickness, which is the mod's stated goal)
+#   file 4 = "Loose camera 0.78" (much stricter / tighter) — set item.file: "4"
+dg_wrc4_mods:
+  - id: "1"
+    file: "2"
+    name: "Loose camera + realistic tyres (Sal) — cam 0.7"
+    target: "DATA.MIX"
+
+dg_wrc4_revert: false

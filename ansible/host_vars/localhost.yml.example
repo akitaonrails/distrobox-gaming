@@ -63,6 +63,12 @@
 # dg_gta4_steam_library_root: /run/media/me/STEAM   # if GTA IV is on a USB lib
 # dg_gta4_steam_localconfig: /home/me/.local/share/Steam/userdata/<steamid>/config/localconfig.vdf
 #
+# WRC 4 mod set (opt-in role install_wrc4_mods / --tags wrc4_mods). WRC 4 is
+# delisted; it defaults to the USB Steam library. The mod (loose camera +
+# realistic tyres) replaces DATA.MIX. See docs/wrc4-mods.md.
+# dg_wrc4_steam_library_root: /run/media/me/STEAM   # if WRC 4 mounts elsewhere
+# dg_wrc4_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/wrc4"
+#
 # shadPS4 DLC/addon install dir (kept OUTSIDE the PS4 game tree so
 # ES-DE's .bin scan doesn't pick up addon files as fake games).
 # dg_shadps4_addon_install_dir: "{{ dg_emudeck_root }}/roms_rare/ps4-addons"
