@@ -1,0 +1,95 @@
+#!/usr/bin/env sh
+set -eu
+
+prefix="{{ dg_dklr_prefix }}"
+install_dir="{{ dg_dklr_install_root }}"
+wine_bin="{{ dg_dklr_wine_bin }}"
+exe="$install_dir/{{ dg_dklr_exe }}"
+
+if [ ! -x "$wine_bin" ] || [ ! -f "$exe" ]; then
+  printf '%s\n' "ERROR: DKLR is not installed ($exe)." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-dklr.yml" >&2
+  exit 1
+fi
+
+export WINEPREFIX="$prefix"
+export WINEARCH="{{ dg_dklr_winearch }}"
+export WINEDEBUG="${WINEDEBUG:--all}"
+export WINEESYNC="${WINEESYNC:-{{ dg_dklr_wine_esync }}}"
+export WINEFSYNC="${WINEFSYNC:-{{ dg_dklr_wine_fsync }}}"
+export WINEDLLOVERRIDES="${WINEDLLOVERRIDES:-winemenubuilder.exe=d}"
+export DXVK_LOG_LEVEL="${DXVK_LOG_LEVEL:-none}"
+# Pin the RTX 5090: this Unity/DXVK title renders through Vulkan, and on this
+# AMD-iGPU + RTX box an unpinned ICD can land on the iGPU -> black screen (same
+# class as Sega Rally Revo). The desktop entry also injects dg_gpu_env.
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+cd "$install_dir"
+
+# --- Focus the main landscape monitor so gamescope opens on DP-1, not the
+#     portrait DP-2. hyprctl isn't in the box; talk to the socket via python3.
+if command -v python3 >/dev/null 2>&1 && [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+  python3 - "{{ dg_dklr_main_output }}" <<'PY' >/dev/null 2>&1 || true
+import socket, os, sys
+sig = os.environ["HYPRLAND_INSTANCE_SIGNATURE"]; xdg = os.environ["XDG_RUNTIME_DIR"]
+s = socket.socket(socket.AF_UNIX); s.connect(f"{xdg}/hypr/{sig}/.socket.sock")
+s.sendall(f"dispatch focusmonitor {sys.argv[1]}".encode()); s.recv(64)
+PY
+fi
+
+# --- Controller: DKLR is keyboard-only (README). Bridge the pad to its SNES
+#     key map with evsieve (D-pad->arrows; face/shoulders/start/select as below).
+#     Physical-position mapping so a SNES-style pad feels right:
+#       A(→,east)=S  B(↓,south)=X  X(↑,north)=A  Y(←,west)=Z  L=Q R=W
+#       Start=Return  Select=Backspace
+evsieve_pid=""
+pad=""
+for l in /dev/input/by-id/*8BitDo*event-joystick /dev/input/by-id/*Xbox*event-joystick /dev/input/by-id/*XBOX*event-joystick /dev/input/by-id/*Microsoft*event-joystick; do
+  [ -e "$l" ] && { pad=$(readlink -f "$l"); break; }
+done
+if [ -n "$pad" ] && command -v evsieve >/dev/null 2>&1 && [ -w /dev/uinput ]; then
+  evsieve --input "$pad" grab \
+    --map btn:south key:x \
+    --map btn:east key:s \
+    --map btn:north key:a \
+    --map btn:west key:z \
+    --map btn:tl key:q \
+    --map btn:tr key:w \
+    --map btn:start key:enter \
+    --map btn:select key:backspace \
+    --map abs:hat0x:-1 key:left \
+    --map abs:hat0x:1 key:right \
+    --map abs:hat0y:-1 key:up \
+    --map abs:hat0y:1 key:down \
+    --output name="dklr-keys" >/dev/null 2>&1 &
+  evsieve_pid=$!
+fi
+
+cleanup() {
+  [ -n "$evsieve_pid" ] && kill "$evsieve_pid" 2>/dev/null || true
+  env -u PYTHONHOME -u PYTHONPATH "{{ dg_dklr_wineserver_bin }}" -k >/dev/null 2>&1 || true
+}
+trap cleanup EXIT HUP INT TERM
+
+set +e
+{% if dg_dklr_gamescope_enabled | bool -%}
+if command -v gamescope >/dev/null 2>&1; then
+  # Integer-scale the 256x224 pixel canvas to the panel for crisp pixels.
+  env -u PYTHONHOME -u PYTHONPATH gamescope \
+    -w {{ dg_dklr_game_width }} -h {{ dg_dklr_game_height }} \
+    -W {{ dg_dklr_output_width }} -H {{ dg_dklr_output_height }} \
+    -S integer -f \
+    -- "$wine_bin" "$exe" -screen-fullscreen 1 \
+       -screen-width {{ dg_dklr_game_width }} -screen-height {{ dg_dklr_game_height }} "$@"
+else
+  "$wine_bin" "$exe" "$@"
+fi
+{% else -%}
+"$wine_bin" "$exe" "$@"
+{% endif -%}
+status=$?
+set -e
+trap - EXIT HUP INT TERM
+cleanup
+exit "$status"

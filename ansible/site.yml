@@ -74,6 +74,7 @@
     - { role: install_2ship2harkinian,   tags: [two_ship2harkinian, never] }
     - { role: install_starship,          tags: [starship, never] }
     - { role: install_sonic_p06,         tags: [sonic_p06, never] }
+    - { role: install_dklr,              tags: [dklr, never] }
     - { role: install_unleashed_recomp,  tags: [unleashed_recomp, never] }
     - { role: install_smm2_levels,   tags: [smm2_levels, never] }
     - { role: install_7th_heaven,        tags: [seven_heaven, "7th_heaven", materiaforge, ffvii_7th_heaven, never] }
