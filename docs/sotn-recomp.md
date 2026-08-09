@@ -42,14 +42,6 @@ if the layout differs. A CHD can be split with `chdman extractcd` + a bin
 splitter if you only have the compressed image (note: this build's `chdman
 --splitbin` errored, so split with `binmerge` instead).
 
-## Disc auto-load
-
-On first launch the app writes `settings.json` with an **empty `CdPath`** and
-then sits on its **Disc Setup / Disc Picker** screen (blank grey ImGui panels —
-looks stuck). The role pre-seeds `settings.json` with `CdPath` pointed at the
-staged cue so it loads the game immediately. If you ever wipe `settings.json`,
-either re-run the role or set the disc via the app's Disc Setup panel.
-
 ## Notes
 
 - The build self-checks GitHub for updates on launch (`[AutoUpdater]`); dev
