@@ -108,6 +108,17 @@
       register: _sotn_disc
       changed_when: "'wrote-cue' in _sotn_disc.stdout"
 
+    - name: Seed settings.json with the disc path (first run only)
+      # The app writes settings.json on first launch with an EMPTY CdPath and
+      # then sits on its Disc Setup / Disc Picker screen (blank ImGui panels).
+      # Pre-seeding CdPath (pointed at the staged cue) makes it load the game
+      # straight away. force:false so it never clobbers the user's own tweaks.
+      ansible.builtin.template:
+        src: settings.json.j2
+        dest: "{{ dg_sotn_recomp_install_dir }}/settings.json"
+        mode: "0644"
+        force: false
+
     - name: Deploy the SymphonyRecomp launcher wrapper
       ansible.builtin.template:
         src: sotn-recomp.sh.j2
