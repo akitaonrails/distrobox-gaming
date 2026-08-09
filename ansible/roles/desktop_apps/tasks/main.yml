@@ -44,6 +44,12 @@
     dest: "{{ dg_desktop_render_dir }}/gaming-sonic-p06.desktop"
     mode: "0644"
 
+- name: Render SymphonyRecomp desktop entry
+  ansible.builtin.template:
+    src: gaming-sotn-recomp.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-sotn-recomp.desktop"
+    mode: "0644"
+
 - name: Render Final Fantasy VII 7th Heaven desktop entry
   ansible.builtin.template:
     src: gaming-7th-heaven.desktop.j2
