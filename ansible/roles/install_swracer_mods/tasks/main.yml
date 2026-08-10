@@ -1,0 +1,141 @@
+---
+# STAR WARS Episode I: Racer (GOG classic) NexusMods set.
+# See group_vars/all/swracer_mods.yml and docs/star-wars-racer-mods.md.
+# The game is a Wine title installed by install_pc_racing (slug
+# star-wars-racer); mods are loose-file drop-ins into its extracted data/
+# tree. Tasks run on localhost against the bind-mounted install dir.
+# Dynamic values are passed via `environment:` so the shell bodies stay
+# free of inline Jinja (which trips Ansible's argument splitter).
+
+- name: Revert SW Racer mods when requested
+  when: dg_swracer_mods_revert | bool
+  block:
+    - name: Restore backed-up originals and clear mod markers
+      ansible.builtin.shell: |
+        set -eu
+        changed=0
+        if [ -d "$BKP" ]; then
+          cp -a "$BKP/." "$DEST/"
+          rm -rf "$BKP"
+          changed=1
+        fi
+        if [ -f "$MARKER" ]; then rm -f "$MARKER"; changed=1; fi
+        [ "$changed" = 1 ] && echo "reverted"
+        exit 0
+      environment:
+        BKP: "{{ dg_swracer_mods_backup_dir }}/{{ item.id }}"
+        DEST: "{{ dg_swracer_mods_game_dir }}/{{ item.dest_subdir }}"
+        MARKER: "{{ dg_swracer_mods_game_dir }}/{{ item.marker }}"
+      loop: "{{ dg_swracer_mods }}"
+      loop_control:
+        label: "{{ item.name }}"
+      register: _swr_revert
+      changed_when: "'reverted' in _swr_revert.stdout"
+
+    - name: Report SW Racer mods reverted
+      ansible.builtin.debug:
+        msg: "SW Racer mods reverted; original audio restored from backup. Preserved Nexus archives on the NAS are untouched."
+
+- name: Install SW Racer mods
+  when: not (dg_swracer_mods_revert | bool)
+  block:
+    - name: Assert the base game is installed
+      ansible.builtin.stat:
+        path: "{{ dg_swracer_mods_game_exe }}"
+      register: _swr_exe
+
+    - name: Fail with guidance when the base game is missing
+      ansible.builtin.fail:
+        msg: >-
+          {{ dg_swracer_mods_game_exe }} not found. Install the base game
+          first: ansible-playbook site.yml --tags pc_racing
+          -e '{"dg_pc_racing_selected_slugs":["star-wars-racer"]}'.
+      when: not _swr_exe.stat.exists
+
+    - name: Verify the game exe version matches the required build
+      ansible.builtin.command:
+        cmd: "python3 {{ dg_project_root }}/scripts/pe-version.py {{ dg_swracer_mods_game_exe | quote }} --expect {{ dg_swracer_mods_required_version }}"
+      register: _swr_ver
+      changed_when: false
+      failed_when: _swr_ver.rc != 0
+
+    - name: Assert staged mod archives are present under the NexusMods preserve dir
+      ansible.builtin.stat:
+        path: "{{ dg_swracer_mods_staging_root }}/{{ item.archive }}"
+      register: _swr_archives
+      loop: "{{ dg_swracer_mods }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Fail with a staging manifest when an archive is missing
+      ansible.builtin.fail:
+        msg: >-
+          Missing mod archive: {{ item.item.name }} ->
+          {{ dg_swracer_mods_staging_root }}/{{ item.item.archive }}. Stage it
+          (nexusmods.com/starwarsepisode1racer/mods/{{ item.item.nexus_id }})
+          via scripts/nexus-download.py or manually, then re-run.
+      loop: "{{ _swr_archives.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"
+      when: not item.stat.exists
+
+    - name: Check SW Racer mod markers
+      ansible.builtin.stat:
+        path: "{{ dg_swracer_mods_game_dir }}/{{ item.marker }}"
+      register: _swr_markers
+      loop: "{{ dg_swracer_mods }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Install each SW Racer mod (backup originals, extract, overlay, mark)
+      ansible.builtin.shell: |
+        set -eu
+        [ -f "$MARKER" ] && exit 0
+        [ -d "$DEST" ] || { echo "ERROR: dest missing: $DEST" >&2; exit 1; }
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        case "$STAGE" in
+          *.zip) unzip -o -q "$STAGE" -d "$tmp" ;;
+          *.rar) unrar x -o+ -inul "$STAGE" "$tmp/" ;;
+          *) echo "ERROR: unknown archive type: $STAGE" >&2; exit 1 ;;
+        esac
+        src="$tmp"; [ -n "$SUB" ] && src="$tmp/$SUB"
+        mkdir -p "$BKP"
+        n=0
+        for f in "$src"/$PAT; do
+          [ -f "$f" ] || continue
+          base="$(basename "$f")"
+          if [ -f "$DEST/$base" ] && [ ! -f "$BKP/$base" ]; then
+            cp -a "$DEST/$base" "$BKP/$base"
+          fi
+          cp -f "$f" "$DEST/$base"
+          n=$((n + 1))
+        done
+        echo "installed:$n"
+        echo seeded > "$MARKER"
+      environment:
+        MARKER: "{{ dg_swracer_mods_game_dir }}/{{ item.item.marker }}"
+        DEST: "{{ dg_swracer_mods_game_dir }}/{{ item.item.dest_subdir }}"
+        STAGE: "{{ dg_swracer_mods_staging_root }}/{{ item.item.archive }}"
+        SUB: "{{ item.item.archive_subdir | default('') }}"
+        PAT: "{{ item.item.pattern | default('*') }}"
+        BKP: "{{ dg_swracer_mods_backup_dir }}/{{ item.item.id }}"
+      register: _swr_install
+      changed_when: "'installed:' in _swr_install.stdout"
+      loop: "{{ _swr_markers.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"
+      when: not item.stat.exists
+
+    - name: Report excluded (not installed) SW Racer mods
+      ansible.builtin.debug:
+        msg: "SKIPPED (policy): {{ item.name }} (nexus #{{ item.nexus_id }}) -- {{ item.reason }}"
+      loop: "{{ dg_swracer_mods_excluded | default([]) }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Report SW Racer mods setup
+      ansible.builtin.debug:
+        msg:
+          - "SW Racer mods applied to {{ dg_swracer_mods_game_dir }}. Installed: {{ dg_swracer_mods | map(attribute='name') | join(', ') }}."
+          - "Originals backed up under {{ dg_swracer_mods_backup_dir }}. Revert: -e dg_swracer_mods_revert=true."
+          - "Mod 2 (HD-4K Experience) is a ReShade preset and is intentionally NOT installed on this Wine box; its archive is preserved on the NAS."
