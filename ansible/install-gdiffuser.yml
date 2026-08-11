@@ -1,0 +1,7 @@
+---
+- name: Install G-Diffuser (F-Zero X PC port)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_gdiffuser

@@ -1,0 +1,123 @@
+---
+# G-Diffuser — native F-Zero X PC port (libultraship). See
+# group_vars/all/gdiffuser.yml and docs/gdiffuser.md.
+
+- name: Revert G-Diffuser when requested
+  when: dg_gdiffuser_revert | bool
+  block:
+    - name: Remove the G-Diffuser launcher + install dir
+      ansible.builtin.shell: "{{ dg_in_box }} rm -rf {{ item | quote }}"
+      loop:
+        - "{{ dg_gdiffuser_bin }}"
+        - "{{ dg_gdiffuser_install_dir }}"
+      changed_when: true
+    - name: Report G-Diffuser reverted
+      ansible.builtin.debug:
+        msg: "G-Diffuser removed. Your F-Zero X ROM, EK disk and 64DD IPL on the NAS are untouched."
+
+- name: Install G-Diffuser
+  when: not (dg_gdiffuser_revert | bool)
+  block:
+    - name: Assert the required F-Zero X game files exist
+      ansible.builtin.stat:
+        path: "{{ item.path }}"
+      loop:
+        - { path: "{{ dg_gdiffuser_rom_zip }}", what: "F-Zero X US ROM zip" }
+        - { path: "{{ dg_gdiffuser_ek_disk_zip }}", what: "F-Zero X Expansion Kit disk zip" }
+        - { path: "{{ dg_gdiffuser_ipl_zip }}", what: "64DD IPL ROM zip" }
+      loop_control:
+        label: "{{ item.what }}"
+      register: _gdx_sources
+
+    - name: Fail with guidance when a required game file is missing
+      ansible.builtin.fail:
+        msg: >-
+          Missing required G-Diffuser input: {{ item.item.what }}
+          ({{ item.item.path }}). G-Diffuser needs an F-Zero X US rev0 ROM, the
+          fan-translated 64DD Expansion Kit disk, and a 64DD IPL ROM -- all
+          three are required. See docs/gdiffuser.md.
+      loop: "{{ _gdx_sources.results }}"
+      loop_control:
+        label: "{{ item.item.what }}"
+      when: not item.stat.exists
+
+    - name: Install G-Diffuser packages inside the box
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} sudo pacman -S --needed --noconfirm
+        {{ dg_gdiffuser_packages | join(' ') }}
+      register: _gdx_pacman
+      changed_when: "'installing' in _gdx_pacman.stdout or 'upgrading' in _gdx_pacman.stdout"
+
+    - name: Create G-Diffuser directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_gdiffuser_cache_dir }}"
+        - "{{ dg_gdiffuser_install_dir }}"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Download the pinned G-Diffuser Linux release
+      ansible.builtin.get_url:
+        url: "{{ dg_gdiffuser_asset_url }}"
+        dest: "{{ dg_gdiffuser_cache_dir }}/{{ dg_gdiffuser_asset_name }}"
+        checksum: "sha256:{{ dg_gdiffuser_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Extract the G-Diffuser release (version-gated, preserves game data)
+      # --strip-components=1 flattens the versioned top dir. A re-extract on a
+      # version bump refreshes the binary/recipes but keeps the staged game
+      # files, the built .o2r archives and saves (none are in the tarball).
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          inst="{{ dg_gdiffuser_install_dir }}"
+          if [ -x "$inst/{{ dg_gdiffuser_exe }}" ] &&
+             grep -qx "{{ dg_gdiffuser_version }}" "$inst/.dg-installed-ref" 2>/dev/null; then
+            exit 0
+          fi
+          tar xzf "{{ dg_gdiffuser_cache_dir }}/{{ dg_gdiffuser_asset_name }}" \
+            -C "$inst" --strip-components=1
+          chmod 0755 "$inst/{{ dg_gdiffuser_exe }}" "$inst/gdx-extract" 2>/dev/null || true
+          printf "%s\n" "{{ dg_gdiffuser_version }}" > "$inst/.dg-installed-ref"
+          printf "%s\n" "installed-gdiffuser"
+        '
+      register: _gdx_extract
+      changed_when: "'installed-gdiffuser' in _gdx_extract.stdout"
+
+    - name: Stage the three F-Zero X game files under the canonical names (once)
+      # The setup auto-detects baserom.us.rev0.z64 / baserom.translated.ek.ndd /
+      # N64DDIPLROM.n64 beside the executable, validates them by SHA, and builds
+      # the .o2r archives on first launch -- no wizard interaction needed.
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          inst="{{ dg_gdiffuser_install_dir }}"
+          [ -f "$inst/baserom.us.rev0.z64" ] || \
+            unzip -p "{{ dg_gdiffuser_rom_zip }}" "*.z64" > "$inst/baserom.us.rev0.z64"
+          [ -f "$inst/baserom.translated.ek.ndd" ] || \
+            unzip -p "{{ dg_gdiffuser_ek_disk_zip }}" "*.ndd" > "$inst/baserom.translated.ek.ndd"
+          [ -f "$inst/N64DDIPLROM.n64" ] || \
+            unzip -p "{{ dg_gdiffuser_ipl_zip }}" "*.n64" > "$inst/N64DDIPLROM.n64"
+          printf "%s\n" "staged-gdiffuser-files"
+        '
+      register: _gdx_stage
+      changed_when: "'staged-gdiffuser-files' in _gdx_stage.stdout"
+
+    - name: Deploy the G-Diffuser launcher
+      ansible.builtin.template:
+        src: gdiffuser.sh.j2
+        dest: "{{ dg_gdiffuser_bin }}"
+        mode: "0755"
+
+    - name: Refresh desktop launchers
+      ansible.builtin.include_role:
+        name: desktop_apps
+
+    - name: Report G-Diffuser setup
+      ansible.builtin.debug:
+        msg:
+          - "G-Diffuser {{ dg_gdiffuser_version }} (F-Zero X) installed at {{ dg_gdiffuser_install_dir }}; launcher {{ dg_gdiffuser_bin }}."
+          - "First launch validates the 3 staged files by SHA and builds fzerox.o2r + n64ddipl.o2r + fzerox-disk.o2r (one-time), then boots to the game fullscreen on the RTX. F1 opens the enhancement menu; 8BitDo works natively."
+          - "Run scripts/install-host-launchers.sh to refresh the menu. Revert: -e dg_gdiffuser_revert=true."

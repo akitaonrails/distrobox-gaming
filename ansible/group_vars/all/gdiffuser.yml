@@ -1,0 +1,39 @@
+---
+# G-Diffuser — Zorkats's native PC port of F-Zero X (N64), including the 64DD
+# Expansion Kit (Course Edit + DD cups). Built on libultraship (same engine as
+# Ship of Harkinian / Starship). Opt-in role install_gdiffuser. See
+# docs/gdiffuser.md.
+#
+# Prebuilt native-Linux binary. It ships NO game data: on first launch it
+# builds its .o2r archives from three files you provide (all required) --
+# the F-Zero X ROM, the 64DD Expansion Kit disk, and a 64DD IPL ROM.
+
+dg_gdiffuser_repo: Zorkats/G-Diffuser
+dg_gdiffuser_version: v1.0.1
+dg_gdiffuser_asset_name: "G-Diffuser-{{ dg_gdiffuser_version }}-linux-x64.tar.gz"
+dg_gdiffuser_asset_url: "https://github.com/{{ dg_gdiffuser_repo }}/releases/download/{{ dg_gdiffuser_version }}/{{ dg_gdiffuser_asset_name }}"
+dg_gdiffuser_asset_sha256: 7f071bd64f316c357d1ea2e6c097f7d2e5102b78b378017ef3817594c63d728c
+
+# The tarball nests everything under a versioned dir; the role flattens it
+# with --strip-components=1 so the game lives directly in install_dir.
+dg_gdiffuser_install_dir: "{{ dg_box_home }}/Games/g-diffuser"
+dg_gdiffuser_exe: G-Diffuser
+dg_gdiffuser_bin: "{{ dg_box_home }}/bin/g-diffuser"
+dg_gdiffuser_cache_dir: "{{ dg_box_home }}/cache/g-diffuser"
+
+# Required game files (all three), sourced from this box's ROM library. Each
+# is placed beside the executable under the canonical name the first-boot
+# setup auto-detects, so extraction runs unattended.
+#   ROM  -> baserom.us.rev0.z64   (F-Zero X US rev0, big-endian .z64)
+#   disk -> baserom.translated.ek.ndd  (fan-translated EK 64DD disk)
+#   IPL  -> N64DDIPLROM.n64        (a ~4MB 64DD IPL / drive ROM)
+dg_gdiffuser_rom_zip: "{{ dg_roms_final_root }}/sdcard-bundle-6666/F-Zero X (U) [!].zip"
+dg_gdiffuser_ek_disk_zip: "{{ dg_roms_final_root }}/n64/EFZE_ENGLISHv02_DISK.zip"
+# The 4 MB US-prototype IPL (Zoinkity) inside this zip; the retail ipl4rom.n64
+# is only 1.16 MB and not the full IPL.
+dg_gdiffuser_ipl_zip: "{{ dg_roms_final_root }}/n64/64DD BIOS/IPL4USA.zip"
+
+dg_gdiffuser_packages:
+  - unzip
+
+dg_gdiffuser_revert: false

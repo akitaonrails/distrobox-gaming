@@ -45,6 +45,7 @@ newer build. Acceptable for actively developed emulators.
 | WipEout Phantom Edition (Windows x64 binary, run under Wine) | github.com/wipeout-phantom-edition release (pinned + sha256; AUTO). Needs a WipEout **USA** PSX rip — this box's `psx/WipEout (USA).chd`, converted to multi-bin. See `docs/wipeout-pe.md`. | `install_wipeout_pe` / `dg_wipeout_pe_*` |
 | CannonBall (OutRun engine) — built from source | github.com/djyt/cannonball (pinned commit; AUTO clone+build). Needs the **OutRun Rev B** arcade romset — this box's `arcade/mame/outrun_dup2.zip`. See `docs/cannonball.md`. | `install_cannonball` / `dg_cannonball_*` |
 | Super Mario Bros. Remastered (native Linux Godot build) | github.com/JHDev2006 release (pinned + sha256; AUTO). Needs an **SMB1 NES ROM** — this box's `nes/Super Mario Bros. (1985-09-13)(Nintendo)(JP-US).zip` (auto-imported). See `docs/smb-remastered.md`. | `install_smb_remastered` / `dg_smb_remastered_*` |
+| G-Diffuser (F-Zero X PC port, libultraship, native Linux) | github.com/Zorkats/G-Diffuser release (pinned + sha256; AUTO). Needs 3 dumps: F-Zero X US rev0 ROM, the translated 64DD EK disk, and a 64DD IPL ROM — all present on this box. See `docs/gdiffuser.md`. | `install_gdiffuser` / `dg_gdiffuser_*` |
 | RetroArch cores + assets | buildbot.libretro.com | `retroarch_extras` |
 | .NET Desktop Runtime, VC++ redist (Xenia prefix) | aka.ms evergreen links | `install_xenia` |
 | GT5 official patch chain 1.05→1.13 | Sony CDN (`b0.ww.np.dl.playstation.net` — still online) | `install_gt5_master_mod` / `dg_gt5_pkg_chain` |

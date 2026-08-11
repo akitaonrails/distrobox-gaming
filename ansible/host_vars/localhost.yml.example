@@ -126,6 +126,14 @@
 # docs/smb-remastered.md.
 # dg_smb_remastered_rom_zip: "{{ dg_roms_final_root }}/nes/Super Mario Bros. (1985-09-13)(Nintendo)(JP-US).zip"
 #
+# G-Diffuser / F-Zero X PC port (opt-in role install_gdiffuser / --tags
+# gdiffuser). Native libultraship build; needs THREE dumps staged under
+# canonical names automatically: F-Zero X US rev0 ROM, the translated 64DD
+# Expansion Kit disk, and a ~4MB 64DD IPL ROM. See docs/gdiffuser.md.
+# dg_gdiffuser_rom_zip: "{{ dg_roms_final_root }}/sdcard-bundle-6666/F-Zero X (U) [!].zip"
+# dg_gdiffuser_ek_disk_zip: "{{ dg_roms_final_root }}/n64/EFZE_ENGLISHv02_DISK.zip"
+# dg_gdiffuser_ipl_zip: "{{ dg_roms_final_root }}/n64/64DD BIOS/IPL4USA.zip"
+#
 # Native Doom II RT (opt-in install-prboom-plus-rt.yml). Normally the role
 # discovers DOOM2.WAD below dg_steam_root or dg_external_usb_games_root. Use an
 # explicit source only when neither configured Steam root matches the layout.
