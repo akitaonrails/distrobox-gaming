@@ -69,13 +69,6 @@
 # dg_wrc4_steam_library_root: /run/media/me/STEAM   # if WRC 4 mounts elsewhere
 # dg_wrc4_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/wrc4"
 #
-# STAR WARS Episode I Racer mod set (opt-in role install_swracer_mods /
-# --tags swracer_mods). GOG classic under Wine (base game = install_pc_racing
-# slug star-wars-racer). Mod 5 (Starfighter's Audio Overhaul) overwrites
-# data/wavs/22K; mod 2 (HD-4K Experience) is a ReShade preset, excluded. See
-# docs/star-wars-racer.md.
-# dg_swracer_mods_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/star-wars-racer"
-#
 # shadPS4 DLC/addon install dir (kept OUTSIDE the PS4 game tree so
 # ES-DE's .bin scan doesn't pick up addon files as fake games).
 # dg_shadps4_addon_install_dir: "{{ dg_emudeck_root }}/roms_rare/ps4-addons"

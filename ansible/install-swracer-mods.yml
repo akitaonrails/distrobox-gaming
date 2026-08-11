@@ -1,7 +1,0 @@
----
-- name: Install the STAR WARS Episode I Racer (GOG) NexusMods set
-  hosts: localhost
-  connection: local
-  gather_facts: true
-  roles:
-    - install_swracer_mods

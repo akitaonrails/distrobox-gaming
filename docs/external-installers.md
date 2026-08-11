@@ -74,8 +74,6 @@ with guidance if absent.
 | RE4 HD Project 1.1 (BIO4 HD assets + re4_tweaks, ~34 GB) — for Steam RE4 2005 / appid 254700, NOT the remake | [re4hd.com](https://www.re4hd.com/) (official) or crack-free mirror [archive.org/details/re4HDProject.7z](https://archive.org/details/re4HDProject.7z). Do NOT use a scene repack. | `dg_re4_hd_source` |
 | GTA IV mod set — 8 NexusMods (282/195/716→GitHub/263/357/272/702/311/258) for CE 1.2.0.59 | nexusmods.com/gta4 (free account = manual per-mod download; role prints a staging manifest). Preserved on the NAS. | `dg_gta4_staging_root` (`ROMS_FINAL/PC/NexusMods/gta4/`) |
 | WRC 4 mod (1 NexusMods: loose camera + realistic tyres, a `DATA.MIX` replace) for appid 256330 (delisted; USB lib) | nexusmods.com/wrc4fiaworldrallychampionship mod 1 (Premium key auto-downloads, else manual). Preserved on the NAS. See `docs/wrc4-mods.md`. | `dg_wrc4_staging_root` (`ROMS_FINAL/PC/NexusMods/wrc4/`) |
-| STAR WARS Episode I Racer (GOG classic) base game | GOG **offline** installer `setup_star_warstm_episode_i_-_racertm_1.0_hotfix3_(20791).exe` in `ROMS_FINAL/PC/` (NOT the `GOG_Galaxy_*` stub). Extracted with innoextract. See `docs/star-wars-racer.md`. | `install_pc_racing` slug `star-wars-racer` |
-| SW Racer mod set (NexusMods: audio overhaul installed; HD-4K Experience excluded as a ReShade preset) | nexusmods.com/starwarsepisode1racer mods 5 + 2 (Premium key auto-downloads, else manual). Preserved on the NAS. See `docs/star-wars-racer.md`. | `dg_swracer_mods_staging_root` (`ROMS_FINAL/PC/NexusMods/star-wars-racer/`) |
 
 ## 5. MANUAL — no reliable public URL (source yourself)
 
