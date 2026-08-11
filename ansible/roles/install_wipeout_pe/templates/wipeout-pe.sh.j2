@@ -1,0 +1,49 @@
+#!/usr/bin/env sh
+# WipEout Phantom Edition launcher (Windows SDL2 build under Wine).
+set -eu
+
+prefix="{{ dg_wipeout_pe_prefix }}"
+game_dir="{{ dg_wipeout_pe_game_dir }}"
+wine_bin="{{ dg_wipeout_pe_wine_bin }}"
+exe="$game_dir/{{ dg_wipeout_pe_exe }}"
+
+if [ ! -x "$wine_bin" ] || [ ! -f "$exe" ]; then
+  printf '%s\n' "ERROR: WipEout PE is not installed ($exe)." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-wipeout-pe.yml" >&2
+  exit 1
+fi
+
+export WINEPREFIX="$prefix"
+export WINEARCH="{{ dg_wipeout_pe_winearch }}"
+export WINEDEBUG="${WINEDEBUG:--all}"
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+# Pin the NVIDIA GL path (dual-GPU box); UseEGL=N in the prefix reverts the
+# wine-11 EGL backend to GLX so OpenGL binds the RTX, not the AMD iGPU.
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+
+# All games must open on the main landscape 4K monitor (DP-1).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b"/dispatch focusmonitor DP-1"); s.recv(64); s.close()
+PY
+
+cd "$game_dir"
+
+{% if dg_wipeout_pe_gamescope_enabled | bool -%}
+if command -v gamescope >/dev/null 2>&1; then
+  exec env -u PYTHONHOME -u PYTHONPATH gamescope \
+    -W {{ dg_wipeout_pe_gamescope_width }} \
+    -H {{ dg_wipeout_pe_gamescope_height }} \
+    -w {{ dg_wipeout_pe_gamescope_width }} \
+    -h {{ dg_wipeout_pe_gamescope_height }} \
+    -f -- "$wine_bin" "$exe" "$@"
+fi
+{% endif -%}
+
+exec env -u PYTHONHOME -u PYTHONPATH "$wine_bin" "$exe" "$@"

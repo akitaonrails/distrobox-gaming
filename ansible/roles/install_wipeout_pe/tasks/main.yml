@@ -1,0 +1,175 @@
+---
+# WipEout Phantom Edition — Windows SDL2 source port under Wine.
+# See group_vars/all/wipeout_pe.yml and docs/wipeout-pe.md.
+
+- name: Revert WipEout Phantom Edition when requested
+  when: dg_wipeout_pe_revert | bool
+  block:
+    - name: Remove the WipEout PE launcher, install dir and prefix
+      ansible.builtin.shell: "{{ dg_in_box }} rm -rf {{ item | quote }}"
+      loop:
+        - "{{ dg_wipeout_pe_bin }}"
+        - "{{ dg_wipeout_pe_install_dir }}"
+        - "{{ dg_wipeout_pe_prefix }}"
+      changed_when: true
+    - name: Report WipEout PE reverted
+      ansible.builtin.debug:
+        msg: "WipEout Phantom Edition removed. Your WipEout (USA) CHD on the NAS is untouched."
+
+- name: Install WipEout Phantom Edition
+  when: not (dg_wipeout_pe_revert | bool)
+  block:
+    - name: Assert the WipEout (USA) PSX disc image exists
+      ansible.builtin.stat:
+        path: "{{ dg_wipeout_pe_chd_src }}"
+      register: _wipeout_chd
+
+    - name: Fail with guidance when the WipEout USA disc is missing
+      ansible.builtin.fail:
+        msg: >-
+          Missing WipEout USA PSX rip: {{ dg_wipeout_pe_chd_src }}. WipEout PE
+          needs game data from the PlayStation USA-region WipEout (PC versions
+          won't work). Provide a USA CHD or override dg_wipeout_pe_chd_src.
+      when: not _wipeout_chd.stat.exists
+
+    - name: Install WipEout PE runtime packages inside the box
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} sudo pacman -S --needed --noconfirm
+        {{ dg_wipeout_pe_packages | join(' ') }}
+      register: _wipeout_pacman
+      changed_when: "'installing' in _wipeout_pacman.stdout or 'upgrading' in _wipeout_pacman.stdout"
+
+    - name: Create WipEout PE directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_wipeout_pe_cache_dir }}"
+        - "{{ dg_wipeout_pe_install_dir }}"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Download the pinned WipEout PE release
+      ansible.builtin.get_url:
+        url: "{{ dg_wipeout_pe_asset_url }}"
+        dest: "{{ dg_wipeout_pe_cache_dir }}/{{ dg_wipeout_pe_asset_name }}"
+        checksum: "sha256:{{ dg_wipeout_pe_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Extract the WipEout PE release (version-gated, preserves game data)
+      # unzip -o updates the engine/exe/DLLs on a version bump but keeps the
+      # extracted game data (diskimages/, wipeoutgame/, *.cfg), which are not
+      # in the zip (the zip's diskimages/wipeoutgame are empty dirs).
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          inst="{{ dg_wipeout_pe_install_dir }}"
+          game="{{ dg_wipeout_pe_game_dir }}"
+          if [ -f "$game/{{ dg_wipeout_pe_exe }}" ] &&
+             grep -qx "{{ dg_wipeout_pe_version }}" "$inst/.dg-installed-ref" 2>/dev/null; then
+            exit 0
+          fi
+          unzip -o -q "{{ dg_wipeout_pe_cache_dir }}/{{ dg_wipeout_pe_asset_name }}" -d "$inst"
+          printf "%s\n" "{{ dg_wipeout_pe_version }}" > "$inst/.dg-installed-ref"
+          printf "%s\n" "installed-wipeout-pe"
+        '
+      register: _wipeout_extract
+      changed_when: "'installed-wipeout-pe' in _wipeout_extract.stdout"
+
+    - name: Check WipEout PE Wine prefix
+      ansible.builtin.stat:
+        path: "{{ dg_wipeout_pe_prefix }}/system.reg"
+      register: _wipeout_prefix
+
+    - name: Initialize the WipEout PE Wine prefix
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          export WINEPREFIX="{{ dg_wipeout_pe_prefix }}"
+          export WINEARCH="{{ dg_wipeout_pe_winearch }}"
+          export WINEDEBUG=-all
+          export WINEDLLOVERRIDES=winemenubuilder.exe=d
+          timeout 60 env -u PYTHONHOME -u PYTHONPATH "{{ dg_wipeout_pe_wineboot_bin }}" -i
+          timeout 60 env -u PYTHONHOME -u PYTHONPATH "{{ dg_wipeout_pe_wineserver_bin }}" -w
+        '
+      when: not _wipeout_prefix.stat.exists
+      changed_when: not _wipeout_prefix.stat.exists
+
+    - name: Force the GLX OpenGL backend (wine 11 EGL regression)
+      # wine 10.17+ defaults winex11.drv to EGL, which resolves to the AMD
+      # iGPU/llvmpipe not the RTX 5090 -> WipEout PE spammed "egl: failed to
+      # create dri2 screen" and would not render. UseEGL=N pins GLX (nvidia).
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          export WINEPREFIX="{{ dg_wipeout_pe_prefix }}"
+          export WINEDEBUG=-all
+          key="HKCU\\Software\\Wine\\X11 Driver"
+          if env -u PYTHONHOME -u PYTHONPATH "{{ dg_wipeout_pe_wine_bin }}" reg query "$key" /v UseEGL 2>/dev/null | grep -Eiq "REG_SZ[[:space:]]+N[[:space:]]*$"; then
+            exit 0
+          fi
+          env -u PYTHONHOME -u PYTHONPATH "{{ dg_wipeout_pe_wine_bin }}" reg add "$key" /v UseEGL /t REG_SZ /d N /f
+          printf "%s\n" "forced-glx"
+        '
+      register: _wipeout_glx
+      changed_when: "'forced-glx' in _wipeout_glx.stdout"
+      when: dg_wine_force_glx | default(true)
+
+    - name: Stage binmerge for the disc-image conversion
+      ansible.builtin.copy:
+        src: binmerge.py
+        dest: "{{ dg_wipeout_pe_cache_dir }}/binmerge.py"
+        mode: "0755"
+
+    - name: Convert the WipEout USA CHD to the multi-bin disc image the game needs
+      # The game requires a multi-bin bin/cue (9 .bin + 1 .cue, MODE2/2352
+      # data + AUDIO). chdman extractcd only makes a single combined bin (and
+      # this build's --splitbin is broken), so split it with binmerge.
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          disk="{{ dg_wipeout_pe_game_dir }}/diskimages"
+          mkdir -p "$disk"
+          [ -f "$disk/WipEout USA.cue" ] && exit 0
+          cd "$disk"
+          chdman extractcd -i "{{ dg_wipeout_pe_chd_src }}" -o "_tmp.cue" -ob "_tmp.bin" >/dev/null 2>&1
+          python3 "{{ dg_wipeout_pe_cache_dir }}/binmerge.py" -s "_tmp.cue" "WipEout USA" >/dev/null
+          rm -f _tmp.bin _tmp.cue
+          printf "%s\n" "converted-disc-image"
+        '
+      register: _wipeout_disc
+      changed_when: "'converted-disc-image' in _wipeout_disc.stdout"
+
+    - name: Activate the default input bindings (keyboard + 8BitDo gamepad)
+      # First run creates an EMPTY input.cfg (no controls). Seed it from the
+      # shipped defaultinput.cfg (which maps a full WipEout pad layout: left
+      # stick steer/pitch, triggers = airbrakes, A accel, B fire). Only when
+      # missing/empty, so in-game rebinds are preserved.
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          game="{{ dg_wipeout_pe_game_dir }}"
+          if [ ! -s "$game/input.cfg" ] && [ -f "$game/defaultinput.cfg" ]; then
+            cp -f "$game/defaultinput.cfg" "$game/input.cfg"
+            printf "%s\n" "seeded-input"
+          fi
+        '
+      register: _wipeout_input
+      changed_when: "'seeded-input' in _wipeout_input.stdout"
+
+    - name: Deploy the WipEout PE launcher
+      ansible.builtin.template:
+        src: wipeout-pe.sh.j2
+        dest: "{{ dg_wipeout_pe_bin }}"
+        mode: "0755"
+
+    - name: Refresh desktop launchers
+      ansible.builtin.include_role:
+        name: desktop_apps
+
+    - name: Report WipEout PE setup
+      ansible.builtin.debug:
+        msg:
+          - "WipEout Phantom Edition {{ dg_wipeout_pe_version }} installed at {{ dg_wipeout_pe_game_dir }}; launcher {{ dg_wipeout_pe_bin }}."
+          - "First launch auto-extracts the 517 game data files + music from diskimages/ (~1-2 min); after it reaches the menu once the disc image can be removed."
+          - "Renders on the RTX under gamescope; 8BitDo works via SDL2. Run scripts/install-host-launchers.sh to refresh the menu. Revert: -e dg_wipeout_pe_revert=true."

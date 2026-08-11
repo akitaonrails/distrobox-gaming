@@ -1,0 +1,44 @@
+---
+# WipEout Phantom Edition — enhanced PC source port of WipEout (PSX, USA).
+# Opt-in role install_wipeout_pe. See docs/wipeout-pe.md.
+#
+# Windows x64 binary release (SDL2 + OpenAL, bundled DLLs) run under Wine.
+# It needs game data from the PlayStation USA-region WipEout, supplied as a
+# multi-bin bin/cue in <game>/diskimages; the game auto-extracts the 517
+# data files + music on first launch.
+
+dg_wipeout_pe_version: v1.2.256
+dg_wipeout_pe_asset_name: wipeout-x64-release.zip
+dg_wipeout_pe_asset_url: "https://github.com/wipeout-phantom-edition/wipeout-phantom-edition/releases/download/{{ dg_wipeout_pe_version }}/{{ dg_wipeout_pe_asset_name }}"
+dg_wipeout_pe_asset_sha256: f63eca6d14ca4995083b2127fb8912d94a58437791da843e0899522c8664fb23
+
+dg_wipeout_pe_install_dir: "{{ dg_box_home }}/Games/wipeout-pe"
+# The zip contains a top-level wipeout/ folder, so the game root is nested.
+dg_wipeout_pe_game_dir: "{{ dg_wipeout_pe_install_dir }}/wipeout"
+dg_wipeout_pe_exe: wipeout.exe
+dg_wipeout_pe_prefix: "{{ dg_box_home }}/wineprefixes/wipeout-pe"
+dg_wipeout_pe_cache_dir: "{{ dg_box_home }}/cache/wipeout-pe"
+dg_wipeout_pe_bin: "{{ dg_box_home }}/bin/wipeout-pe"
+
+dg_wipeout_pe_winearch: win64
+dg_wipeout_pe_wine_bin: /usr/bin/wine
+dg_wipeout_pe_wineboot_bin: /usr/bin/wineboot
+dg_wipeout_pe_wineserver_bin: /usr/bin/wineserver
+
+# The USA-region WipEout PSX rip (redump CHD). Converted to the multi-bin
+# bin/cue the game requires (chdman extractcd -> single bin, then binmerge
+# --split -> 9 bins + cue, since this chdman build's --splitbin is broken).
+dg_wipeout_pe_chd_src: "{{ dg_roms_final_root }}/psx/WipEout (USA).chd"
+
+dg_wipeout_pe_gamescope_enabled: true
+dg_wipeout_pe_gamescope_width: 3840
+dg_wipeout_pe_gamescope_height: 2160
+
+dg_wipeout_pe_packages:
+  - wine
+  - gamescope
+  - mame-tools    # chdman
+  - unzip
+  - python
+
+dg_wipeout_pe_revert: false

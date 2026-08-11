@@ -1,0 +1,7 @@
+---
+- name: Install WipEout Phantom Edition
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_wipeout_pe

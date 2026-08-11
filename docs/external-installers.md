@@ -42,6 +42,7 @@ newer build. Acceptable for actively developed emulators.
 | Dusk (Twilight Princess port) | GitHub API (`TwilitRealm/dusk` latest) | `install_dusk` |
 | Xenia Manager (+ Xenia Canary via XM) | GitHub API (`xenia-manager` latest) | `install_xenia` |
 | Unleashed Recomp app | GitHub API (`hedge-dev/UnleashedRecomp` latest) | `install_unleashed_recomp` |
+| WipEout Phantom Edition (Windows x64 binary, run under Wine) | github.com/wipeout-phantom-edition release (pinned + sha256; AUTO). Needs a WipEout **USA** PSX rip — this box's `psx/WipEout (USA).chd`, converted to multi-bin. See `docs/wipeout-pe.md`. | `install_wipeout_pe` / `dg_wipeout_pe_*` |
 | RetroArch cores + assets | buildbot.libretro.com | `retroarch_extras` |
 | .NET Desktop Runtime, VC++ redist (Xenia prefix) | aka.ms evergreen links | `install_xenia` |
 | GT5 official patch chain 1.05→1.13 | Sony CDN (`b0.ww.np.dl.playstation.net` — still online) | `install_gt5_master_mod` / `dg_gt5_pkg_chain` |

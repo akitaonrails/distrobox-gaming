@@ -109,6 +109,12 @@
 # dg_unleashed_recomp_title_update_zip_source: /path/to/title_update.zip
 # dg_unleashed_recomp_dlc_source: /path/to/dlc_dir
 #
+# WipEout Phantom Edition (opt-in role install_wipeout_pe / --tags wipeout_pe).
+# Windows x64 binary under Wine; needs a WipEout USA PSX rip, converted from
+# the CHD to a multi-bin bin/cue. Defaults to psx/WipEout (USA).chd. See
+# docs/wipeout-pe.md.
+# dg_wipeout_pe_chd_src: "{{ dg_roms_final_root }}/psx/WipEout (USA).chd"
+#
 # Native Doom II RT (opt-in install-prboom-plus-rt.yml). Normally the role
 # discovers DOOM2.WAD below dg_steam_root or dg_external_usb_games_root. Use an
 # explicit source only when neither configured Steam root matches the layout.
