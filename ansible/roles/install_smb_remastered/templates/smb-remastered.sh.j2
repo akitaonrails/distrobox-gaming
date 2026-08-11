@@ -1,0 +1,34 @@
+#!/usr/bin/env sh
+# Super Mario Bros. Remastered launcher (native Godot 4.6).
+set -eu
+
+install_dir="{{ dg_smb_remastered_install_dir }}"
+exe="$install_dir/{{ dg_smb_remastered_exe }}"
+
+if [ ! -x "$exe" ]; then
+  printf '%s\n' "ERROR: SMB Remastered is not installed ($exe)." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-smb-remastered.yml" >&2
+  exit 1
+fi
+
+# Pin the RTX on this dual-GPU box (Godot uses OpenGL Compatibility here; also
+# pin the Vulkan ICD in case a driver update flips it to the Vulkan backend).
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/nvidia_icd.json
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+# All games must open on the main landscape 4K monitor (DP-1).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b"/dispatch focusmonitor DP-1"); s.recv(64); s.close()
+PY
+
+# The game reads config/ and finds its .nes relative to the executable dir.
+cd "$install_dir"
+exec ./{{ dg_smb_remastered_exe }} "$@"

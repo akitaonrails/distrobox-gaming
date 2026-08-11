@@ -76,6 +76,7 @@
     - { role: install_sonic_p06,         tags: [sonic_p06, never] }
     - { role: install_wipeout_pe,        tags: [wipeout_pe, never] }
     - { role: install_cannonball,        tags: [cannonball, never] }
+    - { role: install_smb_remastered,    tags: [smb_remastered, never] }
     - { role: install_unleashed_recomp,  tags: [unleashed_recomp, never] }
     - { role: install_smm2_levels,   tags: [smm2_levels, never] }
     - { role: install_7th_heaven,        tags: [seven_heaven, "7th_heaven", materiaforge, ffvii_7th_heaven, never] }

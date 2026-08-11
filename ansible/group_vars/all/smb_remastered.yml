@@ -1,0 +1,28 @@
+---
+# Super Mario Bros. Remastered — JHDev2006's Godot 4.6 remake of SMB1 (+ Lost
+# Levels, SMB Special, All Night Nippon), with a level editor. Opt-in role
+# install_smb_remastered. See docs/smb-remastered.md.
+#
+# Native Linux Godot export (self-contained). Requires an original SMB1 NES
+# ROM: the game scans its own folder for a *.nes and imports it on first run
+# (find_local_rom) -- none of the original assets ship with it.
+
+dg_smb_remastered_repo: JHDev2006/Super-Mario-Bros.-Remastered-Public
+dg_smb_remastered_version: 1.1-rc4
+dg_smb_remastered_asset_name: Linux.zip
+dg_smb_remastered_asset_url: "https://github.com/{{ dg_smb_remastered_repo }}/releases/download/{{ dg_smb_remastered_version }}/{{ dg_smb_remastered_asset_name }}"
+dg_smb_remastered_asset_sha256: c5d0e9aa6f8734fc1bee9daf8ad66399a8bdf87afa86b43f2c9dfc39df79ec16
+
+dg_smb_remastered_install_dir: "{{ dg_box_home }}/Games/smb-remastered"
+dg_smb_remastered_exe: SMB1R.x86_64
+dg_smb_remastered_bin: "{{ dg_box_home }}/bin/smb-remastered"
+dg_smb_remastered_cache_dir: "{{ dg_box_home }}/cache/smb-remastered"
+
+# The SMB1 NES ROM. The role extracts the *.nes from this zip into the game
+# folder so the game auto-imports it (any USA/World SMB1 rip works).
+dg_smb_remastered_rom_zip: "{{ dg_roms_final_root }}/nes/Super Mario Bros. (1985-09-13)(Nintendo)(JP-US).zip"
+
+dg_smb_remastered_packages:
+  - unzip
+
+dg_smb_remastered_revert: false

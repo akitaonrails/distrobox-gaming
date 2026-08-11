@@ -1,0 +1,7 @@
+---
+- name: Install Super Mario Bros. Remastered
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_smb_remastered

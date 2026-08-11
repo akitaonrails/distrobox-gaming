@@ -1,0 +1,126 @@
+---
+# Super Mario Bros. Remastered — native Linux Godot game.
+# See group_vars/all/smb_remastered.yml and docs/smb-remastered.md.
+
+- name: Revert Super Mario Bros. Remastered when requested
+  when: dg_smb_remastered_revert | bool
+  block:
+    - name: Remove the SMB Remastered launcher + install dir
+      ansible.builtin.shell: "{{ dg_in_box }} rm -rf {{ item | quote }}"
+      loop:
+        - "{{ dg_smb_remastered_bin }}"
+        - "{{ dg_smb_remastered_install_dir }}"
+      changed_when: true
+    - name: Report SMB Remastered reverted
+      ansible.builtin.debug:
+        msg: "Super Mario Bros. Remastered removed. Your SMB1 NES ROM on the NAS is untouched."
+
+- name: Install Super Mario Bros. Remastered
+  when: not (dg_smb_remastered_revert | bool)
+  block:
+    - name: Assert the SMB1 NES ROM zip exists
+      ansible.builtin.stat:
+        path: "{{ dg_smb_remastered_rom_zip }}"
+      register: _smb_rom
+
+    - name: Fail with guidance when the SMB1 ROM is missing
+      ansible.builtin.fail:
+        msg: >-
+          Missing SMB1 NES ROM: {{ dg_smb_remastered_rom_zip }}. Super Mario
+          Bros. Remastered requires an original SMB1 NES ROM (its assets are
+          generated from it). Provide one or override dg_smb_remastered_rom_zip.
+      when: not _smb_rom.stat.exists
+
+    - name: Install SMB Remastered packages inside the box
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} sudo pacman -S --needed --noconfirm
+        {{ dg_smb_remastered_packages | join(' ') }}
+      register: _smb_pacman
+      changed_when: "'installing' in _smb_pacman.stdout or 'upgrading' in _smb_pacman.stdout"
+
+    - name: Create SMB Remastered directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_smb_remastered_cache_dir }}"
+        - "{{ dg_smb_remastered_install_dir }}"
+        - "{{ dg_smb_remastered_install_dir }}/config"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Download the pinned SMB Remastered Linux release
+      ansible.builtin.get_url:
+        url: "{{ dg_smb_remastered_asset_url }}"
+        dest: "{{ dg_smb_remastered_cache_dir }}/{{ dg_smb_remastered_asset_name }}"
+        checksum: "sha256:{{ dg_smb_remastered_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Extract the SMB Remastered release (version-gated, preserves config)
+      # unzip -o updates the binary/pck on a version bump but keeps config/
+      # (settings, imported baserom.nes, saves) and the staged *.nes, which
+      # are not in the zip.
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          inst="{{ dg_smb_remastered_install_dir }}"
+          if [ -x "$inst/{{ dg_smb_remastered_exe }}" ] &&
+             grep -qx "{{ dg_smb_remastered_version }}" "$inst/.dg-installed-ref" 2>/dev/null; then
+            exit 0
+          fi
+          unzip -o -q "{{ dg_smb_remastered_cache_dir }}/{{ dg_smb_remastered_asset_name }}" -d "$inst"
+          chmod +x "$inst/{{ dg_smb_remastered_exe }}"
+          printf "%s\n" "{{ dg_smb_remastered_version }}" > "$inst/.dg-installed-ref"
+          printf "%s\n" "installed-smb-remastered"
+        '
+      register: _smb_extract
+      changed_when: "'installed-smb-remastered' in _smb_extract.stdout"
+
+    - name: Enable portable mode (store save/config beside the executable)
+      ansible.builtin.file:
+        path: "{{ dg_smb_remastered_install_dir }}/portable.txt"
+        state: touch
+        mode: "0644"
+      changed_when: false
+
+    - name: Stage the SMB1 NES ROM for the game's auto-import (once)
+      # The game scans its own folder for a *.nes on first launch
+      # (find_local_rom) and copies it to config/baserom.nes. Extract the .nes
+      # from the ROM zip into the install dir if none is present yet.
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          inst="{{ dg_smb_remastered_install_dir }}"
+          ls "$inst"/*.nes >/dev/null 2>&1 && exit 0
+          unzip -o -j "{{ dg_smb_remastered_rom_zip }}" "*.nes" -d "$inst" >/dev/null
+          printf "%s\n" "staged-rom"
+        '
+      register: _smb_rom_stage
+      changed_when: "'staged-rom' in _smb_rom_stage.stdout"
+
+    - name: Seed settings (fullscreen) once, preserving in-game changes
+      # settings.cfg is game-managed. Pre-seed it (video mode=3 -> exclusive
+      # fullscreen on Linux, disclaimer acknowledged) only if absent, so the
+      # first launch comes up fullscreen and later in-game settings survive.
+      ansible.builtin.copy:
+        src: settings.cfg
+        dest: "{{ dg_smb_remastered_install_dir }}/config/settings.cfg"
+        mode: "0644"
+        force: false
+
+    - name: Deploy the SMB Remastered launcher
+      ansible.builtin.template:
+        src: smb-remastered.sh.j2
+        dest: "{{ dg_smb_remastered_bin }}"
+        mode: "0755"
+
+    - name: Refresh desktop launchers
+      ansible.builtin.include_role:
+        name: desktop_apps
+
+    - name: Report SMB Remastered setup
+      ansible.builtin.debug:
+        msg:
+          - "Super Mario Bros. Remastered {{ dg_smb_remastered_version }} installed at {{ dg_smb_remastered_install_dir }}; launcher {{ dg_smb_remastered_bin }}."
+          - "First launch auto-imports the staged SMB1 .nes (find_local_rom -> config/baserom.nes) and comes up fullscreen on the RTX. 8BitDo works natively (Godot)."
+          - "Run scripts/install-host-launchers.sh to refresh the menu. Revert: -e dg_smb_remastered_revert=true."

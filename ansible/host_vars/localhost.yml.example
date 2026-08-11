@@ -120,6 +120,12 @@
 # Defaults to arcade/mame/outrun_dup2.zip. See docs/cannonball.md.
 # dg_cannonball_rom_zip: "{{ dg_roms_final_root }}/arcade/mame/outrun_dup2.zip"
 #
+# Super Mario Bros. Remastered (opt-in role install_smb_remastered /
+# --tags smb_remastered). Native Godot build; needs an SMB1 NES ROM, whose
+# .nes the role stages into the game folder for auto-import. See
+# docs/smb-remastered.md.
+# dg_smb_remastered_rom_zip: "{{ dg_roms_final_root }}/nes/Super Mario Bros. (1985-09-13)(Nintendo)(JP-US).zip"
+#
 # Native Doom II RT (opt-in install-prboom-plus-rt.yml). Normally the role
 # discovers DOOM2.WAD below dg_steam_root or dg_external_usb_games_root. Use an
 # explicit source only when neither configured Steam root matches the layout.
