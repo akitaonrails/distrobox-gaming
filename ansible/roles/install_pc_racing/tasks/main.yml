@@ -664,39 +664,6 @@
   loop_control:
     label: "{{ item.0.name }} / {{ item.1.path }}"
 
-- name: Check PC racing seeded config-file markers
-  # Game-managed config files (e.g. control maps) ship a default and are
-  # rewritten by the game when the user reconfigures in-game. Seed our
-  # playable version ONCE per install, then never touch it again so
-  # in-game changes survive. Marker sits next to the file.
-  ansible.builtin.stat:
-    path: "{{ item.0.installed_path | default(dg_pc_racing_install_root ~ '/' ~ item.0.slug) }}/{{ item.1.dest }}.dg-seeded"
-  register: _pc_racing_seed_markers
-  loop: "{{ _dg_pc_racing_games_selected | subelements('seed_config_files', skip_missing=True) }}"
-  loop_control:
-    label: "{{ item.0.name }} / {{ item.1.dest }}"
-
-- name: Seed PC racing game config files once
-  ansible.builtin.copy:
-    src: "{{ item.item.1.src }}"
-    dest: "{{ item.item.0.installed_path | default(dg_pc_racing_install_root ~ '/' ~ item.item.0.slug) }}/{{ item.item.1.dest }}"
-    mode: "0644"
-    backup: true
-  loop: "{{ _pc_racing_seed_markers.results }}"
-  loop_control:
-    label: "{{ item.item.0.name }} / {{ item.item.1.dest }}"
-  when: not item.stat.exists
-
-- name: Mark PC racing seeded config files
-  ansible.builtin.copy:
-    dest: "{{ item.item.0.installed_path | default(dg_pc_racing_install_root ~ '/' ~ item.item.0.slug) }}/{{ item.item.1.dest }}.dg-seeded"
-    content: "seeded {{ item.item.1.name }} on first install; delete to re-seed\n"
-    mode: "0644"
-  loop: "{{ _pc_racing_seed_markers.results }}"
-  loop_control:
-    label: "{{ item.item.0.name }} / {{ item.item.1.dest }}"
-  when: not item.stat.exists
-
 - name: Deploy PC racing launcher wrappers
   ansible.builtin.template:
     src: pc-racing-launcher.sh.j2
