@@ -115,6 +115,11 @@
 # docs/wipeout-pe.md.
 # dg_wipeout_pe_chd_src: "{{ dg_roms_final_root }}/psx/WipEout (USA).chd"
 #
+# CannonBall / OutRun engine (opt-in role install_cannonball / --tags
+# cannonball). Built from source; needs the OutRun Rev B arcade romset.
+# Defaults to arcade/mame/outrun_dup2.zip. See docs/cannonball.md.
+# dg_cannonball_rom_zip: "{{ dg_roms_final_root }}/arcade/mame/outrun_dup2.zip"
+#
 # Native Doom II RT (opt-in install-prboom-plus-rt.yml). Normally the role
 # discovers DOOM2.WAD below dg_steam_root or dg_external_usb_games_root. Use an
 # explicit source only when neither configured Steam root matches the layout.

@@ -1,0 +1,137 @@
+---
+# CannonBall — OutRun engine, built from source (native Linux/SDL2/OpenGL).
+# See group_vars/all/cannonball.yml and docs/cannonball.md.
+
+- name: Revert CannonBall when requested
+  when: dg_cannonball_revert | bool
+  block:
+    - name: Remove the CannonBall launcher, install dir and build tree
+      ansible.builtin.shell: "{{ dg_in_box }} rm -rf {{ item | quote }}"
+      loop:
+        - "{{ dg_cannonball_launcher }}"
+        - "{{ dg_cannonball_install_dir }}"
+        - "{{ dg_cannonball_build_dir }}"
+      changed_when: true
+    - name: Report CannonBall reverted
+      ansible.builtin.debug:
+        msg: "CannonBall removed. Your OutRun romset on the NAS is untouched."
+
+- name: Install CannonBall
+  when: not (dg_cannonball_revert | bool)
+  block:
+    - name: Assert the OutRun Rev B romset exists
+      ansible.builtin.stat:
+        path: "{{ dg_cannonball_rom_zip }}"
+      register: _cannonball_roms
+
+    - name: Fail with guidance when the OutRun romset is missing
+      ansible.builtin.fail:
+        msg: >-
+          Missing OutRun Rev B romset: {{ dg_cannonball_rom_zip }}. CannonBall
+          needs the original OutRun (Revision B) arcade ROMs (the MAME `outrun`
+          parent set: epr/mpr/opr files incl. epr-10380b/10382b/10383b).
+      when: not _cannonball_roms.stat.exists
+
+    - name: Install CannonBall build + runtime packages inside the box
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} sudo pacman -S --needed --noconfirm
+        {{ dg_cannonball_packages | join(' ') }}
+      register: _cannonball_pacman
+      changed_when: "'installing' in _cannonball_pacman.stdout or 'upgrading' in _cannonball_pacman.stdout"
+
+    - name: Clone/build CannonBall at the pinned commit (gated on the binary)
+      # CMake 4 rejects Cannonball's old cmake_minimum_required, so pass
+      # -DCMAKE_POLICY_VERSION_MINIMUM=3.5. TARGET wants the FILENAME with
+      # extension (linux.cmake); bare "linux" silently falls back to the
+      # Windows default and the link fails on -lopengl32/-ldinput8.
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          build="{{ dg_cannonball_build_dir }}"
+          src="$build/src"
+          ref="{{ dg_cannonball_ref }}"
+          if [ -x "$build/build/cannonball" ] &&
+             grep -qx "$ref" "$build/.dg-built-ref" 2>/dev/null; then
+            exit 0
+          fi
+          rm -rf "$build"; mkdir -p "$build"
+          git clone "{{ dg_cannonball_repo }}" "$src" >/dev/null 2>&1
+          git -C "$src" checkout -q "$ref"
+          mkdir -p "$build/build"; cd "$build/build"
+          cmake "$src/cmake" -DTARGET=linux.cmake -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 >/dev/null 2>&1
+          make -j"$(nproc)" >/dev/null 2>&1
+          test -x "$build/build/cannonball"
+          printf "%s\n" "$ref" > "$build/.dg-built-ref"
+          printf "%s\n" "built-cannonball"
+        '
+      register: _cannonball_build
+      changed_when: "'built-cannonball' in _cannonball_build.stdout"
+
+    - name: Create CannonBall install directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_cannonball_install_dir }}"
+        - "{{ dg_cannonball_install_dir }}/roms"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Install the CannonBall binary + resources
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          build="{{ dg_cannonball_build_dir }}"
+          inst="{{ dg_cannonball_install_dir }}"
+          cp -f "$build/build/cannonball" "$inst/cannonball"
+          rsync -a "$build/src/res/" "$inst/res/"
+          printf "%s\n" "installed-cannonball-files"
+        '
+      register: _cannonball_files
+      changed_when: "'installed-cannonball-files' in _cannonball_files.stdout"
+
+    - name: Extract the OutRun Rev B roms into roms/ (once)
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          inst="{{ dg_cannonball_install_dir }}"
+          [ -f "$inst/roms/epr-10380b.133" ] && exit 0
+          unzip -o -j "{{ dg_cannonball_rom_zip }}" "epr-*" "mpr-*" "opr-*" -d "$inst/roms" >/dev/null
+          printf "%s\n" "extracted-roms"
+        '
+      register: _cannonball_roms_extract
+      changed_when: "'extracted-roms' in _cannonball_roms_extract.stdout"
+
+    - name: Seed config.xml with fullscreen (once, preserving in-game changes)
+      # config.xml is game-managed (Cannonball's in-menu Settings/Controls
+      # rewrite it, including gamepad config), so seed it only if absent:
+      # copy the shipped default and flip <mode> to 1 (full-screen).
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          inst="{{ dg_cannonball_install_dir }}"
+          [ -f "$inst/config.xml" ] && exit 0
+          cp -f "$inst/res/config.xml" "$inst/config.xml"
+          sed -i "0,/<mode>0<\/mode>/s//<mode>1<\/mode>/" "$inst/config.xml"
+          printf "%s\n" "seeded-config"
+        '
+      register: _cannonball_config
+      changed_when: "'seeded-config' in _cannonball_config.stdout"
+
+    - name: Deploy the CannonBall launcher
+      ansible.builtin.template:
+        src: cannonball.sh.j2
+        dest: "{{ dg_cannonball_launcher }}"
+        mode: "0755"
+
+    - name: Refresh desktop launchers
+      ansible.builtin.include_role:
+        name: desktop_apps
+
+    - name: Report CannonBall setup
+      ansible.builtin.debug:
+        msg:
+          - "CannonBall built ({{ dg_cannonball_ref[:7] }}) at {{ dg_cannonball_install_dir }}; launcher {{ dg_cannonball_launcher }}."
+          - "OutRun Rev B roms extracted; renders on the RTX (native OpenGL, no gamescope). 8BitDo via SDL2 -- configure axes in Settings > Controls."
+          - "Run scripts/install-host-launchers.sh to refresh the menu. Revert: -e dg_cannonball_revert=true."

@@ -1,0 +1,55 @@
+#!/usr/bin/env sh
+# CannonBall (OutRun engine) launcher — native SDL2/OpenGL.
+set -eu
+
+install_dir="{{ dg_cannonball_install_dir }}"
+exe="$install_dir/cannonball"
+
+if [ ! -x "$exe" ]; then
+  printf '%s\n' "ERROR: CannonBall is not built ($exe)." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-cannonball.yml" >&2
+  exit 1
+fi
+
+# Native OpenGL on the dual-GPU box: pin the RTX (GLX + PRIME) on XWayland,
+# the same path Supermodel uses. gamescope grabs the AMD iGPU here, so it is
+# deliberately NOT used. Route SDL audio to the host PipeWire (pulse compat).
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_VIDEODRIVER="{{ dg_cannonball_sdl_videodriver }}"
+# Leave SDL_AUDIODRIVER unset: the default ALSA path is bridged to PipeWire by
+# pipewire-alsa (forcing pulseaudio yields no stream on this box's SDL).
+
+# All games must open on the main landscape 4K monitor (DP-1).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b"/dispatch focusmonitor DP-1"); s.recv(64); s.close()
+PY
+
+# CannonBall has no in-config volume, so once it opens its PipeWire/Pulse
+# stream, set that stream to the desired level (default 60%). Runs detached;
+# waits up to ~9s for the stream to appear.
+if command -v pactl >/dev/null 2>&1; then
+  (
+    i=0
+    while [ "$i" -lt 40 ]; do
+      sid=$(pactl list sink-inputs 2>/dev/null | awk '
+        /^Sink Input #/ { id=$0; gsub(/[^0-9]/,"",id) }
+        /[Cc]annonball/ { print id; exit }')
+      if [ -n "$sid" ]; then
+        pactl set-sink-input-volume "$sid" "{{ dg_cannonball_volume }}" 2>/dev/null
+        break
+      fi
+      i=$((i + 1)); sleep 0.3
+    done
+  ) &
+fi
+
+# CannonBall reads config.xml, roms/ and res/ relative to the working dir.
+cd "$install_dir"
+exec ./cannonball "$@"
