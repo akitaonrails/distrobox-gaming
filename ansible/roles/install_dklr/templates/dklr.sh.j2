@@ -46,10 +46,13 @@ fi
 #       Start=Return  Select=Backspace
 evsieve_pid=""
 pad=""
-# Belt-and-suspenders: kill any evsieve left grabbing the pad from a previous
-# run whose cleanup didn't fire (e.g. the launcher was SIGKILLed). Otherwise a
-# stale grab makes the pad emit keys into ES-DE and every other app.
+# Belt-and-suspenders: clear anything a previous run may have left holding the
+# controller when its cleanup didn't fire (e.g. the launcher was SIGKILLed):
+#  - a stale evsieve grab makes the pad emit keys into ES-DE and every app;
+#  - an orphaned winedevice.exe keeps /dev/input open and blocks ES-DE/RetroArch
+#    from binding the pad even after ES-DE is restarted.
 pkill -x evsieve 2>/dev/null || true
+env -u PYTHONHOME -u PYTHONPATH WINEPREFIX="$prefix" "{{ dg_dklr_wineserver_bin }}" -k >/dev/null 2>&1 || true
 for l in /dev/input/by-id/*8BitDo*event-joystick /dev/input/by-id/*Xbox*event-joystick /dev/input/by-id/*XBOX*event-joystick /dev/input/by-id/*Microsoft*event-joystick; do
   [ -e "$l" ] && { pad=$(readlink -f "$l"); break; }
 done
@@ -81,10 +84,11 @@ if [ -n "$pad" ] && command -v evsieve >/dev/null 2>&1 && [ -w /dev/uinput ]; th
   sleep 0.5
   # Watchdog in its OWN session: the traps below cover a clean exit and
   # SIGTERM/INT, but NOT SIGKILL (or an orphaned box-side script when the
-  # window is closed). This detached guard releases the pad grab the moment
-  # THIS launcher process disappears by any means -- so a killed launcher can
-  # never leave the controller hijacked as a keyboard in ES-DE/Steam/etc.
-  setsid sh -c 'while kill -0 '"$$"' 2>/dev/null; do sleep 2; done; pkill -x evsieve' >/dev/null 2>&1 &
+  # window is closed). This detached guard runs the moment THIS launcher
+  # disappears by any means and releases the controller -- BOTH the evsieve
+  # grab AND the wine device layer (winedevice.exe), so a killed launcher can
+  # never strand the pad as a keyboard or leave it bound away from ES-DE.
+  setsid sh -c 'while kill -0 '"$$"' 2>/dev/null; do sleep 2; done; pkill -x evsieve 2>/dev/null; env -u PYTHONHOME -u PYTHONPATH WINEPREFIX="'"$prefix"'" "{{ dg_dklr_wineserver_bin }}" -k >/dev/null 2>&1' >/dev/null 2>&1 &
 fi
 
 cleanup() {

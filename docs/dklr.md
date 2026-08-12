@@ -79,12 +79,24 @@ Because the bridge runs `evsieve --input … grab`, the controller is held
 exclusively and re-emitted as a keyboard for as long as evsieve lives. If it
 leaks (the launcher is SIGKILLed or the box-side script is orphaned when you
 close the window), the pad keeps emitting keys into **ES-DE, Steam, everything**
-— it looks like "my controller stopped working." The launcher guards this three
-ways: (1) a `pkill -x evsieve` at startup clears any stale grab, (2) `cleanup()`
-kills evsieve on EXIT/HUP/INT/TERM, and (3) a `setsid` **watchdog** in its own
-session releases the grab the moment the launcher PID disappears — covering
-SIGKILL, which traps cannot. If you ever see a hijacked pad, `distrobox enter
-gaming -- pkill -x evsieve` frees it immediately.
+— it looks like "my controller stopped working." There's a **second** holder to worry about: wine's device layer
+(`winedevice.exe`) opens the pad too, and an orphaned one keeps `/dev/input`
+bound and blocks ES-DE/RetroArch from binding the controller **even after you
+restart ES-DE** (a real incident, 2026-08-12 — the pad "stopped working" and ES-DE
+restarts didn't help until the leftover `winedevice.exe` were killed).
+
+The launcher guards both holders three ways: (1) at **startup** it `pkill -x
+evsieve` + `wineserver -k` the prefix to clear anything stale, (2) `cleanup()`
+does the same on EXIT/HUP/INT/TERM, and (3) a `setsid` **watchdog** in its own
+session runs the moment the launcher PID disappears — releasing evsieve *and*
+`wineserver -k` — covering SIGKILL, which traps cannot. If you ever see a
+hijacked/dead pad, free it immediately with:
+
+```sh
+distrobox enter gaming -- bash -c 'pkill -x evsieve; WINEPREFIX=$HOME/wineprefixes/dklr wineserver -k'
+# still stuck? some orphaned winedevice.exe may hold it:
+distrobox enter gaming -- pkill -9 -x winedevice.exe
+```
 
 The 8BitDo Ultimate 2 (xpad) d-pad IS on `ABS_HAT0X/HAT0Y`. To verify codes,
 `evtest /dev/input/event23` (install evtest first) — but first kill any orphan
