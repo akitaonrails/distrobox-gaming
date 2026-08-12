@@ -97,7 +97,7 @@ ansible-playbook install-dusk.yml
 unpacks it into (inside the gaming distrobox):
 
 ```
-~/.local/share/TwilitRealm/Dusk/texture_replacements/GZ2/
+~/.local/share/TwilitRealm/Dusklight/texture_replacements/GZ2/
 ```
 
 **Layout normalisation + version bumps.** Releases ship different

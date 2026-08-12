@@ -79,8 +79,10 @@ dg_dusk_textures_version: "4.0d"
 # Canonical download lives in the user's Henriko download folder.
 dg_dusk_textures_archive: "{{ dg_roms_final_root }}/PC/Henrico Magnifico/ZTP 4K 4.0d (4K, PC Edition).zip"
 
-# Per-Dusk-user-dir target where Dusk scans for replacements.
-dg_dusk_user_data_root: "{{ dg_box_home }}/.local/share/TwilitRealm/Dusk"
+# Per-user data dir the app scans for replacements. NOTE: the app
+# rebranded Dusk -> Dusklight and migrates its data dir on launch
+# (TwilitRealm/Dusk -> TwilitRealm/Dusklight), so target Dusklight.
+dg_dusk_user_data_root: "{{ dg_box_home }}/.local/share/TwilitRealm/Dusklight"
 dg_dusk_textures_root: "{{ dg_dusk_user_data_root }}/texture_replacements"
 
 # Version-stamped idempotency marker (beside GZ2/, not inside it).
