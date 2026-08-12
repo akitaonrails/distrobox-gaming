@@ -41,7 +41,8 @@ fi
 # --- Controller: DKLR is keyboard-only (README). Bridge the pad to its SNES
 #     key map with evsieve (D-pad->arrows; face/shoulders/start/select as below).
 #     Physical-position mapping so a SNES-style pad feels right:
-#       B(↓,south)=S=jump  A(→,east)=Z=roll  Y(←,west)=Z=roll  X(↑,north)=A  L=Q R=W
+#       This pad: A=btn:south B=btn:east X=btn:north Y=btn:west; game jump=X-key roll=Z-key.
+#       B(east)->x=jump  A(south)->z=roll  Y(west)->z=roll  X(north)->a  L=Q R=W
 #       Start=Return  Select=Backspace
 evsieve_pid=""
 pad=""
@@ -50,8 +51,8 @@ for l in /dev/input/by-id/*8BitDo*event-joystick /dev/input/by-id/*Xbox*event-jo
 done
 if [ -n "$pad" ] && command -v evsieve >/dev/null 2>&1 && [ -w /dev/uinput ]; then
   evsieve --input "$pad" grab \
-    --map btn:south key:s \
-    --map btn:east key:z \
+    --map btn:east key:x \
+    --map btn:south key:z \
     --map btn:north key:a \
     --map btn:west key:z \
     --map btn:tl key:q \

@@ -33,18 +33,23 @@ the README bundles Windows JoyToKey for exactly this; confirmed by research
 2026-08-11). Instead the launcher runs an **evsieve** bridge that grabs the pad
 and emits the game's keys — real controller play, no JoyToKey. The game's key
 map (from its README) is D-pad→arrows, SNES A→S, B→X, X→A, Y→Z, L→Q, R→W,
-Start→Return, Select→Backspace; jump = **S**, roll = **Z**.
+Start→Return, Select→Backspace; **jump = `x`** (SNES B), **roll = `z`** (SNES Y).
 
 Current 8BitDo mapping (jump on B, roll on A, per user preference):
+
+Note the game's jump key is **`x`** (SNES B) and roll is **`z`** (SNES Y) — and
+on this 8BitDo the physical labels sit at surprising evdev codes (verified with
+evtest, do NOT assume Nintendo positions): **A=`btn:south`, B=`btn:east`,
+X=`btn:north`, Y=`btn:west`**.
 
 | 8BitDo | evdev code | Emits key | In-game |
 |---|---|---|---|
 | D-pad | `abs:hat0x/hat0y` (±1) | Arrow keys | move |
-| **B** | `btn:south` | **S** | **jump** |
-| **A** | `btn:east` | **Z** | **roll** |
-| **Y** | `btn:west` | Z | roll |
-| **X** | `btn:north` | A | (SNES X) |
-| L / R | `btn:tl` / `btn:tr` | Q / W | L / R |
+| **B** | `btn:east` | **x** | **jump** |
+| **A** | `btn:south` | **z** | **roll** |
+| **Y** | `btn:west` | z | roll |
+| **X** | `btn:north` | a | (SNES X, unused) |
+| L / R | `btn:tl` / `btn:tr` | q / w | L / R |
 | Start | `btn:start` | Return | Start |
 | Select | `btn:select` | Backspace | Select / swap Kong |
 
