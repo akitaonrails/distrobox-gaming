@@ -153,35 +153,41 @@ across all Azahar packs.
 - Azahar's `ini_file` calls use `no_extra_spaces: true` so re-runs
   don't churn the file fighting against Qt's no-spaces format.
 
-## Known issue — Henriko's Azahar packs don't load on this setup
+## Known issue — Henriko's Azahar packs don't load (DISABLED)
 
-As of May 2026, the four Azahar packs (OoT3D 4.0, MM3D 3.0b, ALBW 2.0b,
-SM3DL 1.2.0b) do **not** actually replace textures on this box despite
-the role putting everything in place. Diagnostic evidence:
+The four Azahar packs (OoT3D 4.0, MM3D 3.0b, ALBW 2.0b, SM3DL 1.2.0b)
+do **not** replace textures on this box, so they are now **disabled**
+in `group_vars/all/hd_textures.yml` (commented out of
+`dg_hd_texture_packs`). The live symlinks were removed and
+`custom_textures` was set back to `false` on 2026-08-12.
 
-- Pack `pack.json` is read successfully (Azahar's `ReadConfig` doesn't
-  log the "using legacy defaults" fallback).
-- `material_map` is populated (texture files parsed; only the expected
-  ~4 inner-pack hash-collision warnings fire — not parse failures).
-- `dump_textures = true` test: Azahar dumps surfaces at runtime using
-  the same hash function it uses for lookup (proven — 30 of 44 dumped
-  hashes are exactly the hashes from the "Unable to find replacement"
-  warnings).
-- 0 of those runtime hashes appear in the pack's filenames, across
-  USA Rev 0, USA Rev 1 (OoT3D) and Japan Rev 2 (SM3DL) dumps.
+**Re-verified 2026-08-12 on Azahar 2125.1.3** (user launched OoT3D EUR
+and MM3D EUR — screenshot showed vanilla, low-res rendering). The log
+is unambiguous: everything is wired correctly but the hashes don't
+match.
 
-All three current Citra-lineage forks (Azahar, Lime3DS, Mandarine) use
-CityHash64 for texture hashing — verified in source — so it isn't a
-fork-algorithm mismatch. The Citra original repo has been deleted, so
-it's no longer possible to verify whether the original Citra release
-used a different algorithm Henriko built against.
+- The `load/textures/<TitleID>/` symlink was present and populated
+  (MM3D EUR `0004000000125500`: 1624 PNGs) and `custom_textures=true`.
+- Azahar's custom-texture manager IS active and computing runtime
+  hashes; it just can't resolve them:
+  `custom_tex_manager.cpp:GetMaterial: Unable to find replacement for
+  surface with hash 2C5190F3C3A8FB43` (every surface, same story).
+- **0** of the logged runtime hashes exist in *any* pack filename.
 
-**Working theory:** Henriko's pack was authored from ROM dumps that
-produce different texture-byte layouts than No-Intro / publicly
-available dumps. Setup is correct end-to-end, but the bytes don't
-match. The fix path is contacting Henriko on Discord with the
-"0 of N runtime hashes match the pack" evidence; he'll know what
-dump source he used.
+**Root cause — texture-hash-scheme mismatch.** The packs ship
+`pack.json` with `"use_new_hash": false` — their filenames encode the
+**legacy** Citra hash. Azahar 2125.1.3 computes a different runtime
+hash and does not resolve the old-hash files. This matches the earlier
+(May 2026) finding that 0 of N runtime-dumped hashes appear in the
+pack, across multiple ROM revisions.
+
+**Not fixable on this box.** There is no user-facing Azahar setting to
+switch the hash scheme, and re-hashing 8000+ upscaled textures is
+infeasible. The only workarounds would be downgrading to an old Citra
+build (would break the working 3DS setup) or Henriko shipping
+`use_new_hash: true` packs. The commented entries in `hd_textures.yml`
+preserve the TitleIDs/versions so re-enabling is trivial if that ever
+happens.
 
 **What works for these games today**: the Ansible setup still gives
 you the games running at 4× internal resolution via Azahar's

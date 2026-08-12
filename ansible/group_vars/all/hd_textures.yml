@@ -1,4 +1,7 @@
-# HD texture packs for Dolphin (GameCube/Wii) and Azahar (3DS).
+# HD texture packs for Dolphin (GameCube/Wii). The Azahar (3DS) packs
+# are DISABLED — incompatible with Azahar 2125.1.3's texture hashing
+# (see the Azahar section below and docs/hd-textures.md). Only the
+# Dolphin packs are active.
 #
 # Strategy: extract only the texture subtree from each pack on the
 # NAS (the Henriko Magnifico zips include a full Windows-portable
@@ -58,41 +61,46 @@ dg_hd_texture_packs:
     unzip_pattern: "*/Load/Textures/*"
     game_ids: [GZL]
 
-  # ── Azahar (3DS) ────────────────────────────────────────────────
-  # Each Azahar pack covers multiple region TitleIDs (USA/EUR/JPN);
-  # the role symlinks them all so the right one is picked up
-  # regardless of which dump the user runs.
-  - slug: a-link-between-worlds
-    emu: azahar
-    archive: "{{ dg_hd_azahar_archive_root }}/ALBW 4K 2.0b (4K).zip"
-    unzip_pattern: "*/load/textures/*"
-    game_ids:
-      - "00040000000EC200"  # USA
-      - "00040000000EC300"  # EUR
-      - "00040000000EC400"  # JPN
-  - slug: majoras-mask-3d
-    emu: azahar
-    archive: "{{ dg_hd_azahar_archive_root }}/MM 3D 4K 3.0b-1 (4K).zip"
-    unzip_pattern: "*/load/textures/*"
-    game_ids:
-      - "00040000000D6E00"  # USA
-      - "0004000000125500"  # EUR
-      - "0004000000125600"  # JPN
-  - slug: ocarina-of-time-3d
-    emu: azahar
-    archive: "{{ dg_hd_azahar_archive_root }}/OOT3D 4K 4.0 (4K).zip"
-    unzip_pattern: "*/load/textures/*"
-    game_ids:
-      - "0004000000033400"  # USA
-      - "0004000000033500"  # EUR
-      - "0004000000033600"  # JPN
-  - slug: super-mario-3d-land
-    emu: azahar
-    # 1.2.0b is newer than 1.2.0a on disk; if both are present the
-    # role uses whichever this path points at — bump the suffix when
-    # a newer release lands.
-    archive: "{{ dg_hd_azahar_archive_root }}/SM3DL 4K 1.2.0b (4K).zip"
-    unzip_pattern: "*/load/textures/*"
-    game_ids:
-      - "0004000000053F00"  # USA
-      - "0004000000054000"  # JPN / EUR
+  # ── Azahar (3DS) — DISABLED, packs incompatible with this Azahar ──
+  #
+  # These four Henriko 3DS packs DO NOT LOAD on Azahar 2125.1.3 and are
+  # intentionally omitted from the active list. Root cause (re-verified
+  # 2026-08-12, screenshot + log): a texture-HASH-SCHEME mismatch, not a
+  # path/region/config problem.
+  #   * The packs ship pack.json with "use_new_hash": false — i.e. their
+  #     filenames encode the LEGACY Citra hash.
+  #   * Azahar 2125.1.3 computes a DIFFERENT runtime hash and does not
+  #     resolve the old-hash files. The log is unambiguous:
+  #       custom_tex_manager.cpp:GetMaterial: Unable to find replacement
+  #       for surface with hash 2C5190F3C3A8FB43   (and every other surface)
+  #     None of the logged runtime hashes exist in any pack, even though
+  #     the load/textures/<TitleID>/ symlink was present and populated
+  #     (MM3D EUR: 1624 PNGs) and custom_textures was enabled.
+  #   * There is no user-facing Azahar setting to switch the hash scheme,
+  #     and re-hashing 8000+ upscaled textures is infeasible. The only
+  #     "fix" would be downgrading to an old Citra build, which would
+  #     break the working 3DS setup — not worth it.
+  # Kept here (commented) so the TitleIDs/versions are preserved: if
+  # Henriko ever ships new-hash packs, flip use_new_hash and re-enable.
+  # See docs/hd-textures.md and memory project_henriko_packs_dont_match.
+  #
+  # - slug: a-link-between-worlds
+  #   emu: azahar
+  #   archive: "{{ dg_hd_azahar_archive_root }}/ALBW 4K 2.0b (4K).zip"
+  #   unzip_pattern: "*/load/textures/*"
+  #   game_ids: ["00040000000EC200", "00040000000EC300", "00040000000EC400"]  # USA/EUR/JPN
+  # - slug: majoras-mask-3d
+  #   emu: azahar
+  #   archive: "{{ dg_hd_azahar_archive_root }}/MM 3D 4K 3.0b-1 (4K).zip"
+  #   unzip_pattern: "*/load/textures/*"
+  #   game_ids: ["00040000000D6E00", "0004000000125500", "0004000000125600"]  # USA/EUR/JPN
+  # - slug: ocarina-of-time-3d
+  #   emu: azahar
+  #   archive: "{{ dg_hd_azahar_archive_root }}/OOT3D 4K 4.0 (4K).zip"
+  #   unzip_pattern: "*/load/textures/*"
+  #   game_ids: ["0004000000033400", "0004000000033500", "0004000000033600"]  # USA/EUR/JPN
+  # - slug: super-mario-3d-land
+  #   emu: azahar
+  #   archive: "{{ dg_hd_azahar_archive_root }}/SM3DL 4K 1.2.0b (4K).zip"
+  #   unzip_pattern: "*/load/textures/*"
+  #   game_ids: ["0004000000053F00", "0004000000054000"]  # USA, JPN/EUR
