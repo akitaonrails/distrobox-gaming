@@ -58,26 +58,32 @@ dg_dusk_supported_sha1:
 # Optional HD texture pack handling.
 #
 # Dusk reuses Dolphin's HiResTexture format (tex1_WxH_<hash>_<fmt>.dds)
-# and loads packs from a per-user data directory. Dolphin packs labelled
-# "PC Version" are author-tuned for Dusk's render path; community packs
-# named "ZTP" target Zelda Twilight Princess (game ID GZ2).
+# and scans texture_replacements/GZ2/ RECURSIVELY (subfolders are fine),
+# GZ2 being Twilight Princess's Dolphin game ID.
 #
-# Drop the source zip at dg_dusk_textures_archive (any version — the
-# glob below picks the newest match). The role unpacks it directly to
-# dg_dusk_textures_root, which is exactly where Dusk scans, so the
-# zip's top-level GZ2/ folder lands as texture_replacements/GZ2/.
+# Henriko's Twilight Princess "PC Edition" packs are author-tuned for
+# Dusk's render path. Layouts differ by release, so the role normalises
+# them into texture_replacements/GZ2/:
+#   * 4.x "PC Edition" wraps everything in one top folder
+#     (HenrikosTP4K_<ver>_4K/) with area subfolders — relocated under GZ2/.
+#   * 3.0c "PC Version" shipped a top-level GZ2/ directly.
+# 4.0d re-masters coverage (all 9 provinces + Characters/Bosses/UI/…);
+# ~1300 of its surfaces overlap 3.0c, +81 new, and it drops the shipped
+# mip chains (Dusk/GPU generate mips at runtime).
 #
-# Skipped silently if no matching archive is staged.
+# Bump dg_dusk_textures_version when pointing the archive at a new
+# release: the version-stamped marker re-triggers a clean re-extract
+# (the role wipes the old GZ2/ first). Skipped if no archive is staged.
 
-# Source archive — single explicit path. If you keep multiple versions
-# side-by-side, point this at whichever version you want active.
-dg_dusk_textures_archive: "{{ dg_external_games_root }}/HD-textures/dolphin-textures/ZTP 4K 3.0c (4K, PC Version).zip"
+dg_dusk_textures_version: "4.0d"
+# Canonical download lives in the user's Henriko download folder.
+dg_dusk_textures_archive: "{{ dg_roms_final_root }}/PC/Henrico Magnifico/ZTP 4K 4.0d (4K, PC Edition).zip"
 
-# Per-Dusk-user-dir target where Dusk scans for replacements. Trailing
-# slash matters for unzip's "extract into" semantics.
+# Per-Dusk-user-dir target where Dusk scans for replacements.
 dg_dusk_user_data_root: "{{ dg_box_home }}/.local/share/TwilitRealm/Dusk"
 dg_dusk_textures_root: "{{ dg_dusk_user_data_root }}/texture_replacements"
 
-# Idempotency marker — once this exists, the role assumes a successful
-# extract and skips re-unzipping the 5.6 GB archive on every run.
-dg_dusk_textures_marker: "{{ dg_dusk_textures_root }}/GZ2"
+# Version-stamped idempotency marker (beside GZ2/, not inside it).
+# Changing dg_dusk_textures_version changes this path, so the role
+# re-extracts the new pack and clears the old GZ2/.
+dg_dusk_textures_marker: "{{ dg_dusk_textures_root }}/.dg-ztp-{{ dg_dusk_textures_version }}"

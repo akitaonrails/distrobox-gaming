@@ -80,30 +80,35 @@ Dusk caches the choice; subsequent launches skip straight to game.
 ## HD texture pack (optional)
 
 Dusk reuses Dolphin's HiResTexture format
-(`tex1_WxH_<hash>_<format>.dds`) and loads packs from a per-user
-directory. Drop a Twilight Princess pack (e.g. *Henriko Magnifico's
-ZTP 4K* in its "PC Version" build, which is Dusk-tuned) at:
+(`tex1_WxH_<hash>_<format>.dds`) and scans `texture_replacements/GZ2/`
+**recursively** (subfolders are fine), `GZ2` being Twilight Princess's
+GameCube game ID. The active pack is **Henriko Magnifico's ZTP 4K
+`4.0d` "PC Edition"** — a re-master covering all 9 provinces plus
+Characters/Bosses/Link/UI/Universal (1,381 surfaces; ~1,300 overlap the
+old 3.0c, +81 new, mip chains dropped for the GPU to regenerate).
+
+Point `dg_dusk_textures_archive` (in `ansible/group_vars/all/dusk.yml`)
+at the zip and set `dg_dusk_textures_version` to a matching tag, then:
 
 ```
-{{ dg_external_games_root }}/HD-textures/dolphin-textures/ZTP 4K *.zip
+ansible-playbook install-dusk.yml
 ```
 
-(or whichever filename — point `dg_dusk_textures_archive` in
-`ansible/group_vars/all/dusk.yml` at it).
-
-Then `ansible-playbook install-dusk.yml` unpacks the archive into:
+unpacks it into (inside the gaming distrobox):
 
 ```
 ~/.local/share/TwilitRealm/Dusk/texture_replacements/GZ2/
 ```
 
-(inside the gaming distrobox; `~` resolves to the box home, the same
-data dir Dusk uses for saves/settings.) Idempotent — re-runs skip the
-unzip when `texture_replacements/GZ2/` already exists.
-
-The pack ships with `GZ2/` at its top level matching Twilight Princess's
-GameCube game ID, so the layout slots in cleanly without any rename
-gymnastics. Dusk auto-loads it at launch; no in-game toggle required.
+**Layout normalisation + version bumps.** Releases ship different
+layouts — 4.x "PC Edition" wraps its area folders in one top dir
+(`HenrikosTP4K_<ver>_4K/`), while 3.0c shipped `GZ2/` at the top. The
+role relocates whatever it finds into `GZ2/`. Idempotency is a
+**version-stamped marker** (`texture_replacements/.dg-ztp-<version>`):
+re-runs skip the multi-GB unzip, but **bumping
+`dg_dusk_textures_version`** makes the role wipe the old `GZ2/` and
+re-extract the new pack cleanly. Dusk auto-loads it at launch; no
+in-game toggle required.
 
 The role surfaces a missing-archive notice instead of failing when no
 zip is staged, so this entire branch is opt-in.

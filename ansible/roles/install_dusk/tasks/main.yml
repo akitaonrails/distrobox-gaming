@@ -164,22 +164,46 @@
     mode: "0755"
   when: _dusk_tex_archive.stat.exists
 
-- name: Stat texture pack marker (GZ2/ subdir)
+- name: Stat texture pack version marker
   ansible.builtin.stat:
     path: "{{ dg_dusk_textures_marker }}"
   register: _dusk_tex_marker
   when: _dusk_tex_archive.stat.exists
 
-- name: Extract HD texture pack into texture_replacements
-  # Skipped on subsequent runs by the marker check above. unarchive's
-  # `creates` flag handles the idempotency directly — if GZ2/ is
-  # already present (single biggest tell that the unpack ran cleanly),
-  # the 5.6 GB unzip step is a no-op.
-  ansible.builtin.unarchive:
-    src: "{{ dg_dusk_textures_archive }}"
-    dest: "{{ dg_dusk_textures_root }}"
-    remote_src: true
-    creates: "{{ dg_dusk_textures_marker }}"
+- name: Install/refresh Dusk HD texture pack into GZ2/ (version-stamped)
+  # Normalise whatever layout the pack ships into texture_replacements/GZ2/
+  # (Dusk scans it recursively). Henriko's 4.x "PC Edition" wraps its area
+  # folders in one top dir (HenrikosTP4K_<ver>_4K/); 3.0c shipped GZ2/ at
+  # the top. Extract to a temp dir, wipe the old GZ2/ + stale version
+  # markers, then move the wrapper's CONTENTS into a fresh GZ2/. Gated on
+  # the version marker, so it re-runs only when dg_dusk_textures_version
+  # changes; otherwise the multi-GB unzip is a no-op.
+  # Paths passed via environment (no inline Jinja) so Ansible's shell
+  # arg-splitter doesn't choke on {{ }} next to shell quotes.
+  ansible.builtin.shell:
+    executable: /bin/bash
+    cmd: |
+      set -eu
+      gz2="$DUSK_TEX_ROOT/GZ2"
+      tmp="$(mktemp -d)"
+      trap 'rm -rf "$tmp"' EXIT
+      unzip -q -o "$DUSK_TEX_ARCHIVE" -d "$tmp"
+      # The pack's single top-level directory (wrapper, or a top-level GZ2/).
+      wrap="$(find "$tmp" -mindepth 1 -maxdepth 1 -type d | head -n1)"
+      [ -n "$wrap" ] || wrap="$tmp"
+      rm -rf "$gz2"
+      rm -f "$DUSK_TEX_ROOT"/.dg-ztp-*
+      mkdir -p "$gz2"
+      (cd "$wrap" && cp -a . "$gz2/")
+      printf '%s\n' "$DUSK_TEX_VERSION" > "$DUSK_TEX_MARKER"
+      echo "dusk-textures-installed $DUSK_TEX_VERSION"
+  environment:
+    DUSK_TEX_ROOT: "{{ dg_dusk_textures_root }}"
+    DUSK_TEX_ARCHIVE: "{{ dg_dusk_textures_archive }}"
+    DUSK_TEX_VERSION: "{{ dg_dusk_textures_version }}"
+    DUSK_TEX_MARKER: "{{ dg_dusk_textures_marker }}"
+  register: _dusk_tex_install
+  changed_when: "'dusk-textures-installed' in _dusk_tex_install.stdout"
   when:
     - _dusk_tex_archive.stat.exists
     - not _dusk_tex_marker.stat.exists | default(false)
