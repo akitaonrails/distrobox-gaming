@@ -46,6 +46,10 @@ fi
 #       Start=Return  Select=Backspace
 evsieve_pid=""
 pad=""
+# Belt-and-suspenders: kill any evsieve left grabbing the pad from a previous
+# run whose cleanup didn't fire (e.g. the launcher was SIGKILLed). Otherwise a
+# stale grab makes the pad emit keys into ES-DE and every other app.
+pkill -x evsieve 2>/dev/null || true
 for l in /dev/input/by-id/*8BitDo*event-joystick /dev/input/by-id/*Xbox*event-joystick /dev/input/by-id/*XBOX*event-joystick /dev/input/by-id/*Microsoft*event-joystick; do
   [ -e "$l" ] && { pad=$(readlink -f "$l"); break; }
 done
@@ -75,10 +79,19 @@ if [ -n "$pad" ] && command -v evsieve >/dev/null 2>&1 && [ -w /dev/uinput ]; th
   # gamescope enumerates input below -- otherwise gamescope can miss the
   # hotplugged device and none of the mapped keys reach the game.
   sleep 0.5
+  # Watchdog in its OWN session: the traps below cover a clean exit and
+  # SIGTERM/INT, but NOT SIGKILL (or an orphaned box-side script when the
+  # window is closed). This detached guard releases the pad grab the moment
+  # THIS launcher process disappears by any means -- so a killed launcher can
+  # never leave the controller hijacked as a keyboard in ES-DE/Steam/etc.
+  setsid sh -c 'while kill -0 '"$$"' 2>/dev/null; do sleep 2; done; pkill -x evsieve' >/dev/null 2>&1 &
 fi
 
 cleanup() {
   [ -n "$evsieve_pid" ] && kill "$evsieve_pid" 2>/dev/null || true
+  # Also sweep by name: $evsieve_pid can be stale if the shell was signalled
+  # oddly, and a lingering grab breaks the pad system-wide (ES-DE, Steam, ...).
+  pkill -x evsieve 2>/dev/null || true
   env -u PYTHONHOME -u PYTHONPATH "{{ dg_dklr_wineserver_bin }}" -k >/dev/null 2>&1 || true
 }
 trap cleanup EXIT HUP INT TERM

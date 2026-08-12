@@ -73,6 +73,19 @@ d-pad silently does nothing. Map hats with explicit press/release instead
 --block abs:hat0x                  # drop the raw hat -> keyboard-only output
 ```
 
+### ⚠️ evsieve grabs the pad exclusively — it MUST be reaped on exit
+
+Because the bridge runs `evsieve --input … grab`, the controller is held
+exclusively and re-emitted as a keyboard for as long as evsieve lives. If it
+leaks (the launcher is SIGKILLed or the box-side script is orphaned when you
+close the window), the pad keeps emitting keys into **ES-DE, Steam, everything**
+— it looks like "my controller stopped working." The launcher guards this three
+ways: (1) a `pkill -x evsieve` at startup clears any stale grab, (2) `cleanup()`
+kills evsieve on EXIT/HUP/INT/TERM, and (3) a `setsid` **watchdog** in its own
+session releases the grab the moment the launcher PID disappears — covering
+SIGKILL, which traps cannot. If you ever see a hijacked pad, `distrobox enter
+gaming -- pkill -x evsieve` frees it immediately.
+
 The 8BitDo Ultimate 2 (xpad) d-pad IS on `ABS_HAT0X/HAT0Y`. To verify codes,
 `evtest /dev/input/event23` (install evtest first) — but first kill any orphan
 `winedevice.exe`/`evsieve` holding the pad, or the capture reads empty. Steam
