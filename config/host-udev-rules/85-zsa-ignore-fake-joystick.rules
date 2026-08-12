@@ -1,0 +1,18 @@
+# Stop the ZSA Moonlander keyboard's "System Control" HID interface from being
+# treated as a game controller.
+#
+# udev's input_id builtin tags that interface ID_INPUT_JOYSTICK=1, so
+# RetroArch's `udev` joypad driver enumerates it as Pad #0 and binds it to
+# player PORT 1 -- which bumps the real 8BitDo to port 2. The game reads player
+# 1, so every button appears dead in-game even though RetroArch "recognized the
+# 8BitDo" (it did -- on port 2). ES-DE (SDL2) tolerates the phantom, which is
+# why navigation there felt fine. Surfaces after a reboot reshuffles event
+# numbers so the Moonlander's phantom pad enumerates before the 8BitDo.
+#
+# Match only the interface that actually carries the joystick tag (VID/PID +
+# ID_INPUT_JOYSTICK==1) and clear it, leaving the real keyboard/system-control
+# functions intact. With no phantom joystick, the 8BitDo takes port 1.
+#
+# ZSA Moonlander Mark I = 3297:1969. Install to /etc/udev/rules.d/ on the HOST
+# (shared /dev reaches the distrobox). See docs/controller-hotkeys.md.
+ACTION=="add|change", SUBSYSTEM=="input", ATTRS{idVendor}=="3297", ATTRS{idProduct}=="1969", ENV{ID_INPUT_JOYSTICK}=="1", ENV{ID_INPUT_JOYSTICK}="0"

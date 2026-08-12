@@ -16,6 +16,43 @@ gamepad. This is a standalone limitation; the RetroArch core allowed it.
   on the pad; it types keys via the pad's extra Keyboard HID
   interface, no Linux-side config needed).
 
+## ZSA Moonlander steals RetroArch player 1 (phantom joystick)
+
+**Symptom:** the 8BitDo works in ES-DE menus, RetroArch says it "recognized
+the 8BitDo", but in-game every button is dead. Rebooting doesn't help.
+
+**Cause:** the ZSA Moonlander keyboard's *System Control* HID interface
+(`3297:1969`) is tagged `ID_INPUT_JOYSTICK=1` by udev's `input_id` builtin.
+RetroArch's `udev` joypad driver enumerates it as Pad #0 → **player port 1**
+(unconfigured), pushing the real 8BitDo to **port 2**. The game reads player 1,
+so nothing responds. ES-DE (SDL2) tolerates the phantom, hence it feels fine
+there. The `retroarch.log` shows it plainly:
+
+```
+[Autoconf] ZSA ... Moonlander Mark I System Control (12951/6505) not configured.
+[Autoconf] 8BitDo Ultimate 2 Wireless configured in port 2.
+```
+
+It surfaces after a reboot reshuffles `/dev/input/eventN` so the Moonlander's
+phantom pad enumerates *before* the 8BitDo. Nothing in the RetroArch config is
+wrong — all `input_player1_*` = `nul` is normal (autoconfig supplies binds).
+
+**Fix (host udev rule — permanent, survives reboots):** clear the joystick tag
+on that one interface so the 8BitDo takes port 1. Tracked at
+`config/host-udev-rules/85-zsa-ignore-fake-joystick.rules`; install on the host:
+
+```sh
+sudo install -m0644 config/host-udev-rules/85-zsa-ignore-fake-joystick.rules \
+  /etc/udev/rules.d/85-zsa-ignore-fake-joystick.rules
+sudo udevadm control --reload-rules
+sudo udevadm trigger --subsystem-match=input
+```
+
+Verify: `udevadm info --query=property --name=/dev/input/event6 | grep JOYSTICK`
+should now show `ID_INPUT_JOYSTICK=0` (event number may differ). This is a HOST
+rule (like `85-8bitdo-ignore-fake-input.rules` and `99-8bitdo-xpad.rules`); the
+distrobox inherits it through the shared `/dev`. Re-apply after a host rebuild.
+
 ## Multiple controllers
 
 Two pads are used interchangeably; both pass through to the distrobox
