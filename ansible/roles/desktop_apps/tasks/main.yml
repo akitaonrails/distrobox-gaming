@@ -14,7 +14,6 @@
     - gaming-shadps4-gui.desktop
     - gaming-flycast.desktop
     - gaming-eden-cheats-manager.desktop
-    - Steam-Clean.desktop
 
 - name: Render generic emulator launcher desktop entries
   ansible.builtin.template:
@@ -134,6 +133,7 @@
     state: absent
   loop:
     - gaming-sm64plus.desktop
+    - Steam-Clean.desktop
 
 - name: Remove obsolete host desktop entries
   ansible.builtin.file:
@@ -141,6 +141,7 @@
     state: absent
   loop:
     - gaming-sm64plus.desktop
+    - Steam-Clean.desktop
 
 - name: Check if desktop-file-validate is available
   ansible.builtin.command: "which desktop-file-validate"
