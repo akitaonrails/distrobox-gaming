@@ -7,7 +7,13 @@ the per-game-ID dirs into the emulators' user data trees inside the
 gaming distrobox.
 
 Twilight Princess is handled separately by `install-dusk.yml` — the
-ZTP "PC Version" pack targets Dusk specifically, not Dolphin.
+Henriko ZTP "PC Edition" pack targets the Dusk PC port, not Dolphin.
+
+> ⚠️ **The Azahar (3DS) packs are currently DISABLED** — they do not load
+> on this box's Azahar build (texture-hash-scheme mismatch, re-verified on
+> Azahar 2126.0; see the "Known issue" section below). Only the **Dolphin**
+> packs are active. The Azahar entries are kept commented in
+> `hd_textures.yml` and listed below for reference / future re-enable.
 
 ```sh
 ansible-playbook install-hd-textures.yml
@@ -62,10 +68,10 @@ first time each texture is touched.
 | Super Mario Sunshine 4K 2.0c | Dolphin | `GMS` |
 | Skyward Sword 4K 1.0.5 | Dolphin | `SOU` |
 | Wind Waker 4K 1.0.0d | Dolphin | `GZL` |
-| A Link Between Worlds 4K 2.0b | Azahar | `00040000000EC200`, `EC300`, `EC400` |
-| Majora's Mask 3D 4K 3.0b-1 | Azahar | `00040000000D6E00`, `0004000000125500`, `125600` |
-| Ocarina of Time 3D 4K 4.0 | Azahar | `0004000000033400`, `033500`, `033600` |
-| Super Mario 3D Land 4K 1.2.0b | Azahar | `0004000000053F00`, `054000` |
+| A Link Between Worlds 4K 2.0b | Azahar (disabled) | `00040000000EC200`, `EC300`, `EC400` |
+| Majora's Mask 3D 4K 3.0b-1 | Azahar (disabled) | `00040000000D6E00`, `0004000000125500`, `125600` |
+| Ocarina of Time 3D 4K 4.0 | Azahar (disabled) | `0004000000033400`, `033500`, `033600` |
+| Super Mario 3D Land 4K 1.2.0b | Azahar (disabled) | `0004000000053F00`, `054000` |
 | Super Mario Eclipse HD v5.0.0 † | Dolphin | `GMSE04` |
 
 † Not from Henriko's Patreon — this one is the community
