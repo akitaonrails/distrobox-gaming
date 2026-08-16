@@ -1,0 +1,44 @@
+---
+# Metroid Prime Hunters Recompilation (ndsrecomp) — native PC port of the
+# Nintendo DS game. Prebuilt Linux AppImage; opt-in role install_mph_recomp.
+# See docs/mph-recomp.md.
+#
+# Ships NO game data. Requires the USA rev-0 ROM (game code AMHE); the runner
+# validates it and rejects anything else (Rev 1 and the Pt-Br translation both
+# fail). Boots BIOS-less via the built-in FreeBIOS + generated firmware.
+# Renderer is OpenGL 4.3 compute; gamepad is native SDL.
+
+dg_mph_repo: mstan/MetroidPrimeHuntersRecomp
+dg_mph_version: v0.3.0-alpha
+dg_mph_asset_name: "MetroidPrimeHuntersRecomp-linux-x86_64-v0.3.0.AppImage"
+dg_mph_asset_url: "https://github.com/{{ dg_mph_repo }}/releases/download/{{ dg_mph_version }}/{{ dg_mph_asset_name }}"
+dg_mph_asset_sha256: 7573b5cc4d4bff5f618484421caee74fb83b456f9792236ec53b23c0e9c85ee1
+
+dg_mph_install_dir: "{{ dg_box_home }}/Games/mph-recomp"
+dg_mph_appimage: "{{ dg_mph_install_dir }}/MetroidPrimeHuntersRecomp.AppImage"
+dg_mph_bin: "{{ dg_box_home }}/bin/mph-recomp"
+dg_mph_cache_dir: "{{ dg_box_home }}/cache/mph-recomp"
+
+# Required ROM: USA rev-0 (AMHE). Stays on the NAS; passed to the runner via
+# --rom (no copy). The runner refuses non-matching dumps.
+dg_mph_rom: "{{ dg_roms_final_root }}/nds/Metroid Prime - Hunters (USA).nds"
+dg_mph_rom_sha256: 7d0a98ff98e1b7c985d1f3d89b01730af1b2115061a4dfea847612d217a8b855
+
+# Runner flags (tunable):
+#   --freebios --generated-firmware --boot direct : BIOS-less boot (freebios
+#     REQUIRES boot direct — the runner refuses otherwise).
+#   --mph-prime-controls on : maps the stylus-aim to the right stick so the
+#     game is playable on a gamepad (MPH is a stylus-aim FPS). This is what
+#     makes 8BitDo/controller play work well.
+#   widescreen + supersampling are effectively free on the RTX 5090 for a
+#     DS-resolution game (256x192/screen).
+dg_mph_flags:
+  - "--freebios"
+  - "--generated-firmware"
+  - "--boot direct"
+  - "--mph-prime-controls on"
+  - "--adaptive-widescreen both"
+  - "--supersampling 3"
+  - "--antialiasing 4"
+
+dg_mph_revert: false

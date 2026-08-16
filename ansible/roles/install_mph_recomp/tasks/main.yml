@@ -1,0 +1,79 @@
+---
+# Metroid Prime Hunters Recomp — native ndsrecomp AppImage. See
+# group_vars/all/mph_recomp.yml and docs/mph-recomp.md.
+
+- name: Revert MPH Recomp when requested
+  when: dg_mph_revert | bool
+  block:
+    - name: Remove the MPH launcher + install dir
+      ansible.builtin.shell: "{{ dg_in_box }} rm -rf {{ item | quote }}"
+      loop:
+        - "{{ dg_mph_bin }}"
+        - "{{ dg_mph_install_dir }}"
+      changed_when: true
+    - name: Report MPH reverted
+      ansible.builtin.debug:
+        msg: "MPH Recomp removed. Your Metroid Prime Hunters ROM on the NAS is untouched."
+
+- name: Install MPH Recomp
+  when: not (dg_mph_revert | bool)
+  block:
+    - name: Stat the required USA rev-0 ROM
+      ansible.builtin.stat:
+        path: "{{ dg_mph_rom }}"
+        checksum_algorithm: sha256
+      register: _mph_rom
+
+    - name: Fail with guidance when the ROM is missing
+      ansible.builtin.fail:
+        msg: >-
+          Missing Metroid Prime Hunters ROM: {{ dg_mph_rom }}. The recomp needs
+          the USA rev-0 dump (game code AMHE, sha256 {{ dg_mph_rom_sha256 }}).
+          Rev 1 and the Pt-Br translation are NOT accepted. See docs/mph-recomp.md.
+      when: not _mph_rom.stat.exists
+
+    - name: Warn when the ROM is not the required USA rev-0
+      ansible.builtin.debug:
+        msg: >-
+          WARNING: {{ dg_mph_rom }} sha256 is {{ _mph_rom.stat.checksum }},
+          expected {{ dg_mph_rom_sha256 }} (USA rev-0). The runner will refuse a
+          non-matching ROM.
+      when:
+        - _mph_rom.stat.exists
+        - _mph_rom.stat.checksum != dg_mph_rom_sha256
+
+    - name: Create MPH directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_mph_cache_dir }}"
+        - "{{ dg_mph_install_dir }}"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Download the pinned MPH Recomp AppImage
+      # Single self-contained AppImage (needs libfuse2, already on the box).
+      # Version-gated by checksum: a version/sha bump re-downloads.
+      ansible.builtin.get_url:
+        url: "{{ dg_mph_asset_url }}"
+        dest: "{{ dg_mph_appimage }}"
+        checksum: "sha256:{{ dg_mph_asset_sha256 }}"
+        mode: "0755"
+
+    - name: Deploy the MPH launcher
+      ansible.builtin.template:
+        src: mph-recomp.sh.j2
+        dest: "{{ dg_mph_bin }}"
+        mode: "0755"
+
+    - name: Refresh desktop launchers
+      ansible.builtin.include_role:
+        name: desktop_apps
+
+    - name: Report MPH setup
+      ansible.builtin.debug:
+        msg:
+          - "MPH Recomp {{ dg_mph_version }} installed at {{ dg_mph_install_dir }}; launcher {{ dg_mph_bin }}."
+          - "Boots BIOS-less (FreeBIOS + generated firmware, direct boot) into MPH USA rev-0 on the RTX via OpenGL 4.3. 8BitDo works natively; --mph-prime-controls maps aim to the right stick. Remap in the launcher, or override flags: mph-recomp --supersampling 4."
+          - "Run scripts/install-host-launchers.sh to refresh the menu. Revert: -e dg_mph_revert=true."

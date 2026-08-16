@@ -1,0 +1,43 @@
+#!/usr/bin/env sh
+# Metroid Prime Hunters Recomp (ndsrecomp) launcher — native SDL + OpenGL 4.3.
+set -eu
+
+appimage="{{ dg_mph_appimage }}"
+rom="{{ dg_mph_rom }}"
+
+if [ ! -x "$appimage" ]; then
+  printf '%s\n' "ERROR: MPH Recomp is not installed ($appimage)." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-mph-recomp.yml" >&2
+  exit 1
+fi
+if [ ! -f "$rom" ]; then
+  printf '%s\n' "ERROR: Metroid Prime Hunters USA rev-0 ROM missing:" >&2
+  printf '%s\n' "  $rom" >&2
+  printf '%s\n' "The recomp needs the USA rev-0 dump (AMHE); Rev 1 / Pt-Br are rejected." >&2
+  exit 1
+fi
+
+# Pin the RTX on this dual-GPU box. The renderer is OpenGL 4.3 compute (GLX),
+# so the PRIME/GLX vendor pin is what matters; also pin the Vulkan ICD
+# defensively in case a build flips the backend.
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/nvidia_icd.json
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+# All games open on the main landscape 4K monitor (DP-1).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b"/dispatch focusmonitor DP-1"); s.recv(64); s.close()
+PY
+
+# The runner writes its generated firmware / save / config beside the AppImage.
+cd "{{ dg_mph_install_dir }}"
+# Extra args ($@) win over the defaults, so `mph-recomp --supersampling 4` etc.
+# just works for one-off overrides.
+exec "$appimage" --rom "$rom" {{ dg_mph_flags | join(' ') }} "$@"
