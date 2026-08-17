@@ -115,7 +115,7 @@ modifiers` DRM errors → black screen. Native XWayland has none of this.
 **GPU is hard-pinned to the RTX 5090** so GL/Vulkan can never fall back
 to the iGPU: `__GLX_VENDOR_LIBRARY_NAME=nvidia` +
 `__NV_PRIME_RENDER_OFFLOAD=1` route Supermodel's OpenGL (GLX) to the
-NVIDIA driver (verified renderer `NVIDIA 610.43.03`), and the `VK_*`
+NVIDIA driver (verified renderer `NVIDIA 610.57.04`), and the `VK_*`
 vars keep any Vulkan off the iGPU. Supermodel is native (no wine), so the
 wrapper's EXIT trap tears down evsieve cleanly.
 
@@ -131,7 +131,7 @@ directly with `python3` (`dispatch focusmonitor`). Best-effort — a no-op
 off Hyprland.
 
 Verified 2026-07-29: Scud Race boots and renders fullscreen at 4K on
-DP-1 (GL 4.5 core profile, `NVIDIA 610.43.03`) via the ES-DE command
+DP-1 (GL 4.5 core profile, `NVIDIA 610.57.04`) via the ES-DE command
 path, including the worst case of launching while the portrait DP-2 held
 focus (the wrapper self-corrects to DP-1).
 

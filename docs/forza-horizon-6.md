@@ -1,17 +1,24 @@
-# Forza Horizon 6 (Steam) — waiting on NVIDIA 610.57.04
+# Forza Horizon 6 (Steam)
 
-**Status (2026-08-13): configured, but BLOCKED on an NVIDIA driver bug.**
-FH6 is set up and *almost* runs; it's held back entirely by a host GPU-driver
-bug that is already fixed upstream but not yet in Arch stable. **Plan: wait for
-the driver update** — no further game-side config will help.
+**Status (2026-08-17): UNBLOCKED — the driver landed.** The host + box are now on
+**NVIDIA 610.57.04** (`nvidia-smi` confirms it live), the release that fixes the
+FH6 GPU hang. FH6 should run normally now; ray tracing is a separate question
+(retest cautiously — see below).
 
 Steam appid **2483190**. No anti-cheat, ProtonDB Gold. It's a **D3D12/VKD3D**
 title → native Vulkan on the RTX 5090 (no DXVK). Manually installed via Steam
-(not Ansible-managed); this doc is the record of the working config + blocker.
+(not Ansible-managed); this doc is the record of the working config + the
+now-resolved driver blocker.
 
-## The blocker — NVIDIA driver bug (host)
+> **Before launching:** you likely just updated box packages — run
+> `distrobox stop gaming`, then relaunch Steam. Proton games hang at the splash
+> when run against half-updated libs after a `yay -Syu`. The 610.57.04 bump also
+> required refreshing the box's 32-bit nvidia set (`dg_nvidia_lib32`
+> 610.43.03→610.57.04, handled by the bootstrap role).
 
-On host driver **610.43.03**, FH6 hangs the GPU under the VKD3D-Proton
+## The blocker (RESOLVED) — NVIDIA driver bug (host)
+
+On host driver **610.43.03**, FH6 hung the GPU under the VKD3D-Proton
 **`descriptor_heap`** path. Symptom progression as we chased it:
 
 | Proton | Result |
@@ -28,11 +35,12 @@ So the black world, the FHC20 crash, and everything in between are one driver
 bug — **not** launch flags, graphics settings, Proton choice, Reflex/NVAPI, or
 ray tracing (all ruled out by testing).
 
-**To unblock:** update the host to **≥ 610.57.04**, reboot, launch FH6.
-- 610.57.04 was not yet in the Arch repos (host on `nvidia-open-dkms 610.43.03-3`,
-  `checkupdates` empty). Wait for it to land, then `omarchy update` (pacman `-Syu`)
-  + **reboot**. An AUR beta is the impatient path but a host driver swap
-  (DKMS + reboot) risks the display — not worth it when the stable pkg is days out.
+**Unblocked (2026-08-17):** 610.57.04 landed in Arch stable; host is on
+`nvidia-open-dkms 610.57.04-1` / `nvidia-utils 610.57.04-1`, driver `610.57.04`
+live per `nvidia-smi`. The box's 32-bit nvidia set was refreshed to match
+(`lib32-nvidia-utils 610.57.04`, `/usr/lib32` repaired + stale 610.43.03 pruned)
+via the bootstrap role. Just `distrobox stop gaming` before launching so Proton
+isn't running against pre-update libs.
 
 ## The working config (ready for when the driver lands)
 
@@ -42,9 +50,14 @@ ray tracing (all ruled out by testing).
 - **Launch options:** `PULSE_LATENCY_MSEC=60 gamescope -W 3840 -H 2160 -f -- env VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/nvidia_icd.json %command%`
   (gamescope 4K + RTX 5090 nvidia ICD pin; no DXVK, no VKD3D_CONFIG override,
   NVAPI/Reflex removed — none of those were the issue).
-- **⚠️ Leave ray tracing OFF** regardless — the VKD3D DXR path is separately
-  broken and black-screens (see the memory note); it corrupts state into a
-  splash-hang loop.
+- **Ray tracing — retest cautiously.** RT was a *separate* failure from the
+  descriptor-heap hang (the VKD3D DXR path black-screened on 610.43.x). 610.57.04
+  may or may not have fixed it too, so try it deliberately: enable it, and if the
+  world black-screens, turn it back off. **Gotcha:** a bad RT setting
+  (`RTReflectionQuality` / `RTGIQuality`) *persists* and then hangs the game at
+  the splash every relaunch. If that happens, clear the RT keys in the config
+  (`compatdata/2483190/pfx/.../ForzaHorizon6/LocalStorage_Shared/ForzaUserConfigSelections/UserConfigSelections`)
+  before relaunching. Same caution applies to DLSS Frame-Gen.
 
 ## Custom Proton management (relevant here)
 
