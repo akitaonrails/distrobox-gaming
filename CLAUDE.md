@@ -9,6 +9,7 @@ Ansible playbooks for reproducibly creating and configuring an Arch-based distro
 Beyond the core emulators, a large set of **opt-in** roles (all `never`-tagged in `site.yml`, or run via a standalone `install-*.yml` playbook) install:
 
 - **Sega arcade** (see `docs/sega-arcade.md`): Model 1 via the Wanszai Virtua Racing / Virtua Fighter Wine frontends (`install_model1`), Model 2 via ElSemi's Model 2 Emulator (`install_m2emulator`) and the Wanszai Sega Rally HD wrapper (`install_sega_rally`).
+- **Namco arcade**: Wanszai Ridge Racer Collection (System 22: Ridge Racer, RR2, Rave Racer) via a D3D11/DXVK Wine wrapper (`install_ridge_racer`, see `docs/ridge-racer.md`).
 - **Xbox 360**: Wine-managed Xenia Manager (`install-xenia.yml`).
 - **Native recomp / decomp ports**: Ship of Harkinian (OoT), 2Ship2Harkinian (Majora's Mask), Starship (Star Fox 64), Render96ex (SM64), SpaghettiKart (MK64), Sonic P-06, Unleashed Recomp, and PrBoom-Plus Doom II RT.
 - **Windows/Wine games** (see `docs/external-installers.md`): Colin McRae Rally 04/2/3 + DiRT, OutRun 2006, Sega Rally 2 / Revo, Richard Burns Rally + RallySimFans (`docs/richard-burns-rally.md`), GT5 Master Mod, Dusk, FFVII 7th Heaven, Metal Gear Master Collection fixes, and the shared `install_pc_racing` pipeline.

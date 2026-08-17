@@ -1,0 +1,56 @@
+---
+# Ridge Racer Collection — Wanszai PC wrapper (Namco System 22: Ridge Racer,
+# Ridge Racer 2, Rave Racer), run under Wine in the box. Same shape as the
+# Sega Rally / Model 1 Wanszai setups (install_sega_rally): a pinned GitHub
+# release, extracted immutably and rsynced into a work dir that preserves the
+# app's generated state, with the owned MAME ROMs linked in. Ships no ROMs.
+#
+# RRC.exe is native Win64 and renders through **D3D11** → DXVK/Vulkan on the RTX.
+dg_ridge_racer_root: "{{ dg_box_home }}/tools/ridge-racer"
+dg_ridge_racer_cache_dir: "{{ dg_ridge_racer_root }}/cache"
+
+# ROM source: the consolidated Wanszai romset staged under
+# ROMS_FINAL/PC/wanszai/ridge-racer/roms/. RRC's own help text (and MAME 0.150)
+# want these exact filenames in its roms/ folder next to RRC.exe:
+#   ridgerac.zip, ridgeracb.zip (split sets), ridgera2.zip, raverace.zip,
+#   namcoc71.zip, namcoc74.zip (the C71/C74 MCU BIOS as MAME device zips —
+#   built from c71.bin/c74.bin, which live inside the game sets).
+dg_ridge_racer_rom_source_dir: "{{ dg_roms_final_root }}/PC/wanszai/ridge-racer/roms"
+dg_ridge_racer_required_roms:
+  - ridgerac.zip
+  - ridgeracb.zip
+  - ridgera2.zip
+  - raverace.zip
+  - namcoc71.zip
+  - namcoc74.zip
+
+dg_ridge_racer_winearch: win64
+# Same WineBus policy as the pc-racing / Sega Rally prefixes: single clean
+# SDL-backed pad, no duplicate hidraw/evdev enumeration.
+dg_ridge_racer_winebus_registry:
+  - { name: DisableHidraw, value: 1 }
+  - { name: DisableInput, value: 1 }
+  - { name: Enable SDL, value: 1 }
+  - { name: Map Controllers, value: 1 }
+
+# Pinned Wanszai PC release. 1.1.0 ships PC / X360 / XSX variants; we use PC.
+dg_ridge_racer_version: "1.1.0"
+dg_ridge_racer_url: "https://github.com/wanszai/Ridge-Racer-Collection/releases/download/{{ dg_ridge_racer_version }}/RidgeRacerCollectionPC_{{ dg_ridge_racer_version }}.zip"
+dg_ridge_racer_archive: "{{ dg_ridge_racer_cache_dir }}/RidgeRacerCollectionPC_{{ dg_ridge_racer_version }}.zip"
+dg_ridge_racer_checksum: "sha256:0c120e8bc66853433285ff1184fd3d2cf93650827d167939709e669109d269d8"
+dg_ridge_racer_release_dir: "{{ dg_ridge_racer_root }}/releases/ridge-racer-{{ dg_ridge_racer_version }}"
+# The archive's top-level folder is literally "Ridge Racer Collection".
+dg_ridge_racer_release_subdir: "Ridge Racer Collection"
+dg_ridge_racer_work_dir: "{{ dg_ridge_racer_root }}/ridge-racer"
+dg_ridge_racer_exe: RRC.exe
+dg_ridge_racer_prefix: "{{ dg_box_home }}/wineprefixes/ridge-racer-wanszai"
+
+# D3D11 renderer → DXVK; pin the NVIDIA Vulkan ICD in the launcher so DXVK can't
+# land on the AMD iGPU (black screen on this dual-GPU box).
+dg_ridge_racer_nvidia_icd: /usr/share/vulkan/icd.d/nvidia_icd.json
+
+# Runtime the wrapper needs (present on a fully-set-up box; kept here so the
+# role is self-contained / opt-in).
+dg_ridge_racer_packages: [wine, winetricks, sdl2]
+dg_ridge_racer_aur_packages: [evsieve]
+dg_ridge_racer_winetricks: [vcrun2022, dxvk]

@@ -1,0 +1,80 @@
+#!/usr/bin/env sh
+set -eu
+
+# Ridge Racer Collection (Wanszai PC wrapper) launcher. Runs RRC.exe under Wine
+# with the shared pad policy and a Select+Start exit chord. D3D11 renderer →
+# DXVK/Vulkan, pinned to the RTX. Managed by install_ridge_racer.
+#
+# Usage:
+#   ridge-racer-launch          # launch
+#   ridge-racer-launch status   # print install / ROM / pad status
+
+work_dir="{{ dg_ridge_racer_work_dir }}"
+prefix="{{ dg_ridge_racer_prefix }}"
+exe="{{ dg_ridge_racer_exe }}"
+rom_dir="{{ dg_ridge_racer_rom_source_dir }}"
+
+common_env() {
+  export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+  export SDL_JOYSTICK_HIDAPI="${SDL_JOYSTICK_HIDAPI:-{{ dg_pc_racing_sdl_hidapi }}}"
+  export SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT="${SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT:-{{ dg_pc_racing_gamepad_only }}}"
+  # D3D11 → DXVK/Vulkan: pin the NVIDIA-only ICD so DXVK cannot pick the AMD
+  # iGPU (= black screen on this dual-GPU box).
+  export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-{{ dg_ridge_racer_nvidia_icd }}}"
+  export __NV_PRIME_RENDER_OFFLOAD=1
+  export __GLX_VENDOR_LIBRARY_NAME=nvidia
+}
+
+run_game() {
+  common_env
+  export WINEPREFIX="$prefix" WINEARCH={{ dg_ridge_racer_winearch }} WINEDEBUG="${WINEDEBUG:--all}"
+  cd "$work_dir"
+  env -u PYTHONHOME -u PYTHONPATH wine "$exe"
+}
+
+run_with_exit_chord() {
+  evsieve_pid=""
+  if command -v evsieve >/dev/null 2>&1 && [ -w /dev/uinput ]; then
+    pad_inputs=""
+    for l in /dev/input/by-id/*8BitDo*Ultimate*event-joystick \
+             /dev/input/by-id/*Xbox*event-joystick \
+             /dev/input/by-id/*XBOX*event-joystick; do
+      [ -e "$l" ] && pad_inputs="$pad_inputs --input $(readlink -f "$l")"
+    done
+    if [ -n "$pad_inputs" ]; then
+      # shellcheck disable=SC2086
+      evsieve $pad_inputs --hook btn:select btn:start send-key=key:leftalt send-key=key:f4 \
+        --output name="ridge-racer-exit-keys" key:leftalt key:f4 >/dev/null 2>&1 &
+      evsieve_pid=$!
+    fi
+  fi
+  cleanup() {
+    [ -n "$evsieve_pid" ] && kill "$evsieve_pid" 2>/dev/null || true
+    WINEPREFIX="$prefix" env -u PYTHONHOME -u PYTHONPATH wineserver -k >/dev/null 2>&1 || true
+  }
+  trap cleanup EXIT HUP INT TERM
+  set +e
+  run_game
+  status=$?
+  set -e
+  trap - EXIT HUP INT TERM
+  cleanup
+  return "$status"
+}
+
+status() {
+  printf '%s\n' 'Ridge Racer Collection (Wanszai) status'
+  [ -f "{{ dg_ridge_racer_archive }}" ] && sha256sum "{{ dg_ridge_racer_archive }}" || printf 'archive missing\n'
+  [ -f "$work_dir/$exe" ] && printf 'exe present: %s\n' "$work_dir/$exe" || printf 'exe MISSING: %s\n' "$work_dir/$exe"
+  printf 'roms (source %s):\n' "$rom_dir"
+  for r in {{ dg_ridge_racer_required_roms | join(' ') }}; do
+    if [ -L "$work_dir/roms/$r" ] && [ -e "$work_dir/roms/$r" ]; then printf '  ok   %s\n' "$r"; else printf '  MISS %s\n' "$r"; fi
+  done
+  [ -f "$prefix/system.reg" ] && printf 'prefix ready: %s\n' "$prefix" || printf 'prefix MISSING\n'
+  ls /dev/input/js* 2>/dev/null || printf '%s\n' 'no /dev/input/js controller visible (wake the pad before launching)'
+}
+
+case "${1:-}" in
+  status) status; exit 0 ;;
+  *) run_with_exit_chord; exit $? ;;
+esac

@@ -1,0 +1,176 @@
+---
+# Ridge Racer Collection (Wanszai PC wrapper). Mirrors install_sega_rally
+# (single Wine backend) but links a multi-ROM set and adds DXVK for the D3D11
+# renderer. See group_vars/all/ridge_racer.yml and docs/sega-arcade.md.
+
+- name: Create Ridge Racer persistent directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_ridge_racer_root }}"
+    - "{{ dg_ridge_racer_cache_dir }}"
+    - "{{ dg_ridge_racer_root }}/releases"
+    - "{{ dg_ridge_racer_prefix }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Check which required Ridge Racer ROMs are present
+  ansible.builtin.stat:
+    path: "{{ dg_ridge_racer_rom_source_dir }}/{{ item }}"
+  register: _ridge_racer_rom_stats
+  loop: "{{ dg_ridge_racer_required_roms }}"
+
+- name: Warn about any missing Ridge Racer ROMs
+  ansible.builtin.debug:
+    msg: >-
+      Missing Ridge Racer ROM(s) in {{ dg_ridge_racer_rom_source_dir }}:
+      {{ _ridge_racer_rom_stats.results | rejectattr('stat.exists') | map(attribute='item') | list | join(', ') }}.
+      RRC.exe boots to its ROM-check screen and reports the exact set;
+      supply the MAME 0.150 zips (namcoc71/74 are the C71/C74 MCU BIOS).
+  when: _ridge_racer_rom_stats.results | rejectattr('stat.exists') | list | length > 0
+
+- name: Install Ridge Racer runtime packages inside box
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sudo pacman -S --needed --noconfirm
+    {{ dg_ridge_racer_packages | join(' ') }}
+  register: _ridge_racer_pacman
+  changed_when: "'installing' in _ridge_racer_pacman.stdout"
+
+- name: Install Ridge Racer AUR runtime packages inside box
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} yay -S --needed --noconfirm
+    --answerclean None --answerdiff None
+    {{ dg_ridge_racer_aur_packages | join(' ') }}
+  register: _ridge_racer_yay
+  changed_when: "'installing' in _ridge_racer_yay.stdout"
+  failed_when: false
+
+- name: Download pinned Ridge Racer PC release
+  ansible.builtin.get_url:
+    url: "{{ dg_ridge_racer_url }}"
+    dest: "{{ dg_ridge_racer_archive }}"
+    checksum: "{{ dg_ridge_racer_checksum }}"
+    mode: "0644"
+  when: not ansible_check_mode
+
+- name: Create immutable Ridge Racer release directory
+  ansible.builtin.file:
+    path: "{{ dg_ridge_racer_release_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Extract immutable Ridge Racer release
+  ansible.builtin.unarchive:
+    src: "{{ dg_ridge_racer_archive }}"
+    dest: "{{ dg_ridge_racer_release_dir }}"
+    remote_src: true
+    creates: "{{ dg_ridge_racer_release_dir }}/{{ dg_ridge_racer_release_subdir }}/{{ dg_ridge_racer_exe }}"
+  when: not ansible_check_mode
+
+- name: Refresh Wanszai application files while preserving generated state
+  # A new pinned release replaces the exe/assets, but nvram, settings and any
+  # user soundtrack are written at runtime and must never be overwritten.
+  ansible.builtin.shell: >-
+    rsync -a --itemize-changes
+    --exclude=roms/ --exclude=nvram/ --exclude=soundtrack/
+    --exclude='settings.ini' --exclude='*.cfg' --exclude='*.sav'
+    '{{ dg_ridge_racer_release_dir }}/{{ dg_ridge_racer_release_subdir }}/'
+    '{{ dg_ridge_racer_work_dir }}/'
+    && touch '{{ dg_ridge_racer_work_dir }}/.dg-release-{{ dg_ridge_racer_version }}'
+  args:
+    creates: "{{ dg_ridge_racer_work_dir }}/.dg-release-{{ dg_ridge_racer_version }}"
+  when: not ansible_check_mode
+
+- name: Create wrapper-local ROM, soundtrack and nvram directories
+  ansible.builtin.file:
+    path: "{{ dg_ridge_racer_work_dir }}/{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - roms
+    - soundtrack
+    - nvram
+
+- name: Link the Ridge Racer ROM set into the wrapper roms directory
+  # Symlink, never copy — the consolidated wanszai archive stays the single
+  # source of truth. Only link ROMs that actually exist.
+  ansible.builtin.file:
+    src: "{{ dg_ridge_racer_rom_source_dir }}/{{ item.item }}"
+    dest: "{{ dg_ridge_racer_work_dir }}/roms/{{ item.item }}"
+    state: link
+    force: true
+    follow: false
+  loop: "{{ _ridge_racer_rom_stats.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+  when: item.stat.exists
+
+- name: Initialize Ridge Racer Wine prefix
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc 'export WINEPREFIX="{{ dg_ridge_racer_prefix }}" WINEARCH="{{ dg_ridge_racer_winearch }}" WINEDEBUG=-all; env -u PYTHONHOME -u PYTHONPATH wineboot -u'
+  args:
+    creates: "{{ dg_ridge_racer_prefix }}/system.reg"
+
+- name: Force the GLX OpenGL backend (wine 11 EGL regression)
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      export WINEPREFIX="{{ dg_ridge_racer_prefix }}"
+      export WINEARCH="{{ dg_ridge_racer_winearch }}"
+      export WINEDEBUG=-all
+      key="HKCU\\Software\\Wine\\X11 Driver"
+      if env -u PYTHONHOME -u PYTHONPATH wine reg query "$key" /v UseEGL 2>/dev/null | grep -Eiq "REG_SZ[[:space:]]+N[[:space:]]*$"; then
+        exit 0
+      fi
+      env -u PYTHONHOME -u PYTHONPATH wine reg add "$key" /v UseEGL /t REG_SZ /d N /f
+      printf "%s\n" "forced-glx"
+    '
+  register: _ridge_racer_force_glx
+  changed_when: "'forced-glx' in _ridge_racer_force_glx.stdout"
+  when: dg_wine_force_glx | default(true)
+
+- name: Install Ridge Racer winetricks components (vcrun + DXVK for D3D11)
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc 'export WINEPREFIX="{{ dg_ridge_racer_prefix }}" WINEARCH="{{ dg_ridge_racer_winearch }}" WINEDEBUG=-all; timeout 300 env -u PYTHONHOME -u PYTHONPATH winetricks -q {{ item }}; touch "{{ dg_ridge_racer_prefix }}/.dg-winetricks-{{ item }}"'
+  args:
+    creates: "{{ dg_ridge_racer_prefix }}/.dg-winetricks-{{ item }}"
+  loop: "{{ dg_ridge_racer_winetricks }}"
+
+- name: Configure Ridge Racer WineBus controller policy
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc 'export WINEPREFIX="{{ dg_ridge_racer_prefix }}" WINEARCH="{{ dg_ridge_racer_winearch }}"; wine reg add "HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\winebus" /v "{{ item.name }}" /t REG_DWORD /d "{{ item.value }}" /f'
+  changed_when: false
+  loop: "{{ dg_ridge_racer_winebus_registry }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Deploy Ridge Racer launcher
+  ansible.builtin.template:
+    src: ridge-racer-launch.sh.j2
+    dest: "{{ dg_box_home }}/bin/ridge-racer-launch"
+    mode: "0755"
+
+- name: Render Ridge Racer desktop entry
+  ansible.builtin.template:
+    src: ridge-racer.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/ridge-racer.desktop"
+    mode: "0644"
+
+- name: Install rendered Ridge Racer desktop file into host applications dir
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _ridge_racer_host_launchers
+  changed_when: >-
+    'installed ' in _ridge_racer_host_launchers.stdout or
+    'removed stale ' in _ridge_racer_host_launchers.stdout
+
+- name: Report Ridge Racer setup
+  ansible.builtin.debug:
+    msg: >-
+      Ridge Racer Collection (Wanszai) ready: {{ dg_box_home }}/bin/ridge-racer-launch status.
+      Launch via the "Ridge Racer Collection" desktop entry. First boot runs a
+      ROM check — if a set is flagged, fix it in {{ dg_ridge_racer_rom_source_dir }}.
