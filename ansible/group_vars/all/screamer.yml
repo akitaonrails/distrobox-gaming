@@ -86,7 +86,7 @@ dg_screamer_games:
     machine: svga_s3
     cputype: pentium_mmx
     # A 1997 Pentium game doing 640x480 16-bit software rendering. 60000 (~486)
-    # was too slow; `max` ran it too fast. 120000 (double) is the sweet spot.
-    # Tune live in game with Ctrl+F11 (slower) / Ctrl+F12 (faster).
-    play_cycles: "120000"
+    # too slow; `max` too fast; 120000 (double) slightly slow. 200000 sits
+    # between double and max. Tune live with Ctrl+F11 (slower) / Ctrl+F12 (faster).
+    play_cycles: "200000"
     setup_cycles: "20000"                      # SETUP still crashes at high cycles
