@@ -91,3 +91,26 @@ entry so a rebuild handles them:
 Launcher path confirmed after install:
 `C:\Richard Burns Rally\rsf_launcher\RSF_Launcher.exe` (`launch_exe` +
 `installed_path` in the entry point there).
+
+## Stopping it cleanly
+
+The RSF launcher **relaunches itself after the game exits** (launch game →
+RichardBurnsRally.exe `DirectX9` window → quit → launcher returns). So a plain
+window-close (Hyprland `Super+W`) on the game or launcher can appear to *hang*,
+and killing the wineserver alone just lets the launcher respawn. Kill the
+**wrapper parent first**, then the prefix's wineserver:
+
+```sh
+# 1. stop the launch wrapper so nothing respawns
+pkill -f '/bin/richard-burns-rally'
+# 2. take down the prefix's Wine session (launcher + game + services.exe)
+distrobox-enter -n gaming -- \
+  env WINEPREFIX=/mnt/data/distrobox/gaming/wineprefixes/pc-racing/richard-burns-rally \
+  wineserver -k
+```
+
+Note: `wineserver -k` doesn't always take down the prefix's `services.exe` /
+`winedevice.exe`; if a dead `Richard Burns Rally - DirectX9` window frame
+lingers (an orphaned XWayland surface held by a leftover wine process or an
+unreaped zombie), kill those PIDs directly — verify each with
+`grep WINEPREFIX /proc/<pid>/environ` first — or just restart the box.
