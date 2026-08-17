@@ -23,7 +23,9 @@ cd_image="$cdrive/{{ item.cd_image }}"
 {% endif %}
 
 play_exe="{{ item.play_exe }}"
-svga_exe="$(printf '%s' "$play_exe" | sed 's/STARTL/STARTH/')"
+# svga mode = the high-res sibling: swap the trailing ...L.EXE for ...H.EXE
+# (STARTL->STARTH, START65L->START65H).
+svga_exe="$(printf '%s' "$play_exe" | sed 's/L\.EXE/H.EXE/I')"
 
 mode="${1:-play}"
 boot="c"
