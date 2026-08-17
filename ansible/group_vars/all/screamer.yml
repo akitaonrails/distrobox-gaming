@@ -85,5 +85,8 @@ dg_screamer_games:
     setup_exe: "SR\\SETUP.EXE"
     machine: svga_s3
     cputype: pentium_mmx
-    play_cycles: "60000"
-    setup_cycles: "20000"
+    # A 1997 Pentium game doing 640x480 16-bit software rendering — 60000 cycles
+    # (~486) starved it. `max` lets dosbox use the full host CPU. Tune live in
+    # game with Ctrl+F11 (slower) / Ctrl+F12 (faster) if it ever runs too fast.
+    play_cycles: "max"
+    setup_cycles: "20000"                      # SETUP still crashes at high cycles
