@@ -52,6 +52,28 @@ To re-bind: launch a game, **Ctrl+F1** opens the mapper — click an emulated ke
 
 `SETUP.EXE` (`<launcher> setup`) remains for sound/graphics tweaks.
 
+## Screamer Rally (CD-rip, needs a one-time install)
+
+Screamer Rally (1997) isn't a GOG installer — it's a DOS **CD image** rip
+(`Screamer-Rally_DOS_EN_ISO-Version.zip`, a CloneCD `.img` the role converts to a
+plain ISO). It installs to a virtual HDD and then plays with the CD mounted, so
+the bundled Windows NoCD patcher isn't needed (the CD is always mounted).
+
+```sh
+# 1. one-time interactive DOS install (a text menu appears):
+distrobox-enter -n gaming -- {{ box_home }}/bin/screamer-rally-launch install
+#    → Source drive: D    Destination drive: C    Directory: \SR (default)
+#    → it then runs SETUP for controls; finish and it drops to DOS/exits.
+# 2. play:
+distrobox-enter -n gaming -- {{ box_home }}/bin/screamer-rally-launch       # VGA
+distrobox-enter -n gaming -- {{ box_home }}/bin/screamer-rally-launch setup # controls
+```
+
+The launcher mounts the HDD as C: and the ISO as D: for every mode. `play_exe`
+defaults to `C:\SR\STARTL.EXE`; if the installer nests the exe differently, fix
+`play_exe` for the `screamer-rally` entry in `group_vars/all/screamer.yml`. The
+committed pad mapperfile applies here too (arrow-key steering).
+
 ## Known quirks (baked into the launchers)
 
 - **SVGA mode hard-crashes** on every platform (PCGamingWiki) → the default

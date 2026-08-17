@@ -65,3 +65,21 @@ dg_screamer_games:
     cputype: pentium_mmx
     play_cycles: "75000"
     setup_cycles: "20000"
+
+  # Screamer Rally (1997) — not a GOG installer but a DOS **CD** image rip. The
+  # CD stays mounted at every launch, so the NoCD patcher in the source dir is
+  # not needed. Install is interactive (run `<launcher> install` once): pick
+  # source drive D, destination C, default dir \SR; it then runs SETUP.
+  - slug: screamer-rally
+    name: "Screamer Rally"
+    iso_flavor: true
+    source_zip: "Screamer-Rally_DOS_EN_ISO-Version.zip"
+    iso_rel: "Screamer_Rally_ISO/srally.iso"   # relative to games/<slug>/ (converted from the CloneCD .img)
+    hdd_subdir: hdd                            # mounted as C:; the installer writes C:\SR here
+    install_bat: "INSTALL.BAT"                 # on the CD (D:)
+    play_exe: "SR\\STARTL.EXE"                 # C:\SR\STARTL.EXE after install (VGA); adjust if the installer nests it
+    setup_exe: "SR\\SETUP.EXE"
+    machine: svga_s3
+    cputype: pentium_mmx
+    play_cycles: "60000"
+    setup_cycles: "20000"

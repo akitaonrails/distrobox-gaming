@@ -47,14 +47,15 @@
   loop: "{{ dg_screamer_games }}"
   loop_control:
     label: "{{ item.name }}"
+  when: not (item.iso_flavor | default(false))
 
 - name: Fail if a Screamer installer is missing
   ansible.builtin.fail:
     msg: >-
       Missing GOG installer(s):
-      {{ _screamer_installer_stats.results | rejectattr('stat.exists') | map(attribute='item.installer') | list | join(', ') }}
+      {{ _screamer_installer_stats.results | selectattr('stat', 'defined') | rejectattr('stat.exists') | map(attribute='item.installer') | list | join(', ') }}
       under {{ dg_screamer_source_dir }}.
-  when: _screamer_installer_stats.results | rejectattr('stat.exists') | list | length > 0
+  when: _screamer_installer_stats.results | selectattr('stat', 'defined') | rejectattr('stat.exists') | list | length > 0
 
 - name: Extract the GOG DOS games with innoextract
   ansible.builtin.shell: >-
@@ -64,6 +65,53 @@
   args:
     creates: "{{ dg_screamer_games_dir }}/{{ item.slug }}/{{ (item.game_subdir | length > 0) | ternary(item.game_subdir ~ '/', '') }}{{ item.play_exe }}"
   loop: "{{ dg_screamer_games }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: not (item.iso_flavor | default(false))
+
+# --- CD-rip (ISO) games, e.g. Screamer Rally ---
+- name: Extract the CD-rip games (ISO set from the source zip)
+  ansible.builtin.unarchive:
+    src: "{{ dg_screamer_source_dir }}/{{ item.source_zip }}"
+    dest: "{{ dg_screamer_games_dir }}/{{ item.slug }}"
+    remote_src: true
+    creates: "{{ dg_screamer_games_dir }}/{{ item.slug }}/{{ item.iso_rel }}"
+  loop: "{{ dg_screamer_games | selectattr('iso_flavor', 'defined') | selectattr('iso_flavor') | list }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Convert the CloneCD image to a plain ISO and trim the raw files
+  # The rips ship as CloneCD .img (2352-byte sectors) which dosbox can't mount
+  # cleanly; convert to a 2048-byte ISO and drop the .img/.ccd/.sub/.cue.
+  ansible.builtin.shell: |
+    set -eu
+    iso="{{ dg_screamer_games_dir }}/{{ item.slug }}/{{ item.iso_rel }}"
+    dir="$(dirname "$iso")"
+    img="${iso%.iso}.img"
+    python3 - "$img" "$iso" <<'PY'
+    import sys
+    src, dst = sys.argv[1], sys.argv[2]
+    SEC, DATA, HDR = 2352, 2048, 16
+    with open(src, 'rb') as f, open(dst, 'wb') as o:
+        while True:
+            s = f.read(SEC)
+            if len(s) < SEC:
+                break
+            o.write(s[HDR:HDR + DATA])
+    PY
+    rm -f "$dir"/*.img "$dir"/*.ccd "$dir"/*.sub "$dir"/*.cue
+  args:
+    creates: "{{ dg_screamer_games_dir }}/{{ item.slug }}/{{ item.iso_rel }}"
+  loop: "{{ dg_screamer_games | selectattr('iso_flavor', 'defined') | selectattr('iso_flavor') | list }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Create HDD install directory for CD-rip games
+  ansible.builtin.file:
+    path: "{{ dg_screamer_games_dir }}/{{ item.slug }}/{{ item.hdd_subdir }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ dg_screamer_games | selectattr('iso_flavor', 'defined') | selectattr('iso_flavor') | list }}"
   loop_control:
     label: "{{ item.name }}"
 
