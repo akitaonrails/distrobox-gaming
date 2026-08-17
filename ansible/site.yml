@@ -69,6 +69,7 @@
     - { role: steam_lib32_nvidia,        tags: [steam_lib32_nvidia, never] }
     - { role: steam_trainers,            tags: [steam_trainers, never] }
     - { role: install_render96ex,        tags: [render96ex, never] }
+    - { role: install_sm64coopdx,        tags: [sm64coopdx, last_impact, never] }
     - { role: install_spaghettikart,     tags: [spaghettikart, never] }
     - { role: install_ship_of_harkinian, tags: [ship_of_harkinian, never] }
     - { role: install_2ship2harkinian,   tags: [two_ship2harkinian, never] }

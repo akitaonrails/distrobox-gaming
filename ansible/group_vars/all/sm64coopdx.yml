@@ -1,0 +1,42 @@
+---
+# sm64coopdx (Super Mario 64 Coop Deluxe) — prebuilt Linux binary — plus the
+# "Last Impact" romhack ported to Coop as a Lua mod. See docs/sm64coopdx.md.
+#
+# We ship Kaze Emanuar's SM64 Last Impact this way because the romhack's heavy
+# custom assembly crashes every N64 emulator on the box (see the parallel-n64
+# note); the Coop port re-implements it in the PC port's Lua API instead.
+dg_sm64coopdx_revert: false
+
+# --- Coop Deluxe prebuilt binary ---
+dg_sm64coopdx_version: v1.5.1
+dg_sm64coopdx_asset_name: sm64coopdx_Linux.zip
+dg_sm64coopdx_asset_url: "https://github.com/coop-deluxe/sm64coopdx/releases/download/{{ dg_sm64coopdx_version }}/{{ dg_sm64coopdx_asset_name }}"
+dg_sm64coopdx_asset_sha256: "4229f82fc4395e78faf192c910ffcfcc1d70f59a558cadf0f63ae548901fa5f5"
+
+dg_sm64coopdx_root: "{{ dg_box_home }}/tools/sm64coopdx"
+dg_sm64coopdx_install_dir: "{{ dg_sm64coopdx_root }}/current"
+dg_sm64coopdx_cache_dir: "{{ dg_sm64coopdx_root }}/cache"
+dg_sm64coopdx_exe: "{{ dg_sm64coopdx_install_dir }}/sm64coopdx"
+dg_sm64coopdx_bin: "{{ dg_box_home }}/bin/sm64coopdx"
+
+# Runtime libs the prebuilt binary links against (libdiscord ships in the zip,
+# found via its CWD-relative RUNPATH once the launcher cd's into the dir).
+dg_sm64coopdx_packages:
+  - sdl2
+  - libglvnd
+  - curl
+  - unzip
+
+# --- US SM64 baserom (shared source with Render96ex) ---
+# The port extracts assets from this on first launch. Placed next to the exe as
+# baserom.us.z64; n64_rom_prepare converts byte order and verifies the US SHA1.
+dg_sm64coopdx_rom_source: "{{ dg_rom_mid_root }}/n64/Super Mario 64 (USA).n64"
+dg_sm64coopdx_baserom_sha1: "9bef1128717f958171a4afac3ed78ee2bb4e86ce"
+dg_sm64coopdx_baserom: "{{ dg_sm64coopdx_install_dir }}/baserom.us.z64"
+
+# --- Last Impact Coop mod ---
+dg_sm64coopdx_li_version: v1.0.1
+dg_sm64coopdx_li_asset_name: last_impact_coop_v1.0.1.zip
+dg_sm64coopdx_li_url: "https://github.com/ManIsCat2/last-impact-port/releases/download/{{ dg_sm64coopdx_li_version }}/{{ dg_sm64coopdx_li_asset_name }}"
+dg_sm64coopdx_li_sha256: "25ad612c397a42b31609dc0f70d5e98b9e17b8df3bee06cc2dc4c66c1e6aa97a"
+dg_sm64coopdx_li_mod_dir: "{{ dg_sm64coopdx_install_dir }}/mods/last_impact_coop"
