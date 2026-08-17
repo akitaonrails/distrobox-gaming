@@ -10,7 +10,7 @@ Beyond the core emulators, a large set of **opt-in** roles (all `never`-tagged i
 
 - **Sega arcade** (see `docs/sega-arcade.md`): Model 1 via the Wanszai Virtua Racing / Virtua Fighter Wine frontends (`install_model1`), Model 2 via ElSemi's Model 2 Emulator (`install_m2emulator`) and the Wanszai Sega Rally HD wrapper (`install_sega_rally`).
 - **Xbox 360**: Wine-managed Xenia Manager (`install-xenia.yml`).
-- **Native recomp / decomp ports**: Ship of Harkinian (OoT), 2Ship2Harkinian (Majora's Mask), Starship (Star Fox 64), Render96ex (SM64), SpaghettiKart (MK64), Sonic P-06, Unleashed Recomp, PrBoom-Plus Doom II RT, and SM64 Coop Deluxe hosting Kaze's *Last Impact* romhack as a Lua mod (`install_sm64coopdx`, see `docs/sm64coopdx.md`).
+- **Native recomp / decomp ports**: Ship of Harkinian (OoT), 2Ship2Harkinian (Majora's Mask), Starship (Star Fox 64), Render96ex (SM64), SpaghettiKart (MK64), Sonic P-06, Unleashed Recomp, and PrBoom-Plus Doom II RT.
 - **Windows/Wine games** (see `docs/external-installers.md`): Colin McRae Rally 04/2/3 + DiRT, OutRun 2006, Sega Rally 2 / Revo, GT5 Master Mod, Dusk, FFVII 7th Heaven, Metal Gear Master Collection fixes, and the shared `install_pc_racing` pipeline.
 - **Content / tooling**: DLC installers, Switch/PCSX2/DuckStation per-game configs, RetroArch extras, HD texture packs, cheat/trainer tooling, SMM2 offline levels, and reproducible IPS romhack patches (`install_rom_patches`, see `docs/rom-patches.md`).
 

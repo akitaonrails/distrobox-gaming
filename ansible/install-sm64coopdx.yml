@@ -1,7 +1,0 @@
----
-- name: Install SM64 Coop Deluxe + Last Impact mod
-  hosts: localhost
-  connection: local
-  gather_facts: true
-  roles:
-    - install_sm64coopdx
