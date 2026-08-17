@@ -46,10 +46,18 @@ needs your display — run it from your own session, not headless:
 In the wizard:
 
 1. Language + install type (**Full**, or **Minimal** then add stages later — Full
-   is hundreds of GB).
+   is ~97 GB installed, and RSF pulls more on first launch).
 2. **Source folder** → `Z:\mnt\terachad\Emulators\ROMS_FINAL\PC\Richard Burns Rally\rsf_installer_files`
-3. **RSF destination** → `G:\richard-burns-rally` (maps to the pc-racing install
-   root; keep it out of Program Files / Users).
+3. **Destination** → accept the default **`C:\Richard Burns Rally`**. RSF hardcodes
+   that path into the registry + inis, so don't relocate it — `installed_path` in
+   the entry points there. `C:` is the prefix's `drive_c` on the local NVMe
+   (`/mnt/data`), the right place for a sim.
+
+**Expected mid-install crash (harmless):** around 1% the RSF installer launches
+Microsoft's `dxwebsetup`, which page-faults under Wine (`page fault on execute
+… 0x00000000` in `dxwsetup`). We already installed `d3dx9` into the prefix, so
+this DirectX step is redundant — **dismiss the Wine crash window and the RSF
+install continues** to completion.
 
 Then first launch:
 
@@ -62,6 +70,6 @@ Then first launch:
 - Controllers: wheels/pads come through native `dinput8`; the pc-racing
   gamepad allow-list already admits the 8BitDo + Xbox pads.
 
-> The launcher path in the entry (`rsf_launcher/RSF_Launcher.exe`) follows the
-> community layout; confirm it after install and fix `launch_exe` in
-> `group_vars/all/pc_racing.yml` if RSF lays out the folder differently.
+Launcher path confirmed after install:
+`C:\Richard Burns Rally\rsf_launcher\RSF_Launcher.exe` (`launch_exe` +
+`installed_path` in the entry point there).

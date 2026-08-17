@@ -1066,7 +1066,11 @@ dg_pc_racing_games:
     source_dir: "{{ dg_pc_racing_source_root }}/Richard Burns Rally"
     installer: "Rallysimfans_Installer.exe"
     launch_exe: "rsf_launcher/RSF_Launcher.exe"
-    installed_path: "{{ dg_pc_racing_install_root }}/richard-burns-rally"
+    # RSF installs to its hardcoded default C:\Richard Burns Rally (inside the
+    # prefix) and bakes that path into the registry + inis, so we point the
+    # launcher there rather than G:\ (moving it would break RSF). C: here is the
+    # local NVMe (/mnt/data), same disk as G: — nothing gained by relocating.
+    installed_path: "{{ dg_pc_racing_prefix_root }}/richard-burns-rally/drive_c/Richard Burns Rally"
     # DX9 game driven through DXVK/Vulkan. Pin the NVIDIA-only Vulkan ICD so
     # DXVK cannot land on the AMD iGPU (= black screen on this dual-GPU box),
     # and force the x11 SDL video driver (Wayland needs it for the .NET RSF
@@ -1095,6 +1099,10 @@ dg_pc_racing_games:
       RSF installer is a native-Win32 GUI wizard with no silent flags, so the
       install is interactive: run bin/install-richard-burns-rally, point the
       installer's Source folder at Z:\...\Richard Burns Rally\rsf_installer_files
-      and install to G:\richard-burns-rally. First launch of the RSF launcher
-      needs a free rallysimfans.hu account + internet (it downloads cars on
-      demand). See docs/richard-burns-rally.md.
+      and accept the default destination C:\Richard Burns Rally (RSF hardcodes
+      that path; installed_path above points there). Around 1% the RSF installer
+      launches Microsoft's dxwebsetup, which page-faults under Wine — this is
+      harmless (d3dx9 is already in the prefix); dismiss the crash window and the
+      install continues. First launch of the RSF launcher needs a free
+      rallysimfans.hu account + internet (it downloads cars on demand). See
+      docs/richard-burns-rally.md.
