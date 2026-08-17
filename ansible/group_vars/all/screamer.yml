@@ -29,6 +29,19 @@ dg_screamer_dosbox_bin: "{{ dg_screamer_dosbox_dir }}/dosbox"
 # box; listed for self-containment).
 dg_screamer_packages: [sdl2, libglvnd, opusfile, fluidsynth, libslirp]
 
+# Joystick emulation. Screamer's DOS-era code only understands a **2-axis**
+# analog stick (1 steering axis + 2 buttons); 4axis/auto make its SETUP.EXE fail
+# to detect a joystick. There is NO joystick menu in SETUP — the game auto-uses
+# the stick once dosbox presents a 2-axis game-port joystick. `timed=false` is
+# required for the axis reads to be stable. (GOG forum / PCGamingWiki.)
+dg_screamer_joysticktype: "2axis"
+
+# Persistent dosbox-staging pad bindings (mapper). dosbox-staging does not
+# auto-wire a modern GameController to the emulated joystick, so it's bound once
+# in the mapper (Ctrl+F1) and saved here; committing roles/install_screamer/
+# files/screamer.map makes it reproducible.
+dg_screamer_mapperfile: "{{ dg_screamer_root }}/screamer.map"
+
 dg_screamer_games:
   - slug: screamer
     name: "Screamer"

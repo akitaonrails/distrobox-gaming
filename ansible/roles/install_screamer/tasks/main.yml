@@ -67,6 +67,16 @@
   loop_control:
     label: "{{ item.name }}"
 
+- name: Deploy committed dosbox-staging pad bindings (if present)
+  # The mapper bindings are captured once in dosbox (Ctrl+F1 → Save) and then
+  # committed here so a rebuild restores the pad. Skipped until the file exists.
+  ansible.builtin.copy:
+    src: screamer.map
+    dest: "{{ dg_screamer_mapperfile }}"
+    mode: "0644"
+    force: false
+  when: lookup('ansible.builtin.fileglob', role_path ~ '/files/screamer.map') | length > 0
+
 - name: Deploy per-game Screamer launchers
   ansible.builtin.template:
     src: screamer-launch.sh.j2
@@ -100,4 +110,4 @@
   ansible.builtin.debug:
     msg:
       - "Screamer + Screamer 2 ready via dosbox-staging {{ dg_screamer_dosbox_version }}."
-      - "Play: bin/screamer-launch / bin/screamer2-launch (VGA). Configure controls: '<launcher> setup' (runs SETUP.EXE at low cycles). Pick Joystick in SETUP; a modern pad maps to the 4-axis joystick."
+      - "Play: bin/screamer-launch / bin/screamer2-launch (VGA). The pad drives a 2-axis game-port joystick automatically (no SETUP menu for it) — left stick steers, buttons = gas/brake. '<launcher> setup' runs SETUP.EXE (low cycles) for other tweaks."

@@ -30,20 +30,27 @@ distrobox-enter -n gaming -- {{ box_home }}/bin/screamer-launch svga   # SVGA (m
 The launcher generates a clean dosbox-staging config (absolute mount paths) with
 GOG's tuned settings and pins the RTX (GLX) + DP-1.
 
-## Gamepad (the main goal)
+## Gamepad
 
-Both games configure controls **only in a separate `SETUP.EXE`**, not in-game.
+dosbox-staging recognises a modern pad as an SDL *GameController* and does **not**
+auto-wire it to the emulated game-port joystick, so Screamer sees nothing by
+default — and Screamer has no joystick menu in SETUP. The fix is a
+**dosbox-staging mapperfile** that binds the pad to the arrow keys the game uses
+(the "map the gamepad to keyboard" route). It's captured once and committed, so
+it's reproducible and **shared by both games** (`dg_screamer_mapperfile`, one
+`screamer.map` for Screamer + Screamer 2).
 
-1. `screamer-launch setup` → in the DOS setup, choose **Joystick**.
-2. The launcher runs with **`joysticktype = 4axis`**, so a modern pad's analog
-   stick + triggers map onto the emulated joystick → analog steering. Buttons map
-   to the joystick buttons.
-3. **Keyboard-mapping fallback:** if the joystick feels off, open dosbox-staging's
-   mapper with **Ctrl+F1** and bind pad buttons/stick to the arrow keys the game
-   uses. (This is the "map the gamepad to keyboard" route.)
+Committed binding (`roles/install_screamer/files/screamer.map`) for the 8BitDo:
+left stick + d-pad → steer (←/→), A / right-trigger → accelerate (↑), B /
+left-trigger → brake (↓), Start → Enter, Select → Esc. The launcher also keeps
+`joysticktype = 2axis` + `timed = false` (the only type Screamer's DOS code
+understands), and the mapper's `jaxis_*` entries are bound too, so the emulated
+analog joystick works for anything that reads it.
 
-The 8BitDo/Xbox pads the box already exposes work as SDL controllers under
-dosbox-staging.
+To re-bind: launch a game, **Ctrl+F1** opens the mapper — click an emulated key,
+**Add**, press the pad input, then **Save**. Re-commit `screamer.map` afterwards.
+
+`SETUP.EXE` (`<launcher> setup`) remains for sound/graphics tweaks.
 
 ## Known quirks (baked into the launchers)
 

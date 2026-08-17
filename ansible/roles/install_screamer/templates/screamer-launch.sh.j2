@@ -50,6 +50,10 @@ cat > "$conf" <<EOF
 [sdl]
 fullscreen = true
 output     = opengl
+# Persistent, committed pad bindings. dosbox-staging does NOT auto-wire a modern
+# GameController to the emulated game-port joystick, so the pad is bound once in
+# the mapper (Ctrl+F1) and saved here. See docs/screamer.md.
+mapperfile = {{ dg_screamer_mapperfile }}
 [dosbox]
 machine = {{ item.machine }}
 [cpu]
@@ -59,7 +63,7 @@ cpu_cycles_protected = $cycles
 [sblaster]
 sbtype = sb16
 [joystick]
-joysticktype = 4axis
+joysticktype = {{ dg_screamer_joysticktype }}
 timed        = false
 [autoexec]
 @echo off
