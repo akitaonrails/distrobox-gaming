@@ -77,9 +77,11 @@ dg_screamer_games:
     iso_rel: "Screamer_Rally_ISO/srally.iso"   # relative to games/<slug>/ (converted from the CloneCD .img)
     hdd_subdir: hdd                            # mounted as C:; the installer writes C:\SR here
     install_bat: "INSTALL.BAT"                 # on the CD (D:)
-    # 65k-colour software mode (16-bit, nicer than VGA) — works in dosbox-staging.
-    # Do NOT pick 3Dfx in SETUP: dosbox-staging has no Glide, so STRT3FX crashes.
-    play_exe: "SR\\START65L.EXE"               # C:\SR\START65L.EXE after install
+    # 65k-colour HIGH-res software mode: VESA 640x480 16-bit, scales full-screen
+    # at 1:1 aspect (the low-res START65L squishes into a band at the top). Nicer
+    # than VGA and no 3Dfx. Do NOT pick 3Dfx in SETUP — dosbox-staging has no
+    # Glide, so STRT3FX crashes.
+    play_exe: "SR\\START65H.EXE"               # C:\SR\START65H.EXE after install
     setup_exe: "SR\\SETUP.EXE"
     machine: svga_s3
     cputype: pentium_mmx
