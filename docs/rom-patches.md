@@ -24,6 +24,7 @@ patch runs only when its output is missing or not the expected build.
 | **Final Fight ONE: Arcade Edition v3.0 (USA)** — restores the arcade roster/moves over the GBA port. | `Final Fight One (USA).gba` — No-Intro `17918e12…` (CRC `052c9997`). | `Final Fight One - Arcade Edition (USA) [v3.0].gba` (`e189ae8a…`) |
 | **F-Zero: Vintage Velocity I (EN v2.1)** — remakes the 15 SNES courses in the Maximum Velocity engine. | `F-Zero - Maximum Velocity (USA, Europe).gba` — `8a08e29e…` (CRC `bd5e9798`). | `F-Zero - Vintage Velocity I (v2.1).gba` (`40aab9df…`, expands to 8 MiB) |
 | **F-Zero: Vintage Velocity Ace (EN v3.0)** — F-Zero 99 course layouts + larger Mute City tracks. | same Maximum Velocity base (`8a08e29e…`). | `F-Zero - Vintage Velocity Ace (v3.0).gba` (`962f357d…`, expands to 8 MiB) |
+| **Super Metroid Redux (v1.5)** — large overhaul (map system, Project Base features, bugfixes). Main IPS only; the zip's optional add-on patches are not applied. | headerless No-Intro `Super Metroid (Japan, USA) (En,Ja).sfc` — `da957f0d…` (CRC `d63ed5f8`). | `Super Metroid Redux.sfc` (`0f4133f2…`, matches the author's prebuilt Redux ROM) |
 
 The archives also ship JP/Europe patch variants; only the International (EN/US)
 patches are committed, matching the box's dumps. The two F-Zero hacks are kept as

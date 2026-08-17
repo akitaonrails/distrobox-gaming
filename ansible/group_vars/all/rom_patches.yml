@@ -45,3 +45,15 @@ dg_rom_patches:
     ips: "vintage_velocity_ace_en_v3.0.ips"
     out: "{{ dg_rom_root }}/gba/F-Zero - Vintage Velocity Ace (v3.0).gba"
     out_sha1: "962f357de0237c54aba3acdd0bda70fe274314d6"
+
+  # Super Metroid Redux (v1.5) — large overhaul hack. Base is the headerless
+  # No-Intro Super Metroid (Japan, USA) (En,Ja) dump; kept as a separate ROM
+  # beside the vanilla original. Verified: output matches the author's prebuilt
+  # Redux ROM. (The main IPS only; the zip's optional add-on patches are not
+  # applied.)
+  - name: "Super Metroid Redux v1.5"
+    base: "{{ dg_rom_root }}/snes/Super Metroid (Japan, USA) (En,Ja).sfc"
+    base_sha1: "da957f0d63d14cb441d215462904c4fa8519c613"
+    ips: "super_metroid_redux.ips"
+    out: "{{ dg_rom_root }}/snes/Super Metroid Redux.sfc"
+    out_sha1: "0f4133f2e6bdd275b0ceec3e348e2d6bf1c8189e"
