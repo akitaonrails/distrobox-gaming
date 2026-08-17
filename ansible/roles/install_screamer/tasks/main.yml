@@ -1,0 +1,103 @@
+---
+# Screamer + Screamer 2 (GOG DOS) via dosbox-staging. See
+# group_vars/all/screamer.yml and docs/screamer.md.
+
+- name: Create Screamer directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_screamer_root }}"
+    - "{{ dg_screamer_games_dir }}"
+    - "{{ dg_screamer_dosbox_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Install Screamer runtime packages inside box
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sudo pacman -S --needed --noconfirm
+    {{ dg_screamer_packages | join(' ') }}
+  register: _screamer_pacman
+  changed_when: "'installing' in _screamer_pacman.stdout or 'upgrading' in _screamer_pacman.stdout"
+
+- name: Download the pinned dosbox-staging build
+  ansible.builtin.get_url:
+    url: "{{ dg_screamer_dosbox_url }}"
+    dest: "{{ dg_screamer_dosbox_archive }}"
+    checksum: "sha256:{{ dg_screamer_dosbox_sha256 }}"
+    mode: "0644"
+
+- name: Extract dosbox-staging
+  ansible.builtin.unarchive:
+    src: "{{ dg_screamer_dosbox_archive }}"
+    dest: "{{ dg_screamer_dosbox_dir }}"
+    remote_src: true
+    extra_opts: [--strip-components=1]
+    creates: "{{ dg_screamer_dosbox_bin }}"
+
+- name: Ensure dosbox-staging is executable
+  ansible.builtin.file:
+    path: "{{ dg_screamer_dosbox_bin }}"
+    mode: "0755"
+
+- name: Warn about any missing Screamer GOG installers
+  ansible.builtin.stat:
+    path: "{{ dg_screamer_source_dir }}/{{ item.installer }}"
+  register: _screamer_installer_stats
+  loop: "{{ dg_screamer_games }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Fail if a Screamer installer is missing
+  ansible.builtin.fail:
+    msg: >-
+      Missing GOG installer(s):
+      {{ _screamer_installer_stats.results | rejectattr('stat.exists') | map(attribute='item.installer') | list | join(', ') }}
+      under {{ dg_screamer_source_dir }}.
+  when: _screamer_installer_stats.results | rejectattr('stat.exists') | list | length > 0
+
+- name: Extract the GOG DOS games with innoextract
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} innoextract -s -d
+    '{{ dg_screamer_games_dir }}/{{ item.slug }}'
+    '{{ dg_screamer_source_dir }}/{{ item.installer }}'
+  args:
+    creates: "{{ dg_screamer_games_dir }}/{{ item.slug }}/{{ (item.game_subdir | length > 0) | ternary(item.game_subdir ~ '/', '') }}{{ item.play_exe }}"
+  loop: "{{ dg_screamer_games }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Deploy per-game Screamer launchers
+  ansible.builtin.template:
+    src: screamer-launch.sh.j2
+    dest: "{{ dg_box_home }}/bin/{{ item.slug }}-launch"
+    mode: "0755"
+  loop: "{{ dg_screamer_games }}"
+  loop_control:
+    label: "{{ item.slug }}"
+
+- name: Render Screamer desktop entries
+  ansible.builtin.template:
+    src: screamer.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/{{ item.slug }}.desktop"
+    mode: "0644"
+  loop: "{{ dg_screamer_games }}"
+  loop_control:
+    label: "{{ item.slug }}"
+
+- name: Install rendered Screamer desktop files into host applications dir
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _screamer_host_launchers
+  changed_when: >-
+    'installed ' in _screamer_host_launchers.stdout or
+    'removed stale ' in _screamer_host_launchers.stdout
+
+- name: Report Screamer setup
+  ansible.builtin.debug:
+    msg:
+      - "Screamer + Screamer 2 ready via dosbox-staging {{ dg_screamer_dosbox_version }}."
+      - "Play: bin/screamer-launch / bin/screamer2-launch (VGA). Configure controls: '<launcher> setup' (runs SETUP.EXE at low cycles). Pick Joystick in SETUP; a modern pad maps to the 4-axis joystick."

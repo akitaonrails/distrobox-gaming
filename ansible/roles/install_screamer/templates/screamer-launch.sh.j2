@@ -1,0 +1,76 @@
+#!/usr/bin/env sh
+set -eu
+
+# {{ item.name }} (GOG MS-DOS) via dosbox-staging. Managed by install_screamer.
+#
+# Usage:
+#   {{ item.slug }}-launch          play in VGA ({{ item.play_exe }})
+#   {{ item.slug }}-launch setup    configure controls (SETUP.EXE, low cycles —
+#                                    it crashes at high cycles)
+#   {{ item.slug }}-launch svga     SVGA mode (STARTH.EXE; may hard-crash, PCGW)
+
+dosbox="{{ dg_screamer_dosbox_bin }}"
+game_dir="{{ dg_screamer_games_dir }}/{{ item.slug }}{{ (item.game_subdir | length > 0) | ternary('/' ~ item.game_subdir, '') }}"
+cd_image="$game_dir/{{ item.cd_image }}"
+
+mode="${1:-play}"
+case "$mode" in
+  setup) exe="{{ item.setup_exe }}"; cycles="{{ item.setup_cycles }}" ;;
+  svga)  exe="STARTH.EXE";           cycles="{{ item.play_cycles }}" ;;
+  *)     exe="{{ item.play_exe }}";  cycles="{{ item.play_cycles }}" ;;
+esac
+
+if [ ! -x "$dosbox" ]; then
+  printf '%s\n' "ERROR: dosbox-staging missing ($dosbox). Run: ansible-playbook install-screamer.yml" >&2
+  exit 1
+fi
+
+# Pin the RTX (dosbox-staging renders OpenGL → GLX vendor pin); keep the pad live.
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+# Open on the main landscape 4K monitor (DP-1).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b"/dispatch focusmonitor DP-1"); s.recv(64); s.close()
+PY
+
+# GOG's launcher confs use relative mounts tied to their install layout; we
+# generate a clean one with absolute paths instead, keeping GOG's tuned CPU /
+# joystick / SB settings. Screamer runs in DOS4GW protected mode, so
+# cpu_cycles_protected is the cycle count that matters.
+conf="$(mktemp "/tmp/{{ item.slug }}-dosbox.XXXXXX.conf")"
+cat > "$conf" <<EOF
+[sdl]
+fullscreen = true
+output     = opengl
+[dosbox]
+machine = {{ item.machine }}
+[cpu]
+core                 = auto
+cputype              = {{ item.cputype }}
+cpu_cycles_protected = $cycles
+[sblaster]
+sbtype = sb16
+[joystick]
+joysticktype = 4axis
+timed        = false
+[autoexec]
+@echo off
+mount c "$game_dir"
+imgmount d "$cd_image" -t iso -fs iso
+c:
+$exe
+exit
+EOF
+
+"$dosbox" -conf "$conf"
+status=$?
+rm -f "$conf"
+exit "$status"

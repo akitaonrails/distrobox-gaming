@@ -1,0 +1,54 @@
+---
+# Screamer + Screamer 2 — GOG MS-DOS racing games, run under dosbox-staging in
+# the box. innoextract pulls the DOS files out of the GOG installers; a
+# self-contained dosbox-staging binary runs them (no Wine). See docs/screamer.md.
+#
+# Community-known quirks baked into the launchers (PCGamingWiki / GOG forum):
+#  - Controls are configured ONLY in a separate SETUP.EXE, which crashes at high
+#    cycles → the `setup` mode runs it at ~20000 cycles.
+#  - SVGA mode (STARTH.EXE) hard-crashes on every platform → default to VGA
+#    (STARTL.EXE). The SVGA exe is kept for the brave.
+#  - Gamepad: joysticktype=4axis maps a modern pad's sticks/triggers onto the
+#    emulated joystick; pick "Joystick" in SETUP. dosbox-staging's mapper
+#    (Ctrl+F1) can instead bind pad buttons to keyboard keys as a fallback.
+#  - Screamer 1's GOG installer is already 1.01 (v2), so the separate
+#    1.0->1.01 patch in the source dir is NOT needed.
+dg_screamer_root: "{{ dg_box_home }}/tools/screamer"
+dg_screamer_source_dir: "{{ dg_roms_final_root }}/PC/Screamer"
+dg_screamer_games_dir: "{{ dg_screamer_root }}/games"
+
+# Self-contained dosbox-staging (GOG ships staging configs; not in the box repos).
+dg_screamer_dosbox_version: v0.82.2
+dg_screamer_dosbox_url: "https://github.com/dosbox-staging/dosbox-staging/releases/download/{{ dg_screamer_dosbox_version }}/dosbox-staging-linux-x86_64-{{ dg_screamer_dosbox_version }}.tar.xz"
+dg_screamer_dosbox_archive: "{{ dg_screamer_root }}/dosbox-staging-{{ dg_screamer_dosbox_version }}.tar.xz"
+dg_screamer_dosbox_sha256: "bc229df72ea103b7865cdca67324772dbffa8e58866477e69a79638b723a0442"
+dg_screamer_dosbox_dir: "{{ dg_screamer_root }}/dosbox-staging"
+dg_screamer_dosbox_bin: "{{ dg_screamer_dosbox_dir }}/dosbox"
+
+# Runtime deps for the dynamically-linked dosbox-staging (present on a set-up
+# box; listed for self-containment).
+dg_screamer_packages: [sdl2, libglvnd, opusfile, fluidsynth, libslirp]
+
+dg_screamer_games:
+  - slug: screamer
+    name: "Screamer"
+    installer: "setup_screamer_1.01_gog_v2_(86677).exe"
+    game_subdir: ""            # game files land at the extraction root
+    cd_image: SCREAM.DAT
+    play_exe: STARTL.EXE       # VGA — STARTH.EXE (SVGA) hard-crashes
+    setup_exe: SETUP.EXE
+    machine: svga_s3
+    cputype: pentium_mmx
+    play_cycles: "60000"
+    setup_cycles: "20000"
+  - slug: screamer2
+    name: "Screamer 2"
+    installer: "setup_screamer2_2.0.0.1.exe"
+    game_subdir: "app"         # GOG puts Screamer 2's DOS files under app/
+    cd_image: GAME.DAT
+    play_exe: STARTL.EXE
+    setup_exe: SETUP.EXE
+    machine: svga_s3
+    cputype: pentium_mmx
+    play_cycles: "75000"
+    setup_cycles: "20000"

@@ -1,0 +1,7 @@
+---
+- name: Install Screamer + Screamer 2 (GOG DOS via dosbox-staging)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_screamer
