@@ -1059,3 +1059,42 @@ dg_pc_racing_games:
       - name: WINEDLLOVERRIDES
         value: "ddraw,d3dimm=n,b"
     notes: "Sibling of sega-rally-2 sharing the same install + Wine prefix. Launches SEGA RALLY 2.EXE (the original 1999 4:3 executable kept alongside AuToMaNiAk005's WIDESCREEN.exe in the 1.9.0 install). Use this when the widescreen launcher exits silently or you want classic aspect."
+
+  - slug: richard-burns-rally
+    name: "Richard Burns Rally (RSF)"
+    install_mode: installer
+    source_dir: "{{ dg_pc_racing_source_root }}/Richard Burns Rally"
+    installer: "Rallysimfans_Installer.exe"
+    launch_exe: "rsf_launcher/RSF_Launcher.exe"
+    installed_path: "{{ dg_pc_racing_install_root }}/richard-burns-rally"
+    # DX9 game driven through DXVK/Vulkan. Pin the NVIDIA-only Vulkan ICD so
+    # DXVK cannot land on the AMD iGPU (= black screen on this dual-GPU box),
+    # and force the x11 SDL video driver (Wayland needs it for the .NET RSF
+    # launcher window and the game). Set "Graphics mode = Vulkan" in the RSF
+    # launcher (Screen & Graphics) on first run.
+    game_env:
+      VK_ICD_FILENAMES: /usr/share/vulkan/icd.d/nvidia_icd.json
+      SDL_VIDEODRIVER: x11
+    # Native (no gamescope): DXVK/Vulkan under gamescope routes to the AMD
+    # 7950X3D iGPU on this box (same iGPU-grab that black-screens Sega Rally
+    # Revo / Supermodel). Native, DXVK picks the RTX 5090.
+    gamescope_enabled: false
+    winetricks_components:
+      - d3dx9
+      - vcrun2022
+      - dxvk
+    # RBR reads wheels/pads through DirectInput; native dinput8 is the
+    # community-proven override for the RSF launcher + game.
+    env:
+      - name: WINEDLLOVERRIDES
+        value: "dinput8=n,b"
+    notes: >-
+      RallySimFans (RSF) Richard Burns Rally. Sources are consolidated under
+      ROMS_FINAL/PC/Richard Burns Rally/ (retail installer, the
+      rsf_installer_files torrent payload, and Rallysimfans_Installer.exe). The
+      RSF installer is a native-Win32 GUI wizard with no silent flags, so the
+      install is interactive: run bin/install-richard-burns-rally, point the
+      installer's Source folder at Z:\...\Richard Burns Rally\rsf_installer_files
+      and install to G:\richard-burns-rally. First launch of the RSF launcher
+      needs a free rallysimfans.hu account + internet (it downloads cars on
+      demand). See docs/richard-burns-rally.md.
