@@ -59,16 +59,34 @@ Microsoft's `dxwebsetup`, which page-faults under Wine (`page fault on execute
 this DirectX step is redundant — **dismiss the Wine crash window and the RSF
 install continues** to completion.
 
-Then first launch:
+Then first launch (from your session):
 
 ```sh
-/mnt/data/distrobox/gaming/bin/richard-burns-rally
+distrobox-enter -n gaming -- /mnt/data/distrobox/gaming/bin/richard-burns-rally
 ```
 
 - Log into the RSF launcher (free rallysimfans.hu account); it downloads cars.
 - In the launcher → **Screen & Graphics** → **Graphics mode = Vulkan (1.2)**.
 - Controllers: wheels/pads come through native `dinput8`; the pc-racing
   gamepad allow-list already admits the 8BitDo + Xbox pads.
+
+### The RSF launcher is .NET 10 WPF — needs fonts (baked in)
+
+The launcher is a **.NET 10 WPF** app (AdonisUI). Two gotchas, both fixed in the
+entry so a rebuild handles them:
+
+- **.NET 10 runtime**: installed into the prefix by the RSF installer itself
+  (`Program Files/dotnet`, `Microsoft.WindowsDesktop.App 10.0.5`). Don't try to
+  substitute an older .NET — the app is hard-targeted to `net10.0` and refuses
+  to run on anything else. It's *not* a wine-mono/.NET-Framework app.
+- **Fonts**: with no Windows fonts in the prefix, WPF hard-crashes
+  (`Environment.FailFast` in `TypefaceMap.MapUnresolvedCharacters`) while laying
+  out a TextBox — the app initializes fully (`debug.log` "Completed reading all
+  configuration options") then dies **before the window appears**. Fixed with
+  winetricks **`corefonts` + `tahoma`** and a **`Segoe UI → Arial`**
+  FontSubstitutes registry entry (WPF's default UI font is Segoe UI, which is
+  absent under Wine). After that the launcher window maps and runs on the RTX
+  via DXVK.
 
 Launcher path confirmed after install:
 `C:\Richard Burns Rally\rsf_launcher\RSF_Launcher.exe` (`launch_exe` +

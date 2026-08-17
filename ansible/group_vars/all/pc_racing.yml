@@ -1087,11 +1087,30 @@ dg_pc_racing_games:
       - d3dx9
       - vcrun2022
       - dxvk
+      # The RSF launcher is a .NET 10 WPF app (AdonisUI). With no Windows fonts
+      # in the prefix, WPF hard-crashes (Environment.FailFast in
+      # TypefaceMap.MapUnresolvedCharacters) while laying out a TextBox — it
+      # initializes fully (debug.log "Completed reading all configuration
+      # options") then dies before the window maps. corefonts + tahoma + the
+      # Segoe-UI-> Arial substitution below give WPF real fonts and fix it. The
+      # .NET 10 desktop runtime itself is installed into the prefix by the RSF
+      # installer, so no winetricks dotnet verb is needed.
+      - corefonts
+      - tahoma
     # RBR reads wheels/pads through DirectInput; native dinput8 is the
     # community-proven override for the RSF launcher + game.
     env:
       - name: WINEDLLOVERRIDES
         value: "dinput8=n,b"
+    # Map WPF's default UI font (Segoe UI, absent under Wine) onto an installed
+    # corefont so text shaping resolves instead of FailFast-ing.
+    registry_values:
+      - key: "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion\\FontSubstitutes"
+        name: "Segoe UI"
+        value: Arial
+      - key: "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion\\FontSubstitutes"
+        name: "Segoe UI (TrueType)"
+        value: Arial
     notes: >-
       RallySimFans (RSF) Richard Burns Rally. Sources are consolidated under
       ROMS_FINAL/PC/Richard Burns Rally/ (retail installer, the
