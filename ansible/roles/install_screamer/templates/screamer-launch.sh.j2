@@ -36,10 +36,30 @@ case "$mode" in
   *)       exe="$play_exe";            cycles="{{ item.play_cycles }}" ;;
 esac
 
+# DOS4GW games launch DOS4GW.EXE from the current dir, so cd into the exe's own
+# directory before running it (e.g. C:\SR). Split "SR\STARTL.EXE" -> dir "SR",
+# base "STARTL.EXE"; a bare "STARTL.EXE" needs no cd.
+exe_base="${exe##*\\}"
+exe_dir="${exe%\\*}"
+[ "$exe_dir" = "$exe" ] && exe_dir=""
+cd_line="rem"
+[ -n "$exe_dir" ] && cd_line="cd \\$exe_dir"
+
 if [ ! -x "$dosbox" ]; then
   printf '%s\n' "ERROR: dosbox-staging missing ($dosbox). Run: ansible-playbook install-screamer.yml" >&2
   exit 1
 fi
+{% if item.iso_flavor | default(false) %}
+# The CD games install to the HDD first. If it's empty, don't drop the user at a
+# cryptic DOS "Illegal command" prompt — point them at the one-time installer.
+if [ "$mode" != "install" ] && [ -z "$(ls -A "$cdrive" 2>/dev/null)" ]; then
+  printf '%s\n' "{{ item.name }} is not installed yet." >&2
+  printf '%s\n' "Run the one-time installer first:" >&2
+  printf '%s\n' "  {{ item.slug }}-launch install" >&2
+  printf '%s\n' "In the DOS menu: Source drive = D, Destination drive = C, Directory = \\SR, confirm Y." >&2
+  exit 1
+fi
+{% endif %}
 
 # Pin the RTX (dosbox-staging renders OpenGL → GLX vendor pin); keep the pad live.
 export __NV_PRIME_RENDER_OFFLOAD=1
@@ -83,7 +103,8 @@ timed        = false
 mount c "$cdrive"
 imgmount d "$cd_image" -t iso -fs iso
 $boot:
-$exe
+$cd_line
+$exe_base
 exit
 EOF
 
