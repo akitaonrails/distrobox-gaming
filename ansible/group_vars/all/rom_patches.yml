@@ -1,0 +1,47 @@
+---
+# Data-driven ROM romhack patcher (install_rom_patches). Each entry hard-patches
+# a verified base ROM with a committed IPS patch and writes a finished ROM into
+# a library the emulators already scan. The applier asserts the base sha1 before
+# patching and the output sha1 after, so a wrong-region/revision base fails
+# instead of producing a broken ROM. Opt-in; see docs/rom-patches.md.
+#
+# To add a hack: drop its .ips into roles/install_rom_patches/files/ and append
+# an entry below (name, base, base_sha1, ips, out, out_sha1).
+dg_rom_patches_revert: false
+
+dg_rom_patches:
+  # DKC GBA SNES colour restoration (marc_max v1.1). Targets ONLY the EU
+  # multi-language dump; the USA dump does not match.
+  - name: "Donkey Kong Country (GBA) SNES colour restoration"
+    base: "{{ dg_roms_final_root }}/gba/Donkey Kong Country (Europe) (En,Fr,De,Es,It).gba"
+    base_sha1: "8995f0be99a9cff66474a8975b8499bd69fb4c45"
+    ips: dkc_gba_restoration_v1_1.ips
+    out: "{{ dg_rom_root }}/gba/Donkey Kong Country (Europe) (SNES Restoration).gba"
+    out_sha1: "005b5571e169c45a0649fdb2cc52729f9d6b4116"
+
+  # Final Fight ONE: Arcade Edition v3.0 (USA patch) — restores the arcade
+  # roster/moves. Base is the No-Intro Final Fight One (USA) dump.
+  - name: "Final Fight ONE Arcade Edition v3.0 (USA)"
+    base: "{{ dg_rom_root }}/gba/Final Fight One (USA).gba"
+    base_sha1: "17918e125bcafd44fcf3b21813575c2ccb19bd45"
+    ips: "ffoae_arcade_edition_u_v3.0.ips"
+    out: "{{ dg_rom_root }}/gba/Final Fight One - Arcade Edition (USA) [v3.0].gba"
+    out_sha1: "e189ae8abe70497cad342dd5e1e80fcfa53e0783"
+
+  # F-Zero: Vintage Velocity I (EN v2.1) and Ace (EN v3.0). Both apply the
+  # International (US/EU) patch to an unmodified F-Zero Maximum Velocity dump and
+  # expand it 4->8 MiB. Kept as SEPARATE ROMs alongside the untouched original,
+  # so all three F-Zeros coexist in the library.
+  - name: "F-Zero Vintage Velocity I (EN v2.1)"
+    base: "{{ dg_rom_root }}/gba/F-Zero - Maximum Velocity (USA, Europe).gba"
+    base_sha1: "8a08e29ec987f9cbdde21c34d5f7657aa7ba0be6"
+    ips: "vintage_velocity_i_en_v2.1.ips"
+    out: "{{ dg_rom_root }}/gba/F-Zero - Vintage Velocity I (v2.1).gba"
+    out_sha1: "40aab9df0c1209464f6a79e53e7b0352d5e77cc2"
+
+  - name: "F-Zero Vintage Velocity Ace (EN v3.0)"
+    base: "{{ dg_rom_root }}/gba/F-Zero - Maximum Velocity (USA, Europe).gba"
+    base_sha1: "8a08e29ec987f9cbdde21c34d5f7657aa7ba0be6"
+    ips: "vintage_velocity_ace_en_v3.0.ips"
+    out: "{{ dg_rom_root }}/gba/F-Zero - Vintage Velocity Ace (v3.0).gba"
+    out_sha1: "962f357de0237c54aba3acdd0bda70fe274314d6"

@@ -1,0 +1,25 @@
+---
+# Data-driven ROM romhack patcher. See group_vars/all/rom_patches.yml and
+# docs/rom-patches.md.
+
+- name: Revert ROM patches when requested
+  when: dg_rom_patches_revert | bool
+  block:
+    - name: Remove patched ROMs
+      ansible.builtin.file:
+        path: "{{ item.out }}"
+        state: absent
+      loop: "{{ dg_rom_patches }}"
+      loop_control:
+        label: "{{ item.name }}"
+    - name: Report ROM patches reverted
+      ansible.builtin.debug:
+        msg: >-
+          Removed patched ROMs. Base/original dumps on the NAS are untouched.
+
+- name: Apply each ROM patch
+  ansible.builtin.include_tasks: patch.yml
+  loop: "{{ dg_rom_patches }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: not (dg_rom_patches_revert | bool)

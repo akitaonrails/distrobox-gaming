@@ -1,0 +1,7 @@
+---
+- name: Apply ROM romhack patches
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_rom_patches

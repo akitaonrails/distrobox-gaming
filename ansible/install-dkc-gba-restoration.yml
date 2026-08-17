@@ -1,7 +1,0 @@
----
-- name: Install Donkey Kong Country (GBA) SNES colour restoration
-  hosts: localhost
-  connection: local
-  gather_facts: true
-  roles:
-    - install_dkc_gba_restoration

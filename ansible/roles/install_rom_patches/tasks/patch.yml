@@ -1,0 +1,64 @@
+---
+# Apply one entry from dg_rom_patches (passed in as `item`). Idempotent: the
+# IPS is applied only when the output is absent or not the expected build.
+
+- name: "{{ item.name }} — stat base ROM"
+  ansible.builtin.stat:
+    path: "{{ item.base }}"
+    checksum_algorithm: sha1
+  register: _rp_base
+
+- name: "{{ item.name }} — fail when base ROM is missing"
+  ansible.builtin.fail:
+    msg: >-
+      Missing base ROM for "{{ item.name }}": {{ item.base }}
+      (needs sha1 {{ item.base_sha1 }}). If you only have it zipped, extract the
+      raw ROM first. See docs/rom-patches.md.
+  when: not _rp_base.stat.exists
+
+- name: "{{ item.name }} — fail when base ROM is the wrong revision"
+  ansible.builtin.fail:
+    msg: >-
+      {{ item.base }} sha1 is {{ _rp_base.stat.checksum }}, expected
+      {{ item.base_sha1 }} for "{{ item.name }}". The IPS patch is offset-specific
+      to that revision and would corrupt any other dump.
+  when:
+    - _rp_base.stat.exists
+    - _rp_base.stat.checksum != item.base_sha1
+
+- name: "{{ item.name }} — stat patched output"
+  ansible.builtin.stat:
+    path: "{{ item.out }}"
+    checksum_algorithm: sha1
+  register: _rp_out
+
+- name: "{{ item.name }} — ensure output library dir exists"
+  ansible.builtin.file:
+    path: "{{ item.out | dirname }}"
+    state: directory
+    mode: "0755"
+  when: not _rp_out.stat.exists
+
+- name: "{{ item.name }} — apply IPS patch (hash-verified)"
+  # apply_ips.py asserts the base sha1 before patching and the output sha1
+  # after, so a wrong base or bad patch fails instead of writing a broken ROM.
+  ansible.builtin.command:
+    argv:
+      - python3
+      - "{{ role_path }}/files/apply_ips.py"
+      - "{{ item.base }}"
+      - "{{ role_path }}/files/{{ item.ips }}"
+      - "{{ item.out }}"
+      - "{{ item.base_sha1 }}"
+      - "{{ item.out_sha1 }}"
+  changed_when: true
+  when: >-
+    not _rp_out.stat.exists or _rp_out.stat.checksum != item.out_sha1
+
+- name: "{{ item.name }} — report"
+  ansible.builtin.debug:
+    msg: >-
+      {{ item.name }} -> {{ item.out }} (sha1 {{ item.out_sha1 }};
+      {{ 'up to date'
+         if (_rp_out.stat.exists and _rp_out.stat.checksum == item.out_sha1)
+         else 'patched now' }}).
