@@ -4,6 +4,13 @@ How ROM hacks are applied to the NAS library, using the Sonic
 Advance 3 SP install as the reference case (v1.02 → v1.03 upgrade,
 2026-07-08).
 
+> **Reproducible IPS hacks go through the `install_rom_patches` Ansible role**
+> ([rom-patches.md](rom-patches.md)) — commit the `.ips`, add a hash-verified
+> `dg_rom_patches` entry, and it rebuilds the patched ROM on any machine. That
+> role writes the hack to a separate output and never mutates the base. This
+> document covers the **manual** side: xdelta (VCDIFF) hacks, in-place swaps
+> under the original filename, pristine-base recovery, and save caveats.
+
 > **GameCube hacks that demand a Redump ISO** (Super Mario Sunburn /
 > Eclipse, etc.) but you only have an **NKIT** dump: see
 > [nkit-to-redump.md](nkit-to-redump.md) for restoring the pristine

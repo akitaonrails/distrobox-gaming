@@ -10,6 +10,12 @@ byte and the **output** SHA-1 after, so a wrong-region/revision base or a corrup
 patch fails loudly instead of producing a broken ROM. The role is idempotent: a
 patch runs only when its output is missing or not the expected build.
 
+> This role writes each hack to a **separate** hardpatched ROM and leaves the
+> base untouched. For the manual/one-off flow — xdelta hacks, in-place swaps
+> that reuse the original's ES-DE entry and artwork, recovering a pristine base
+> from NAS snapshots, and save-compatibility caveats — see
+> [rom-hack-patching.md](rom-hack-patching.md).
+
 ## Current patches (`dg_rom_patches`)
 
 | Hack | Base ROM (SHA-1) | Output |
