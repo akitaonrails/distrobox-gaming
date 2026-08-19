@@ -52,6 +52,34 @@ rewrites — so no repack version fixes the Wine-specific null-deref. Every onli
 The "Proton fixed a Sega Rally launcher crash" changelog line is **Sega Rally
 Revo** (Steam appid 10400), not SR2.
 
+## Binary-patch attempt (2026-08-19) — proved it's a hollow-renderer walk, not one bug
+
+The user asked whether `MGameD3D.dll` could be binary-patched to "not crash and
+run." It can be made to *not crash at `+0x7375`* — but that only exposes the next
+identical fault, and the game never actually renders. Findings:
+
+- `+0x7375` lives in a small **COM release/teardown helper** at `+0x7370`. It
+  takes two pointer-to-object args, `Release()`s each object and nulls the slot.
+  It null-checks the *object* (`[esi]`) but never the *pointers* (`esi`, arg2).
+- Applied a NOP-padding **trampoline null-guard** for arg1 (`esi`) and rewrote
+  the tail block to guard arg2 (`eax`). Each guard cleared its crash and revealed
+  the next: `+0x7375` (esi=null) → `+0x738b` (arg2=null) → then the args stopped
+  being null and started being **small integers**: `esi=4,edi=1`, then
+  `esi=0x10,edi=4`.
+- Those aren't pointers — `edi` is a **loop counter** (1→4) and `esi` is a raw
+  **offset** (4→0x10). The helper is being fed `base + offset` where `base` is
+  **null**, so it walks a **resource table that was never populated**. Widening
+  the guards to reject small values pushed it far enough to **create a titled
+  `SEGA RALLY 2` window**, then it faulted again on the next table entry.
+
+**Conclusion:** the `+0x7375` crash is a *symptom*, not the disease. The game's
+D3D resource creation silently returns null/uninitialized under Wine+dgVoodoo, and
+the teardown/init code then walks a hollow table. No finite set of null-guards
+makes the missing textures/surfaces exist — a patched DLL just limps to an empty
+window. The DLL was restored to pristine. A binary fix would mean rewriting the
+*resource-creation* path (why dgVoodoo hands back null), far beyond a null-guard.
+A Windows VM (where the D3D objects are created for real) remains the only route.
+
 ## Play Sega Rally instead
 
 - **Sega Rally Championship HD** (Wanszai Model 2) — `install_sega_rally`, works.
