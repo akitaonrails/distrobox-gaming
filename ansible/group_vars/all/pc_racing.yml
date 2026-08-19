@@ -1004,3 +1004,62 @@ dg_pc_racing_games:
       install continues. First launch of the RSF launcher needs a free
       rallysimfans.hu account + internet (it downloads cars on demand). See
       docs/richard-burns-rally.md.
+
+  - slug: prince-of-persia-sot
+    name: "Prince of Persia: The Sands of Time"
+    install_mode: innoextract
+    source_dir: "{{ dg_pc_racing_source_root }}/prince of persia"
+    installer: "setup_prince_of_persia_-_the_sands_of_time_181_gog_v2_(92028).exe"
+    # GOG v2 lays the game files at the extraction root; app/ holds only an ico +
+    # webcache, so extract the whole tree ("." - the default "app" grabs only those).
+    # __redist/__support/gog/tmp come along but are inert.
+    innoextract_root: "."
+    # Launch the ORIGINAL exe, not GOG's PrinceOfPersia_gog.EXE wrapper: that wrapper
+    # draws a Nuklear overlay whose font-atlas init asserts under Wine (its WMI GPU
+    # probe returns nothing, leaving the temporary allocator null -> abort). The plain
+    # exe renders fine, and the registry Product_Executable points here too.
+    launch_exe: "PrinceOfPersia.EXE"
+    installed_path: "{{ dg_pc_racing_install_root }}/prince-of-persia-sot"
+    gamescope_enabled: false
+    # GOG's installer writes these; innoextract skips them, and the game reads
+    # Product_Path to locate its data (POPData.BF / prince.bf) - without them it
+    # inits D3D then exits. See project_gog_innoextract_registry. G: = install root.
+    registry_values:
+      - { key: 'HKLM\SOFTWARE\Ubisoft\Prince of Persia The Sands of Time\1.00.181', name: Product_Path, value: 'G:\prince-of-persia-sot' }
+      - { key: 'HKLM\SOFTWARE\Ubisoft\Prince of Persia The Sands of Time\1.00.181', name: Product_Executable, value: 'PrinceOfPersia.exe' }
+      - { key: 'HKLM\SOFTWARE\Ubisoft\Prince of Persia The Sands of Time\1.00.181', name: Product_Language, value: '9' }
+      - { key: 'HKLM\SOFTWARE\Ubisoft\Prince of Persia The Sands of Time\1.00.181', name: Product_Release, value: 'Retail EMEA' }
+    # Legacy DirectDraw7/D3D9 exclusive fullscreen: on the real 4K multi-monitor X
+    # server the game thrashes display modes (640x480 <-> desktop) and dies. Route it
+    # to a dedicated rootful Xwayland (the CMR1 pattern) that Hyprland composites as
+    # one fullscreen surface on the focused monitor (DP-1).
+    host_pre_launch_commands:
+      - hyprctl dispatch focusmonitor DP-1 >/dev/null 2>&1 || true
+      - pgrep -f "Xwayland :12" >/dev/null 2>&1 || { Xwayland :12 -geometry 640x480 -fullscreen -noreset >/dev/null 2>&1 & sleep 1; }
+    host_post_launch_commands:
+      - pkill -f "Xwayland :12" >/dev/null 2>&1 || true
+    # Renders via wined3d -> OpenGL; pin GLX to the RTX 5090 (not the iGPU/llvmpipe).
+    game_env:
+      __NV_PRIME_RENDER_OFFLOAD: "1"
+      __GLX_VENDOR_LIBRARY_NAME: nvidia
+    env:
+      # Route to the rootful X server from host_pre_launch_commands. force: distrobox
+      # always exports DISPLAY, so the :-default form would never override it.
+      - name: DISPLAY
+        value: ":12"
+        force: true
+      # Force builtin wined3d for D3D9. DXVK's Vulkan/EGL presenter fails on the
+      # rootful Xwayland (dri2 screen / nvidia driver null); wined3d on GLX is clean.
+      - name: WINEDLLOVERRIDES
+        value: "d3d9=b"
+    notes: >-
+      GOG v2 (build 92028) of the 2003 Ubisoft game, extracted with innoextract (no
+      Wine install step). Self-contained: bundles the VC7.1 runtime, SDL3 controller
+      detection and a DirectInput remap layer (dixi.ini, incl. an Xbox 360 profile the
+      8BitDo dongle matches). Launched via the plain PrinceOfPersia.EXE - GOG's _gog
+      wrapper Nuklear-asserts under Wine. Runs on a rootful Xwayland :12 with wined3d
+      (GLX, DXVK bypassed via d3d9=b): the exclusive-fullscreen mode-switch crashes on
+      the real 4K multi-monitor X. Verified in-game (Options > Graphics, 1600x1200)
+      2026-08-19. The GOG controller remap (dinput8_wrap.dll, gog.toml
+      [DllSubstitution]) only loads under the _gog exe; the plain exe uses Wine's
+      native DirectInput for the pad - verify 8BitDo mapping in-game.

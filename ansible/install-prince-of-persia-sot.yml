@@ -1,0 +1,13 @@
+---
+- name: Install or update Prince of Persia - The Sands of Time
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  vars:
+    dg_pc_racing_selected_slugs:
+      - prince-of-persia-sot
+    dg_pc_racing_run_installers: true
+    dg_pc_racing_export_desktop: true
+  roles:
+    - install_pc_racing
+    - { role: verify, tags: [verify] }
