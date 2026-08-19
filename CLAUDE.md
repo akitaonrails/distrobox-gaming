@@ -12,8 +12,8 @@ Beyond the core emulators, a large set of **opt-in** roles (all `never`-tagged i
 - **Namco arcade**: Wanszai Ridge Racer Collection (System 22: Ridge Racer, RR2, Rave Racer) via a D3D11/DXVK Wine wrapper (`install_ridge_racer`, see `docs/ridge-racer.md`).
 - **Xbox 360**: Wine-managed Xenia Manager (`install-xenia.yml`).
 - **Native recomp / decomp ports**: Ship of Harkinian (OoT), 2Ship2Harkinian (Majora's Mask), Starship (Star Fox 64), Render96ex (SM64), SpaghettiKart (MK64), Sonic P-06, Unleashed Recomp, and PrBoom-Plus Doom II RT.
-- **Windows/Wine games** (see `docs/external-installers.md`): Colin McRae Rally 04/2/3 + DiRT, OutRun 2006, Sega Rally 2 / Revo, Richard Burns Rally + RallySimFans (`docs/richard-burns-rally.md`), GT5 Master Mod, Dusk, FFVII 7th Heaven, Metal Gear Master Collection fixes, and the shared `install_pc_racing` pipeline.
-- **MS-DOS games**: Screamer + Screamer 2 (GOG) via dosbox-staging (`install_screamer`, see `docs/screamer.md`).
+- **Windows/Wine games** (see `docs/external-installers.md`): Colin McRae Rally 04/2/3 + DiRT, OutRun 2006, Sega Rally Revo, Richard Burns Rally + RallySimFans (`docs/richard-burns-rally.md`), GT5 Master Mod, Dusk, FFVII 7th Heaven, Metal Gear Master Collection fixes, and the shared `install_pc_racing` pipeline.
+- **MS-DOS games**: Screamer, Screamer 2 (GOG) + Screamer Rally (CD) via dosbox-staging (`install_screamer`, see `docs/screamer.md`).
 - **Content / tooling**: DLC installers, Switch/PCSX2/DuckStation per-game configs, RetroArch extras, HD texture packs, cheat/trainer tooling, SMM2 offline levels, and reproducible IPS romhack patches (`install_rom_patches`, see `docs/rom-patches.md`).
 
 See `docs/external-installers.md` for the download inventory and `docs/rebuild-runbook.md` for a from-scratch rebuild.
