@@ -1,0 +1,47 @@
+---
+# TeknoParrot arcade — the Windows TeknoParrotUI (stable 1.0.0.2064, .NET
+# Framework) runs under Wine in a dedicated prefix. The experimental native
+# Linux build (net8) is broken (ships no runtime/Avalonia/loaders and its
+# ParrotPatcher can't download them) — see docs/teknoparrot.md. Games launch
+# from ES-DE via bin/teknoparrot-launch (system `teknoparrot` in esde.yml).
+
+dg_teknoparrot_prefix: "{{ dg_box_home }}/wineprefixes/teknoparrot"
+dg_teknoparrot_install: "{{ dg_teknoparrot_prefix }}/drive_c/TeknoParrot"
+dg_teknoparrot_games_dir: "{{ dg_emudeck_root }}/roms_rare/TeknoParrot"
+dg_teknoparrot_archive_dir: "{{ dg_roms_final_root }}/teknoparrot"
+dg_teknoparrot_launchers_dir: "{{ dg_emudeck_root }}/roms_rare/teknoparrot"
+dg_teknoparrot_cache: "{{ dg_box_home }}/cache/teknoparrot"
+
+# Main UI package (stable, .NET Framework; the 145M zip bundles GameProfiles +
+# Metadata but NOT the game loaders — those come from the loader releases below).
+dg_teknoparrot_ui_url: "https://github.com/teknogods/TeknoParrotUI/releases/download/TeknoParrotUI/TeknoParrotUi.zip"
+
+# Game loaders (teknogods/OpenParrot + teknogods/TeknoParrot release assets).
+# Each extracts into an EmulatorType-named subdir of the install. Console-backed
+# EmulatorTypes (pcsx2x6/cxbxr/RPCS3/Dolphin = PS2/Xbox/PS3/GC) are deliberately
+# NOT installed — those consoles have dedicated emulators; such games are moved
+# to dg_teknoparrot_archive_dir by the profile generator.
+dg_teknoparrot_loaders:
+  - { subdir: OpenParrotWin32, repo: teknogods/OpenParrot,   tag: OpenParrotWin32,       asset: OpenParrotWin32.zip }
+  - { subdir: OpenParrotx64,   repo: teknogods/OpenParrot,   tag: OpenParrotx64,         asset: OpenParrotx64.zip }
+  - { subdir: TeknoParrot,     repo: teknogods/TeknoParrot,  tag: TeknoParrot,           asset: "" }   # TeknoParrotCore_*.zip
+  - { subdir: ElfLdr2,         repo: teknogods/TeknoParrot,  tag: TeknoParrotElfLdr2,    asset: "" }   # TeknoParrotElfLdr2Core_*.zip
+  - { subdir: N2,              repo: teknogods/TeknoParrot,  tag: TeknoParrotN2,         asset: "" }   # TeknoParrotN2Core_*.zip
+
+# winetricks components for the prefix (.NET Framework 4.6.2 + VC2010 for the UI;
+# d3dcompiler + dxvk for the D3D games).
+dg_teknoparrot_winetricks:
+  - dotnet462
+  - vcrun2010
+  - d3dcompiler_47
+  - d3dcompiler_43
+  - dxvk
+
+# Prefix registry tweaks (all verified 2026-08-20):
+#  - UseEGL=N : force GLX on the RTX (wine 11 EGL backend picks the iGPU ->
+#    black UI). See project_wine11_egl_glx.
+#  - Explorer virtual desktop 1920x1080 : the games do exclusive-fullscreen and
+#    grab the 4K multi-monitor span (garbage 3804x2085 res -> crash); a
+#    prefix-wide virtual desktop confines them to a real window.
+#  - teknoparrot:// URL handler : --profile launches go through this scheme.
+dg_teknoparrot_virtual_desktop: "1920x1080"

@@ -1,0 +1,43 @@
+#!/usr/bin/env sh
+set -eu
+# Launch a TeknoParrot game by GameId (UserProfile name) under Wine, on DP-1.
+# Usage: teknoparrot-launch <GameId>     (no arg = open the TeknoParrot UI)
+# Managed by install_teknoparrot. Recipe: dedicated wine prefix +
+# .NET462/vcrun2010/d3dcompiler/dxvk, UseEGL=N (GLX), prefix-wide virtual
+# desktop {{ dg_teknoparrot_virtual_desktop }} (avoids the 4K multi-monitor
+# exclusive-fullscreen resolution grab), nvidia Vulkan/GLX pin.
+
+PREFIX="{{ dg_teknoparrot_prefix }}"
+INSTALL="$PREFIX/drive_c/TeknoParrot"
+profile="${1:-}"
+
+if [ ! -f "$INSTALL/TeknoParrotUi.exe" ]; then
+  printf '%s\n' "ERROR: TeknoParrot not installed at $INSTALL" >&2
+  printf '%s\n' "Run: ansible-playbook install-teknoparrot.yml" >&2
+  exit 1
+fi
+
+# Focus the main landscape 4K monitor (DP-1) before launch.
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b"/dispatch focusmonitor DP-1"); s.recv(64); s.close()
+PY
+
+export WINEPREFIX="$PREFIX"
+export WINEDEBUG="${WINEDEBUG:--all}"
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+cd "$INSTALL"
+cleanup() { env -u PYTHONHOME -u PYTHONPATH wineserver -k >/dev/null 2>&1 || true; }
+trap cleanup EXIT HUP INT TERM
+
+if [ -n "$profile" ]; then set -- --profile="$profile"; else set --; fi
+env -u PYTHONHOME -u PYTHONPATH wine TeknoParrotUi.exe "$@"

@@ -90,6 +90,7 @@ links, and configures them (see the Safety section in CLAUDE.md).
 | N64 ROMs for the 5 native ports (SM64, MK64, OoT, MM, SF64 — SHA1-verified) | `dg_rom_mid_root/n64/` (OoT and MM specifically under `dg_rom_mid_root/n64/originals/` — the `n64/` top level holds romhacks) | `n64_rom_prepare` via each port role |
 | CMR 2.0 / CMR3 / CMR04 installers (CD extracts / repacks) | `dg_pc_racing_source_root` | `install_pc_racing` |
 | Prince of Persia: The Sands of Time — GOG v2 installer (`setup_..._(92028).exe` + `-1.bin`) | `dg_pc_racing_source_root/prince of persia` | `install_pc_racing` (`prince-of-persia-sot`, `install-prince-of-persia-sot.yml`) — innoextract; runs on rootful Xwayland :12 + wined3d |
+| TeknoParrot arcade — AUTO from GitHub (stable Windows `TeknoParrotUi.zip` + OpenParrot/TeknoParrot/ElfLdr2/N2 loaders); game dumps are MANUAL | `roms_rare/TeknoParrot/` (dumps), fetched loaders under the wine prefix | `install_teknoparrot` (`install-teknoparrot.yml`, ES-DE system `teknoparrot`). See `docs/teknoparrot.md` |
 | Sonic P-06 release build | `dg_pc_racing_source_root` | `install_sonic_p06` |
 | Sonic Unleashed game files (X360 ISO + title update + DLC) | `dg_unleashed_recomp_*_source` (empty defaults) | `install_unleashed_recomp` |
 | PS4 game dumps + firmware sys modules | `dg_ps4_rom_root`, `dg_ps4_firmware_modules` | `refresh_shadps4`, shadPS4 |

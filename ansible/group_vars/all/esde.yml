@@ -393,3 +393,19 @@ dg_esde_systems:
       - { label: "MAME (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/mame_libretro.so %ROM%" }
     platform: arcade
     theme: mame
+
+  # TeknoParrot arcade — the Windows TeknoParrotUI runs under Wine in the
+  # teknoparrot prefix; each .tp file is an empty stub named by GameId (the
+  # UserProfile). The launcher runs `TeknoParrotUi.exe --profile=<GameId>` on
+  # DP-1 with the working recipe (virtual desktop 1920x1080, DXVK, GLX pin).
+  # Loaders (OpenParrot/TeknoParrot/ElfLdr2/N2) are fetched from teknogods
+  # GitHub — the experimental native-Linux build is broken; see
+  # docs/teknoparrot.md. Console-backed titles (PS2/PS3/Xbox/GC) are excluded.
+  - name: teknoparrot
+    fullname: TeknoParrot Arcade
+    path: "{{ dg_emudeck_root }}/roms_rare/teknoparrot"
+    extension: ".tp .TP"
+    commands:
+      - { label: "TeknoParrot (Wine)", cmd: "{{ dg_box_home }}/bin/teknoparrot-launch %BASENAME%" }
+    platform: arcade
+    theme: teknoparrot
