@@ -1,0 +1,35 @@
+#!/usr/bin/env sh
+set -eu
+# GoldenEye 007: Recompiled (N64Recomp + RT64) launcher. Native on the RTX, DP-1.
+# Managed by install_goldeneye_recomp. On first run RT64 shows a ROM picker —
+# point it at your retail NTSC-U GoldenEye .z64/.n64 (it converts + stores the
+# path); afterwards it launches straight in.
+
+BIN="{{ dg_ge64_bin }}"
+if [ ! -x "$BIN" ]; then
+  printf '%s\n' "ERROR: GoldenRecomp not built at $BIN. Run: ansible-playbook install-goldeneye-recomp.yml" >&2
+  exit 1
+fi
+
+# Focus the main landscape 4K monitor (DP-1).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b"/dispatch focusmonitor DP-1"); s.recv(64); s.close()
+PY
+
+# RT64 renders on Vulkan — pin the nvidia ICD (not the iGPU).
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+# Run from the SOURCE ROOT — GoldenRecomp loads assets/ (RmlUi fonts) relative to
+# cwd and segfaults if they're missing. On first run RT64 opens a ROM picker;
+# point it at your NTSC-U GoldenEye ROM (it stores the path afterwards).
+cd "{{ dg_ge64_src }}"
+exec ./build/GoldenRecomp "$@"

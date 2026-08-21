@@ -1,0 +1,7 @@
+---
+- name: Build GoldenEye 007 Recompiled + launcher
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_goldeneye_recomp

@@ -1,0 +1,31 @@
+---
+# GoldenEye 007 Recompiled — a static recompilation (N64Recomp + RT64) of the
+# N64 GoldenEye 007 to a native executable. Built natively, runs on the RTX.
+# Managed by install_goldeneye_recomp. Needs the user's own NTSC-U GoldenEye ROM
+# (sha1 abe01e4aeb033b6c0836819f549c791b26cfde83 in z64/big-endian form).
+# See docs/goldeneye-recomp.md.
+
+dg_ge64_repo: "https://github.com/cblock85/GoldenEye64Recomp.git"
+dg_ge64_src: "{{ dg_box_home }}/tools/ge64-src"
+dg_ge64_build: "{{ dg_ge64_src }}/build"
+dg_ge64_bin: "{{ dg_ge64_build }}/GoldenRecomp"
+
+# The user's GoldenEye 007 (USA/NTSC-U) ROM. The correct dump is the one whose
+# z64 (big-endian) form matches the sha1 below; the roms_mid/n64 copy is a bad
+# dump, roms_mid/n64/originals is the good one. The role byteswaps it to z64.
+dg_ge64_rom_src: "{{ dg_rom_mid_root }}/n64/originals/007 - GoldenEye (USA).n64"
+dg_ge64_rom_sha1_z64: "abe01e4aeb033b6c0836819f549c791b26cfde83"
+
+# Native build deps (Arch names; xdelta3 was the only one missing on the box).
+dg_ge64_packages: [cmake, ninja, clang, lld, python, sdl2, freetype2, gtk3, xdelta3]
+
+# Build environment fixes needed on the current Arch toolchain (CMake 4 / GCC 15):
+#  - CMAKE_POLICY_VERSION_MINIMUM=3.5 : lunasvg/zstd declare cmake_minimum < 3.5.
+#  - CFLAGS -Wno-incompatible-pointer-types : the N64Recomp-generated patches.c
+#    has sprintf(rdram, ctx) mismatches (a warning on old compilers, now an error).
+#  - CXXFLAGS -include cstdint : RmlUi's robin_hood.h uses uint32_t/uint64_t
+#    without including <cstdint> (newer libstdc++ dropped the transitive include).
+dg_ge64_build_env:
+  CMAKE_POLICY_VERSION_MINIMUM: "3.5"
+  CFLAGS: "-Wno-error -Wno-incompatible-pointer-types"
+  CXXFLAGS: "-Wno-error -include cstdint"
