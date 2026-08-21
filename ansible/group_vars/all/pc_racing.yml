@@ -867,6 +867,18 @@ dg_pc_racing_games:
     # screen" above too (DXVK-initialized-but-black is the iGPU signature),
     # so the wine-11.8 pin may now be unnecessary — re-test on 11.8 removal.
     gamescope_enabled: false
+    # Run inside a Wine virtual desktop at native 4K. The game requests
+    # exclusive fullscreen at 3840x2160@60; wine translates that into a real
+    # XRandR mode switch (RRSetCrtcConfig). When DP-1 is at its 240Hz mode
+    # (not 60Hz), X rejects the @60 CRTC config with `BadValue ... Minor
+    # opcode 21 (RRSetCrtcConfig)` and the game crashes at swapchain
+    # creation ("stopped loading"). UseXRandR=N does NOT stop wine 11.8 from
+    # issuing the mode switch. A virtual desktop confines the mode change to
+    # the wine-internal desktop window (no real RandR call), so it renders
+    # regardless of DP-1's current refresh rate. Verified 2026-08-21.
+    wine_desktop:
+      width: 3840
+      height: 2160
     disabled_files:
       - "Bootup/video/Rally/SEGA_Logo720p.wmv"
       - "Bootup/video/Rally/SRS_Logo_1.wmv"
