@@ -54,12 +54,32 @@ def prof(gid):
     try: r=ET.parse(p).getroot()
     except: return None
     return {"exe":r.findtext("ExecutableName") or "", "emu":r.findtext("EmulatorType") or ""}
+# Non-game exes to ignore when a GameProfile leaves ExecutableName empty.
+_NONGAME=re.compile(r'openparrot|budgieloader|parrotloader|unins|vc_?redist|'
+                    r'dxsetup|directx|redist|dotnet|crashreport|prerequisite|'
+                    r'^setup\.exe$|vcredist', re.I)
 def find_exe(folder,exe):
-    if not exe: return None
-    root=os.path.join(GAMES,folder); d=os.path.join(root,exe)
-    if os.path.exists(d): return d
-    h=glob.glob(os.path.join(root,"**",exe),recursive=True)
-    return h[0] if h else None
+    # NB: os.walk, not glob — folder names contain [brackets] which glob treats
+    # as character classes and silently fails to match.
+    root=os.path.join(GAMES,folder)
+    if exe:
+        for dp,_,fs in os.walk(root):
+            for f in fs:
+                if f.lower()==exe.lower(): return os.path.join(dp,f)
+        return None
+    # empty ExecutableName: prefer game.exe, else the largest non-helper .exe
+    cands=[]
+    for dp,_,fs in os.walk(root):
+        for f in fs:
+            if f.lower().endswith(".exe") and not _NONGAME.search(f):
+                p=os.path.join(dp,f)
+                try: cands.append((os.path.getsize(p),p,f))
+                except OSError: pass
+    if not cands: return None
+    g=[c for c in cands if c[2].lower()=="game.exe"]
+    if g: return g[0][1]
+    cands.sort(reverse=True)
+    return cands[0][1]
 
 os.makedirs(USER,exist_ok=True); os.makedirs(LAUNCHERS,exist_ok=True); os.makedirs(ARCHIVE,exist_ok=True)
 written=[]; archived=[]; skipped=[]
