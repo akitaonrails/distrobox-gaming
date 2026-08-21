@@ -19,6 +19,8 @@ if [ -z "$basepath" ]; then
 {% for p in dg_dude_doom3_search_paths %}
     "{{ p }}" \
 {% endfor %}
+    /run/media/*/*/steamapps/common/"Doom 3" \
+    /run/media/*/steamapps/common/"Doom 3" \
     ; do
     if [ -f "$cand/base/pak000.pk4" ]; then basepath="$cand"; break; fi
   done

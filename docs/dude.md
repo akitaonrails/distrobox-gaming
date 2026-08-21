@@ -43,6 +43,9 @@ vulkan`); enhancement quality via in-game presets (Potato → Nightmare).
 
 ## Status
 
-Engine **built and verified** (initializes to the "no game data" point) 2026-08-20.
-Blocked on the classic Doom 3 `.pk4` files — install Doom 3 (appid 9050) on Steam
-and the launcher picks it up. 8BitDo works via SDL2 (native gamepad support).
+**Working** 2026-08-20 — DUDE launches and loads classic Doom 3 (all base pak000–004
++ d3xp for Resurrection of Evil). Classic Doom 3 (appid 9050) is installed on the
+removable **STEAM drive** at `/run/media/akitaonrails/STEAM/steamapps/common/Doom 3`;
+the launcher auto-detects Steam libraries including removable-drive mounts. BFG
+Edition (also installed) is intentionally not used — DUDE needs the classic data.
+8BitDo works via SDL2 (native gamepad support).
