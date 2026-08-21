@@ -1,0 +1,28 @@
+---
+# Mega Man X Regenesis — a Godot 4 fan game (mmxregenesis.itch.io). The author
+# ships an official NATIVE Linux export (MMX Regenesis <ver> Linux.x86_64), so we
+# run it natively on the RTX 5090 — no Wine, no Proton — the same way DUDE and the
+# recomp ports run. Managed by install_mmx_regenesis / install-mmx-regenesis.yml.
+# See docs/mmx-regenesis.md.
+
+# Where the user drops the itch.io download. The Linux export is a single
+# self-contained ELF with the .pck embedded; glob it so a version bump
+# (1.00.4 -> 1.00.5 ...) is picked up without editing this file.
+dg_mmx_source_glob: "{{ dg_roms_final_root }}/PC/*Regenesis*Linux.x86_64"
+
+# Native install location on the box (mirrors the tools/ layout of the native
+# ports). The launcher runs the binary from here.
+dg_mmx_root: "{{ dg_box_home }}/tools/mmx-regenesis"
+dg_mmx_bin: "{{ dg_mmx_root }}/mmx-regenesis.x86_64"
+
+# Godot 4 renderer: vulkan (default, Forward+) or opengl3 (compatibility).
+# Overridable at runtime via DG_MMX_RENDERER.
+dg_mmx_renderer: vulkan
+
+# Dual-GPU box: pin the NVIDIA Vulkan ICD so Godot's Vulkan backend cannot land
+# on the AMD 7950X3D iGPU (the same iGPU-grab that black-screens Supermodel /
+# Sega Rally Revo). Native GL path also pinned to nvidia via GLX.
+dg_mmx_nvidia_icd: /usr/share/vulkan/icd.d/nvidia_icd.json
+
+# All game launchers open on the main landscape 4K monitor.
+dg_mmx_main_output: "DP-1"

@@ -1,0 +1,34 @@
+#!/usr/bin/env sh
+set -eu
+# Mega Man X Regenesis (Godot 4 fan game) launcher — native on the RTX 5090, on
+# DP-1. Managed by install_mmx_regenesis. The itch.io Linux export is a
+# self-contained Godot binary with the .pck embedded; 8BitDo works via Godot's
+# bundled controller DB. Renderer via DG_MMX_RENDERER (vulkan | opengl3).
+
+BIN="{{ dg_mmx_bin }}"
+if [ ! -x "$BIN" ]; then
+  printf '%s\n' "ERROR: Mega Man X Regenesis not staged at $BIN." >&2
+  printf '%s\n' "Run: ansible-playbook install-mmx-regenesis.yml" >&2
+  exit 1
+fi
+
+# Focus the main landscape 4K monitor ({{ dg_mmx_main_output }}) before the window opens.
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b"/dispatch focusmonitor {{ dg_mmx_main_output }}"); s.recv(64); s.close()
+PY
+
+# Native on the dual-GPU box: pin nvidia for Vulkan + GLX so Godot cannot render
+# on the AMD iGPU (black screen). SDL background events keep the pad alive.
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-{{ dg_mmx_nvidia_icd }}}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+cd "{{ dg_mmx_root }}"
+exec "$BIN" --rendering-driver "${DG_MMX_RENDERER:-{{ dg_mmx_renderer }}}" "$@"

@@ -1,0 +1,80 @@
+---
+# Install Mega Man X Regenesis (Godot 4 fan game) from the author's official
+# native Linux export. No build, no Wine — stage the ELF, deploy a launcher that
+# pins the RTX + DP-1, and register a desktop entry. See docs/mmx-regenesis.md.
+
+- name: Locate the native Linux export in ROMS_FINAL/PC
+  ansible.builtin.find:
+    paths: "{{ dg_roms_final_root }}/PC"
+    patterns: "*Regenesis*Linux.x86_64"
+    file_type: file
+  register: _mmx_src
+
+- name: Fail with guidance if the Linux export is missing
+  ansible.builtin.fail:
+    msg: >-
+      No Mega Man X Regenesis Linux export found under {{ dg_roms_final_root }}/PC
+      (looked for '*Regenesis*Linux.x86_64'). Download the "Linux.x86_64" build
+      from https://mmxregenesis.itch.io/mega-man-x-regenesis and drop it there.
+  when: _mmx_src.matched | int == 0
+
+- name: Pick the newest export (handles version bumps)
+  ansible.builtin.set_fact:
+    _mmx_src_file: >-
+      {{ (_mmx_src.files | sort(attribute='mtime') | last).path }}
+
+- name: Ensure the install directory exists
+  ansible.builtin.file:
+    path: "{{ dg_mmx_root }}"
+    state: directory
+    mode: "0755"
+
+- name: Stage the Godot binary into the box (self-contained, executable)
+  ansible.builtin.copy:
+    src: "{{ _mmx_src_file }}"
+    dest: "{{ dg_mmx_bin }}"
+    mode: "0755"
+    remote_src: true
+    backup: true
+  register: _mmx_copy
+
+- name: Assert the binary is present and runnable
+  ansible.builtin.command:
+    cmd: "{{ dg_in_box }} {{ dg_mmx_bin }} --version"
+  register: _mmx_ver
+  changed_when: false
+  failed_when: "'stable' not in _mmx_ver.stdout"
+
+- name: Report the Godot engine version
+  ansible.builtin.debug:
+    msg: "Mega Man X Regenesis staged (Godot {{ _mmx_ver.stdout | trim }})."
+
+- name: Deploy the launcher
+  ansible.builtin.template:
+    src: mmx-regenesis-launch.sh.j2
+    dest: "{{ dg_box_home }}/bin/mmx-regenesis-launch"
+    mode: "0755"
+
+- name: Render the desktop entry
+  ansible.builtin.template:
+    src: mmx-regenesis.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-mmx-regenesis.desktop"
+    mode: "0644"
+
+- name: Install the desktop file into the host applications dir
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _mmx_host_launchers
+  changed_when: >-
+    'installed ' in _mmx_host_launchers.stdout or
+    'removed stale ' in _mmx_host_launchers.stdout
+
+- name: Note how to run it
+  ansible.builtin.debug:
+    msg: >-
+      Mega Man X Regenesis installed (native Godot {{ dg_mmx_renderer }} on the RTX).
+      Launch from Walker ("Mega Man X Regenesis") or run:
+      {{ dg_box_home }}/bin/mmx-regenesis-launch

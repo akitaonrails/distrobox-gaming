@@ -1,0 +1,7 @@
+---
+- name: Install Mega Man X Regenesis (Godot 4 fan game, native Linux)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_mmx_regenesis
