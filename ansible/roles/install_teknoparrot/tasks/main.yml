@@ -46,6 +46,7 @@
     sh -c '{{ item }}'
   loop:
     - wine reg add "HKCU\\Software\\Wine\\X11 Driver" /v UseEGL /t REG_SZ /d N /f
+    - wine reg add "HKCU\\Software\\Wine\\X11 Driver" /v UseXVidMode /t REG_SZ /d N /f
     - wine reg add "HKCU\\Control Panel\\Desktop" /v LogPixels /t REG_DWORD /d 192 /f
     - wine reg add "HKCU\\Software\\Wine\\Explorer" /v Desktop /d Default /f
     - wine reg add "HKCU\\Software\\Wine\\Explorer\\Desktops" /v Default /d "{{ dg_teknoparrot_virtual_desktop }}" /f

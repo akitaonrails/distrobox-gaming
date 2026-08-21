@@ -45,3 +45,8 @@ dg_teknoparrot_winetricks:
 #    prefix-wide virtual desktop confines them to a real window.
 #  - teknoparrot:// URL handler : --profile launches go through this scheme.
 dg_teknoparrot_virtual_desktop: "1920x1080"
+
+# wine-staging-9.19 runner (classic WoW64). wine 11.x's new WoW64 crashes the
+# OpenParrot loader (0xc00002b5 at init); 9.19 gets OpenParrot/Taito Type X
+# games rendering. Provisioned by install_pc_racing under tools/wine-runners.
+dg_teknoparrot_wine_runner: "{{ dg_pc_racing_wine_runner_root }}/wine-staging-9.19/usr"
