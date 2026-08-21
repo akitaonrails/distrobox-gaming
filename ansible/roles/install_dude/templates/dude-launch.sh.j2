@@ -1,0 +1,51 @@
+#!/usr/bin/env sh
+set -eu
+# DUDE (Doom3 Unified Development Engine — dhewm3 fork, GL3/Vulkan) launcher.
+# Runs native on the RTX 5090, on DP-1. Managed by install_dude.
+# Needs CLASSIC Doom 3 PC data (base/*.pk4 [+ d3xp/*.pk4 for Resurrection of
+# Evil]) — NOT BFG Edition. Auto-detects a Steam/GOG install; override with
+# DOOM3_BASEPATH=/path or the first arg.
+
+DUDE="{{ dg_dude_build }}/dude"
+if [ ! -x "$DUDE" ]; then
+  printf '%s\n' "ERROR: dude not built at $DUDE. Run: ansible-playbook install-dude.yml" >&2
+  exit 1
+fi
+
+# Locate classic Doom 3 (a dir containing base/pak000.pk4).
+basepath="${DOOM3_BASEPATH:-${1:-}}"
+if [ -z "$basepath" ]; then
+  for cand in \
+{% for p in dg_dude_doom3_search_paths %}
+    "{{ p }}" \
+{% endfor %}
+    ; do
+    if [ -f "$cand/base/pak000.pk4" ]; then basepath="$cand"; break; fi
+  done
+fi
+if [ -z "$basepath" ] || [ ! -f "$basepath/base/pak000.pk4" ]; then
+  printf '%s\n' "ERROR: classic Doom 3 data not found (need <dir>/base/pak000.pk4)." >&2
+  printf '%s\n' "Install classic Doom 3 (Steam appid 9050) — NOT BFG Edition — then re-run," >&2
+  printf '%s\n' "or pass the path explicitly: dude-launch /path/to/doom3" >&2
+  exit 1
+fi
+
+# Focus the main landscape 4K monitor (DP-1).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b"/dispatch focusmonitor DP-1"); s.recv(64); s.close()
+PY
+
+# Native on the RTX: pin nvidia for Vulkan + GLX.
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+cd "{{ dg_dude_build }}"
+exec ./dude +set fs_basepath "$basepath" +set r_graphicsAPI "${DUDE_API:-{{ dg_dude_graphics_api }}}" "$@"

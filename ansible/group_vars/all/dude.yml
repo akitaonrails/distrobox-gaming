@@ -1,0 +1,22 @@
+---
+# DUDE — Doom3 Unified Development Engine (dhewm3 fork with GL3/Vulkan renderers +
+# an opt-in enhancement suite). Native build, runs on the RTX. Managed by
+# install_dude. Needs CLASSIC Doom 3 PC data (base/*.pk4), NOT BFG Edition — the
+# user owns it on Steam (appid 9050); install it, the launcher auto-detects it.
+# See docs/dude.md.
+
+dg_dude_repo: "https://github.com/Inkub0/dude.git"
+dg_dude_src: "{{ dg_box_home }}/tools/dude-src"
+dg_dude_build: "{{ dg_dude_src }}/build"
+dg_dude_vulkan: true                 # build the Vulkan 1.4 backend (RTX 5090)
+dg_dude_graphics_api: vulkan         # runtime renderer: opengl | opengl3 | vulkan
+
+# Native build deps (present on a set-up Arch box; listed for self-containment).
+dg_dude_packages: [cmake, gcc, sdl2, openal, vulkan-headers, vulkan-icd-loader, glslang, shaderc]
+
+# Where the launcher looks for classic Doom 3 (a dir with base/pak000.pk4).
+# Steam appid 9050 installs to <library>/steamapps/common/Doom 3.
+dg_dude_doom3_search_paths:
+  - "{{ ansible_facts.env.HOME }}/.local/share/Steam/steamapps/common/Doom 3"
+  - "/mnt/data/steam/steamapps/common/Doom 3"
+  - "{{ dg_roms_final_root }}/PC/Doom 3"

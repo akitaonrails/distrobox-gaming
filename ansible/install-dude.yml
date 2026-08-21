@@ -1,0 +1,7 @@
+---
+- name: Build DUDE (Doom3 Unified Development Engine) + launcher
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_dude

@@ -1,0 +1,54 @@
+---
+# Build DUDE (Doom3 Unified Development Engine) natively and deploy a launcher.
+# Needs classic Doom 3 PC data at runtime (auto-detected). See docs/dude.md.
+
+- name: Clone/update the DUDE source
+  ansible.builtin.git:
+    repo: "{{ dg_dude_repo }}"
+    dest: "{{ dg_dude_src }}"
+    depth: 1
+    version: master
+    force: true
+  register: _dude_git
+
+- name: Build DUDE ({{ 'Vulkan + GL3' if dg_dude_vulkan else 'GL3' }})
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} bash -lc 'cd "{{ dg_dude_src }}" && ./build.sh {{ '--vulkan' if dg_dude_vulkan else '' }}'
+  register: _dude_build
+  changed_when: "'Built target dude' in _dude_build.stdout or _dude_git.changed"
+
+- name: Assert the dude binary was produced
+  ansible.builtin.stat:
+    path: "{{ dg_dude_build }}/dude"
+  register: _dude_bin
+  failed_when: not _dude_bin.stat.exists
+
+- name: Deploy the DUDE launcher
+  ansible.builtin.template:
+    src: dude-launch.sh.j2
+    dest: "{{ dg_box_home }}/bin/dude-launch"
+    mode: "0755"
+
+- name: Render the DUDE desktop entry
+  ansible.builtin.template:
+    src: dude.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-dude.desktop"
+    mode: "0644"
+
+- name: Install the DUDE desktop file into the host applications dir
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _dude_host_launchers
+  changed_when: >-
+    'installed ' in _dude_host_launchers.stdout or
+    'removed stale ' in _dude_host_launchers.stdout
+
+- name: Note Doom 3 data requirement
+  ansible.builtin.debug:
+    msg: >-
+      DUDE built. It needs CLASSIC Doom 3 PC data (base/*.pk4) — NOT BFG Edition.
+      Install Doom 3 (Steam appid 9050); the launcher auto-detects it. Run:
+      {{ dg_box_home }}/bin/dude-launch
