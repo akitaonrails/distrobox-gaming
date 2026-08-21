@@ -1,7 +1,0 @@
----
-- name: Install TeknoParrot (Windows UI under Wine) + configure arcade games
-  hosts: localhost
-  connection: local
-  gather_facts: true
-  roles:
-    - install_teknoparrot
