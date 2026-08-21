@@ -18,7 +18,14 @@ SKIP_FOLDER={"TPBootstrapper","initdexp-chd","initd-chd"}
 SUPPORTED={"OpenParrot","TeknoParrot","ElfLdr2","N2","TeknoMacaw","TeknoViper","TeknoVegas"}
 CONSOLE={"pcsx2x6","cxbxr","RPCS3","Dolphin","CrediarDolphin","Play"}
 
-def norm(s): return re.sub(r'[^a-z0-9]','',(s or '').lower())
+_ROMAN=[('viii','8'),('vii','7'),('iii','3'),('xiii','13'),('xii','12'),('xi','11'),
+        ('iv','4'),('ix','9'),('vi','6'),('ii','2'),('x','10'),('v','5')]
+def norm(s):
+    s=(s or '').lower()
+    for r,a in _ROMAN: s=re.sub(r'\b'+r+r'\b',a,s)   # roman->arabic on word tokens
+    return re.sub(r'[^a-z0-9]','',s)
+# Unmatched folders on these platforms are console-emulated -> archive (dedicated emus).
+_CONSOLE_PLAT=re.compile(r'chihiro|triforce',re.I)
 def strip_suffix(n): return re.sub(r'\s*\([^)]*\)\s*$','',re.sub(r'\s*\([^)]*\)\s*$','',n)).strip()
 def winpath(p): return "Z:\\"+p.lstrip("/").replace("/","\\")
 def parse_folder(name):
@@ -90,7 +97,25 @@ for folder in sorted(os.listdir(GAMES)):
     if not cands:
         direct=[os.path.splitext(os.path.basename(x))[0] for x in glob.glob(os.path.join(PROF,'*.xml')) if norm(os.path.splitext(os.path.basename(x))[0])==norm(gname)]
         cands=[(direct[0],gname,plat)] if len(direct)==1 else None
-    if not cands: skipped.append((folder,"unmatched")); continue
+    if not cands:
+        # conservative fuzzy fallback: one normalized name contains the other AND
+        # the platform matches AND they're of comparable length (avoids
+        # "Batman" matching "Batman Begins"). Restricted to a single hit.
+        fn=norm(gname); nplat=norm(plat); fuzzy=[]
+        for k,lst in idx.items():
+            if not k or not fn: continue
+            if (fn in k or k in fn) and min(len(fn),len(k))/max(len(fn),len(k))>=0.72:
+                for gid,gn,pl in lst:
+                    if nplat and (nplat in norm(pl) or norm(pl) in nplat): fuzzy.append((gid,gn,pl))
+        uf={c[0]:c for c in fuzzy}
+        cands=list(uf.values()) if len(uf)==1 else (list(uf.values()) or None)
+    if not cands:
+        if _CONSOLE_PLAT.search(plat):
+            dst=os.path.join(ARCHIVE,folder)
+            if os.path.isdir(os.path.join(GAMES,folder)) and not os.path.exists(dst):
+                shutil.move(os.path.join(GAMES,folder),dst); archived.append((folder,"console-platform:"+plat))
+            continue
+        skipped.append((folder,"unmatched")); continue
     uniq={c[0]:c for c in cands}; cands=list(uniq.values())
     if len(cands)==1: gid=cands[0][0]
     else:
