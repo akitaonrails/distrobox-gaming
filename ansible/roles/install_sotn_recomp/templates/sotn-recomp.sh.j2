@@ -1,0 +1,37 @@
+#!/usr/bin/env sh
+set -eu
+
+install_dir="{{ dg_sotn_recomp_install_dir }}"
+exe="$install_dir/{{ dg_sotn_recomp_exe }}"
+
+if [ ! -x "$exe" ]; then
+  printf '%s\n' "ERROR: SymphonyRecomp is not installed ($exe)." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-sotn-recomp.yml" >&2
+  exit 1
+fi
+if [ ! -f "$install_dir/disc/Castlevania - Symphony of the Night (USA).cue" ]; then
+  printf '%s\n' "ERROR: SotN disc missing under $install_dir/disc/ — provide your owned NTSC-U PS1 rip." >&2
+  exit 1
+fi
+
+cd "$install_dir"
+# .NET 10 framework-dependent app; point the apphost at the system runtime.
+export DOTNET_ROOT="${DOTNET_ROOT:-/usr/share/dotnet}"
+# The recomp renders with OpenGL (Silk.NET/GLFW). On this AMD-iGPU + RTX box GLX
+# defaults to the iGPU/llvmpipe -> black; force the NVIDIA GLX vendor + PRIME
+# offload so it runs on the RTX (verified: "[Gpu] ... NVIDIA GeForce RTX 5090").
+export __NV_PRIME_RENDER_OFFLOAD="${__NV_PRIME_RENDER_OFFLOAD:-1}"
+export __GLX_VENDOR_LIBRARY_NAME="${__GLX_VENDOR_LIBRARY_NAME:-nvidia}"
+
+# Open on the main landscape monitor (DP-1), not the portrait DP-2. hyprctl
+# isn't in the box; talk to the Hyprland socket via python3 (best-effort).
+if command -v python3 >/dev/null 2>&1 && [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+  python3 - "{{ dg_sotn_recomp_main_output }}" <<'PY' >/dev/null 2>&1 || true
+import socket, os, sys
+sig = os.environ["HYPRLAND_INSTANCE_SIGNATURE"]; xdg = os.environ["XDG_RUNTIME_DIR"]
+s = socket.socket(socket.AF_UNIX); s.connect(f"{xdg}/hypr/{sig}/.socket.sock")
+s.sendall(f"dispatch focusmonitor {sys.argv[1]}".encode()); s.recv(64)
+PY
+fi
+
+exec env -u PYTHONHOME -u PYTHONPATH "$exe" "$@"

@@ -1,0 +1,137 @@
+---
+# SymphonyRecomp — native Castlevania: SotN recompilation (prebuilt .NET/OpenGL).
+# See group_vars/all/sotn_recomp.yml and docs/sotn-recomp.md.
+
+- name: Revert the SymphonyRecomp install when requested
+  when: dg_sotn_recomp_revert | bool
+  block:
+    - name: Remove the SymphonyRecomp launcher + install
+      ansible.builtin.shell: "{{ dg_in_box }} rm -rf {{ item | quote }}"
+      loop:
+        - "{{ dg_sotn_recomp_bin }}"
+        - "{{ dg_sotn_recomp_install_dir }}"
+      changed_when: true
+    - name: Report SymphonyRecomp reverted
+      ansible.builtin.debug:
+        msg: "SymphonyRecomp removed. Your PS1 disc rip on the NAS is untouched (was only symlinked)."
+
+- name: Install SymphonyRecomp
+  when: not (dg_sotn_recomp_revert | bool)
+  block:
+    - name: Assert the owned SotN disc tracks exist
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - "{{ dg_sotn_recomp_track1_src }}"
+        - "{{ dg_sotn_recomp_track2_src }}"
+      register: _sotn_tracks
+
+    - name: Fail with guidance when a disc track is missing
+      ansible.builtin.fail:
+        msg: >-
+          Missing SotN PS1 track: {{ item.item }}. Provide your legally-owned
+          NTSC-U (SLUS-00067) redump split bin/cue, or override
+          dg_sotn_recomp_track1_src / dg_sotn_recomp_track2_src. See
+          docs/sotn-recomp.md.
+      loop: "{{ _sotn_tracks.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+      when: not item.stat.exists
+
+    - name: Create SymphonyRecomp directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_sotn_recomp_cache_dir }}"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Install SymphonyRecomp runtime packages inside the box
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} sudo pacman -S --needed --noconfirm
+        {{ dg_sotn_recomp_packages | join(' ') }}
+      register: _sotn_pacman
+      changed_when: "'installing' in _sotn_pacman.stdout or 'upgrading' in _sotn_pacman.stdout"
+
+    - name: Download the pinned SymphonyRecomp release
+      ansible.builtin.get_url:
+        url: "{{ dg_sotn_recomp_asset_url }}"
+        dest: "{{ dg_sotn_recomp_cache_dir }}/{{ dg_sotn_recomp_asset_name }}"
+        checksum: "sha256:{{ dg_sotn_recomp_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Extract the SymphonyRecomp release (ref-gated)
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          inst="{{ dg_sotn_recomp_install_dir }}"
+          if [ -x "$inst/{{ dg_sotn_recomp_exe }}" ] &&
+             grep -qx "{{ dg_sotn_recomp_version }}" "$inst/.dg-installed-ref" 2>/dev/null; then
+            exit 0
+          fi
+          # Preserve an existing disc/ across re-extract.
+          tmpdisc=""
+          [ -d "$inst/disc" ] && { tmpdisc="$(mktemp -d)"; cp -a "$inst/disc/." "$tmpdisc/"; }
+          rm -rf "$inst"; mkdir -p "$inst"
+          tar xzf "{{ dg_sotn_recomp_cache_dir }}/{{ dg_sotn_recomp_asset_name }}" -C "$inst"
+          chmod 0755 "$inst/{{ dg_sotn_recomp_exe }}"
+          [ -n "$tmpdisc" ] && { mkdir -p "$inst/disc"; cp -a "$tmpdisc/." "$inst/disc/"; rm -rf "$tmpdisc"; }
+          printf "%s\n" "{{ dg_sotn_recomp_version }}" > "$inst/.dg-installed-ref"
+          printf "%s\n" "installed-sotn-recomp"
+        '
+      register: _sotn_extract
+      changed_when: "'installed-sotn-recomp' in _sotn_extract.stdout"
+
+    - name: Stage the SotN disc (symlink owned tracks + write cue)
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          disc="{{ dg_sotn_recomp_install_dir }}/disc"
+          mkdir -p "$disc"
+          ln -sfn "{{ dg_sotn_recomp_track1_src }}" "$disc/Castlevania - Symphony of the Night (Track 1).bin"
+          ln -sfn "{{ dg_sotn_recomp_track2_src }}" "$disc/Castlevania - Symphony of the Night (Track 2).bin"
+          cue="$disc/Castlevania - Symphony of the Night (USA).cue"
+          if [ ! -f "$cue" ]; then
+            {
+              printf "%s\n" "FILE \"Castlevania - Symphony of the Night (Track 1).bin\" BINARY"
+              printf "%s\n" "  TRACK 01 MODE2/2352"
+              printf "%s\n" "    INDEX 01 00:00:00"
+              printf "%s\n" "FILE \"Castlevania - Symphony of the Night (Track 2).bin\" BINARY"
+              printf "%s\n" "  TRACK 02 AUDIO"
+              printf "%s\n" "    INDEX 00 00:00:00"
+              printf "%s\n" "    INDEX 01 00:02:00"
+            } > "$cue"
+            printf "%s\n" "wrote-cue"
+          fi
+        '
+      register: _sotn_disc
+      changed_when: "'wrote-cue' in _sotn_disc.stdout"
+
+    - name: Seed settings.json with the disc path (first run only)
+      # The app writes settings.json on first launch with an EMPTY CdPath and
+      # then sits on its Disc Setup / Disc Picker screen (blank ImGui panels).
+      # Pre-seeding CdPath (pointed at the staged cue) makes it load the game
+      # straight away. force:false so it never clobbers the user's own tweaks.
+      ansible.builtin.template:
+        src: settings.json.j2
+        dest: "{{ dg_sotn_recomp_install_dir }}/settings.json"
+        mode: "0644"
+        force: false
+
+    - name: Deploy the SymphonyRecomp launcher wrapper
+      ansible.builtin.template:
+        src: sotn-recomp.sh.j2
+        dest: "{{ dg_sotn_recomp_bin }}"
+        mode: "0755"
+
+    - name: Refresh desktop launchers
+      ansible.builtin.include_role:
+        name: desktop_apps
+
+    - name: Report SymphonyRecomp setup
+      ansible.builtin.debug:
+        msg:
+          - "SymphonyRecomp {{ dg_sotn_recomp_version }} installed at {{ dg_sotn_recomp_install_dir }}; launcher {{ dg_sotn_recomp_bin }}."
+          - "Disc symlinked from your owned NTSC-U rip; renders on the RTX via OpenGL. Run scripts/install-host-launchers.sh to refresh the menu."
+          - "Revert: -e dg_sotn_recomp_revert=true."
