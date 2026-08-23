@@ -1,7 +1,0 @@
----
-- name: Install SymphonyRecomp (Castlevania SotN recompilation)
-  hosts: localhost
-  connection: local
-  gather_facts: true
-  roles:
-    - install_sotn_recomp
