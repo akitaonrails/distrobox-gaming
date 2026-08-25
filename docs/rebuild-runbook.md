@@ -118,6 +118,18 @@ bind mount are untouched.
   up a NOPASSWD sudoers entry for that command ahead of time. Every
   other privileged step in this repo is passwordless sudo *inside* the
   box.
+- **Container-runtime access (docker group).** distrobox talks to the
+  container runtime over its socket; on a Docker host that socket is
+  `root:docker 0660`, so the invoking user **must be in the `docker`
+  group** (`sudo usermod -aG docker $USER`, then re-login — or `newgrp
+  docker` for the current shell). Without it *every* `distrobox-enter`
+  fails with "permission denied … docker.sock" and distrobox offers to
+  *create a new box* instead of entering the existing one — never accept
+  that prompt. `check_host` (`site.yml --tags check`) now asserts this.
+  Watch for it after host updates: a `containerd`/`docker` package
+  upgrade restarts the runtime (which also restarts the box, wiping its
+  tmpfs `/run` — see `docs/box-steam-dbus.md`) and may leave the daemon
+  stopped (`sudo systemctl start containerd docker`).
 - **Run in the foreground.** Do not launch a full rebuild detached or
   backgrounded (`nohup … &`, a tmux pane you detach from, etc.). Slow
   steps — Wine installers, large archive extraction — have been killed

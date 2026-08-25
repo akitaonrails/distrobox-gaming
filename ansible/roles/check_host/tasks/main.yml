@@ -12,6 +12,28 @@
     - python
   changed_when: false
 
+# distrobox drives the box through the container runtime's socket. On a
+# Docker host that socket is root:docker 0660, so the invoking user must be in
+# the `docker` group — otherwise EVERY distrobox-enter fails with "permission
+# denied ... docker.sock" and distrobox offers to CREATE a new box instead of
+# entering the existing one. This bit us 2026-08-25: a host containerd/docker
+# upgrade restarted the runtime and the (empty) docker group blocked access.
+# Group membership is a host-sudo action we can't automate; fail with guidance.
+- name: Probe container-runtime access (distrobox list)
+  ansible.builtin.shell: "distrobox list 2>&1 || true"
+  register: _dg_runtime_probe
+  changed_when: false
+
+- name: Assert the container runtime socket is accessible
+  ansible.builtin.assert:
+    that: "'permission denied' not in (_dg_runtime_probe.stdout | lower)"
+    fail_msg: >-
+      distrobox cannot reach the container runtime socket (permission denied).
+      On a Docker host add yourself to the docker group and re-login:
+      `sudo usermod -aG docker {{ ansible_facts.user_id }}` (or use
+      `newgrp docker` for the current shell). Also make sure the daemon is
+      running: `sudo systemctl start containerd docker`.
+
 - name: Verify box root is writable
   ansible.builtin.file:
     path: "{{ dg_box_root }}"
