@@ -26,9 +26,28 @@ else
   log "warning: no session bus found in $host_runtime or $container_runtime"
 fi
 
+# Steam's newer client (2026 builds) watches for network changes via the SYSTEM
+# D-Bus / NetworkManager. This box has no system bus of its own, and its /run is
+# tmpfs — wiped on every container restart — so the socket vanishes whenever the
+# box restarts. Without it the client's network subsystem never initializes
+# (RegisterForDeviceChanges "is not a function") and the UI hangs forever on
+# "waiting for network connection" even though the network is fine. Link the
+# box's expected path to the host's system bus (which has NetworkManager).
+# Idempotent; sudo is passwordless in the box. See docs/box-steam-dbus.md.
+host_system_bus="/run/host/run/dbus/system_bus_socket"
+box_system_bus="/run/dbus/system_bus_socket"
+if [ ! -S "$box_system_bus" ] && [ -S "$host_system_bus" ]; then
+  if sudo -n mkdir -p /run/dbus 2>/dev/null && sudo -n ln -sfn "$host_system_bus" "$box_system_bus" 2>/dev/null; then
+    log "linked system bus $box_system_bus -> host (fixes 'waiting for network')"
+  else
+    log "warning: could not link system bus; Steam may hang on 'waiting for network'"
+  fi
+fi
+
 if [ "${1:-}" = "--diagnose" ]; then
   printf 'XDG_RUNTIME_DIR=%s\n' "${XDG_RUNTIME_DIR:-}"
   printf 'DBUS_SESSION_BUS_ADDRESS=%s\n' "${DBUS_SESSION_BUS_ADDRESS:-}"
+  printf 'system_bus=%s\n' "$([ -S "$box_system_bus" ] && echo ok || echo missing)"
   if [ -n "${XDG_RUNTIME_DIR:-}" ] && [ -S "$XDG_RUNTIME_DIR/bus" ]; then
     printf 'session_bus=ok\n'
   else
