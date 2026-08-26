@@ -28,6 +28,10 @@ dg_openbor_roms_dir: "{{ dg_emudeck_root }}/roms_mid/openbor"
 
 dg_openbor_main_output: "DP-1"
 
+# Bind the 8BitDo to Player 1 in each game's control cfg (OpenBOR defaults leave a
+# single pad unassigned). Helper + wrapper self-heal; see docs/openbor.md.
+dg_openbor_bind_helper: "{{ dg_box_home }}/scripts/openbor-bind-8bitdo.py"
+
 # Games: extract only the .pak member from the user's staged archive.
 dg_openbor_games:
   - slug: sor-troubles-in-japan

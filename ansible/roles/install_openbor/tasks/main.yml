@@ -77,6 +77,35 @@
   loop_control:
     label: "{{ item.name }}"
 
+- name: Deploy the OpenBOR 8BitDo pad-bind helper
+  ansible.builtin.copy:
+    src: "{{ dg_project_root }}/scripts/openbor-bind-8bitdo.py"
+    dest: "{{ dg_openbor_bind_helper }}"
+    mode: "0755"
+
+- name: Bake 8BitDo -> Player 1 into each game's control cfg
+  # OpenBOR defaults Player 1 to the keyboard and Player 2 to joystick index 1,
+  # so a single controller (js0) is bound to nobody and the game ignores it.
+  # Generate the cfg headlessly (SDL dummy driver — no window flashes during a
+  # rebuild) if it does not exist yet, then bind js0 to Player 1. Idempotent and
+  # leaves a user's manual in-game rebind alone; the wrapper also self-heals.
+  ansible.builtin.shell: |
+    set -eu
+    cfg="{{ dg_openbor_data_dir }}/Saves/{{ item.pak | regex_replace('\\.pak$', '') }}.cfg"
+    if [ ! -f "$cfg" ]; then
+      {{ dg_in_box }} sh -c 'cd "{{ dg_openbor_data_dir }}" && \
+        LD_LIBRARY_PATH="{{ dg_openbor_engine_dir }}/usr/lib" \
+        SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
+        timeout 12 "{{ dg_openbor_engine_dir }}/usr/bin/OpenBOR" \
+        "{{ dg_openbor_roms_dir }}/{{ item.pak }}"' >/dev/null 2>&1 || true
+    fi
+    python3 "{{ dg_project_root }}/scripts/openbor-bind-8bitdo.py" "$cfg"
+  register: _openbor_bind
+  changed_when: "'bound 8BitDo' in _openbor_bind.stdout"
+  loop: "{{ dg_openbor_games }}"
+  loop_control:
+    label: "{{ item.name }}"
+
 - name: Render per-game desktop entries
   ansible.builtin.template:
     src: openbor-game.desktop.j2

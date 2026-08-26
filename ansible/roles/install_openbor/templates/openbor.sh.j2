@@ -47,4 +47,12 @@ export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
 # OpenBOR writes Saves/ Logs/ ScreenShots/ relative to CWD — keep them here.
 mkdir -p "$DATA"
 cd "$DATA"
+
+# Ensure the 8BitDo is bound to Player 1: OpenBOR defaults P1 to the keyboard and
+# P2 to joystick index 1, so a single pad is unassigned and the game ignores it.
+# Idempotent + only touches keyboard-default binds, so it never clobbers a manual
+# in-game rebind, and no-ops on the very first launch (cfg not created yet — the
+# install role pre-generates it; failing that, the *next* launch binds it).
+cfg="$DATA/Saves/$(basename "$pak" .pak).cfg"
+python3 "{{ dg_openbor_bind_helper }}" "$cfg" >&2 2>/dev/null || true
 exec "$BIN" "$pak" "$@"

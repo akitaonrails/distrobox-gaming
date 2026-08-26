@@ -60,6 +60,23 @@ to focus DP-1.
 
 ## Controller
 
-OpenBOR uses SDL2 — the **8BitDo is detected natively** (`Joystick: … connected
-at port: 0` in `~/openbor/Logs/OpenBorLog.txt`). Buttons are configured in the
-game's own Options → Control menu (OpenBOR's per-game `Saves/<game>.cfg`).
+OpenBOR uses SDL2 — the **8BitDo is detected natively** (`… 6 axes, 11 buttons,
+1 hat` in `~/openbor/Logs/OpenBorLog.txt`). But OpenBOR's **defaults leave a
+single pad unassigned**: Player 1 defaults to the *keyboard* and Player 2 to
+*joystick index 1* (the second pad), so one controller (js0, index 0) is bound
+to nobody and the game ignores it — the classic "pad not recognized" symptom.
+
+The role **binds js0 to Player 1** automatically (`scripts/openbor-bind-8bitdo.py`,
+run at install after generating the cfg headlessly with `SDL_VIDEODRIVER=dummy`;
+the wrapper also self-heals on launch). Mapping: **dpad** = move, **A** = attack,
+**B** = jump, **X/Y/LB/RB** = attacks 3-6, **Start** = start; keyboard (arrows,
+A/S/Z/X/D/F, Enter) still works as it was never the pad's slot… actually it is
+replaced on P1 — rebind in-game if you want both. The binder is **idempotent**
+and only rewrites the keyboard-default keyset, so a manual in-game rebind is
+never clobbered.
+
+OpenBOR keycodes (from `engine/sdl/control.h`): js index `i` button `b` →
+`1 + i*64 + b`; hat `h` → `hatfirst = 1 + i*64 + NumButtons + 2*NumAxes + 4*h`
+(Up/Right/Down/Left = +0/+1/+2/+3). For the 8BitDo (11 btn, 6 ax, 1 hat) that is
+buttons 1-11 and dpad 24-27. Override the pad layout via `DG_OPENBOR_NUMBUTTONS`
+/ `DG_OPENBOR_NUMAXES` env if a different controller/mode is used.
