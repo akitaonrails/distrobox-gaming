@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name={{ item.name }} (on {{ dg_box_name }})
+Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_openbor_bin }} "{{ dg_openbor_roms_dir }}/{{ item.pak }}"
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment={{ item.name }} — OpenBOR fan game, native engine on the RTX
+Categories=Game;ActionGame;
+Keywords=openbor;beat em up;{{ item.slug }};
+StartupWMClass=OpenBOR;

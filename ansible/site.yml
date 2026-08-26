@@ -27,6 +27,7 @@
     - { role: install_sega_rally,        tags: [sega_rally, never] }
     - { role: install_ridge_racer,       tags: [ridge_racer, never] }
     - { role: install_screamer,          tags: [screamer, never] }
+    - { role: install_openbor,           tags: [openbor, never] }
     - { role: install_sorr,              tags: [sorr, never] }
     - { role: install_sor4_reignited,    tags: [sor4_reignited, never] }
     - { role: install_prboom_plus_rt,    tags: [prboom_rt, doom_rt, never] }

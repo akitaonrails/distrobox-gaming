@@ -1,0 +1,7 @@
+---
+- name: Install OpenBOR (native engine) + OpenBOR fan games
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_openbor

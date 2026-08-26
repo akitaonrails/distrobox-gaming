@@ -393,3 +393,15 @@ dg_esde_systems:
       - { label: "MAME (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/mame_libretro.so %ROM%" }
     platform: arcade
     theme: mame
+
+  # OpenBOR fan games as .pak files, run by the native OpenBOR 4.0 engine
+  # wrapper (install_openbor). ES-DE's stock 'openbor' system expects one
+  # AppImage per game; ours is pak-based. See docs/openbor.md.
+  - name: openbor
+    fullname: OpenBOR Game Engine
+    path: "{{ dg_emudeck_root }}/roms_mid/openbor"
+    extension: ".pak .PAK"
+    commands:
+      - { label: "OpenBOR (Standalone)", cmd: "{{ dg_box_home }}/bin/openbor %ROM%" }
+    platform: openbor
+    theme: openbor

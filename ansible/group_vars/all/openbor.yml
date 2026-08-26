@@ -1,0 +1,41 @@
+---
+# OpenBOR — the open Beats of Rage engine, run NATIVELY on the RTX (no Wine).
+# Fan games ship as a .pak (engine-agnostic) usually bundled with an old Windows
+# OpenBOR exe; we ignore the exe and run the pak with the official native Linux
+# OpenBOR 4.0 build (pinned GitHub AppImage, extracted so its bundled libs —
+# libSDL2_gfx, an old libvpx.so.5 Arch no longer ships — are used).
+# Managed by install_openbor / install-openbor.yml. See docs/openbor.md.
+#
+# Adding a game is a data change: drop its archive in ROMS_FINAL/PC and append a
+# dg_openbor_games entry (archive + the .pak member path inside it).
+
+# Pinned engine release (DCurrent/openbor GitHub, native linux-x64 AppImage).
+dg_openbor_version: v7533                     # OpenBOR 4.0 Build 7533 (2024-02-12)
+dg_openbor_asset_name: "OpenBOR-Linux-x64-v4.0.Build.7533.AppImage"
+dg_openbor_asset_url: "https://github.com/DCurrent/openbor/releases/download/{{ dg_openbor_version }}/{{ dg_openbor_asset_name }}"
+dg_openbor_asset_sha256: c7725c4f3c9fa75fef18180665eb93fe47e1ce159f2fe996ba2f6cb408da6da6
+
+dg_openbor_root: "{{ dg_box_home }}/tools/openbor"
+dg_openbor_cache_dir: "{{ dg_openbor_root }}/cache"
+dg_openbor_engine_dir: "{{ dg_openbor_root }}/engine"      # extracted AppImage (squashfs-root)
+dg_openbor_bin: "{{ dg_box_home }}/bin/openbor"            # wrapper: openbor <game.pak>
+# OpenBOR writes Saves/, Logs/, ScreenShots/ relative to its CWD; the wrapper
+# runs from here so state is per-box and never lands in the ROM dir.
+dg_openbor_data_dir: "{{ dg_box_home }}/openbor"
+
+# Where the .pak files live (ES-DE 'openbor' system scans this dir).
+dg_openbor_roms_dir: "{{ dg_emudeck_root }}/roms_mid/openbor"
+
+dg_openbor_main_output: "DP-1"
+
+# Games: extract only the .pak member from the user's staged archive.
+dg_openbor_games:
+  - slug: sor-troubles-in-japan
+    name: "Streets of Rage: Troubles in Japan"
+    # chronocrash.com/forum/resources/streets-of-rage-troubles-in-japan.443/
+    # v1.1 by Berlioz (needs OpenBOR 4). Bundle ships an OpenBOR v3.0 GAME.exe
+    # (ignored) + the pak.
+    archive: "{{ dg_roms_final_root }}/PC/SoR_Troubles_In_Japan.rar"
+    pak_member: "paks/SoR_Troubles_In_Japan.pak"
+    pak: "SoR_Troubles_In_Japan.pak"
+    desktop: true

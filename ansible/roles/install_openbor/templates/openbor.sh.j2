@@ -1,0 +1,50 @@
+#!/usr/bin/env sh
+set -eu
+# OpenBOR wrapper — runs a .pak with the native OpenBOR {{ dg_openbor_version }}
+# engine on the RTX, on {{ dg_openbor_main_output }}. Managed by install_openbor.
+#   openbor /path/to/game.pak
+ENGINE="{{ dg_openbor_engine_dir }}"
+BIN="$ENGINE/usr/bin/OpenBOR"
+DATA="{{ dg_openbor_data_dir }}"
+if [ ! -x "$BIN" ]; then
+  printf '%s\n' "ERROR: OpenBOR engine missing at $BIN. Run: ansible-playbook install-openbor.yml" >&2
+  exit 1
+fi
+pak="${1:-}"
+if [ -z "$pak" ] || [ ! -f "$pak" ]; then
+  printf '%s\n' "usage: openbor /path/to/game.pak  (pak not found: '$pak')" >&2
+  exit 1
+fi
+case "$pak" in /*) ;; *) pak="$PWD/$pak" ;; esac
+shift
+
+# Focus the main landscape 4K monitor ({{ dg_openbor_main_output }}) before the
+# window opens. Hyprland >= 0.56 with Omarchy's Lua config parser: the socket
+# no longer accepts the legacy "dispatch focusmonitor X" / "keyword" forms
+# ("keyword can't work with non-legacy parsers. Use eval.") — send Lua via
+# `eval`. Fullscreen is NOT forced here: OpenBOR opens a native 320x240 window
+# and only persists fullscreen per game in a binary Saves/<game>.cfg, so the
+# host ~/.config/hypr/gaming.lua "direct-launch emulators" fallback rule lists
+# `openbor` (see docs/openbor.md); launched from ES-DE it inherits workspace 7.
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_openbor_main_output }}" }))'); s.recv(256); s.close()
+PY
+
+# Native on the dual-GPU box: pin nvidia GLX (SDL2/OpenGL renderer), keep the
+# pad alive in the background. The AppImage's bundled libs (libSDL2_gfx, an old
+# libvpx.so.5) must come first on the library path.
+export LD_LIBRARY_PATH="$ENGINE/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+# OpenBOR writes Saves/ Logs/ ScreenShots/ relative to CWD — keep them here.
+mkdir -p "$DATA"
+cd "$DATA"
+exec "$BIN" "$pak" "$@"

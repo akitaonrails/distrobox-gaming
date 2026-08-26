@@ -1,0 +1,105 @@
+---
+# OpenBOR (native Linux engine) + data-driven fan-game installs. Pins the
+# official OpenBOR 4.0 AppImage, extracts it (its bundled libs are required —
+# libSDL2_gfx / libvpx.so.5 aren't available from Arch), deploys a wrapper that
+# runs a .pak natively on the RTX + DP-1, stages each game's .pak into the
+# ES-DE openbor ROM dir, and renders desktop entries. See docs/openbor.md.
+
+- name: Create OpenBOR directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_openbor_cache_dir }}"
+    - "{{ dg_openbor_data_dir }}"
+    - "{{ dg_openbor_roms_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Download the pinned OpenBOR AppImage
+  ansible.builtin.get_url:
+    url: "{{ dg_openbor_asset_url }}"
+    dest: "{{ dg_openbor_cache_dir }}/{{ dg_openbor_asset_name }}"
+    checksum: "sha256:{{ dg_openbor_asset_sha256 }}"
+    mode: "0755"
+
+- name: Extract the OpenBOR AppImage (ref-gated; bundled libs are needed)
+  ansible.builtin.shell: |
+    set -eu
+    eng="{{ dg_openbor_engine_dir }}"
+    if [ -x "$eng/usr/bin/OpenBOR" ] && grep -qx "{{ dg_openbor_version }}" "$eng/.dg-installed-ref" 2>/dev/null; then
+      exit 0
+    fi
+    tmp="$(mktemp -d -p "{{ dg_openbor_root }}")"
+    cd "$tmp"
+    "{{ dg_openbor_cache_dir }}/{{ dg_openbor_asset_name }}" --appimage-extract >/dev/null
+    rm -rf "$eng"
+    mv "$tmp/squashfs-root" "$eng"
+    rm -rf "$tmp"
+    chmod 0755 "$eng/usr/bin/OpenBOR"
+    printf '%s\n' "{{ dg_openbor_version }}" > "$eng/.dg-installed-ref"
+    printf '%s\n' "extracted-openbor"
+  register: _openbor_extract
+  changed_when: "'extracted-openbor' in _openbor_extract.stdout"
+
+- name: Assert the native engine links cleanly inside the box
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sh -c 'LD_LIBRARY_PATH="{{ dg_openbor_engine_dir }}/usr/lib"
+    ldd "{{ dg_openbor_engine_dir }}/usr/bin/OpenBOR" | grep -c "not found" || true'
+  register: _openbor_ldd
+  changed_when: false
+  failed_when: (_openbor_ldd.stdout | trim) != "0"
+
+- name: Deploy the OpenBOR wrapper
+  ansible.builtin.template:
+    src: openbor.sh.j2
+    dest: "{{ dg_openbor_bin }}"
+    mode: "0755"
+
+- name: Assert each game's staged archive exists
+  ansible.builtin.stat:
+    path: "{{ item.archive }}"
+  loop: "{{ dg_openbor_games }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: _openbor_archives
+  failed_when: not _openbor_archives.stat.exists
+
+- name: Stage each game's .pak into the OpenBOR ROM dir (extract only the pak)
+  # bsdtar (libarchive) reads .rar/.zip/.7z alike; strip the member's dirs.
+  ansible.builtin.shell: >-
+    bsdtar -xf {{ item.archive | quote }} -C {{ dg_openbor_roms_dir | quote }}
+    --strip-components {{ (item.pak_member | dirname | length > 0) | ternary(1, 0) }}
+    {{ item.pak_member | quote }}
+  args:
+    creates: "{{ dg_openbor_roms_dir }}/{{ item.pak }}"
+  loop: "{{ dg_openbor_games }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Render per-game desktop entries
+  ansible.builtin.template:
+    src: openbor-game.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-openbor-{{ item.slug }}.desktop"
+    mode: "0644"
+  loop: "{{ dg_openbor_games | selectattr('desktop', 'defined') | selectattr('desktop') | list }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Install desktop entries into the host applications dir
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _openbor_host_launchers
+  changed_when: >-
+    'installed ' in _openbor_host_launchers.stdout or
+    'removed stale ' in _openbor_host_launchers.stdout
+
+- name: Report
+  ansible.builtin.debug:
+    msg: >-
+      OpenBOR {{ dg_openbor_version }} native at {{ dg_openbor_engine_dir }}; wrapper
+      {{ dg_openbor_bin }} <game.pak>. Paks in {{ dg_openbor_roms_dir }} (ES-DE
+      'openbor' system — regenerate with: ansible-playbook reset-configs.yml --tags esde).
