@@ -1,0 +1,35 @@
+---
+# Super Mario World Remastered — JHDev2006's Godot 4 remake of SMW (SNES), the
+# sibling of our Super Mario Bros. Remastered. Opt-in role install_smw_remastered.
+# See docs/smw-remastered.md.
+#
+# Native Linux Godot export (self-contained). Requires an original SMW SNES ROM:
+# the game's rom_checker wants a headerless "baserom.sfc" placed in its portable
+# user:// dir (the install dir). None of the original assets ship with it.
+
+dg_smw_remastered_repo: JHDev2006/Super-Mario-World-Remastered-Public
+dg_smw_remastered_version: v1.0.1
+dg_smw_remastered_asset_name: Linux.zip
+dg_smw_remastered_asset_url: "https://github.com/{{ dg_smw_remastered_repo }}/releases/download/{{ dg_smw_remastered_version }}/{{ dg_smw_remastered_asset_name }}"
+dg_smw_remastered_asset_sha256: 7102e7dd25ee133b5464efcd473cea027f003d91a59ae9fc928ac09c8ecda98e
+
+dg_smw_remastered_install_dir: "{{ dg_box_home }}/Games/smw-remastered"
+dg_smw_remastered_exe: MarioWorldRemastered.x86_64
+dg_smw_remastered_bin: "{{ dg_box_home }}/bin/smw-remastered"
+dg_smw_remastered_cache_dir: "{{ dg_box_home }}/cache/smw-remastered"
+
+# The SMW SNES ROM (headerless .sfc). Staged as baserom.sfc for the game's
+# rom_checker. USA Super Mario World; override for your rip.
+dg_smw_remastered_rom: "{{ dg_emudeck_root }}/roms/snes/Super Mario World (USA).sfc"
+
+# The game uses its Godot user:// data dir (NOT portable / the install dir): it
+# wants baserom.sfc placed here, verified on-screen ("Please place your SMW ROM
+# into: /mnt/data/distrobox/gaming/.local/share/SuperMarioWorldRemastered/").
+dg_smw_remastered_data_dir: "{{ dg_box_home }}/.local/share/SuperMarioWorldRemastered"
+
+dg_smw_remastered_main_output: "DP-1"
+
+dg_smw_remastered_packages:
+  - unzip
+
+dg_smw_remastered_revert: false

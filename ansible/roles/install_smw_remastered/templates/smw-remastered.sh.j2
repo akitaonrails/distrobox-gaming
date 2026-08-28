@@ -1,0 +1,34 @@
+#!/usr/bin/env sh
+# Super Mario World Remastered launcher (native Godot 4). Runs on the RTX, DP-1.
+set -eu
+
+install_dir="{{ dg_smw_remastered_install_dir }}"
+exe="$install_dir/{{ dg_smw_remastered_exe }}"
+
+if [ ! -x "$exe" ]; then
+  printf '%s\n' "ERROR: SMW Remastered is not installed ($exe)." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-smw-remastered.yml" >&2
+  exit 1
+fi
+
+# Pin the RTX on this dual-GPU box; keep the pad alive in the background.
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/nvidia_icd.json
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+# Open on the main landscape 4K monitor. Hyprland >= 0.56 (Omarchy Lua parser)
+# rejects the legacy "dispatch focusmonitor" socket form — send Lua via eval.
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_smw_remastered_main_output }}" }))'); s.recv(256); s.close()
+PY
+
+# The game reads its portable user:// (this dir) and baserom.sfc from here.
+cd "$install_dir"
+exec ./{{ dg_smw_remastered_exe }} "$@"

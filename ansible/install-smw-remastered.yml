@@ -1,0 +1,7 @@
+---
+- name: Install Super Mario World Remastered
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_smw_remastered

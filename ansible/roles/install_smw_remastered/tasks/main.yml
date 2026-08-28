@@ -1,0 +1,126 @@
+---
+# Super Mario World Remastered — native Linux Godot game (sibling of SMB
+# Remastered). See group_vars/all/smw_remastered.yml and docs/smw-remastered.md.
+
+- name: Revert Super Mario World Remastered when requested
+  when: dg_smw_remastered_revert | bool
+  block:
+    - name: Remove the SMW Remastered launcher + install dir
+      ansible.builtin.shell: "{{ dg_in_box }} rm -rf {{ item | quote }}"
+      loop:
+        - "{{ dg_smw_remastered_bin }}"
+        - "{{ dg_smw_remastered_install_dir }}"
+      changed_when: true
+    - name: Report SMW Remastered reverted
+      ansible.builtin.debug:
+        msg: "Super Mario World Remastered removed. Your SMW SNES ROM on the NAS is untouched."
+
+- name: Install Super Mario World Remastered
+  when: not (dg_smw_remastered_revert | bool)
+  block:
+    - name: Assert the SMW SNES ROM exists
+      ansible.builtin.stat:
+        path: "{{ dg_smw_remastered_rom }}"
+      register: _smw_rom
+
+    - name: Fail with guidance when the SMW ROM is missing
+      ansible.builtin.fail:
+        msg: >-
+          Missing SMW SNES ROM: {{ dg_smw_remastered_rom }}. Super Mario World
+          Remastered requires an original headerless SMW .sfc (its assets are
+          generated from it). Provide one or override dg_smw_remastered_rom.
+      when: not _smw_rom.stat.exists
+
+    - name: Install SMW Remastered packages inside the box
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} sudo pacman -S --needed --noconfirm
+        {{ dg_smw_remastered_packages | join(' ') }}
+      register: _smw_pacman
+      changed_when: "'installing' in _smw_pacman.stdout or 'upgrading' in _smw_pacman.stdout"
+
+    - name: Create SMW Remastered directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_smw_remastered_cache_dir }}"
+        - "{{ dg_smw_remastered_install_dir }}"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Download the pinned SMW Remastered Linux release
+      ansible.builtin.get_url:
+        url: "{{ dg_smw_remastered_asset_url }}"
+        dest: "{{ dg_smw_remastered_cache_dir }}/{{ dg_smw_remastered_asset_name }}"
+        checksum: "sha256:{{ dg_smw_remastered_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Extract the SMW Remastered release (version-gated, preserves saves/config)
+      # unzip -o updates the binary/pck on a version bump but keeps any user
+      # data (saves, settings) and the staged baserom.sfc, which are not in the zip.
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          inst="{{ dg_smw_remastered_install_dir }}"
+          if [ -x "$inst/{{ dg_smw_remastered_exe }}" ] &&
+             grep -qx "{{ dg_smw_remastered_version }}" "$inst/.dg-installed-ref" 2>/dev/null; then
+            exit 0
+          fi
+          unzip -o -q "{{ dg_smw_remastered_cache_dir }}/{{ dg_smw_remastered_asset_name }}" -d "$inst"
+          chmod +x "$inst/{{ dg_smw_remastered_exe }}"
+          printf "%s\n" "{{ dg_smw_remastered_version }}" > "$inst/.dg-installed-ref"
+          printf "%s\n" "installed-smw-remastered"
+        '
+      register: _smw_extract
+      changed_when: "'installed-smw-remastered' in _smw_extract.stdout"
+
+    - name: Ensure the game's user:// data dir exists
+      ansible.builtin.file:
+        path: "{{ dg_smw_remastered_data_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Stage the SMW ROM as baserom.sfc in the game's data dir (once)
+      # The rom_checker looks for baserom.sfc in the Godot user:// dir
+      # (~/.local/share/SuperMarioWorldRemastered), verified on-screen, then
+      # verifies + imports it. Must be a plain headerless SMW .sfc (not
+      # All-Stars/SMA2). Left in place so a version bump keeps the imported data.
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          dst="{{ dg_smw_remastered_data_dir }}/baserom.sfc"
+          [ -f "$dst" ] && exit 0
+          cp -f "{{ dg_smw_remastered_rom }}" "$dst"
+          printf "%s\n" "staged-rom"
+        '
+      register: _smw_rom_stage
+      changed_when: "'staged-rom' in _smw_rom_stage.stdout"
+
+    - name: Deploy the SMW Remastered launcher
+      ansible.builtin.template:
+        src: smw-remastered.sh.j2
+        dest: "{{ dg_smw_remastered_bin }}"
+        mode: "0755"
+
+    - name: Render the desktop entry
+      ansible.builtin.template:
+        src: gaming-smw-remastered.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-smw-remastered.desktop"
+        mode: "0644"
+
+    - name: Install the desktop entry into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _smw_host_launchers
+      changed_when: >-
+        'installed ' in _smw_host_launchers.stdout or
+        'removed stale ' in _smw_host_launchers.stdout
+
+    - name: Report SMW Remastered setup
+      ansible.builtin.debug:
+        msg:
+          - "Super Mario World Remastered {{ dg_smw_remastered_version }} installed at {{ dg_smw_remastered_install_dir }}; launcher {{ dg_smw_remastered_bin }}."
+          - "Staged the SMW ROM as baserom.sfc; runs native on the RTX, 8BitDo works (Godot). Revert: -e dg_smw_remastered_revert=true."
