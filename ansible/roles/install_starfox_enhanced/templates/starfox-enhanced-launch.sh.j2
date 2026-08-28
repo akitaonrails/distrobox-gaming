@@ -1,0 +1,39 @@
+#!/usr/bin/env sh
+set -eu
+# Star Fox Enhanced (SNES Star Fox source port) — self-contained SDL3 exe under
+# Wine, GLX-pinned to the RTX, on {{ dg_sfe_main_output }}. Managed by
+# install_starfox_enhanced. The exe embeds the ROM + symbols; nothing else to
+# stage. 8BitDo works via WineBus SDL. Select+Start exits.
+
+WINE="{{ dg_sfe_wine_bin }}"
+EXE="{{ dg_sfe_game_dir }}/{{ dg_sfe_exe_name }}"
+if [ ! -f "$EXE" ]; then
+  printf '%s\n' "ERROR: $EXE missing. Run: ansible-playbook install-starfox-enhanced.yml" >&2
+  exit 1
+fi
+
+export WINEPREFIX="{{ dg_sfe_prefix }}"
+export WINEDEBUG=-all
+export PATH="{{ dg_sfe_wine_path }}:$PATH"
+
+# Native on the dual-GPU box: pin nvidia GLX (wine 11 EGL -> iGPU) + Vulkan ICD.
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+export SDL_JOYSTICK_HIDAPI="${SDL_JOYSTICK_HIDAPI:-{{ dg_pc_racing_sdl_hidapi }}}"
+
+# Open on the main landscape 4K monitor. Hyprland >= 0.56 (Omarchy Lua parser)
+# rejects the legacy "dispatch focusmonitor X" over the socket — send Lua via eval.
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_sfe_main_output }}" }))'); s.recv(256); s.close()
+PY
+
+cd "{{ dg_sfe_game_dir }}"
+exec env -u PYTHONHOME -u PYTHONPATH "$WINE" "{{ dg_sfe_exe_name }}" "$@"

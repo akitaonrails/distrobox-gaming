@@ -1,0 +1,38 @@
+---
+# Star Fox Enhanced (kandowontu/starfox-enhanced) — a native SDL3 hybrid source
+# port of the SNES Star Fox (1993, SuperFX), built on the open-source
+# UltraStarFox codebase. Selectable 20-360 FPS, widescreen (up to 32:9), HUD
+# customization, mouse camera, God Mode. NOT the same as our Star Fox 64 port
+# (Starship). Managed by install_starfox_enhanced. See docs/starfox-enhanced.md.
+#
+# It IS a portable SDL3 C++ engine and builds natively on Linux, but the runtime
+# only exercises the EMBEDDED-ROM path (the external-file loader mis-reads the
+# ROM). So we run the upstream **prebuilt exe**, which is a single self-contained
+# file — its assembled UltraStarFox ROM + symbol map are embedded — under Wine.
+# It's SDL3, so it runs cleanly under Wine on the RTX (GLX-pinned).
+
+# Pinned prebuilt (raw file from the repo at a fixed commit — no GitHub release
+# exists). Reproducible by commit sha + sha256.
+dg_sfe_commit: "396eebbdc2c440403734be111a3642ed5fe05d7f"
+dg_sfe_exe_name: starfox_pc.exe
+dg_sfe_exe_url: "https://raw.githubusercontent.com/kandowontu/starfox-enhanced/{{ dg_sfe_commit }}/dist/StarFoxEnhanced/{{ dg_sfe_exe_name }}"
+dg_sfe_exe_sha256: bf25cd7be74a6ec4dbf0fca47c80814a57146690726492215ca751c722482030
+
+dg_sfe_root: "{{ dg_box_home }}/tools/starfox-enhanced"
+dg_sfe_game_dir: "{{ dg_sfe_root }}/game"            # exe runs from here (writes nothing critical)
+dg_sfe_bin: "{{ dg_box_home }}/bin/starfox-enhanced"
+dg_sfe_prefix: "{{ dg_box_home }}/wineprefixes/starfox-enhanced"
+dg_sfe_winearch: win64
+
+# Reuse the pc_racing wine-11.8 sidecar (proven on this box) + SDL controller env.
+dg_sfe_wine_bin: "{{ dg_pc_racing_wine_runner_root }}/wine-11.8/usr/bin/wine"
+dg_sfe_wine_path: "{{ dg_pc_racing_wine_runner_root }}/wine-11.8/usr/bin:{{ dg_pc_racing_wine_path }}"
+
+# WineBus: route controllers through SDL so the 8BitDo reaches the game's SDL3.
+dg_sfe_winebus_registry:
+  - { name: DisableHidraw, value: 1 }
+  - { name: DisableInput, value: 1 }
+  - { name: Enable SDL, value: 1 }
+  - { name: Map Controllers, value: 1 }
+
+dg_sfe_main_output: "DP-1"
