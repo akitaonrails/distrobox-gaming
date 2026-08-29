@@ -1,0 +1,7 @@
+---
+- name: Apply per-game Steam launch options (in-box Steam)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - steam_launch_options

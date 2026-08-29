@@ -1,0 +1,21 @@
+---
+# Generic per-game Steam launch options for the IN-BOX Steam, applied by the
+# steam_launch_options role (data-driven: add an appid entry, re-run). Written to
+# userdata/<id>/config/localconfig.vdf via scripts/set-steam-launch-options.py —
+# only while Steam is CLOSED (Steam rewrites that file on exit). When Steam is
+# running the role warns and skips; set the option manually in the meantime.
+# Keep game-specific mod roles' own launch options where they are; this map is
+# for standalone fixes that need no other install step.
+
+dg_steam_launch_options_steam_root: "{{ dg_box_home }}/.local/share/Steam"
+dg_steam_launch_options_localconfig: ""   # auto-discovered when empty
+
+dg_steam_launch_options_by_appid:
+  # Castlevania Anniversary Collection (Konami/M2). The M2 emulation layer ties
+  # its game speed to the DISPLAY REFRESH RATE: on DP-1 at 240 Hz the menus and
+  # games run ~4x speed ("permanent fast-forward"). game.exe is D3D9 -> DXVK
+  # under Proton, so DXVK's limiter caps presentation at 60 -> correct speed.
+  # Never fix this by changing the monitor mode. Verified diagnosis 2026-08-29.
+  "1018010":
+    name: "Castlevania Anniversary Collection"
+    options: "DXVK_FRAME_RATE=60 %command%"

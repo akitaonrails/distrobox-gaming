@@ -1,0 +1,57 @@
+---
+# Apply dg_steam_launch_options_by_appid to the in-box Steam localconfig.vdf.
+# See group_vars/all/steam_launch_options.yml and docs/steam-launch-options.md.
+
+- name: Auto-discover the in-box Steam localconfig.vdf
+  ansible.builtin.find:
+    paths: "{{ dg_steam_launch_options_steam_root }}/userdata"
+    patterns: localconfig.vdf
+    recurse: true
+  register: _slo_localconfigs
+  when: dg_steam_launch_options_localconfig | length == 0
+
+- name: Resolve the effective localconfig path
+  ansible.builtin.set_fact:
+    _slo_localconfig: >-
+      {{ dg_steam_launch_options_localconfig if (dg_steam_launch_options_localconfig | length > 0)
+         else (_slo_localconfigs.files | map(attribute='path') | list | first
+               if (_slo_localconfigs.files | default([]) | length == 1) else '') }}
+
+- name: Fail when no single localconfig.vdf could be resolved
+  ansible.builtin.fail:
+    msg: >-
+      No single Steam localconfig.vdf under {{ dg_steam_launch_options_steam_root }}/userdata.
+      Set dg_steam_launch_options_localconfig explicitly.
+  when: _slo_localconfig | length == 0
+
+- name: Check if the in-box Steam is running
+  # Steam rewrites localconfig.vdf on exit, so writes only stick when it's closed.
+  ansible.builtin.shell: |
+    pgrep -u "$(id -u)" -f '{{ dg_steam_launch_options_steam_root }}/ubuntu12_32/steam' >/dev/null
+  register: _slo_steam_running
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Warn that launch options were NOT written (Steam is running)
+  ansible.builtin.debug:
+    msg: >-
+      Steam is running — launch options not written (Steam would overwrite them
+      on exit). Close Steam and re-run `ansible-playbook site.yml --tags
+      steam_launch_options`, or set them manually now:
+      {% for appid, g in dg_steam_launch_options_by_appid.items() %}
+      [{{ g.name }} ({{ appid }})] -> {{ g.options }}{{ '; ' if not loop.last }}
+      {% endfor %}
+  when: _slo_steam_running.rc == 0
+
+- name: Set the Steam launch options
+  ansible.builtin.command: >-
+    {{ dg_project_root }}/scripts/set-steam-launch-options.py
+    --localconfig {{ _slo_localconfig | quote }}
+    --set {{ item.key | quote }} {{ item.value.options | quote }}
+  loop: "{{ dg_steam_launch_options_by_appid | dict2items }}"
+  loop_control:
+    label: "{{ item.value.name }} ({{ item.key }}) -> {{ item.value.options }}"
+  register: _slo_set
+  changed_when: "'changed: true' in _slo_set.stdout"
+  when: _slo_steam_running.rc != 0
