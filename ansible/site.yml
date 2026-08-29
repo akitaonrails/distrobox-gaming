@@ -74,6 +74,7 @@
     - { role: steam_lib32_nvidia,        tags: [steam_lib32_nvidia, never] }
     - { role: steam_trainers,            tags: [steam_trainers, never] }
     - { role: steam_launch_options,      tags: [steam_launch_options, never] }
+    - { role: install_mta_shim,          tags: [mta_shim, never] }
     - { role: install_render96ex,        tags: [render96ex, never] }
     - { role: install_spaghettikart,     tags: [spaghettikart, never] }
     - { role: install_ship_of_harkinian, tags: [ship_of_harkinian, never] }

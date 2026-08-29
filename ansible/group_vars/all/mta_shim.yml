@@ -1,0 +1,36 @@
+---
+# Wine COM-MTA keepalive shim (proxy SensApi.dll) — see docs/mta-shim.md.
+#
+# Fixes Windows games that CoCreateInstance COM objects (typically the WIC
+# imaging factory for texture loading) from plain worker threads without
+# CoInitialize. On Windows the process always has an implicit MTA to lean on;
+# under Wine none exists when the game's main thread is STA, so
+# CoCreateInstance returns CO_E_NOTINITIALIZED and the game null-derefs ->
+# EXCEPTION_ACCESS_VIOLATION on launch ("crashes on every Proton").
+#
+# The shim replaces SensApi.dll (a one-function import: IsNetworkAlive) and
+# parks a thread holding an MTA. Built in the box with mingw-w64 from
+# roles/install_mta_shim/files/, dropped into each listed game dir, and
+# activated by WINEDLLOVERRIDES="sensapi=n,b" in the game's Steam launch
+# options (dg_steam_launch_options_by_appid).
+
+dg_mta_shim_build_dir: "{{ dg_box_home }}/tools/mta-shim"
+dg_mta_shim_dll: SensApi.dll
+dg_mta_shim_packages:
+  - mingw-w64-gcc
+
+# Steam library holding the games below (the removable STEAM drive here).
+# Falls back to /run/media/<user>/STEAM when dg_external_usb_games_root is unset.
+dg_mta_shim_steam_lib_root: >-
+  {{ dg_external_usb_games_root
+     if (dg_external_usb_games_root | default('') | length > 0)
+     else '/run/media/' ~ ansible_facts.env.USER ~ '/STEAM' }}
+
+# Games that need it: the DLL is copied into game_dir. Add the matching
+# WINEDLLOVERRIDES to the game's launch options in steam_launch_options.yml.
+dg_mta_shim_games:
+  - name: "Arcade Classics Anniversary Collection"
+    appid: "1018000"
+    # imports SensApi!IsNetworkAlive; crashes in-game at +0x10f71 creating
+    # CLSID_WICImagingFactory from a worker thread. Verified fixed 2026-08-29.
+    game_dir: "{{ dg_mta_shim_steam_lib_root }}/steamapps/common/Arcade Classics Anniversary Collection"

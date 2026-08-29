@@ -1,0 +1,8 @@
+---
+- name: Build + deploy the Wine COM-MTA keepalive shim (SensApi.dll proxy)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_mta_shim
+    - steam_launch_options

@@ -23,6 +23,13 @@ D3D9 → DXVK under Proton, so DXVK's frame limiter caps presentation at 60 FPS
 and the game runs at the intended speed. Do **not** fix this by switching the
 monitor mode.
 
+### Arcade Classics Anniversary Collection (1018000) — `WINEDLLOVERRIDES="sensapi=n,b" DXVK_FRAME_RATE=60 %command%`
+
+Besides the refresh-rate cap, this one **crashes on launch under every Proton**
+(null-deref creating the WIC imaging factory from a worker thread with no COM
+MTA in the process). The `sensapi=n,b` override loads the MTA-keepalive proxy
+DLL deployed by `install_mta_shim` — see `docs/mta-shim.md`.
+
 ### The other M2-engine collections — same option
 
 Every other installed Konami/M2 (and Taito/M2) collection shares that layer and

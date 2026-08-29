@@ -1,0 +1,61 @@
+---
+# Build + deploy the SensApi MTA-keepalive proxy DLL. See docs/mta-shim.md.
+
+- name: Install the mingw-w64 toolchain inside the box
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sudo pacman -S --needed --noconfirm {{ dg_mta_shim_packages | join(' ') }}
+  register: _mta_pacman
+  changed_when: "'installing' in _mta_pacman.stdout or 'upgrading' in _mta_pacman.stdout"
+
+- name: Create the shim build dir
+  ansible.builtin.file:
+    path: "{{ dg_mta_shim_build_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Stage the shim sources
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ dg_mta_shim_build_dir }}/{{ item }}"
+    mode: "0644"
+  loop:
+    - sensapi_mta_shim.c
+    - sensapi_mta_shim.def
+  register: _mta_src
+
+- name: Build {{ dg_mta_shim_dll }} with mingw-w64 (when sources changed or missing)
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sh -c 'cd "{{ dg_mta_shim_build_dir }}" &&
+    x86_64-w64-mingw32-gcc -shared -O2 -o {{ dg_mta_shim_dll }}
+    sensapi_mta_shim.c sensapi_mta_shim.def -lole32 -Wl,--kill-at'
+  args:
+    creates: "{{ omit if _mta_src.changed else dg_mta_shim_build_dir ~ '/' ~ dg_mta_shim_dll }}"
+
+- name: Assert each game dir exists
+  ansible.builtin.stat:
+    path: "{{ item.game_dir }}"
+  loop: "{{ dg_mta_shim_games }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: _mta_dirs
+  failed_when: not _mta_dirs.stat.exists
+
+- name: Deploy the shim DLL into each game dir
+  ansible.builtin.copy:
+    src: "{{ dg_mta_shim_build_dir }}/{{ dg_mta_shim_dll }}"
+    dest: "{{ item.game_dir }}/{{ dg_mta_shim_dll }}"
+    mode: "0755"
+    remote_src: true
+  loop: "{{ dg_mta_shim_games }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Remind about the launch option
+  ansible.builtin.debug:
+    msg: >-
+      {{ item.name }} ({{ item.appid }}): shim deployed. Its Steam launch options must
+      include WINEDLLOVERRIDES="sensapi=n,b" (managed in dg_steam_launch_options_by_appid;
+      apply with site.yml --tags steam_launch_options while Steam is closed).
+  loop: "{{ dg_mta_shim_games }}"
+  loop_control:
+    label: "{{ item.name }}"

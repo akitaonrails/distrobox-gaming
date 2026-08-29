@@ -26,7 +26,10 @@ dg_steam_launch_options_by_appid:
     options: "DXVK_FRAME_RATE=60 %command%"
   "1018000":
     name: "Arcade Classics Anniversary Collection" # AA_AC_ArcadeClassics.exe, d3d11
-    options: "DXVK_FRAME_RATE=60 %command%"
+    # + the SensApi MTA-keepalive shim (install_mta_shim): without it the game
+    # crashes on launch under every Proton (CO_E_NOTINITIALIZED null-deref
+    # creating the WIC factory from a worker thread). See docs/mta-shim.md.
+    options: 'WINEDLLOVERRIDES="sensapi=n,b" DXVK_FRAME_RATE=60 %command%'
   "1552550":
     name: "Castlevania Advance Collection"       # game.exe, d3d9
     options: "DXVK_FRAME_RATE=60 %command%"
