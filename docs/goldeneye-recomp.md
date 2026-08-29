@@ -53,3 +53,26 @@ loaded, stable) 2026-08-20. The `Failed to preload executable!` message is benig
 it's an mlock stutter-optimization that the container's 8 MB memlock cap blocks; the
 game runs without it. 8BitDo works via SDL2. Pick the ROM on first launch to load
 the game.
+
+## Parked alternative: goldeneye-native (not adopted)
+
+[SegfaultEvan/goldeneye-native](https://github.com/SegfaultEvan/goldeneye-native)
+is a different, arguably nicer approach — a **native decompilation** port (from
+`n64decomp/007` → real C, Fast3D/OpenGL/SDL2) rather than a static recompilation.
+Its wins are real: game logic pinned to 60 Hz regardless of render FPS (emulators
+speed the *game* up when you raise FPS), true mouselook, arbitrary-resolution
+widescreen, and a Lua mod API.
+
+**Parked 2026-08-28 — it does not build cleanly here yet.** `bash tools/install.sh
+--rom <ROM> --yes` extracts all assets fine (using the correct dump —
+`roms_mid/n64/originals/007 - GoldenEye (USA).n64`, which byte-swaps to z64 sha1
+`abe01e4a…`; the `roms_mid/n64/` copy is a *bad* dump), then **stops at a hard
+dev-guard**: the "namespace the asset symbols" pass (`tools/uniquify_asset_symbols.py`)
+fails to compile ~80 character `Model.c` files under Arch gcc16/clang — first
+`unknown type name 'ptrdiff_t'` (needs `-include stddef.h`), which then exposes
+`unknown type name 's32'/'f32'` (N64 types not set up). The pass's minimal compile
+environment is under-specified for our toolchain, and each fix reveals the next.
+There is **no stable release or tag** to build instead (main-only, active
+development). The working cblock85 recomp above is kept as-is. Revisit when
+upstream cuts a release / fixes the chr namespacing, or port the pass's compile
+environment to match the real build. Details in memory (project_goldeneye_recomp).
