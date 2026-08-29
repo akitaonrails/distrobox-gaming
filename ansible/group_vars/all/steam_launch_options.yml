@@ -19,3 +19,24 @@ dg_steam_launch_options_by_appid:
   "1018010":
     name: "Castlevania Anniversary Collection"
     options: "DXVK_FRAME_RATE=60 %command%"
+  # Same Konami/M2 layer as above -> same refresh-rate speed coupling. All are
+  # D3D9/D3D11 -> DXVK under Proton, so the limiter applies (verified imports).
+  "1018020":
+    name: "Contra Anniversary Collection"        # game.exe, d3d9
+    options: "DXVK_FRAME_RATE=60 %command%"
+  "1018000":
+    name: "Arcade Classics Anniversary Collection" # AA_AC_ArcadeClassics.exe, d3d11
+    options: "DXVK_FRAME_RATE=60 %command%"
+  "1552550":
+    name: "Castlevania Advance Collection"       # game.exe, d3d9
+    options: "DXVK_FRAME_RATE=60 %command%"
+  "2369900":
+    name: "Castlevania Dominus Collection"       # game.exe, d3d11
+    options: "DXVK_FRAME_RATE=60 %command%"
+  "2897590":
+    name: "GRADIUS origin collection"            # d3d11
+    options: "DXVK_FRAME_RATE=60 %command%"
+  # Darius Cozmic Collection Arcade is an M2 port too (Taito/M2) — same layer.
+  "1638330":
+    name: "Darius Cozmic Collection Arcade"
+    options: "DXVK_FRAME_RATE=60 %command%"

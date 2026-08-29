@@ -26,8 +26,13 @@
 
 - name: Check if the in-box Steam is running
   # Steam rewrites localconfig.vdf on exit, so writes only stick when it's closed.
+  # NOTE: the [s] bracket trick stops pgrep -f from matching this very shell's
+  # command line (which contains the pattern text) — a plain pattern always
+  # "found" one process and took the warn path even with Steam closed.
   ansible.builtin.shell: |
-    pgrep -u "$(id -u)" -f '{{ dg_steam_launch_options_steam_root }}/ubuntu12_32/steam' >/dev/null
+    pgrep -u "$(id -u)" -x steam >/dev/null \
+      || pgrep -u "$(id -u)" -f 'ubuntu12_32/[s]team( |$)' >/dev/null \
+      || pgrep -u "$(id -u)" -x steamwebhelper >/dev/null
   register: _slo_steam_running
   changed_when: false
   failed_when: false
