@@ -30,6 +30,7 @@
     - { role: install_openbor,           tags: [openbor, never] }
     - { role: install_starfox_enhanced,  tags: [starfox_enhanced, never] }
     - { role: install_smw_remastered,    tags: [smw_remastered, never] }
+    - { role: install_dk64_recomp,       tags: [dk64_recomp, never] }
     - { role: install_sorr,              tags: [sorr, never] }
     - { role: install_sor4_reignited,    tags: [sor4_reignited, never] }
     - { role: install_prboom_plus_rt,    tags: [prboom_rt, doom_rt, never] }

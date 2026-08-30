@@ -1,0 +1,142 @@
+---
+# Donkey Kong 64: Recompiled — prebuilt native Linux release + ROM seed.
+# See group_vars/all/dk64_recomp.yml and docs/dk64-recomp.md.
+
+- name: Revert DK64 Recompiled when requested
+  when: dg_dk64_revert | bool
+  block:
+    - name: Remove the DK64 launcher + install dir (config/saves + ROM copy kept)
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_dk64_launcher }}"
+        - "{{ dg_dk64_root }}"
+    - name: Report DK64 reverted
+      ansible.builtin.debug:
+        msg: "DK64 Recompiled removed. {{ dg_dk64_config_dir }} (saves, ROM copy) and your NAS ROM are untouched."
+
+- name: Install DK64 Recompiled
+  when: not (dg_dk64_revert | bool)
+  block:
+    - name: Verify the DK64 source ROM exists
+      ansible.builtin.stat:
+        path: "{{ dg_dk64_rom_src }}"
+      register: _dk64_rom
+      failed_when: not _dk64_rom.stat.exists
+
+    - name: Create DK64 directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_dk64_cache_dir }}"
+        - "{{ dg_dk64_root }}"
+        - "{{ dg_dk64_config_dir }}"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Download the pinned DK64 Recompiled Linux release
+      ansible.builtin.get_url:
+        url: "{{ dg_dk64_asset_url }}"
+        dest: "{{ dg_dk64_cache_dir }}/{{ dg_dk64_asset_name }}"
+        checksum: "sha256:{{ dg_dk64_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Extract the release (zip wraps a tar.gz; version-gated)
+      ansible.builtin.shell: |
+        set -eu
+        root="{{ dg_dk64_root }}"
+        if [ -x "$root/DK64Recompiled" ] && grep -qx "{{ dg_dk64_version }}" "$root/.dg-installed-ref" 2>/dev/null; then
+          exit 0
+        fi
+        tmp="$(mktemp -d)"
+        unzip -oq "{{ dg_dk64_cache_dir }}/{{ dg_dk64_asset_name }}" -d "$tmp"
+        tar xzf "$tmp"/*.tar.gz -C "$root"
+        rm -rf "$tmp"
+        chmod 0755 "$root/DK64Recompiled"
+        printf '%s\n' "{{ dg_dk64_version }}" > "$root/.dg-installed-ref"
+        printf '%s\n' "installed-dk64"
+      register: _dk64_extract
+      changed_when: "'installed-dk64' in _dk64_extract.stdout"
+
+    - name: Assert the binary links inside the box
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} sh -c 'ldd "{{ dg_dk64_bin }}" | grep -c "not found" || true'
+      register: _dk64_ldd
+      changed_when: false
+      failed_when: (_dk64_ldd.stdout | trim) != "0"
+
+    - name: Seed the stored ROM (byteswap to z64 + verify sha1) so the picker is skipped
+      ansible.builtin.shell: |
+        python3 - <<'PY'
+        import hashlib
+        src = "{{ dg_dk64_rom_src }}"; dst = "{{ dg_dk64_rom_stored }}"
+        d = bytearray(open(src, 'rb').read()); m = bytes(d[:4])
+        if m == b'\x80\x37\x12\x40':
+            z = bytes(d)                                         # z64 (BE)
+        elif m == b'\x37\x80\x40\x12':                           # v64 (byteswapped)
+            for i in range(0, len(d) - 1, 2): d[i], d[i+1] = d[i+1], d[i]
+            z = bytes(d)
+        elif m == b'\x40\x12\x37\x80':                           # n64 (LE words)
+            z = b''.join(d[i:i+4][::-1] for i in range(0, len(d), 4))
+        else:
+            raise SystemExit("unknown ROM byte order: " + m.hex())
+        h = hashlib.sha1(z).hexdigest()
+        if h != "{{ dg_dk64_rom_sha1_z64 }}": raise SystemExit("ROM sha1 mismatch: got " + h)
+        open(dst, 'wb').write(z); print("stored ROM ok (" + h + ")")
+        PY
+      args:
+        creates: "{{ dg_dk64_rom_stored }}"
+
+    - name: Seed graphics.json fullscreen (first install only; in-game changes preserved)
+      ansible.builtin.copy:
+        content: |
+          {
+              "api_option": "Vulkan",
+              "ar_option": "Expand",
+              "cutscene_borders": "On",
+              "developer_mode": false,
+              "draw_distance": 0,
+              "ds_option": 0,
+              "hpfb_option": "Off",
+              "hr_option": "Clamp16x9",
+              "msaa_option": "MSAA2X",
+              "res_option": "Auto",
+              "rr_manual_value": 60,
+              "rr_option": "Display",
+              "wm_option": "Fullscreen"
+          }
+        dest: "{{ dg_dk64_config_dir }}/graphics.json"
+        mode: "0644"
+        force: false
+
+    - name: Deploy the DK64 launcher
+      ansible.builtin.template:
+        src: dk64-launch.sh.j2
+        dest: "{{ dg_dk64_launcher }}"
+        mode: "0755"
+
+    - name: Render the DK64 desktop entry
+      ansible.builtin.template:
+        src: dk64.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-dk64-recomp.desktop"
+        mode: "0644"
+
+    - name: Install the DK64 desktop file into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _dk64_host_launchers
+      changed_when: >-
+        'installed ' in _dk64_host_launchers.stdout or
+        'removed stale ' in _dk64_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          DK64 Recompiled {{ dg_dk64_version }} at {{ dg_dk64_root }}; launcher {{ dg_dk64_launcher }}.
+          ROM seeded as {{ dg_dk64_rom_stored }}; saves in {{ dg_dk64_config_dir }}/saves.
+          Revert: -e dg_dk64_revert=true.

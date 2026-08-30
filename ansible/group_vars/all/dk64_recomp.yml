@@ -1,0 +1,33 @@
+---
+# Donkey Kong 64: Recompiled ("DK64 Rekongpiled") — a static recompilation
+# (N64Recomp + RT64) of the N64 Donkey Kong 64 to a native executable, same
+# family as the GoldenEye recomp but with official PREBUILT Linux x64 releases,
+# so no source build. Runs on the RTX (RT64 Vulkan). Managed by
+# install_dk64_recomp. Needs the user's own NTSC-U DK64 ROM. See docs/dk64-recomp.md.
+
+# Pinned GitHub release (Linux x64 zip, which wraps a DK64Recompiled.tar.gz).
+dg_dk64_repo: Rainchus/Donkey-Kong-64-Recompiled
+dg_dk64_version: "1.0.1"
+dg_dk64_asset_name: "DK64Recompiled-Linux-X64-Release-1-0-1.zip"
+dg_dk64_asset_url: "https://github.com/{{ dg_dk64_repo }}/releases/download/{{ dg_dk64_version }}/{{ dg_dk64_asset_name }}"
+dg_dk64_asset_sha256: 9a0a1b3247273ac8189acf5c700e8e255590aba48435f6b6aef617f36de48ab1
+
+dg_dk64_root: "{{ dg_box_home }}/tools/dk64-recomp"      # DK64Recompiled + assets/ + recompcontrollerdb.txt
+dg_dk64_cache_dir: "{{ dg_box_home }}/cache/dk64-recomp"
+dg_dk64_bin: "{{ dg_dk64_root }}/DK64Recompiled"
+dg_dk64_launcher: "{{ dg_box_home }}/bin/dk64-launch"
+
+# The app's config/saves dir (Linux). The ROM picker stores the chosen ROM here
+# as <game_id>.z64 (game_id "DK64", from src/main/main.cpp); the role pre-seeds
+# it so the launcher goes straight into the game.
+dg_dk64_config_dir: "{{ dg_box_home }}/.config/DK64Recompiled"
+dg_dk64_rom_stored: "{{ dg_dk64_config_dir }}/DK64.z64"
+
+# The user's Donkey Kong 64 (USA) ROM. roms_mid/n64/originals is the correct
+# dump (32 MiB, z64 sha1 below); the roms_mid/n64 copy is a 33.8 MB overdump.
+# The role byteswaps v64/n64 to z64 and verifies the sha1.
+dg_dk64_rom_src: "{{ dg_rom_mid_root }}/n64/originals/Donkey Kong 64 (USA).n64"
+dg_dk64_rom_sha1_z64: "cf806ff2603640a748fca5026ded28802f1f4a50"
+
+dg_dk64_main_output: "DP-1"
+dg_dk64_revert: false

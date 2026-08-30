@@ -1,0 +1,7 @@
+---
+- name: Install Donkey Kong 64 Recompiled (prebuilt native) + launcher
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_dk64_recomp
