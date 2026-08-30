@@ -1,0 +1,42 @@
+---
+# Perfect Dark PC port (perfect-dark-pc-port/perfect_dark, formerly fgsfdsfgs) —
+# a native port built from the N64 decompilation: OpenGL 3, any resolution,
+# dual-analog + mouse, configurable FOV. Prebuilt Linux x64 builds from the
+# rolling `ci-dev-build` release tag. Runs on the RTX. Managed by
+# install_perfect_dark. Needs the user's own NTSC-U V1.1 ROM. See docs/perfect-dark.md.
+
+# Rolling release tag: the asset is rebuilt in place, so the sha256 below pins a
+# specific build. The tarball is staged on the NAS (dg_pd_archive_source) and
+# reused on rebuilds; get_url only downloads if it's missing/corrupt (and will
+# refuse a newer upstream build until the sha is bumped — intentional).
+dg_pd_repo: perfect-dark-pc-port/perfect_dark
+dg_pd_release_tag: ci-dev-build
+dg_pd_asset_name: pd-x86_64-linux.tar.gz
+dg_pd_asset_url: "https://github.com/{{ dg_pd_repo }}/releases/download/{{ dg_pd_release_tag }}/{{ dg_pd_asset_name }}"
+dg_pd_asset_sha256: 0f28fd59b488e0a919aae4350083059faebd462fce52df7bfdc9a4aec26f92ae
+dg_pd_build_ref: "port@32a1cb9f (2026-08-13)"     # provenance of the pinned sha256, informational
+dg_pd_archive_source: "{{ dg_roms_final_root }}/PC/perfect-dark-port/{{ dg_pd_asset_name }}"
+
+dg_pd_root: "{{ dg_box_home }}/tools/perfect-dark"    # pd.x86_64 (+ pal/jpn) + data/
+dg_pd_cache_dir: "{{ dg_box_home }}/cache/perfect-dark"
+dg_pd_bin: "{{ dg_pd_root }}/pd.x86_64"
+dg_pd_launcher: "{{ dg_box_home }}/bin/perfect-dark-launch"
+# The port writes pd.ini + saves here on Linux.
+dg_pd_config_dir: "{{ dg_box_home }}/.local/share/perfectdark"
+
+# The ROM: NTSC-U V1.1 ("ntsc-final", md5 e03b088b6ac9e0080440efed07c1e40f in
+# z64 form), placed as data/pd.ntsc-final.z64. This box's dump is the (USA)
+# (Rev A) .n64 (byteswapped); the role converts + md5-verifies it.
+dg_pd_rom_src: "{{ dg_rom_mid_root }}/n64/Perfect Dark (USA) (Rev A).n64"
+dg_pd_rom_md5_z64: e03b088b6ac9e0080440efed07c1e40f
+dg_pd_rom_stored: "{{ dg_pd_root }}/data/pd.ntsc-final.z64"
+
+# First-install pd.ini seed ([Video] only; the port fills every other default and
+# rewrites the file on exit). Borderless fullscreen — NOT exclusive (an exclusive
+# mode-switch is what crashes Wine games on the 240Hz DP-1; keep the display
+# mode alone) — and a frame cap: the port misbehaves above ~165 FPS and VSync
+# on this 240Hz panel would run it at 240.
+dg_pd_framerate_limit: 144
+
+dg_pd_main_output: "DP-1"
+dg_pd_revert: false

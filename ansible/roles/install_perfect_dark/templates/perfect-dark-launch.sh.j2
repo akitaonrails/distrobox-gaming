@@ -1,0 +1,32 @@
+#!/usr/bin/env sh
+set -eu
+# Perfect Dark PC port launcher — native OpenGL 3 on the RTX, DP-1. Managed by
+# install_perfect_dark. ROM lives in data/ next to the exe; pd.ini + saves in
+# ~/.local/share/perfectdark. 8BitDo works via SDL2 (dual-analog); rebind in
+# pd.ini [Input] if needed.
+
+BIN="{{ dg_pd_bin }}"
+if [ ! -x "$BIN" ]; then
+  printf '%s\n' "ERROR: pd.x86_64 missing at $BIN. Run: ansible-playbook install-perfect-dark.yml" >&2
+  exit 1
+fi
+
+# Focus the main landscape 4K monitor (Hyprland >= 0.56 Lua IPC form).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_pd_main_output }}" }))'); s.recv(256); s.close()
+PY
+
+# OpenGL on the dual-GPU box: pin nvidia GLX (else the AMD iGPU / llvmpipe).
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+# The port finds data/ relative to the executable.
+cd "{{ dg_pd_root }}"
+exec ./pd.x86_64 "$@"

@@ -1,0 +1,138 @@
+---
+# Perfect Dark PC port — prebuilt native Linux build + ROM seed.
+# See group_vars/all/perfect_dark.yml and docs/perfect-dark.md.
+
+- name: Revert Perfect Dark when requested
+  when: dg_pd_revert | bool
+  block:
+    - name: Remove the Perfect Dark launcher + install dir (config/saves kept)
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_pd_launcher }}"
+        - "{{ dg_pd_root }}"
+    - name: Report Perfect Dark reverted
+      ansible.builtin.debug:
+        msg: "Perfect Dark removed. {{ dg_pd_config_dir }} (pd.ini, saves) and your NAS ROM are untouched."
+
+- name: Install Perfect Dark
+  when: not (dg_pd_revert | bool)
+  block:
+    - name: Verify the Perfect Dark source ROM exists
+      ansible.builtin.stat:
+        path: "{{ dg_pd_rom_src }}"
+      register: _pd_rom
+      failed_when: not _pd_rom.stat.exists
+
+    - name: Create Perfect Dark directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_pd_cache_dir }}"
+        - "{{ dg_pd_root }}"
+        - "{{ dg_pd_config_dir }}"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Reuse the NAS-staged tarball when present (rolling tag; sha-pinned)
+      ansible.builtin.copy:
+        src: "{{ dg_pd_archive_source }}"
+        dest: "{{ dg_pd_cache_dir }}/{{ dg_pd_asset_name }}"
+        remote_src: true
+        force: false
+        mode: "0644"
+      when: dg_pd_archive_source is file
+
+    - name: Download the pinned build (verifies the staged copy; downloads only if absent/corrupt)
+      ansible.builtin.get_url:
+        url: "{{ dg_pd_asset_url }}"
+        dest: "{{ dg_pd_cache_dir }}/{{ dg_pd_asset_name }}"
+        checksum: "sha256:{{ dg_pd_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Extract the build (sha-gated; data/ preserved)
+      ansible.builtin.shell: |
+        set -eu
+        root="{{ dg_pd_root }}"
+        if [ -x "$root/pd.x86_64" ] && grep -qx "{{ dg_pd_asset_sha256 }}" "$root/.dg-installed-ref" 2>/dev/null; then
+          exit 0
+        fi
+        tar xzf "{{ dg_pd_cache_dir }}/{{ dg_pd_asset_name }}" -C "$root" --strip-components 1
+        chmod 0755 "$root"/pd*.x86_64
+        printf '%s\n' "{{ dg_pd_asset_sha256 }}" > "$root/.dg-installed-ref"
+        printf '%s\n' "installed-pd"
+      register: _pd_extract
+      changed_when: "'installed-pd' in _pd_extract.stdout"
+
+    - name: Assert the binary links inside the box
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} sh -c 'ldd "{{ dg_pd_bin }}" | grep -c "not found" || true'
+      register: _pd_ldd
+      changed_when: false
+      failed_when: (_pd_ldd.stdout | trim) != "0"
+
+    - name: Seed data/pd.ntsc-final.z64 (byteswap to z64 + verify md5)
+      ansible.builtin.shell: |
+        python3 - <<'PY'
+        import hashlib
+        src = "{{ dg_pd_rom_src }}"; dst = "{{ dg_pd_rom_stored }}"
+        d = bytearray(open(src, 'rb').read()); m = bytes(d[:4])
+        if m == b'\x80\x37\x12\x40':
+            z = bytes(d)
+        elif m == b'\x37\x80\x40\x12':
+            for i in range(0, len(d) - 1, 2): d[i], d[i+1] = d[i+1], d[i]
+            z = bytes(d)
+        elif m == b'\x40\x12\x37\x80':
+            z = b''.join(d[i:i+4][::-1] for i in range(0, len(d), 4))
+        else:
+            raise SystemExit("unknown ROM byte order: " + m.hex())
+        h = hashlib.md5(z).hexdigest()
+        if h != "{{ dg_pd_rom_md5_z64 }}": raise SystemExit("ROM md5 mismatch (need NTSC-U V1.1 'ntsc-final'): got " + h)
+        open(dst, 'wb').write(z); print("pd.ntsc-final.z64 ok (" + h + ")")
+        PY
+      args:
+        creates: "{{ dg_pd_rom_stored }}"
+
+    - name: Seed pd.ini video settings (first install only; the port fills the rest)
+      ansible.builtin.copy:
+        content: |
+          [Video]
+          DefaultFullscreen=1
+          ExclusiveFullscreen=0
+          VSync=1
+          FramerateLimit={{ dg_pd_framerate_limit }}
+        dest: "{{ dg_pd_config_dir }}/pd.ini"
+        mode: "0644"
+        force: false
+
+    - name: Deploy the Perfect Dark launcher
+      ansible.builtin.template:
+        src: perfect-dark-launch.sh.j2
+        dest: "{{ dg_pd_launcher }}"
+        mode: "0755"
+
+    - name: Render the Perfect Dark desktop entry
+      ansible.builtin.template:
+        src: perfect-dark.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-perfect-dark.desktop"
+        mode: "0644"
+
+    - name: Install the desktop file into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _pd_host_launchers
+      changed_when: >-
+        'installed ' in _pd_host_launchers.stdout or
+        'removed stale ' in _pd_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Perfect Dark port ({{ dg_pd_build_ref }}) at {{ dg_pd_root }}; launcher {{ dg_pd_launcher }}.
+          ROM seeded as {{ dg_pd_rom_stored }}; pd.ini + saves in {{ dg_pd_config_dir }}.
+          Revert: -e dg_pd_revert=true.
