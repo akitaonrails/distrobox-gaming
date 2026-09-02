@@ -5,7 +5,7 @@ a native **recompilation** of the Nintendo DS *Metroid Prime Hunters* (built on
 `ndsrecomp`), running as a real executable instead of emulating the hardware.
 Opt-in role; installed 2026-08-14.
 
-- **Form:** prebuilt **Linux AppImage** (`v0.3.0-alpha`, ~22 MB) — no build, no
+- **Form:** prebuilt **Linux AppImage** (`v0.5.0-alpha`, ~55 MB) — no build, no
   deps beyond `libfuse2` (already on the box). Renderer is **OpenGL 4.3
   compute**; input is **native SDL** (gamepad works out of the box).
 - **Ships no game data.** It boots BIOS-less using the built-in **FreeBIOS +
@@ -55,3 +55,14 @@ AppImage with the ROM and the default flags. Extra args win, so
 The AppImage is a manual download (not auto-updated). Bump `dg_mph_version` +
 `dg_mph_asset_sha256` in `group_vars/all/mph_recomp.yml` and re-run — the
 checksum-gated `get_url` pulls the new build.
+
+## v0.5.0 update notes (2026-09-02)
+
+- **v0.5.0-alpha is the newest release with a Linux AppImage** — upstream ships
+  Windows-only zips from v0.6.x on. Check for Linux assets before bumping.
+- The 0.5.0 runner **defaults to a headless bounded diagnostic run** (cycle
+  budget + instruction trace) — `--interactive` is now required for a game
+  window, and `--diagnostics off --no-coverage-manifest` must be passed or it
+  writes a coverage JSON **next to the ROM on the NAS**.
+- `--adaptive-widescreen` is now refused for MPH ("supported: none") and makes
+  the runner exit — dropped from `dg_mph_flags`.

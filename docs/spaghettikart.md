@@ -15,8 +15,8 @@ ansible-playbook install-spaghettikart.yml
 The executable comes from the pinned release ZIP:
 
 ```text
-SpaghettiKart 0.9.9.1 / Alfredo Alfa 0.9.9.1
-https://github.com/HarbourMasters/SpaghettiKart/releases/download/0.9.9.1/Spaghettify-Alfredo-Alfa-1-Linux-Old.zip
+SpaghettiKart 1.0.0 (Spaghettify)
+https://github.com/HarbourMasters/SpaghettiKart/releases/download/1.0.0/spaghetti-linux.zip
 SHA256 fbdff87766f409067e8663032319f59d64e8d43bd872a3c47bb7218199d965b7
 ```
 

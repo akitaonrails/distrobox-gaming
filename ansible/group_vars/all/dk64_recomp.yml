@@ -7,10 +7,10 @@
 
 # Pinned GitHub release (Linux x64 zip, which wraps a DK64Recompiled.tar.gz).
 dg_dk64_repo: Rainchus/Donkey-Kong-64-Recompiled
-dg_dk64_version: "1.0.1"
-dg_dk64_asset_name: "DK64Recompiled-Linux-X64-Release-1-0-1.zip"
+dg_dk64_version: "1.0.2"
+dg_dk64_asset_name: "DK64Recompiled-Linux-X64-Release-1-0-2.zip"
 dg_dk64_asset_url: "https://github.com/{{ dg_dk64_repo }}/releases/download/{{ dg_dk64_version }}/{{ dg_dk64_asset_name }}"
-dg_dk64_asset_sha256: 9a0a1b3247273ac8189acf5c700e8e255590aba48435f6b6aef617f36de48ab1
+dg_dk64_asset_sha256: 7a723280d92768bbeb1c384f5fbe9f27cd08fdad8b90df85a9402a151d31e4df
 
 dg_dk64_root: "{{ dg_box_home }}/tools/dk64-recomp"      # DK64Recompiled + assets/ + recompcontrollerdb.txt
 dg_dk64_cache_dir: "{{ dg_box_home }}/cache/dk64-recomp"

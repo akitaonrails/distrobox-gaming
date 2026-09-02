@@ -22,7 +22,9 @@ it runs cleanly under Wine, GLX-pinned to the RTX. Managed by
 (`site.yml --tags starfox_enhanced`).
 
 The exe is pinned by commit + sha256 (no GitHub release exists) and downloaded
-from the repo's `dist/`. No ROM to supply — it's embedded. The Wine prefix gets
+from the repo's `dist/`. Since ~2026-09 the exe is stored via **Git LFS**:
+raw.githubusercontent serves only a 133-byte pointer, so the pinned URL uses
+`media.githubusercontent.com/media/...` (serves the real binary). No ROM to supply — it's embedded. The Wine prefix gets
 `UseEGL=N` (wine 11's EGL backend otherwise renders on the AMD iGPU) and the
 WineBus SDL controller policy so the 8BitDo reaches the game's SDL3.
 

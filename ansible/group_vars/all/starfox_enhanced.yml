@@ -11,12 +11,14 @@
 # file — its assembled UltraStarFox ROM + symbol map are embedded — under Wine.
 # It's SDL3, so it runs cleanly under Wine on the RTX (GLX-pinned).
 
-# Pinned prebuilt (raw file from the repo at a fixed commit — no GitHub release
-# exists). Reproducible by commit sha + sha256.
-dg_sfe_commit: "396eebbdc2c440403734be111a3642ed5fe05d7f"
+# Pinned prebuilt (file from the repo at a fixed commit — no GitHub release
+# exists). Reproducible by commit sha + sha256. The exe is stored via Git LFS
+# since ~2026-09 — raw.githubusercontent serves only the 133-byte LFS pointer,
+# so the URL must use media.githubusercontent.com (serves the real binary).
+dg_sfe_commit: "e85a66d220ea22e7ef72c6d1a2401f7fd32c793b"
 dg_sfe_exe_name: starfox_pc.exe
-dg_sfe_exe_url: "https://raw.githubusercontent.com/kandowontu/starfox-enhanced/{{ dg_sfe_commit }}/dist/StarFoxEnhanced/{{ dg_sfe_exe_name }}"
-dg_sfe_exe_sha256: bf25cd7be74a6ec4dbf0fca47c80814a57146690726492215ca751c722482030
+dg_sfe_exe_url: "https://media.githubusercontent.com/media/kandowontu/starfox-enhanced/{{ dg_sfe_commit }}/dist/StarFoxEnhanced/{{ dg_sfe_exe_name }}"
+dg_sfe_exe_sha256: 62859c4bac9c9e31a1ac27146473f96d4b987476db978f594be060afd9de0090
 
 dg_sfe_root: "{{ dg_box_home }}/tools/starfox-enhanced"
 dg_sfe_game_dir: "{{ dg_sfe_root }}/game"            # exe runs from here (writes nothing critical)

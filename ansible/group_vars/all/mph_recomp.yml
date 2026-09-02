@@ -9,10 +9,13 @@
 # Renderer is OpenGL 4.3 compute; gamepad is native SDL.
 
 dg_mph_repo: mstan/MetroidPrimeHuntersRecomp
-dg_mph_version: v0.3.0-alpha
-dg_mph_asset_name: "MetroidPrimeHuntersRecomp-linux-x86_64-v0.3.0.AppImage"
+# v0.5.0-alpha (2026-08-26) is the NEWEST release with a Linux AppImage —
+# upstream ships Windows-only zips from v0.6.x on. Re-check for Linux assets
+# before bumping past it (asset naming also changed vs 0.3.0).
+dg_mph_version: v0.5.0-alpha
+dg_mph_asset_name: "MetroidPrimeHuntersRecomp-linux-v0.5.0-x86_64.AppImage"
 dg_mph_asset_url: "https://github.com/{{ dg_mph_repo }}/releases/download/{{ dg_mph_version }}/{{ dg_mph_asset_name }}"
-dg_mph_asset_sha256: 7573b5cc4d4bff5f618484421caee74fb83b456f9792236ec53b23c0e9c85ee1
+dg_mph_asset_sha256: 36a111d7ab144b0fad0aabe351fd44277662e4ccd64139920ef8b88a66d19da6
 
 dg_mph_install_dir: "{{ dg_box_home }}/Games/mph-recomp"
 dg_mph_appimage: "{{ dg_mph_install_dir }}/MetroidPrimeHuntersRecomp.AppImage"
@@ -32,12 +35,22 @@ dg_mph_rom_sha256: 7d0a98ff98e1b7c985d1f3d89b01730af1b2115061a4dfea847612d217a8b
 #     makes 8BitDo/controller play work well.
 #   widescreen + supersampling are effectively free on the RTX 5090 for a
 #     DS-resolution game (256x192/screen).
+# v0.5.0 flag changes (vs 0.3.0):
+#   --interactive : REQUIRED for a game window — the runner now defaults to a
+#     headless bounded diagnostic run (cycle budget + instruction trace).
+#   --diagnostics off --no-coverage-manifest : diagnostics default ON and the
+#     coverage manifest is written NEXT TO THE ROM (i.e. onto the NAS) — turn
+#     both off.
+#   --adaptive-widescreen : now REFUSED for MPH ("supported: none") and the
+#     runner exits — dropped.
 dg_mph_flags:
+  - "--interactive"
+  - "--diagnostics off"
+  - "--no-coverage-manifest"
   - "--freebios"
   - "--generated-firmware"
   - "--boot direct"
   - "--mph-prime-controls on"
-  - "--adaptive-widescreen both"
   - "--supersampling 3"
   - "--antialiasing 4"
 

@@ -5,12 +5,12 @@ ZIP, rather than building from source or using AUR packages.
 
 ## Pins
 
-- Release: `4.0.2` / `Keiichi Charlie`
+- Release: `5.0.1` / `Battler Bravo`
 - Repository: <https://github.com/HarbourMasters/2ship2harkinian.git>
 - Tag commit: `acfd617302ebb74e63f26f0049b53400a644c8e8`
-- Asset: `2Ship-Keiichi-Charlie-Linux.zip`
+- Asset: `2Ship-Battler-Bravo-Linux.zip`
 - Asset SHA256: `c97fc9440f5584f350c911ec7385778394aa62f651c6613cee0b74c0141932cb`
-- HD pack: `mm-reloaded-v11.0.2-2ship-o2r-hd.7z`
+- HD pack: `mm-reloaded-v11.0.3-2ship-o2r-hd.7z`
 - HD pack SHA256: `0193334ea87621cf733503af66a719cb3c3e7dfc15505f0f365070095de54215`
 
 ## Install
@@ -50,7 +50,7 @@ d6133ace5afaa0882cf214cf88daba39e266c078
 - Install directory: `{{ dg_two_ship2harkinian_install_dir }}`
 - AppImage: `{{ dg_two_ship2harkinian_install_dir }}/{{ dg_two_ship2harkinian_appimage_name }}`
 - Verified ROM copy: `{{ dg_two_ship2harkinian_install_dir }}/{{ dg_two_ship2harkinian_rom_name }}`
-- HD mod: `{{ dg_two_ship2harkinian_install_dir }}/mods/MM_Reloaded_v11.0.2_HD.o2r`
+- HD mod: `{{ dg_two_ship2harkinian_install_dir }}/mods/MM_Reloaded_v11.0.3_HD.o2r`
 - Wrapper: `{{ dg_two_ship2harkinian_bin }}`
 
 MM Reloaded uses alternate assets. Enable **Use Alternate Assets** from the 2Ship

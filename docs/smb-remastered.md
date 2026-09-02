@@ -7,7 +7,7 @@ level / resource-pack system. Upstream:
 Opt-in role; installed 2026-08-11.
 
 - **Distribution:** a prebuilt **native Linux** Godot export (`SMB1R.x86_64` +
-  `.pck`, self-contained). Pinned to `dg_smb_remastered_version` (`1.1-rc4`),
+  `.pck`, self-contained). Pinned to `dg_smb_remastered_version` (`1.1-rc5`),
   fetched from the GitHub release by sha256. **No Wine.**
 - **You must provide** an original **SMB1 NES ROM** — none of the original
   assets ship with the game (they're generated from the ROM). This box has one
