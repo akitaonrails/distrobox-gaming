@@ -1,0 +1,88 @@
+---
+# Project Reignition — native Linux Godot 4 (.NET) fan game from the NAS zip.
+# See group_vars/all/project_reignition.yml and docs/project-reignition.md.
+
+- name: Revert Project Reignition when requested
+  when: dg_project_reignition_revert | bool
+  block:
+    - name: Remove the Project Reignition launcher + install dir
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_project_reignition_bin }}"
+        - "{{ dg_project_reignition_install_dir }}"
+    - name: Report Project Reignition reverted
+      ansible.builtin.debug:
+        msg: "Project Reignition removed. The NAS zip and your Godot user data are untouched."
+
+- name: Install Project Reignition
+  when: not (dg_project_reignition_revert | bool)
+  block:
+    - name: Verify the NAS zip exists and matches the pinned sha256
+      ansible.builtin.stat:
+        path: "{{ dg_project_reignition_zip }}"
+        checksum_algorithm: sha256
+      register: _pr_zip
+      failed_when: >-
+        not _pr_zip.stat.exists or
+        _pr_zip.stat.checksum != dg_project_reignition_zip_sha256
+
+    - name: Create install + bin directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_project_reignition_install_dir }}"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Extract the release (version-gated; user data lives in Godot user://)
+      ansible.builtin.shell: |
+        set -eu
+        inst="{{ dg_project_reignition_install_dir }}"
+        if [ -x "$inst/{{ dg_project_reignition_exe }}" ] &&
+           grep -qx "{{ dg_project_reignition_version }}" "$inst/.dg-installed-ref" 2>/dev/null; then
+          exit 0
+        fi
+        tmp="$(mktemp -d)"
+        unzip -q "{{ dg_project_reignition_zip }}" -d "$tmp"
+        rm -rf "$inst"; mkdir -p "$inst"
+        mv "$tmp/{{ dg_project_reignition_zip_dir }}"/* "$inst"/
+        rm -rf "$tmp"
+        chmod 0755 "$inst/{{ dg_project_reignition_exe }}"
+        printf '%s\n' "{{ dg_project_reignition_version }}" > "$inst/.dg-installed-ref"
+        printf '%s\n' "installed-project-reignition"
+      register: _pr_extract
+      changed_when: "'installed-project-reignition' in _pr_extract.stdout"
+
+    - name: Deploy the launcher
+      ansible.builtin.template:
+        src: project-reignition.sh.j2
+        dest: "{{ dg_project_reignition_bin }}"
+        mode: "0755"
+
+    - name: Render the desktop entry
+      ansible.builtin.template:
+        src: gaming-project-reignition.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-project-reignition.desktop"
+        mode: "0644"
+
+    - name: Install the desktop entry into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _pr_host_launchers
+      changed_when: >-
+        'installed ' in _pr_host_launchers.stdout or
+        'removed stale ' in _pr_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Project Reignition {{ dg_project_reignition_version }} installed at
+          {{ dg_project_reignition_install_dir }}; launcher {{ dg_project_reignition_bin }}.
+          Native Godot 4 (.NET) on the RTX (Vulkan Forward+); 8BitDo native.
+          Revert: -e dg_project_reignition_revert=true.

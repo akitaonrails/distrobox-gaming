@@ -1,0 +1,7 @@
+---
+- name: Install Project Reignition (Sonic and the Secret Rings remake)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_project_reignition

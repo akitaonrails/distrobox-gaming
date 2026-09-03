@@ -1,0 +1,23 @@
+---
+# Project Reignition — KumaPauZ's fan remake of Sonic and the Secret Rings
+# (Wii) for modern platforms (gamejolt.com/games/project_reignition/1082591).
+# Godot 4.7 + .NET (mono export), NATIVE Linux build — no Wine, runs Vulkan
+# Forward+ on the RTX. Fully self-contained (no original game data needed).
+# Native controller support (Godot SDL). Opt-in role install_project_reignition.
+# See docs/project-reignition.md.
+#
+# Source: the Linux zip downloaded from Gamejolt, staged on the NAS. Bump the
+# version by staging the new zip + updating the sha256.
+
+dg_project_reignition_version: "1.0.1"
+dg_project_reignition_zip: "{{ dg_roms_final_root }}/PC/project-reignition-linux-v{{ dg_project_reignition_version }}.zip"
+dg_project_reignition_zip_sha256: 2517648a75893ddafb36db1e1a5a36b8b7a36e40c183245b40f24c7f9bb239e1
+# top-level dir inside the zip
+dg_project_reignition_zip_dir: "Project Reignition - Linux v{{ dg_project_reignition_version }}"
+
+dg_project_reignition_install_dir: "{{ dg_box_home }}/Games/project-reignition"
+dg_project_reignition_exe: "Project Reignition.x86_64"
+dg_project_reignition_bin: "{{ dg_box_home }}/bin/project-reignition"
+
+dg_project_reignition_main_output: "DP-1"
+dg_project_reignition_revert: false
