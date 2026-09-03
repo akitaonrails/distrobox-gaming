@@ -1,88 +1,127 @@
 ---
-# Star Fox Enhanced — self-contained prebuilt SDL3 exe under Wine, GLX-pinned to
-# the RTX. See group_vars/all/starfox_enhanced.yml and docs/starfox-enhanced.md.
+# Star Fox Enhanced — official native linux-x64 release (v0.0.3+).
+# See group_vars/all/starfox_enhanced.yml and docs/starfox-enhanced.md.
 
-- name: Create Star Fox Enhanced directories
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    mode: "0755"
-  loop:
-    - "{{ dg_sfe_game_dir }}"
-    - "{{ dg_box_home }}/bin"
+- name: Revert Star Fox Enhanced when requested
+  when: dg_sfe_revert | bool
+  block:
+    - name: Remove the Star Fox Enhanced launcher + install dir
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_sfe_bin }}"
+        - "{{ dg_sfe_root }}"
+    - name: Report Star Fox Enhanced reverted
+      ansible.builtin.debug:
+        msg: "Star Fox Enhanced removed. Your ROM on the NAS and Documents/Star Fox Enhanced saves are untouched."
 
-- name: Download the pinned prebuilt exe (self-contained — ROM + symbols embedded)
-  ansible.builtin.get_url:
-    url: "{{ dg_sfe_exe_url }}"
-    dest: "{{ dg_sfe_game_dir }}/{{ dg_sfe_exe_name }}"
-    checksum: "sha256:{{ dg_sfe_exe_sha256 }}"
-    mode: "0755"
+- name: Install Star Fox Enhanced
+  when: not (dg_sfe_revert | bool)
+  block:
+    - name: Verify the Star Fox (USA) (Rev 2) ROM exists
+      ansible.builtin.stat:
+        path: "{{ dg_sfe_rom_src }}"
+      register: _sfe_rom
+      failed_when: not _sfe_rom.stat.exists
 
-- name: Initialize the Wine prefix
-  ansible.builtin.shell: |
-    set -eu
-    export WINEPREFIX="{{ dg_sfe_prefix }}"
-    export WINEARCH="{{ dg_sfe_winearch }}"
-    export WINEDEBUG=-all
-    export PATH="{{ dg_sfe_wine_path }}"
-    if [ ! -d "$WINEPREFIX" ]; then
-      {{ dg_in_box }} sh -lc 'WINEPREFIX="'"$WINEPREFIX"'" WINEARCH="'"$WINEARCH"'" WINEDEBUG=-all "{{ dg_sfe_wine_bin }}" wineboot -i'
-      printf '%s\n' "created-prefix"
-    fi
-  register: _sfe_prefix
-  changed_when: "'created-prefix' in _sfe_prefix.stdout"
+    - name: Create Star Fox Enhanced directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_sfe_cache_dir }}"
+        - "{{ dg_sfe_game_dir }}"
+        - "{{ dg_box_home }}/bin"
 
-- name: Force the GLX OpenGL backend (wine 11 EGL -> iGPU/llvmpipe regression)
-  # wine 10.17+ defaults winex11.drv to EGL, which resolves to the AMD iGPU /
-  # llvmpipe on this dual-GPU box (spams "egl: failed to create dri2 screen").
-  # UseEGL=N pins GLX -> the RTX. Verified: 0 dri2 warnings after.
-  ansible.builtin.shell: |
-    set -eu
-    key="HKCU\\Software\\Wine\\X11 Driver"
-    {{ dg_in_box }} sh -lc 'WINEPREFIX="{{ dg_sfe_prefix }}" WINEDEBUG=-all
-      "{{ dg_sfe_wine_bin }}" reg query "'"$key"'" /v UseEGL 2>/dev/null | grep -Eiq "REG_SZ[[:space:]]+N[[:space:]]*$"' && exit 0 || true
-    {{ dg_in_box }} sh -lc 'WINEPREFIX="{{ dg_sfe_prefix }}" WINEDEBUG=-all
-      "{{ dg_sfe_wine_bin }}" reg add "'"$key"'" /v UseEGL /t REG_SZ /d N /f'
-    printf '%s\n' "forced-glx"
-  register: _sfe_glx
-  changed_when: "'forced-glx' in _sfe_glx.stdout"
+    - name: Remove the pre-v0.0.3 Wine artifacts (exe + prefix), one time
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_sfe_game_dir }}/starfox_pc.exe"
+        - "{{ dg_box_home }}/wineprefixes/starfox-enhanced"
 
-- name: Route controllers through SDL (winebus) so the 8BitDo reaches SDL3
-  ansible.builtin.shell: >-
-    {{ dg_in_box }} sh -lc 'WINEPREFIX="{{ dg_sfe_prefix }}" WINEDEBUG=-all
-    env -u PYTHONHOME -u PYTHONPATH "{{ dg_sfe_wine_bin }}" reg add
-    "HKCU\\Software\\Wine\\WineBus" /v "{{ item.name }}" /t REG_DWORD /d "{{ item.value }}" /f'
-  loop: "{{ dg_sfe_winebus_registry }}"
-  loop_control:
-    label: "{{ item.name }}={{ item.value }}"
-  changed_when: true
+    - name: Reuse the NAS-staged release zip when present
+      ansible.builtin.copy:
+        src: "{{ dg_sfe_archive_source }}"
+        dest: "{{ dg_sfe_cache_dir }}/{{ dg_sfe_asset_name }}"
+        remote_src: true
+        force: false
+        mode: "0644"
+      when: dg_sfe_archive_source is file
 
-- name: Deploy the launcher
-  ansible.builtin.template:
-    src: starfox-enhanced-launch.sh.j2
-    dest: "{{ dg_sfe_bin }}"
-    mode: "0755"
+    - name: Download the pinned release (verifies the staged copy)
+      ansible.builtin.get_url:
+        url: "{{ dg_sfe_asset_url }}"
+        dest: "{{ dg_sfe_cache_dir }}/{{ dg_sfe_asset_name }}"
+        checksum: "sha256:{{ dg_sfe_asset_sha256 }}"
+        mode: "0644"
 
-- name: Render the desktop entry
-  ansible.builtin.template:
-    src: gaming-starfox-enhanced.desktop.j2
-    dest: "{{ dg_desktop_render_dir }}/gaming-starfox-enhanced.desktop"
-    mode: "0644"
+    - name: Extract the release (version-gated; assets/saves preserved)
+      ansible.builtin.shell: |
+        set -eu
+        game="{{ dg_sfe_game_dir }}"
+        if [ -x "$game/starfox_pc" ] && grep -qx "{{ dg_sfe_version }}" "$game/.dg-installed-ref" 2>/dev/null; then
+          exit 0
+        fi
+        tmp="$(mktemp -d)"
+        unzip -q "{{ dg_sfe_cache_dir }}/{{ dg_sfe_asset_name }}" -d "$tmp"
+        cp -f "$tmp"/dist/StarFoxEnhanced-linux-x64/* "$game"/
+        rm -rf "$tmp"
+        chmod 0755 "$game/starfox_pc" "$game/starfox_asset_builder"
+        # a version bump invalidates the version-bound assets companion
+        rm -f "$game/Starfox-Assets.BIN"
+        printf '%s\n' "{{ dg_sfe_version }}" > "$game/.dg-installed-ref"
+        printf '%s\n' "installed-sfe"
+      register: _sfe_extract
+      changed_when: "'installed-sfe' in _sfe_extract.stdout"
 
-- name: Install the desktop entry into the host applications dir
-  ansible.builtin.command:
-    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
-  environment:
-    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
-    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
-  register: _sfe_host_launchers
-  changed_when: >-
-    'installed ' in _sfe_host_launchers.stdout or
-    'removed stale ' in _sfe_host_launchers.stdout
+    - name: Stage the ROM beside the executable (first-launch asset build)
+      ansible.builtin.copy:
+        src: "{{ dg_sfe_rom_src }}"
+        dest: "{{ dg_sfe_game_dir }}/{{ dg_sfe_rom_name }}"
+        remote_src: true
+        force: false
+        mode: "0644"
 
-- name: Report
-  ansible.builtin.debug:
-    msg: >-
-      Star Fox Enhanced installed (self-contained prebuilt under Wine, GLX/RTX).
-      Launch "Star Fox Enhanced" from Walker or run {{ dg_sfe_bin }}. Pick a
-      widescreen mode + FPS in the pre-game setup. Select+Start exits.
+    - name: Stage the optional MSU-1 music PAK (when present on the NAS)
+      ansible.builtin.copy:
+        src: "{{ dg_sfe_msu1_source }}"
+        dest: "{{ dg_sfe_game_dir }}/Starfox-MSU1.PAK"
+        remote_src: true
+        force: false
+        mode: "0644"
+      when: dg_sfe_msu1_source is file
+
+    - name: Deploy the launcher
+      ansible.builtin.template:
+        src: starfox-enhanced-launch.sh.j2
+        dest: "{{ dg_sfe_bin }}"
+        mode: "0755"
+
+    - name: Render the desktop entry
+      ansible.builtin.template:
+        src: gaming-starfox-enhanced.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-starfox-enhanced.desktop"
+        mode: "0644"
+
+    - name: Install the desktop entry into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _sfe_host_launchers
+      changed_when: >-
+        'installed ' in _sfe_host_launchers.stdout or
+        'removed stale ' in _sfe_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Star Fox Enhanced v{{ dg_sfe_version }} (NATIVE linux build) at {{ dg_sfe_game_dir }};
+          launcher {{ dg_sfe_bin }}. First launch validates the Rev 2 ROM and writes
+          Starfox-Assets.BIN. MSU-1 music {{ 'staged' if (dg_sfe_msu1_source is file) else 'not staged' }}.
+          Select+Start exits. Revert: -e dg_sfe_revert=true.

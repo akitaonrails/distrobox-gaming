@@ -1,40 +1,39 @@
 ---
-# Star Fox Enhanced (kandowontu/starfox-enhanced) — a native SDL3 hybrid source
-# port of the SNES Star Fox (1993, SuperFX), built on the open-source
-# UltraStarFox codebase. Selectable 20-360 FPS, widescreen (up to 32:9), HUD
-# customization, mouse camera, God Mode. NOT the same as our Star Fox 64 port
-# (Starship). Managed by install_starfox_enhanced. See docs/starfox-enhanced.md.
+# Star Fox Enhanced — kandowontu's SDL source port of the SNES Star Fox (1993),
+# built on the open-source UltraStarFox codebase. 20-480 FPS, widescreen, HUD
+# editor, GPU/software renderers, MSU-1 orchestral music, native controller
+# rumble. NOT the N64 Starship port — different game (SNES vs N64), both coexist.
+# Opt-in role install_starfox_enhanced. See docs/starfox-enhanced.md.
 #
-# It IS a portable SDL3 C++ engine and builds natively on Linux, but the runtime
-# only exercises the EMBEDDED-ROM path (the external-file loader mis-reads the
-# ROM). So we run the upstream **prebuilt exe**, which is a single self-contained
-# file — its assembled UltraStarFox ROM + symbol map are embedded — under Wine.
-# It's SDL3, so it runs cleanly under Wine on the RTX (GLX-pinned).
+# Since v0.0.3 upstream ships official release binaries INCLUDING a native
+# linux-x64 build, so the old run-the-Windows-exe-under-Wine setup is gone.
+# On first launch the game validates the user's own Star Fox USA v1.2 (Rev 2)
+# ROM placed beside the executable, writes a version-bound Starfox-Assets.BIN
+# companion, and never needs the ROM again.
 
-# Pinned prebuilt (file from the repo at a fixed commit — no GitHub release
-# exists). Reproducible by commit sha + sha256. The exe is stored via Git LFS
-# since ~2026-09 — raw.githubusercontent serves only the 133-byte LFS pointer,
-# so the URL must use media.githubusercontent.com (serves the real binary).
-dg_sfe_commit: "e85a66d220ea22e7ef72c6d1a2401f7fd32c793b"
-dg_sfe_exe_name: starfox_pc.exe
-dg_sfe_exe_url: "https://media.githubusercontent.com/media/kandowontu/starfox-enhanced/{{ dg_sfe_commit }}/dist/StarFoxEnhanced/{{ dg_sfe_exe_name }}"
-dg_sfe_exe_sha256: 62859c4bac9c9e31a1ac27146473f96d4b987476db978f594be060afd9de0090
+dg_sfe_repo: kandowontu/starfox-enhanced
+dg_sfe_version: "0.0.3"
+dg_sfe_asset_name: "StarFoxEnhanced-{{ dg_sfe_version }}-linux-x64.zip"
+dg_sfe_asset_url: "https://github.com/{{ dg_sfe_repo }}/releases/download/v{{ dg_sfe_version }}/{{ dg_sfe_asset_name }}"
+dg_sfe_asset_sha256: c2bc064ab0dd28cb45ee981a733c8d084f61f0f1124cbad6dd7b17f4eb675e9e
+# NAS-staged copy reused on rebuilds (get_url downloads only if absent/corrupt).
+dg_sfe_archive_source: "{{ dg_roms_final_root }}/PC/starfox-enhanced/{{ dg_sfe_asset_name }}"
 
 dg_sfe_root: "{{ dg_box_home }}/tools/starfox-enhanced"
-dg_sfe_game_dir: "{{ dg_sfe_root }}/game"            # exe runs from here (writes nothing critical)
+dg_sfe_game_dir: "{{ dg_sfe_root }}/game"       # starfox_pc + ROM + Starfox-Assets.BIN
+dg_sfe_cache_dir: "{{ dg_box_home }}/cache/starfox-enhanced"
 dg_sfe_bin: "{{ dg_box_home }}/bin/starfox-enhanced"
-dg_sfe_prefix: "{{ dg_box_home }}/wineprefixes/starfox-enhanced"
-dg_sfe_winearch: win64
 
-# Reuse the pc_racing wine-11.8 sidecar (proven on this box) + SDL controller env.
-dg_sfe_wine_bin: "{{ dg_pc_racing_wine_runner_root }}/wine-11.8/usr/bin/wine"
-dg_sfe_wine_path: "{{ dg_pc_racing_wine_runner_root }}/wine-11.8/usr/bin:{{ dg_pc_racing_wine_path }}"
+# The user's Star Fox USA v1.2 (Rev 2) SNES ROM (the only revision the port
+# accepts). Copied beside the executable for the one-time asset build.
+dg_sfe_rom_src: "{{ dg_emudeck_root }}/roms/snes/Star Fox (USA) (Rev 2).sfc"
+dg_sfe_rom_name: "Star Fox (USA) (Rev 2).sfc"
 
-# WineBus: route controllers through SDL so the 8BitDo reaches the game's SDL3.
-dg_sfe_winebus_registry:
-  - { name: DisableHidraw, value: 1 }
-  - { name: DisableInput, value: 1 }
-  - { name: Enable SDL, value: 1 }
-  - { name: Map Controllers, value: 1 }
+# Optional MSU-1 orchestral music set (enable in the in-game setup; reads
+# "NOT FOUND" without the PAK beside the executable). Staged on the NAS;
+# skipped when absent.
+dg_sfe_msu1_source: "{{ dg_roms_final_root }}/PC/starfox-enhanced/Starfox-MSU1.PAK"
+dg_sfe_msu1_sha256: 2139ec0bab97a768d04ab8655aa95f8e3d204f57a16028dfd12896e3f5599e7a
 
 dg_sfe_main_output: "DP-1"
+dg_sfe_revert: false

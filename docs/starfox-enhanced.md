@@ -1,55 +1,47 @@
 # Star Fox Enhanced (SNES Star Fox source port)
 
 **Star Fox Enhanced** ([kandowontu/starfox-enhanced](https://github.com/kandowontu/starfox-enhanced))
-is a hybrid **source port of the SNES Star Fox** (1993, SuperFX) — a from-scratch
-SDL3 C++ engine (its own 65C816 core + SPC700 audio + software renderer) built on
-the open-source **UltraStarFox** codebase. It adds selectable **20–360 FPS**,
-**widescreen up to 32:9**, a customizable HUD, mouse camera, and a God Mode,
-while keeping the deterministic 20 Hz game logic.
+is a source port of the **SNES Star Fox** (1993, SuperFX) built on the
+open-source **UltraStarFox** codebase — selectable **20–480 FPS** with the
+original deterministic 20 Hz game logic, widescreen, HUD editor, GPU/software
+renderers, controller rumble, an embedded **Star Fox EX** campaign, and
+optional **MSU-1 orchestral music**. Managed by `install_starfox_enhanced` /
+`install-starfox-enhanced.yml` (`site.yml --tags starfox_enhanced`).
 
-> This is **not** our *Star Fox 64* port. That's **Starship** (`starship`, a
-> native N64 port) — a different game (N64 vs SNES). Both can coexist.
+> This is **not** our *Star Fox 64* port — that's **Starship** (native N64
+> port). Different games (SNES vs N64); both coexist.
 
-## How it's installed
+## Native since v0.0.3
 
-The engine *is* portable SDL3 and builds natively on Linux, **but** the runtime
-only exercises the **embedded-ROM** path — its external `SF.SFC`/`SYMBOLS.TXT`
-loader mis-reads the ROM (`LoROM address … outside the cartridge window`). So we
-run the upstream **prebuilt exe**, a single self-contained file with the
-assembled UltraStarFox ROM + symbol map embedded, **under Wine**. It's SDL3, so
-it runs cleanly under Wine, GLX-pinned to the RTX. Managed by
-`install_starfox_enhanced` / `install-starfox-enhanced.yml`
-(`site.yml --tags starfox_enhanced`).
+Upstream now publishes official release binaries **including a native
+linux-x64 build**, so the old run-the-Windows-exe-under-Wine setup (needed
+when only a `dist/` Windows nightly existed and the native external-ROM loader
+was broken) is **gone** — the role migrated away from it (removed the Wine
+prefix + old exe). The release zip is pinned by sha256 (verified against the
+release `SHA256SUMS.txt`) and staged on the NAS at
+`ROMS_FINAL/PC/starfox-enhanced/` for rebuilds.
 
-The exe is pinned by commit + sha256 (no GitHub release exists) and downloaded
-from the repo's `dist/`. Since ~2026-09 the exe is stored via **Git LFS**:
-raw.githubusercontent serves only a 133-byte pointer, so the pinned URL uses
-`media.githubusercontent.com/media/...` (serves the real binary). No ROM to supply — it's embedded. The Wine prefix gets
-`UseEGL=N` (wine 11's EGL backend otherwise renders on the AMD iGPU) and the
-WineBus SDL controller policy so the 8BitDo reaches the game's SDL3.
+## Game data
+
+Your own **Star Fox (USA) (Rev 2)** ROM (v1.2 — the only revision the port
+accepts), staged beside the executable. On **first launch** the game validates
+it, reconstructs the runtime data, and writes a version-bound
+`Starfox-Assets.BIN` companion — after that the ROM is no longer read (the
+role leaves it staged; a version bump deletes the companion so it rebuilds).
+
+**MSU-1 music:** `Starfox-MSU1.PAK` (226 MB, sha-verified) is staged from the
+NAS beside the exe; enable it in the pre-game setup (off by default — without
+the PAK the option reads `NOT FOUND`).
 
 ## Run
 
-```sh
-/mnt/data/distrobox/gaming/bin/starfox-enhanced      # or "Star Fox Enhanced" in Walker
-```
+`/mnt/data/distrobox/gaming/bin/starfox-enhanced` or **"Star Fox Enhanced"**
+in Walker. Opens on DP-1 on the RTX (GLX/nvidia pinned). The pre-game setup
+selects `EXPERIENCE` (Original / Star Fox EX), pace, render FPS, display mode,
+renderer (GPU default), MSU-1, rumble, and controller remapping. **8BitDo
+works natively** (SDL, with rumble). **Select+Start exits.** Saves live in
+`Documents/Star Fox Enhanced/` (EX SRAM: `starfox-ex.srm`).
 
-Opens on DP-1. In the pre-game setup pick **display mode** (4:3 / 16:9 / 16:10 /
-21:9 / 32:9), **render FPS**, God Mode, crosshair colour, etc. `CUSTOMIZE SCREEN`
-drag-positions HUD elements (saved to `Documents/Star Fox Enhanced/`).
-**Select+Start exits.** Hold **Tab** = 2× fast-forward; right-mouse-drag =
-free camera.
-
-## Controls (8BitDo)
-
-Gamepad is auto-detected (XInput/SDL). Default: **dpad/stick** = move, **South**
-= B (shoot), **East** = A (boost/brake), **West** = Y, **North** = X, shoulders =
-L/R. Remap in-game via **CONTROLLER REMAP**.
-
-## Native build (future)
-
-`starfox_pc` compiles natively (SDL3 3.4 + CMake + gcc in the box) — the blocker
-is only the external asset loader. If upstream fixes it (or one builds
-UltraStarFox at the pinned rev `270e959a` for matching `SF.SFC`/`SYMBOLS.TXT`),
-this could drop Wine entirely. The embedded ROM/symbols can be carved from the
-prebuilt exe's RCDATA resources 101/102.
+Updating: bump `dg_sfe_version` + `dg_sfe_asset_sha256` (from the release
+`SHA256SUMS.txt`), stage the new zip on the NAS, re-run (extract is
+version-gated). Revert: `-e dg_sfe_revert=true`.
