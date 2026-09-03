@@ -1,0 +1,8 @@
+---
+- name: Apply Splinter Cell (2002) playability fixes
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_splinter_cell_fixes
+    - steam_launch_options

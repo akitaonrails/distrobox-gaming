@@ -43,3 +43,11 @@ dg_steam_launch_options_by_appid:
   "1638330":
     name: "Darius Cozmic Collection Arcade"
     options: "DXVK_FRAME_RATE=60 %command%"
+  # Splinter Cell (2002, UE2/D3D8). The Wine WAYLAND driver (GE-Proton) fixes
+  # the menu mouse cursor snapping to corners (XWayland fractional-scale
+  # mismatch); -nointro skips the Bink intros that render tiny in a corner.
+  # Pair with per-game compat tool GE-Proton11-5 (Steam UI) and the ini fixes
+  # from install_splinter_cell_fixes. See docs/splinter-cell.md.
+  "13560":
+    name: "Tom Clancy's Splinter Cell"
+    options: 'PROTON_ENABLE_WAYLAND=1 PROTON_USE_NTSYNC=1 %command% -nointro'

@@ -1,0 +1,43 @@
+---
+# Splinter Cell (2002) fixes: fullscreen resolution + joystick handoff to
+# Steam Input. Launch options (Wine Wayland driver) live in
+# steam_launch_options; the compat tool (GE-Proton11-5) and the controller
+# layout are one-time Steam UI steps documented in docs/splinter-cell.md.
+
+- name: Assert the Splinter Cell install exists
+  ansible.builtin.stat:
+    path: "{{ dg_sc1_system_dir }}/SplinterCellUser.ini"
+  register: _sc1_ini
+  failed_when: not _sc1_ini.stat.exists
+
+- name: Set the game resolution (CRLF-safe, idempotent)
+  ansible.builtin.shell: |
+    set -eu
+    f="{{ dg_sc1_system_dir }}/SplinterCellUser.ini"
+    grep -q "^Resolution={{ dg_sc1_resolution }}" "$f" && exit 0
+    cp -n "$f" "$f.bak-dg" || true
+    sed -i "s/^Resolution=[0-9x]*\r\{0,1\}$/Resolution={{ dg_sc1_resolution }}\r/" "$f"
+    grep -q "^Resolution={{ dg_sc1_resolution }}" "$f"
+    echo changed-resolution
+  register: _sc1_res
+  changed_when: "'changed-resolution' in _sc1_res.stdout"
+
+- name: Disable the game's raw joystick reading (Steam Input emulates kbd+mouse)
+  # Native joystick support is partial (left stick + face buttons only; no
+  # right-stick camera). With a Steam Input WASD+mouse layout active, raw
+  # dinput would double-input, so hand the pad entirely to Steam Input.
+  ansible.builtin.shell: |
+    set -eu
+    f="{{ dg_sc1_system_dir }}/SplinterCell.ini"
+    grep -q "^UseJoystick=False" "$f" && exit 0
+    cp -n "$f" "$f.bak-dg" || true
+    sed -i "s/^UseJoystick=True\r\{0,1\}$/UseJoystick=False\r/" "$f"
+    echo changed-joystick
+  register: _sc1_joy
+  changed_when: "'changed-joystick' in _sc1_joy.stdout"
+
+- name: Report the one-time Steam UI steps
+  ansible.builtin.debug:
+    msg:
+      - "Splinter Cell inis fixed (Resolution={{ dg_sc1_resolution }}, UseJoystick=False)."
+      - "One-time in Steam UI: Properties -> Compatibility -> GE-Proton11-5; launch options via site.yml --tags steam_launch_options (Steam closed); Controller -> pick a Keyboard (WASD) and Mouse layout."

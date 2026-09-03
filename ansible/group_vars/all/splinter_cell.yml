@@ -1,0 +1,5 @@
+---
+# Splinter Cell (2002, Steam appid 13560) playability fixes — see
+# docs/splinter-cell.md. The game inis are CRLF; edits must preserve that.
+dg_sc1_system_dir: "{{ dg_external_usb_games_root if (dg_external_usb_games_root | default('') | length > 0) else '/run/media/' ~ ansible_facts.env.USER ~ '/STEAM' }}/steamapps/common/Splinter Cell/system"
+dg_sc1_resolution: "3840x2160"   # native panel res; the 1024x768 default rendered in a corner
