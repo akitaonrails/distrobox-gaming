@@ -2,10 +2,13 @@
 # install_ff7rebirth_engine. See docs/nexusmods.md. appid 2909400 (USB library).
 # Un-defers the FF7 Rebirth Engine.ini tweak (anti-stutter / performance / clarity).
 #
-# FFVIIHook is an xinput1_3.dll loader that drops into End/Binaries/Win64 (enabled
-# by WINEDLLOVERRIDES="xinput1_3=n,b"); the mod's Engine.ini goes into the UE
-# per-user config dir inside the Proton prefix. The No-VRR variant is the safe
-# default (VRR variant assumes a variable-refresh display).
+# FFVIIHook is a DLL-hijack loader dropped into End/Binaries/Win64. It ships as
+# xinput1_3.dll, but under Proton that name EATS THE CONTROLLER (the game's
+# XInput calls hit the hook and its passthrough never reaches Wine's xinput) —
+# the mod author's documented fix is to install it under a different proxy
+# name; dxgi.dll "works on Proton and is not used by other dll injectors".
+# The mod's Engine.ini goes into the UE per-user config dir inside the Proton
+# prefix. The No-VRR variant is the safe default.
 
 dg_ff7re_appid: "2909400"
 dg_ff7re_steam_library_root: >-
@@ -18,7 +21,8 @@ dg_ff7re_win64_subdir: "End/Binaries/Win64"
 dg_ff7re_prefix_config: "{{ dg_ff7re_steam_library_root }}/steamapps/compatdata/{{ dg_ff7re_appid }}/pfx/drive_c/users/steamuser/AppData/Local/End/Saved/Config/Windows"
 
 dg_ff7re_steam_root: "{{ dg_box_home }}/.local/share/Steam"
-dg_ff7re_launch_options: 'WINEDLLOVERRIDES="xinput1_3=n,b" %command%'
+dg_ff7re_loader_dll: dxgi.dll   # NOT xinput1_3.dll — that name breaks the pad under Proton
+dg_ff7re_launch_options: 'WINEDLLOVERRIDES="dxgi=n,b" %command%'
 dg_ff7re_steam_localconfig: ""
 
 dg_ff7re_ffviihook: { id: "4", file: "9565", name: "FFVIIHook v2.2i" }

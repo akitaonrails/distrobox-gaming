@@ -1,11 +1,11 @@
 ---
 # Remove FFVIIHook + the Engine.ini tweak; restore any backups.
 
-- name: Remove FFVIIHook (restore any original xinput1_3.dll)
+- name: Remove FFVIIHook (restore any original loader dll)
   ansible.builtin.shell: |
     set -eu
     game={{ dg_ff7re_game_dir | quote }}
-    dest="$game/{{ dg_ff7re_win64_subdir }}/xinput1_3.dll"
+    dest="$game/{{ dg_ff7re_win64_subdir }}/{{ dg_ff7re_loader_dll }}"
     [ -f "$game/.dg-ff7re-ffviihook" ] || { echo "nochange"; exit 0; }
     if [ -e "$dest.dg-orig" ]; then mv -f "$dest.dg-orig" "$dest"; else rm -f "$dest"; fi
     rm -f "$game/.dg-ff7re-ffviihook"

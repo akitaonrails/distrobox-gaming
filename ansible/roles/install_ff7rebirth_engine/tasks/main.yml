@@ -36,7 +36,18 @@
       no_log: true
       when: lookup('ansible.builtin.env', 'NEXUS_MODS_API_KEY') | length > 0
 
-    - name: Install FFVIIHook (xinput1_3.dll) into End/Binaries/Win64
+    - name: Migrate a legacy xinput1_3.dll hook install to the dxgi.dll name
+      ansible.builtin.shell: |
+        set -eu
+        w="{{ dg_ff7re_game_dir }}/{{ dg_ff7re_win64_subdir }}"
+        [ -f "$w/xinput1_3.dll" ] || { echo "no-legacy"; exit 0; }
+        mv "$w/xinput1_3.dll" "$w/{{ dg_ff7re_loader_dll }}"
+        [ -f "$w/xinput1_3.dll.dg-orig" ] && mv "$w/xinput1_3.dll.dg-orig" "$w/xinput1_3.dll" || true
+        echo "migrated-loader"
+      register: _ff7re_migrate
+      changed_when: "'migrated-loader' in _ff7re_migrate.stdout"
+
+    - name: Install FFVIIHook ({{ dg_ff7re_loader_dll }}) into End/Binaries/Win64
       ansible.builtin.shell: |
         set -eu
         game={{ dg_ff7re_game_dir | quote }}
@@ -50,7 +61,7 @@
         7z x -y -o"$tmp" "$arch" >/dev/null
         dll="$(find "$tmp" -name xinput1_3.dll | head -1)"
         [ -n "$dll" ] || { echo "NO-DLL" >&2; exit 4; }
-        dest="$game/$win64/xinput1_3.dll"
+        dest="$game/$win64/{{ dg_ff7re_loader_dll }}"
         [ -e "$dest" ] && [ ! -e "$dest.dg-orig" ] && cp -a "$dest" "$dest.dg-orig" || true
         cp -f "$dll" "$dest"
         echo "installed" > "$marker"
@@ -79,7 +90,7 @@
       register: _ff7re_ini
       changed_when: "'engineini-installed' in _ff7re_ini.stdout"
 
-    # --- Steam launch override (xinput1_3) ---
+    # --- Steam launch override (loader dll) ---
     - name: Auto-discover the in-box Steam localconfig.vdf
       ansible.builtin.find:
         paths: "{{ dg_ff7re_steam_root }}/userdata"
@@ -107,14 +118,14 @@
     - name: Warn that the launch override was not set (Steam running)
       ansible.builtin.debug:
         msg: >-
-          Steam is running; the xinput1_3 override was NOT set. Set it manually
+          Steam is running; the loader override was NOT set. Set it manually
           (FF7 Rebirth -> Launch Options -> {{ dg_ff7re_launch_options }}) or close
           Steam and re-run. The files are installed.
       when:
         - _ff7re_localconfig | length > 0
         - _ff7re_steam_running.rc == 0
 
-    - name: Set the FF7 Rebirth Steam launch options (xinput1_3 override)
+    - name: Set the FF7 Rebirth Steam launch options (loader override)
       ansible.builtin.command: >-
         {{ dg_project_root }}/scripts/set-steam-launch-options.py
         --localconfig {{ _ff7re_localconfig | quote }}
@@ -128,6 +139,6 @@
     - name: Report
       ansible.builtin.debug:
         msg:
-          - "FF7 Rebirth: FFVIIHook (xinput1_3.dll) + Ultimate Engine Tweaks Engine.ini installed."
+          - "FF7 Rebirth: FFVIIHook ({{ dg_ff7re_loader_dll }}) + Ultimate Engine Tweaks Engine.ini installed."
           - "{{ 'Launch override set.' if (_ff7re_localconfig | length > 0 and _ff7re_steam_running.rc != 0) else 'Set launch option manually: ' + dg_ff7re_launch_options }}"
           - "If the game overwrites Engine.ini on first launch, re-run this role. Revert: -e dg_ff7re_revert=true."

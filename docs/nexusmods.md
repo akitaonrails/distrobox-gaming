@@ -411,7 +411,7 @@ ecosystem; all headless drops. Load order 49 → 52 → 19/122 → 110.
 | [110 Stillman Skippable](https://www.nexusmods.com/metalgearsolid2mc/mods/110) | `.gcx` → `assets/gcx/eu/_bp` | EU path; incompatible with JP language pack |
 | [10 Snake Hair Fix](https://www.nexusmods.com/metalgearsolid2mc/mods/10) | — | ⛔ omitted (redundant — 52 bundles it) |
 | [392 Gameplay Enhancement](https://www.nexusmods.com/finalfantasy7rebirth/mods/392) | — | ⏸️ deferred (12 sub-items to curate; conflicts with 61) |
-| [3 Ultimate Engine Tweaks](https://www.nexusmods.com/finalfantasy7rebirth/mods/3) | FFVIIHook + Engine.ini | ✅ now installed via `install_ff7rebirth_engine`: FFVIIHook (`xinput1_3.dll`) → `End/Binaries/Win64`, the **No-VRR** Engine.ini → the prefix's `AppData/Local/End/Saved/Config/Windows/`, launch option `WINEDLLOVERRIDES="xinput1_3=n,b" %command%`. Update FFVIIHook after game patches; re-run if the game regenerates Engine.ini. |
+| [3 Ultimate Engine Tweaks](https://www.nexusmods.com/finalfantasy7rebirth/mods/3) | FFVIIHook + Engine.ini | ✅ now installed via `install_ff7rebirth_engine`: FFVIIHook (installed as **`dxgi.dll`** — the `xinput1_3.dll` name breaks the CONTROLLER under Proton: the game's XInput calls hit the hook and never reach a pad; the mod author documents dxgi as the Proton-safe proxy name) → `End/Binaries/Win64`, the **No-VRR** Engine.ini → the prefix's `AppData/Local/End/Saved/Config/Windows/`, launch option `WINEDLLOVERRIDES="dxgi=n,b" %command%`. Update FFVIIHook after game patches; re-run if the game regenerates Engine.ini. |
 
 ## ✅ MGS1 (Master Collection) — `install_mgs1mc_mods`
 
