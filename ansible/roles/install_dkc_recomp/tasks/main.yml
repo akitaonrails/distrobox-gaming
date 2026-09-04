@@ -96,6 +96,23 @@
       register: _dkc_build
       changed_when: "'built-' in _dkc_build.stdout"
 
+    - name: Seed the launcher config — Player 1 = Gamepad (first install only)
+      # DKC2/DKC3's launcher persists launcher.cfg BESIDE THE EXECUTABLE
+      # (build/linux/, not the cwd); sources are 0=None 1=Keyboard 2=Gamepad
+      # and the default puts the pad on Player 2. Partial files are fine (the
+      # parser fills defaults); in-launcher changes are preserved afterwards.
+      # DKC1 has no launcher UI (its host opens the pad automatically).
+      ansible.builtin.copy:
+        content: |
+          Player1Source=2
+          Player2Source=1
+        dest: "{{ item.src_dir }}/build/linux/launcher.cfg"
+        force: false
+        mode: "0644"
+      loop: "{{ dg_dkc_games | rejectattr('key', 'equalto', 'dkc1') | list }}"
+      loop_control:
+        label: "{{ item.name }}"
+
     - name: Deploy the launchers
       ansible.builtin.template:
         src: dkc-launch.sh.j2

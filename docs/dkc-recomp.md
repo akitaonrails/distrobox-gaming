@@ -41,8 +41,12 @@ Its generator also builds a small Rust analyzer with the box's cargo.
 
 `bin/dkc1-recomp` / `bin/dkc2-recomp` / `bin/dkc3-recomp`, or the Walker entries
 the "Donkey Kong Country … · Recomp" entries. All open
-on DP-1 on the RTX. DKC2/DKC3 boot into their launcher UI (ROM shown as
-**verified**, per-player input pickers — the 8BitDo shows **connected**;
-"Skip launcher on boot" available). DKC1 boots straight in (Rareware logo);
-its extras live in host menus/keys (F7 pause, F8 step). Update = bump `ref`
+on DP-1 on the RTX. **Gamepad (8BitDo) works in all three**: DKC1's host opens
+the first SDL game controller automatically (with stomp haptics/rumble);
+DKC2/DKC3 boot into their launcher UI (ROM shown as **verified**) where the
+role seeds `build/linux/launcher.cfg` with **Player 1 = Gamepad** (sources:
+0=None 1=Keyboard 2=Gamepad; the upstream default put the pad on Player 2) —
+note the launcher persists its config BESIDE THE EXECUTABLE, not the cwd.
+"Skip launcher on boot" available; DKC1's extras live in host menus/keys
+(F7 pause, F8 step). Update = bump `ref`
 in `dg_dkc_games` (checkout is ref-gated; the build re-runs).
