@@ -1,0 +1,99 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index df221db..0cb26ee 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -147,3 +147,35 @@ if(APPLE)
+         MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
+         XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED "NO")
+ endif()
++
++# --- Linux desktop target (distrobox-gaming install_dkc_recomp) ---
++if(UNIX AND NOT APPLE)
++    add_executable(dkc1_linux
++        ${DKC1_ENGINE_SOURCES}
++        ${DKC1_SNESRECOMP_GEN_SOURCES}
++        ${DKC1_RUNNER_SOURCES}
++        runner/headless_host.c
++        runner/dkc1_haptics.c
++        runner/dkc1_msu1.c
++        runner/sdl_host.c
++        runner/linux_stubs.c)
++    target_include_directories(dkc1_linux PRIVATE
++        ${CMAKE_CURRENT_SOURCE_DIR}/runner
++        ${CMAKE_CURRENT_SOURCE_DIR}/recomp
++        ${SNESRECOMP_RUNNER_INCLUDE_DIRS}
++        ${SNESRECOMP_ROOT}/runner/src/desktop)
++    target_compile_definitions(dkc1_linux PRIVATE
++        SNESRECOMP_TRACE=0
++        SNESRECOMP_REVERSE_DEBUG=0
++        SNESRECOMP_EXTERNAL_RAM_ROUTINE_GUARDS=1
++        SYSTEM_VOLUME_MIXER_AVAILABLE=0
++        DKC1_BUILD_COMMIT="${DKC1_BUILD_COMMIT}"
++        DKC1_BUILD_CONFIG="linux"
++        _GNU_SOURCE)
++    target_compile_options(dkc1_linux PRIVATE -Wno-unused-function)
++    target_link_libraries(dkc1_linux PRIVATE
++        ${SNESRECOMP_RUNNER_LIBRARIES}
++        m)
++    snesrecomp_target_sdl(dkc1_linux)
++    set_target_properties(dkc1_linux PROPERTIES OUTPUT_NAME "dkc1_recomp")
++endif()
+diff --git a/runner/sdl_host.c b/runner/sdl_host.c
+index 3a3b4d4..a72243f 100644
+--- a/runner/sdl_host.c
++++ b/runner/sdl_host.c
+@@ -29,7 +29,26 @@
+ 
+ #include <float.h>
+ #include <limits.h>
++#ifdef __APPLE__
+ #include <mach/mach_time.h>
++#else /* Linux port shim: mach timing via the monotonic clock (1 tick = 1 ns,
++         so timebase 1/1 keeps FramePacerInit's math exact). */
++#include <stdint.h>
++#include <time.h>
++typedef struct mach_timebase_info { uint32_t numer, denom; } mach_timebase_info_data_t;
++static inline void mach_timebase_info(mach_timebase_info_data_t *tb) {
++  tb->numer = 1u; tb->denom = 1u;
++}
++static inline uint64_t mach_absolute_time(void) {
++  struct timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts);
++  return (uint64_t)ts.tv_sec * 1000000000ull + (uint64_t)ts.tv_nsec;
++}
++static inline int mach_wait_until(uint64_t deadline) {
++  struct timespec ts = { (time_t)(deadline / 1000000000ull),
++                         (long)(deadline % 1000000000ull) };
++  return clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, NULL);
++}
++#endif
+ #include <pthread.h>
+ #include <stdbool.h>
+ #include <stdint.h>
+@@ -926,7 +945,7 @@ static void InitDisplayLink(void) {
+               SDL_GetError());
+     } else {
+       s_metal_presenter_active = Dkc1MacMetalPresenterStart(
+-          window_info.info.cocoa.window, kMacNativeDisplayFramesPerSecond,
++          (void *)0, kMacNativeDisplayFramesPerSecond,
+           s_fullscreen_scaling, s_fullscreen);
+     }
+   }
+@@ -941,7 +960,7 @@ static void InitDisplayLink(void) {
+               SDL_GetError());
+     } else {
+       s_display_link_active =
+-          Dkc1MacDisplayLinkStart(window_info.info.cocoa.window,
++          Dkc1MacDisplayLinkStart((void *)0,
+                                   kHostPresentationFramesPerSecond);
+     }
+   }
+@@ -1698,7 +1717,9 @@ static void Cleanup(uint8_t *rom) {
+ 
+ int main(int argc, char **argv) {
+   SDL_SetMainReady();
++#ifdef __APPLE__
+   (void)pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0);
++#endif
+   /* A native macOS fullscreen Space constrains SDL to the panel's inset safe
+    * area (3949x2464 on the target 4112x2658 MacBook display). Set this before
+    * the Cocoa video backend initializes so FULLSCREEN_DESKTOP uses the full

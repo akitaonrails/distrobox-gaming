@@ -1,0 +1,30 @@
+#!/usr/bin/env sh
+set -eu
+# {{ item.name }} recomp launcher — native SDL2 build on the RTX, DP-1.
+# Managed by install_dkc_recomp. The ROM path is passed explicitly and its
+# revision was sha256-verified at install time.
+
+BIN="{{ item.src_dir }}/{{ item.binary }}"
+if [ ! -x "$BIN" ]; then
+  printf '%s\n' "ERROR: {{ item.name }} recomp not built ($BIN)." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-dkc-recomp.yml" >&2
+  exit 1
+fi
+
+# Focus the main landscape 4K monitor (Hyprland >= 0.56 Lua IPC form).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_dkc_main_output }}" }))'); s.recv(256); s.close()
+PY
+
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+cd "{{ item.src_dir }}"
+exec "$BIN" "{{ item.rom }}" "$@"

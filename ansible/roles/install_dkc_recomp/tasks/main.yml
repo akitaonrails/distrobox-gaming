@@ -1,0 +1,134 @@
+---
+# DKC SNES recomps — source builds at pinned commits with Linux-port patches.
+# See group_vars/all/dkc_recomp.yml and docs/dkc-recomp.md.
+
+- name: Revert DKC recomps when requested
+  when: dg_dkc_revert | bool
+  block:
+    - name: Remove DKC launchers + source trees
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop: >-
+        {{ (dg_dkc_games | map(attribute='src_dir') | list) +
+           (dg_dkc_games | map(attribute='key') | map('regex_replace', '^(.*)$', dg_box_home ~ '/bin/\1-recomp') | list) }}
+    - name: Report DKC recomps reverted
+      ansible.builtin.debug:
+        msg: "DKC recomps removed. Your ROMs on the NAS are untouched."
+
+- name: Install DKC recomps
+  when: not (dg_dkc_revert | bool)
+  block:
+    - name: Install build dependencies inside the box
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} sudo pacman -S --needed --noconfirm {{ dg_dkc_build_packages | join(' ') }}
+      register: _dkc_pacman
+      changed_when: "'installing' in _dkc_pacman.stdout or 'upgrading' in _dkc_pacman.stdout"
+
+    - name: Verify each game's ROM exists and matches the required revision
+      ansible.builtin.stat:
+        path: "{{ item.rom }}"
+        checksum_algorithm: sha256
+      loop: "{{ dg_dkc_games }}"
+      loop_control:
+        label: "{{ item.name }}"
+      register: _dkc_roms
+      failed_when: >-
+        not _dkc_roms.stat.exists or _dkc_roms.stat.checksum != item.rom_sha256
+
+    - name: Clone each recomp at its pinned commit (with the snesrecomp submodule)
+      ansible.builtin.shell: |
+        set -eu
+        src="{{ item.src_dir }}"
+        if [ -d "$src/.git" ] && [ "$(git -C "$src" rev-parse HEAD)" = "{{ item.ref }}" ] \
+           && [ -f "$src/.dg-ported" ]; then
+          exit 0
+        fi
+        rm -rf "$src"
+        git clone "{{ item.repo }}" "$src"
+        git -C "$src" checkout "{{ item.ref }}"
+        git -C "$src" submodule update --init --recursive
+        echo "cloned-{{ item.key }}"
+      loop: "{{ dg_dkc_games }}"
+      loop_control:
+        label: "{{ item.name }}"
+      register: _dkc_clone
+      changed_when: "'cloned-' in _dkc_clone.stdout"
+
+    - name: Apply the Linux-port patch + extra files (once per checkout)
+      ansible.builtin.shell: |
+        set -eu
+        src="{{ item.src_dir }}"
+        [ -f "$src/.dg-ported" ] && exit 0
+        git -C "$src" apply "{{ role_path }}/files/{{ item.patch }}"
+        {% for f, dest in item.extra_files.items() %}
+        cp "{{ role_path }}/files/{{ f }}" "$src/{{ dest }}"
+        {% endfor %}
+        touch "$src/.dg-ported"
+        echo "ported-{{ item.key }}"
+      loop: "{{ dg_dkc_games }}"
+      loop_control:
+        label: "{{ item.name }}"
+      register: _dkc_port
+      changed_when: "'ported-' in _dkc_port.stdout"
+
+    - name: Generate recompiled sources from the ROM + build (in the box)
+      # The ROM path travels as $1 — paths with apostrophes (Dixie Kong's)
+      # must not be inlined into the single-quoted script.
+      ansible.builtin.shell: |
+        {{ dg_in_box }} bash -c '
+          set -eu
+          cd "{{ item.src_dir }}"
+          if [ -x "{{ item.binary }}" ] && [ -f .dg-built-ref ] && grep -qx "{{ item.ref }}" .dg-built-ref; then
+            exit 0
+          fi
+          compgen -G "generated/snesrecomp/*.c" >/dev/null || \
+            python3 scripts/generate_snesrecomp.py --rom "$1"
+          cmake -S . -B build/linux -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            {{ "-DSNESRECOMP_SDL_BACKEND=SDL2" if item.key == "dkc1" else "" }}
+          ninja -C build/linux {{ item.build_target }}
+          printf "%s\n" "{{ item.ref }}" > .dg-built-ref
+          echo "built-{{ item.key }}"
+        ' -- {{ item.rom | quote }}
+      loop: "{{ dg_dkc_games }}"
+      loop_control:
+        label: "{{ item.name }}"
+      register: _dkc_build
+      changed_when: "'built-' in _dkc_build.stdout"
+
+    - name: Deploy the launchers
+      ansible.builtin.template:
+        src: dkc-launch.sh.j2
+        dest: "{{ dg_box_home }}/bin/{{ item.key }}-recomp"
+        mode: "0755"
+      loop: "{{ dg_dkc_games }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Render the desktop entries
+      ansible.builtin.template:
+        src: dkc.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-{{ item.key }}-recomp.desktop"
+        mode: "0644"
+      loop: "{{ dg_dkc_games }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Install the desktop entries into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _dkc_host_launchers
+      changed_when: >-
+        'installed ' in _dkc_host_launchers.stdout or
+        'removed stale ' in _dkc_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          DKC recomps built natively:
+          {% for g in dg_dkc_games %}{{ g.name }} ({{ dg_box_home }}/bin/{{ g.key }}-recomp){{ '; ' if not loop.last }}{% endfor %}.
+          DKC2 stays uninstalled — its runtime requires the USA v1.0 dump
+          (only Rev 1 is present). Revert: -e dg_dkc_revert=true.

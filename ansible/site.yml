@@ -31,6 +31,7 @@
     - { role: install_starfox_enhanced,  tags: [starfox_enhanced, never] }
     - { role: install_smw_remastered,    tags: [smw_remastered, never] }
     - { role: install_dk64_recomp,       tags: [dk64_recomp, never] }
+    - { role: install_dkc_recomp,        tags: [dkc_recomp, never] }
     - { role: install_perfect_dark,      tags: [perfect_dark, never] }
     - { role: install_project_reignition, tags: [project_reignition, never] }
     - { role: install_sorr,              tags: [sorr, never] }

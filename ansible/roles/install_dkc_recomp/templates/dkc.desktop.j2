@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name={{ item.name }} · Recomp (on {{ dg_box_name }})
+Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_box_home }}/bin/{{ item.key }}-recomp
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment={{ item.name }} (SNES) native widescreen recompilation — built from the user's own ROM.
+Categories=Game;
+Keywords=donkey kong;dkc;snes;recomp;widescreen;
+StartupWMClass={{ item.wmclass }};
