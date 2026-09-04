@@ -85,7 +85,7 @@
           compgen -G "generated/snesrecomp/*.c" >/dev/null || \
             python3 scripts/generate_snesrecomp.py --rom "$1"
           cmake -S . -B build/linux -G Ninja -DCMAKE_BUILD_TYPE=Release \
-            {{ "-DSNESRECOMP_SDL_BACKEND=SDL2" if item.key == "dkc1" else "" }}
+            {{ item.cmake_flags | default("") }}
           ninja -C build/linux {{ item.build_target }}
           printf "%s\n" "{{ item.ref }}" > .dg-built-ref
           echo "built-{{ item.key }}"
@@ -130,5 +130,4 @@
         msg: >-
           DKC recomps built natively:
           {% for g in dg_dkc_games %}{{ g.name }} ({{ dg_box_home }}/bin/{{ g.key }}-recomp){{ '; ' if not loop.last }}{% endfor %}.
-          DKC2 stays uninstalled — its runtime requires the USA v1.0 dump
-          (only Rev 1 is present). Revert: -e dg_dkc_revert=true.
+          Revert: -e dg_dkc_revert=true.

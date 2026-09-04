@@ -9,9 +9,8 @@
 #
 # Each game generates its recompiled C sources from the user's OWN ROM
 # (scripts/generate_snesrecomp.py); the exact revision is enforced by sha256.
-# DKC2 is ROM-BLOCKED on this box: the runtime requires the USA v1.0 dump
-# (sha256 35421a9a...) and only Rev 1 dumps are present — add the entry once a
-# matching dump exists.
+# DKC2 requires the USA v1.0 dump (sha256 35421a9a...) — the Rev 1 dumps do
+# NOT match; the v1.0 .sfc was staged into ROMS_FINAL/snes on 2026-09-04.
 
 dg_dkc_build_packages: [base-devel, cmake, ninja, sdl2, python, git, unzip]
 
@@ -26,11 +25,26 @@ dg_dkc_games:
     # presenter/picker/display-link API (SDL fallback paths take over).
     patch: dkc1-linux-port.patch
     extra_files: { "dkc1-linux_stubs.c": "runner/linux_stubs.c" }
+    cmake_flags: "-DSNESRECOMP_SDL_BACKEND=SDL2"
     build_target: dkc1_linux
     binary: build/linux/dkc1_recomp
     rom: "{{ dg_roms_final_root }}/snes/Donkey Kong Country.smc"   # USA v1.0 (the EmuDeck Rev 2 does NOT match)
     rom_sha256: fa8cacf5bbfc39ee6bbaa557adf89133d60d42f6cf9e1db30d5a36a469f74d15
     wmclass: dkc1_recomp
+  - key: dkc2
+    name: "Donkey Kong Country 2"
+    repo: https://github.com/elliotttate/DKC2Recomp.git
+    ref: 3178f62a5405f058590c9b564846ab2aec8d43c9
+    src_dir: "{{ dg_box_home }}/tools/dkc2-src"
+    # DKC3-shaped desktop host, upstream-portable; only _GNU_SOURCE needed.
+    patch: dkc2-linux-port.patch
+    extra_files: {}
+    cmake_flags: "-DDKC2_BUILD_SNESRECOMP=ON"   # the snesrecomp runners default OFF here
+    build_target: dkc2_snesrecomp_sdl
+    binary: build/linux/DKC2Recomp
+    rom: "{{ dg_roms_final_root }}/snes/Donkey Kong Country 2 - Diddy's Kong Quest (USA) (En,Fr) (v1.0).sfc"
+    rom_sha256: 35421a9af9dd011b40b91f792192af9f99c93201d8d394026bdfb42cbf2d8633
+    wmclass: DKC2Recomp
   - key: dkc3
     name: "Donkey Kong Country 3"
     repo: https://github.com/elliotttate/DKC3Recomp.git
@@ -40,6 +54,7 @@ dg_dkc_games:
     # _GNU_SOURCE for the strict-C11 POSIX declarations.
     patch: dkc3-linux-port.patch
     extra_files: {}
+    cmake_flags: ""
     build_target: dkc3_snesrecomp_sdl
     binary: build/linux/DKC3Recomp
     rom: "{{ dg_emudeck_root }}/roms/snes/Donkey Kong Country 3 - Dixie Kong's Double Trouble! (USA) (En,Fr).sfc"

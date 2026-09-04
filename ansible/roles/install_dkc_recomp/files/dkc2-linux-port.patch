@@ -1,0 +1,14 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index a17ee2a..8356cde 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -315,7 +315,8 @@ if(DKC2_BUILD_SNESRECOMP)
+         SNESRECOMP_EXTERNAL_RAM_ROUTINE_GUARDS=1
+         SYSTEM_VOLUME_MIXER_AVAILABLE=0
+         SDL_MAIN_HANDLED
+-        DKC2_REAL_HOST_REPORT=1)
++        DKC2_REAL_HOST_REPORT=1
++        $<$<NOT:$<PLATFORM_ID:Darwin,Windows>>:_GNU_SOURCE>)
+     target_link_libraries(dkc2_snesrecomp_sdl PRIVATE
+         ${SNESRECOMP_RUNNER_LIBRARIES}
+         SDL2::SDL2)

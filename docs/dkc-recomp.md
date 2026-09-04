@@ -1,4 +1,4 @@
-# Donkey Kong Country SNES recompilations (DKC1 / DKC3)
+# Donkey Kong Country SNES recompilations (DKC1 / DKC2 / DKC3)
 
 [elliotttate](https://github.com/elliotttate)'s **DKC1Recomp** / **DKC2Recomp**
 / **DKC3Recomp** statically recompile the SNES trilogy into native widescreen
@@ -29,17 +29,19 @@ the role sha256-verifies the exact revision first:
 | Game | Required dump | Our copy |
 |---|---|---|
 | DKC1 | USA **v1.0** (`fa8cacf5…`) | `ROMS_FINAL/snes/Donkey Kong Country.smc` ✅ (the EmuDeck **Rev 2** does *not* match) |
-| DKC2 | USA **v1.0** (`35421a9a…`) | **not owned** — only Rev 1 dumps ❌ |
+| DKC2 | USA **v1.0** (`35421a9a…`) | staged `ROMS_FINAL/snes/... (v1.0).sfc` (2026-09-04; the Rev 1 dumps do *not* match) ✅ |
 | DKC3 | USA (En,Fr) (`2277a2d8…`) | EmuDeck `.sfc` ✅ |
 
-**DKC2 is therefore not installed.** When a USA v1.0 dump exists, add an entry
-to `dg_dkc_games` (its host is DKC3-shaped, so likely just `_GNU_SOURCE`).
+**DKC2** is DKC3-shaped (only `_GNU_SOURCE` needed) with one extra wrinkle:
+its snesrecomp desktop runner is gated behind `DKC2_BUILD_SNESRECOMP` (default
+**OFF**) — the entry passes `-DDKC2_BUILD_SNESRECOMP=ON` via `cmake_flags`.
+Its generator also builds a small Rust analyzer with the box's cargo.
 
 ## Run
 
-`bin/dkc1-recomp` / `bin/dkc3-recomp`, or the Walker entries
-"Donkey Kong Country · Recomp" / "Donkey Kong Country 3 · Recomp". Both open
-on DP-1 on the RTX. DKC3 boots into its launcher UI (ROM shown as
+`bin/dkc1-recomp` / `bin/dkc2-recomp` / `bin/dkc3-recomp`, or the Walker entries
+the "Donkey Kong Country … · Recomp" entries. All open
+on DP-1 on the RTX. DKC2/DKC3 boot into their launcher UI (ROM shown as
 **verified**, per-player input pickers — the 8BitDo shows **connected**;
 "Skip launcher on boot" available). DKC1 boots straight in (Rareware logo);
 its extras live in host menus/keys (F7 pause, F8 step). Update = bump `ref`
