@@ -1,43 +1,56 @@
 ---
-# CannonBall — enhanced C++ reimplementation of the OutRun arcade engine.
-# Opt-in role install_cannonball. See docs/cannonball.md.
+# CannonBall DX — Endprodukt's fork of CannonBall-SE (the enhanced C++
+# reimplementation of the OutRun arcade engine). Opt-in role install_cannonball.
+# See docs/cannonball.md.
 #
-# Built from source (native Linux, CMake + SDL2 + Boost headers, OpenGL).
-# Needs the original OutRun *Revision B* arcade ROMs.
+# Built from source (native Linux, CMake + SDL2 + OpenGL ES2/EGL). Adds a
+# widescreen renderer, Mesen2 pixel scalers and CRT shaders over the classic
+# CannonBall. Needs the original OutRun *Revision B* arcade ROMs.
 
-dg_cannonball_repo: https://github.com/djyt/cannonball
+dg_cannonball_repo: https://github.com/Endprodukt/cannonball-dx
 # Pinned commit for reproducible builds (bump to move forward).
-dg_cannonball_ref: 27493ebf62be3498dff93ed6a45e8e2db819bae1
+dg_cannonball_ref: 63b6c433d5ac84c664cca8cdc13bf012363880e0
+
+# Native Linux port patch applied on top of the pinned commit: the fork sizes
+# itself from SDL display 0, which on this multi-head box is the PORTRAIT DP-2
+# panel -> the game renders into a corner of the landscape display it is shown
+# on. The patch makes it pick a landscape monitor and adds SDL_WINDOW_ALLOW_HIGHDPI
+# so the GL viewport fills the physical 4K framebuffer. See docs/cannonball.md.
+dg_cannonball_patch: cannonball-dx-linux-landscape-fullscreen.patch
 
 dg_cannonball_build_dir: "{{ dg_box_home }}/cache/cannonball-build"
 dg_cannonball_install_dir: "{{ dg_box_home }}/Games/cannonball"
 dg_cannonball_launcher: "{{ dg_box_home }}/bin/cannonball"
+# The fork's binary is named cannonball-dx (vs plain "cannonball" upstream).
+dg_cannonball_binary: cannonball-dx
 
 # OutRun Rev B romset (MAME `outrun` parent set): 31 epr/mpr/opr files
 # incl. the rev-B CPU roms epr-10380b/10382b/10383b. This box has it as a
 # deduped copy of outrun.zip.
 dg_cannonball_rom_zip: "{{ dg_roms_final_root }}/arcade/mame/outrun_dup2.zip"
 
-# Native OpenGL on the dual-GPU box: pin the RTX via GLX/PRIME and force
-# XWayland (SDL x11), the same path Supermodel uses. NO gamescope (it grabs
-# the AMD iGPU -> flicker/black).
+# Native OpenGL on the dual-GPU box: the fork uses an OpenGL ES2 context (EGL),
+# so pin the RTX for BOTH GLX and EGL and force XWayland (SDL x11), the same
+# path Supermodel uses. Without the EGL pin, EGL lands on the AMD iGPU/llvmpipe
+# (MESA-EGL "failed to create dri2 screen"). NO gamescope (it grabs the iGPU).
 dg_cannonball_sdl_videodriver: x11
 # CannonBall has no in-config volume (arcade audio is full-blast) and outputs
 # straight to ALSA. pipewire-alsa (in the package list) routes that ALSA
 # default through PipeWire, which (a) fixes the dmix "device busy" contention
-# and (b) exposes a per-app stream ("PipeWire ALSA [cannonball]") the launcher
-# turns down. PipeWire's stream-restore then remembers it. Do NOT force
-# SDL_AUDIODRIVER=pulseaudio -- the box's SDL pulse backend yields no stream;
-# the default ALSA path (now bridged to PipeWire) works.
+# and (b) exposes a per-app stream the launcher turns down. PipeWire's
+# stream-restore then remembers it. Do NOT force SDL_AUDIODRIVER=pulseaudio --
+# the box's SDL pulse backend yields no stream; the default ALSA path works.
 dg_cannonball_volume: "60%"
 
 dg_cannonball_packages:
-  - base-devel     # gcc, make
+  - base-devel     # gcc, make, OpenMP (libgomp)
   - cmake
-  - boost          # header-only, for config.xml parsing
   - sdl2
+  - tinyxml2       # config.xml parsing (the fork dropped Boost for TinyXML2)
+  - mesa           # GL/GLES userspace + iGPU driver
+  - libglvnd       # libEGL/libGLESv2 + egl.pc/glesv2.pc dispatch
   - pipewire-alsa  # bridge ALSA -> PipeWire so audio isn't a loud dmix-direct stream
-  - git
+  - git            # clone + CMake FetchContent (Mesen2 scalers, miniz)
   - unzip
 
 dg_cannonball_revert: false

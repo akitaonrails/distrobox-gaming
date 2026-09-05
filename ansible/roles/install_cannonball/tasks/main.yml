@@ -1,6 +1,7 @@
 ---
-# CannonBall — OutRun engine, built from source (native Linux/SDL2/OpenGL).
-# See group_vars/all/cannonball.yml and docs/cannonball.md.
+# CannonBall DX — Endprodukt's OutRun-engine fork, built from source
+# (native Linux, SDL2 + OpenGL ES2/EGL). See group_vars/all/cannonball.yml and
+# docs/cannonball.md.
 
 - name: Revert CannonBall when requested
   when: dg_cannonball_revert | bool
@@ -39,29 +40,35 @@
       register: _cannonball_pacman
       changed_when: "'installing' in _cannonball_pacman.stdout or 'upgrading' in _cannonball_pacman.stdout"
 
-    - name: Clone/build CannonBall at the pinned commit (gated on the binary)
-      # CMake 4 rejects Cannonball's old cmake_minimum_required, so pass
-      # -DCMAKE_POLICY_VERSION_MINIMUM=3.5. TARGET wants the FILENAME with
-      # extension (linux.cmake); bare "linux" silently falls back to the
-      # Windows default and the link fails on -lopengl32/-ldinput8.
+    - name: Stage the native-Linux fullscreen patch into the box
+      ansible.builtin.copy:
+        src: "{{ dg_cannonball_patch }}"
+        dest: "{{ dg_box_home }}/cache/{{ dg_cannonball_patch }}"
+        mode: "0644"
+
+    - name: Clone/build CannonBall DX at the pinned commit (gated on the binary)
+      # The fork uses its ROOT CMakeLists (cmake -S . -B build) and pulls Mesen2
+      # + miniz via FetchContent, so the build needs network. Our landscape/
+      # HiDPI patch is applied on top of the pinned commit before configuring.
       ansible.builtin.shell: |
         {{ dg_in_box }} sh -lc '
           set -eu
           build="{{ dg_cannonball_build_dir }}"
           src="$build/src"
           ref="{{ dg_cannonball_ref }}"
-          if [ -x "$build/build/cannonball" ] &&
+          bin="{{ dg_cannonball_binary }}"
+          patch="{{ dg_box_home }}/cache/{{ dg_cannonball_patch }}"
+          if [ -x "$build/build/$bin" ] &&
              grep -qx "$ref" "$build/.dg-built-ref" 2>/dev/null; then
             exit 0
           fi
           rm -rf "$build"; mkdir -p "$build"
           git clone "{{ dg_cannonball_repo }}" "$src" >/dev/null 2>&1
           git -C "$src" checkout -q "$ref"
-          mkdir -p "$build/build"; cd "$build/build"
-          cmake "$src/cmake" -DTARGET=linux.cmake -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 >/dev/null 2>&1
-          make -j"$(nproc)" >/dev/null 2>&1
-          test -x "$build/build/cannonball"
+          git -C "$src" apply "$patch"
+          cmake -S "$src" -B "$build/build" -DCMAKE_BUILD_TYPE=Release >/dev/null 2>&1
+          cmake --build "$build/build" -j"$(nproc)" >/dev/null 2>&1
+          test -x "$build/build/$bin"
           printf "%s\n" "$ref" > "$build/.dg-built-ref"
           printf "%s\n" "built-cannonball"
         '
@@ -79,12 +86,15 @@
         - "{{ dg_box_home }}/bin"
 
     - name: Install the CannonBall binary + resources
+      # res/ MUST stay a subdirectory (the fork opens "res/" relative to the
+      # working dir); flattening it triggers a directory-iterator error.
       ansible.builtin.shell: |
         {{ dg_in_box }} sh -lc '
           set -eu
           build="{{ dg_cannonball_build_dir }}"
           inst="{{ dg_cannonball_install_dir }}"
-          cp -f "$build/build/cannonball" "$inst/cannonball"
+          bin="{{ dg_cannonball_binary }}"
+          cp -f "$build/build/$bin" "$inst/$bin"
           rsync -a "$build/src/res/" "$inst/res/"
           printf "%s\n" "installed-cannonball-files"
         '
@@ -103,10 +113,10 @@
       register: _cannonball_roms_extract
       changed_when: "'extracted-roms' in _cannonball_roms_extract.stdout"
 
-    - name: Seed config.xml with fullscreen (once, preserving in-game changes)
-      # config.xml is game-managed (Cannonball's in-menu Settings/Controls
-      # rewrite it, including gamepad config), so seed it only if absent:
-      # copy the shipped default and flip <mode> to 1 (full-screen).
+    - name: Seed config.xml fullscreen + widescreen (once, preserving in-game changes)
+      # config.xml is game-managed (the in-menu Settings/Controls rewrite it,
+      # including gamepad config), so seed it only if absent: copy the shipped
+      # default, then flip <mode> to 1 (full-screen) and <widescreen> to 1.
       ansible.builtin.shell: |
         {{ dg_in_box }} sh -lc '
           set -eu
@@ -114,6 +124,7 @@
           [ -f "$inst/config.xml" ] && exit 0
           cp -f "$inst/res/config.xml" "$inst/config.xml"
           sed -i "0,/<mode>0<\/mode>/s//<mode>1<\/mode>/" "$inst/config.xml"
+          sed -i "0,/<widescreen>0<\/widescreen>/s//<widescreen>1<\/widescreen>/" "$inst/config.xml"
           printf "%s\n" "seeded-config"
         '
       register: _cannonball_config
@@ -132,6 +143,6 @@
     - name: Report CannonBall setup
       ansible.builtin.debug:
         msg:
-          - "CannonBall built ({{ dg_cannonball_ref[:7] }}) at {{ dg_cannonball_install_dir }}; launcher {{ dg_cannonball_launcher }}."
-          - "OutRun Rev B roms extracted; renders on the RTX (native OpenGL, no gamescope). 8BitDo via SDL2 -- configure axes in Settings > Controls."
+          - "CannonBall DX built ({{ dg_cannonball_ref[:7] }}) at {{ dg_cannonball_install_dir }}; launcher {{ dg_cannonball_launcher }}."
+          - "OutRun Rev B roms extracted; renders fullscreen+widescreen on the RTX (native GLES/EGL, no gamescope). 8BitDo via SDL2 -- configure axes in Settings > Controls."
           - "Run scripts/install-host-launchers.sh to refresh the menu. Revert: -e dg_cannonball_revert=true."

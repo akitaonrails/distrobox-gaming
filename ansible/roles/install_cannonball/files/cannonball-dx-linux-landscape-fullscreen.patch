@@ -1,0 +1,66 @@
+diff --git a/src/main/sdl2/renderbase.cpp b/src/main/sdl2/renderbase.cpp
+index 6824ee3..c828175 100755
+--- a/src/main/sdl2/renderbase.cpp
++++ b/src/main/sdl2/renderbase.cpp
+@@ -36,7 +36,29 @@ bool RenderBase::sdl_screen_size()
+     {
+ 	SDL_DisplayMode info;
+ 
+-	SDL_GetCurrentDisplayMode(0, &info);
++        // Prefer a landscape monitor (width >= height) with the largest area.
++        // On multi-head setups SDL display 0 may be a portrait panel, which
++        // would size the game for a portrait screen and leave it rendering in a
++        // corner of the landscape display it is actually shown on.
++        display_index = 0;
++        int best_area = -1;
++        int n = SDL_GetNumVideoDisplays();
++        for (int i = 0; i < n; i++)
++        {
++            SDL_DisplayMode dm;
++            if (SDL_GetCurrentDisplayMode(i, &dm) != 0)
++                continue;
++            if (dm.w < dm.h)   // skip portrait panels
++                continue;
++            int area = dm.w * dm.h;
++            if (area > best_area)
++            {
++                best_area = area;
++                display_index = i;
++            }
++        }
++
++	SDL_GetCurrentDisplayMode(display_index, &info);
+ 
+         orig_width  = info.w;
+         orig_height = info.h;
+diff --git a/src/main/sdl2/renderbase.hpp b/src/main/sdl2/renderbase.hpp
+index 82a03e6..c62ab1e 100755
+--- a/src/main/sdl2/renderbase.hpp
++++ b/src/main/sdl2/renderbase.hpp
+@@ -50,6 +50,10 @@ protected:
+     // Original Screen Width & Height
+     uint16_t orig_width, orig_height;
+ 
++    // SDL display index to run on (a landscape monitor is preferred over a
++    // portrait one on multi-head setups). Set by sdl_screen_size().
++    int display_index = 0;
++
+     // --------------------------------------------------------------------------------------------
+     // Screen setup properties. Example below:
+     // ________________________
+diff --git a/src/main/sdl2/rendersurface.cpp b/src/main/sdl2/rendersurface.cpp
+index 370cf54..bf8d11b 100755
+--- a/src/main/sdl2/rendersurface.cpp
++++ b/src/main/sdl2/rendersurface.cpp
+@@ -317,8 +317,9 @@ bool RenderSurface::init_sdl(int video_mode)
+     // Now create our window (with an OpenGL flag)
+ 
+     window = SDL_CreateWindow("CannonBall DX",
+-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+-        scn_width, scn_height, SDL_WINDOW_OPENGL);
++        SDL_WINDOWPOS_CENTERED_DISPLAY(display_index),
++        SDL_WINDOWPOS_CENTERED_DISPLAY(display_index),
++        scn_width, scn_height, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
+ 
+     if (!window) {
+         std::cerr << "Window creation failed: " << SDL_GetError() << std::endl;
