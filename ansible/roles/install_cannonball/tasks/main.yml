@@ -113,10 +113,16 @@
       register: _cannonball_roms_extract
       changed_when: "'extracted-roms' in _cannonball_roms_extract.stdout"
 
-    - name: Seed config.xml fullscreen + widescreen (once, preserving in-game changes)
+    - name: Seed config.xml fullscreen + widescreen + gamepad (once, preserving in-game changes)
       # config.xml is game-managed (the in-menu Settings/Controls rewrite it,
       # including gamepad config), so seed it only if absent: copy the shipped
-      # default, then flip <mode> to 1 (full-screen) and <widescreen> to 1.
+      # default, flip <mode> to 1 (full-screen) and <widescreen> to 1, and add
+      # <default_gamepad>1>. The shipped res/config.xml has NO <device_bindings>
+      # and all -1 padconfig, so without this the fork's binding migration
+      # produces an EMPTY device_bindings list -> the 8BitDo can navigate menus
+      # (d-pad is hardcoded) but no button selects. With <default_gamepad>1> +
+      # empty bindings the game applies its built-in XInput profile on first
+      # launch (A/Start select) and persists it. See docs/cannonball.md.
       ansible.builtin.shell: |
         {{ dg_in_box }} sh -lc '
           set -eu
@@ -125,6 +131,7 @@
           cp -f "$inst/res/config.xml" "$inst/config.xml"
           sed -i "0,/<mode>0<\/mode>/s//<mode>1<\/mode>/" "$inst/config.xml"
           sed -i "0,/<widescreen>0<\/widescreen>/s//<widescreen>1<\/widescreen>/" "$inst/config.xml"
+          sed -i "s|<pad_id>0</pad_id>|<pad_id>0</pad_id>\n        <default_gamepad>1</default_gamepad>|" "$inst/config.xml"
           printf "%s\n" "seeded-config"
         '
       register: _cannonball_config

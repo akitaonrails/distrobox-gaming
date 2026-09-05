@@ -69,11 +69,19 @@ tree (`git apply`; refresh the patch if it no longer applies cleanly), rebuild.
   PipeWire's stream-restore remembers it. Do NOT set
   `SDL_AUDIODRIVER=pulseaudio` — the box's SDL pulse backend produces no stream.
 - **Controller (always supported):** modern SDL2 `SDL_GameControllerOpen` with
-  the bundled `gamecontrollerdb.txt` (155 8BitDo entries); the 8BitDo is
-  auto-detected and `config.xml` ships `<pad_id>0` + `<analog enabled="1">`.
-  Fine-tune axes in the in-game **Settings → Controls** menu, which writes
-  `config.xml` — so the role seeds `config.xml` only when absent (in-game
-  changes, including pad config, are preserved).
+  the bundled `gamecontrollerdb.txt` (155 8BitDo entries). **The fork replaced
+  the legacy `<padconfig>` with a `<device_bindings>` list, and its shipped
+  `res/config.xml` has that list EMPTY with all-`-1` padconfig** — so out of the
+  box the 8BitDo can *navigate* menus (the d-pad is hardcoded in `Input`) but
+  **no button selects** (menu confirm needs START/ACCEL/GEAR1, none of which are
+  bound). The seed therefore injects **`<default_gamepad>1`** next to
+  `<pad_id>`: with an empty `<device_bindings>` the game applies its built-in
+  XInput profile on first launch (`apply_default_gamepad_legacy_bindings` →
+  A = downshift/**select**, Start = **select**/start, B = coin, X = upshift,
+  triggers = accel/brake) and persists it as real `device_bindings` keyed to the
+  pad's SDL GUID. Fine-tune in the in-game **Settings → Controls** menu (which
+  rewrites `config.xml`); the role seeds `config.xml` only when absent, so those
+  changes are preserved.
 
 ## Notes
 
