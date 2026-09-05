@@ -24,6 +24,15 @@ then **launch Sonic Mania from Steam** (direct proton runs exit via Steam
 DRM). Requires the **Encore DLC** (owned). Save data notes ship inside the
 Megamix rar (`SAVEDATA (if needed)` + READMEs).
 
+**Switching Megamix ⇄ vanilla:** the loader always loads; which mods are
+active is `mods/ManiaModLoader.ini`. Use the Walker entries
+**"Sonic Mania — Megamix"** / **"Sonic Mania — Vanilla"** (or
+`bin/mania-mode megamix|vanilla`) — they write the ini and launch through
+Steam. A DRM quirk to know: a direct `proton run` of the game exits and
+spawns a NESTED Steam via `steam://run/…`, leaving a ghost "running" app that
+crashes Steam's Stop button — kill any processes whose args carry
+`steam://run/584400` if that ever happens.
+
 ## 2. Sonic 2 (2013) + the "Sonic 2 Mania" mod (native)
 
 The GameBanana "Sonic 2 Mania" mod (`sonic_2_mania_9e646.zip`) targets

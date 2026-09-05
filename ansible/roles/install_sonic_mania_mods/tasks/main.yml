@@ -148,6 +148,7 @@
   loop:
     - { src: sonic2-2013.sh.j2, name: sonic2-2013 }
     - { src: sonic-mania-decomp.sh.j2, name: sonic-mania-decomp }
+    - { src: mania-mode.sh.j2, name: mania-mode }
   loop_control:
     label: "{{ item.name }}"
 
@@ -159,6 +160,8 @@
   loop:
     - sonic2-2013
     - sonic-mania-decomp
+    - sonic-mania-megamix
+    - sonic-mania-vanilla
 
 - name: Install the desktop entries into the host applications dir
   ansible.builtin.command:

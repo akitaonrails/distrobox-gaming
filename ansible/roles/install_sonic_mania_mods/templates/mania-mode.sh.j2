@@ -1,0 +1,33 @@
+#!/usr/bin/env sh
+set -eu
+# Sonic Mania mode switcher + launcher. Usage: mania-mode [megamix|vanilla]
+# The Mania Mod Loader (d3d9.dll proxy) always loads; which mods are ACTIVE
+# is decided by mods/ManiaModLoader.ini — this writes it and launches the
+# game through Steam (required: Steam DRM restarts direct runs).
+
+MODE="${1:-megamix}"
+INI="{{ dg_mania_game_dir }}/mods/ManiaModLoader.ini"
+
+case "$MODE" in
+  megamix)
+    printf 'Mod1=%s\n' "{{ dg_mania_megamix_mod_dir }}" > "$INI"
+    ;;
+  vanilla)
+    printf '\n' > "$INI"
+    ;;
+  *)
+    echo "usage: mania-mode [megamix|vanilla]" >&2; exit 2 ;;
+esac
+
+# Focus the main landscape 4K monitor (Hyprland >= 0.56 Lua IPC form).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_mania_main_output }}" }))'); s.recv(256); s.close()
+PY
+
+exec steam "steam://rungameid/584400"
