@@ -33,6 +33,30 @@ spawns a NESTED Steam via `steam://run/…`, leaving a ghost "running" app that
 crashes Steam's Stop button — kill any processes whose args carry
 `steam://run/584400` if that ever happens.
 
+### Megamix on Proton — the DLL code-mods don't render (KNOWN LIMITATION)
+
+Megamix is not just data — its `mod.ini` `DLLFile=` lists **24 native DLLs**
+(NewMegamixSonic.dll, NextGen.dll, …) that *are* the characters/gameplay.
+Diagnosis on this box (2026-09-05):
+
+- Install is correct end-to-end: the `d3d9.dll` loader proxy loads native, and
+  **all 24 mod DLLs LoadLibrary successfully** under Wine (`+loaddll` confirms).
+- Not a version mismatch: each DLL's `ManiaModInfo.GameVersion` reads **5**,
+  matching the loader's compile-time `GameVer = 5` — so their `Init`/patches
+  are *not* skipped.
+- Yet in-game the player is a placeholder sprite and unplayable (the level +
+  HUD **data** load fine via the loader's file redirection; the character
+  **code** patches don't produce a correct result).
+
+This is the known-fragile frontier: Sonic Mania **DLL code-mods** memory-patch
+the running `SonicMania.exe`, and that hooking is unreliable under Proton/Wine
+(the community lists Linux DLL-mod support as "untested"). **Data-only** Mania
+mods work via the native decomp (route 3); DLL code-mods like Megamix may need
+Windows, or a different Proton build (hooking behaviour varies by
+esync/fsync/ntsync + memory layout — worth trying Experimental / CachyOS).
+Nothing in our install is missing — verified by DLL-load trace + PE GameVersion
+read.
+
 ## 2. Sonic 2 (2013) + the "Sonic 2 Mania" mod (native)
 
 The GameBanana "Sonic 2 Mania" mod (`sonic_2_mania_9e646.zip`) targets

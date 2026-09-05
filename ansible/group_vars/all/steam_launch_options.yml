@@ -57,3 +57,10 @@ dg_steam_launch_options_by_appid:
   "584400":
     name: "Sonic Mania"
     options: 'WINEDLLOVERRIDES="d3d9=n,b" %command%'
+  # Sonic Origins renders in a tiny bottom-left window under Proton (the
+  # Wine X11 driver mis-sizes its fullscreen); the Wine WAYLAND driver fixes
+  # it (Splinter Cell lesson). Set the in-game Display to Fullscreen at <=1080p
+  # — ProtonDB: >1920x1080 fullscreen crashes with a memory access violation.
+  "1794960":
+    name: "Sonic Origins"
+    options: 'PROTON_ENABLE_WAYLAND=1 %command%'
