@@ -1,0 +1,53 @@
+---
+# Parallel Launcher — standalone N64 launcher (own RetroArch AppImage + newest
+# ParaLLEl core). See group_vars/all/parallel_launcher.yml and
+# docs/parallel-launcher.md.
+
+- name: Revert Parallel Launcher when requested
+  when: dg_parallel_launcher_revert | bool
+  block:
+    - name: Uninstall the parallel-launcher package
+      ansible.builtin.shell: "{{ dg_in_box }} sudo pacman -Rns --noconfirm parallel-launcher"
+      register: _pl_remove
+      changed_when: "'removing' in _pl_remove.stdout"
+      failed_when:
+        - _pl_remove.rc != 0
+        - "'target not found' not in _pl_remove.stderr"
+    - name: Report reverted
+      ansible.builtin.debug:
+        msg: >-
+          Parallel Launcher removed. Its downloaded core/AppImage under
+          ~/.local/share/parallel-launcher and config remain (delete by hand if
+          wanted).
+
+- name: Install Parallel Launcher
+  when: not (dg_parallel_launcher_revert | bool)
+  block:
+    - name: Install parallel-launcher from the AUR
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} yay -S --needed --noconfirm {{ dg_parallel_launcher_packages | join(' ') }}
+      register: _pl_install
+      changed_when: "'installing' in _pl_install.stdout or 'upgrading' in _pl_install.stdout"
+
+    - name: Enforce the box's Parallel Launcher settings (fullscreen, ParaLLEl-RDP, SDL input)
+      # settings.cfg is written by the launcher itself; the seeder merges our
+      # required keys on top of whatever exists (creating it if absent) and
+      # preserves everything the user set. Idempotent via its "changed" output.
+      ansible.builtin.command:
+        argv:
+          - python3
+          - "{{ role_path }}/files/seed_pl_settings.py"
+          - "{{ dg_parallel_launcher_settings }}"
+      register: _pl_settings
+      changed_when: "'changed' in _pl_settings.stdout"
+
+    - name: Refresh ES-DE so the n64 "Parallel Launcher (standalone)" alt-emulator appears
+      ansible.builtin.include_role:
+        name: configure_esde
+
+    - name: Report Parallel Launcher setup
+      ansible.builtin.debug:
+        msg:
+          - "Parallel Launcher installed. ES-DE n64 alt-emulator 'Parallel Launcher (standalone)' available — pick it per-game (e.g. Return to Yoshi's Island Demo 2)."
+          - "FIRST LAUNCH downloads its RetroArch AppImage + newest ParaLLEl core from parallel-launcher.ca (a one-time 'install core?' prompt -> Yes). After that it runs headless from ES-DE."
+          - "Revert: -e dg_parallel_launcher_revert=true."

@@ -46,14 +46,16 @@ all three coexist in the library.
 This is a **very heavy Kaze Emanuar hack** with custom rendering. Per the
 author, **Mupen64Plus-Next won't boot it**; **ParaLLEl** only "kind of works,
 NEWEST version only, with parallel RDP + parallel CPU core". On the box's
-RetroArch **ParaLLEl-N64** core (Vulkan parallel-RDP + LLE ParaLLEl-RSP — already
-the seeded default for heavy SM64 hacks) it **boots and runs (the HUD renders and
-the game logic ticks), but the 3-D world renders black**: RetroArch's bundled
-parallel-rdp is older than the "newest only" the hack requires. The confirmed
-fully-working setups are **Project64 + ANGLE GlideN64 with "Enable Fragment Depth
-Write"** (Windows/Wine) or the **standalone ParaLLEl Launcher** with the newest
-parallel-rdp (native Linux) — neither is installed here yet. So the ROM is staged
-and hash-verified in the library, but a playable renderer is still pending.
+RetroArch **ParaLLEl-N64** core (Vulkan parallel-RDP + LLE ParaLLEl-RSP — the
+seeded default for heavy SM64 hacks) it boots and the game logic runs, **but the
+3-D world renders black**: RetroArch's bundled parallel-rdp is older than the
+"newest only" the hack requires.
+
+**Solved** by the **standalone Parallel Launcher** (`install_parallel_launcher`,
+see [parallel-launcher.md](parallel-launcher.md)) — its own newer RetroArch
+AppImage + the newest ParaLLEl core render RTYI Demo 2 correctly on the RTX. In
+ES-DE, pick the **"Parallel Launcher (standalone)"** alt-emulator for this game
+(not Mupen or the RetroArch ParaLLEl core).
 
 ## Install / revert
 

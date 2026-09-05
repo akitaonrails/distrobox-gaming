@@ -92,6 +92,7 @@
     - { role: install_sonic_p06,         tags: [sonic_p06, never] }
     - { role: install_wipeout_pe,        tags: [wipeout_pe, never] }
     - { role: install_cannonball,        tags: [cannonball, never] }
+    - { role: install_parallel_launcher, tags: [parallel_launcher, never] }
     - { role: install_smb_remastered,    tags: [smb_remastered, never] }
     - { role: install_gdiffuser,         tags: [gdiffuser, never] }
     - { role: install_mph_recomp,        tags: [mph_recomp, never] }

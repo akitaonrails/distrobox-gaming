@@ -1,0 +1,19 @@
+---
+# Parallel Launcher — standalone N64 launcher (AUR `parallel-launcher`) that
+# bundles its OWN newer RetroArch AppImage + the newest ParaLLEl core
+# (parallel_n64_next, parallel-rdp Vulkan). Opt-in role install_parallel_launcher.
+# See docs/parallel-launcher.md.
+#
+# Why it exists: the box's RetroArch ParaLLEl-N64 core has an OLDER parallel-rdp
+# that renders the newest heavy Kaze hacks (Return to Yoshi's Island Demo 2)
+# with a black 3-D world. Parallel Launcher ships the newest parallel-rdp, which
+# renders them correctly. It is wired into ES-DE as the n64 "Parallel Launcher
+# (standalone)" alt-emulator (see group_vars/all/esde.yml); pick it per-game.
+
+dg_parallel_launcher_packages: [parallel-launcher, noto-fonts-cjk]
+
+# Parallel Launcher's per-user config; the seeder enforces the box's required
+# keys (fullscreen, ParaLLEl-RDP plugin, SDL input) and preserves the rest.
+dg_parallel_launcher_settings: "{{ dg_box_home }}/.config/parallel-launcher/settings.cfg"
+
+dg_parallel_launcher_revert: false

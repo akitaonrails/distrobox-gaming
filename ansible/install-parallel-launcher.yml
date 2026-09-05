@@ -1,0 +1,7 @@
+---
+- name: Install Parallel Launcher (standalone N64, newest ParaLLEl core)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_parallel_launcher
