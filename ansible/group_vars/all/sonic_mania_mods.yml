@@ -1,0 +1,46 @@
+---
+# Sonic Mania modding stack + Sonic 2 (2013) decompilation — see
+# docs/sonic-mania-mods.md.
+#
+# 1) MEGAMIX MANIA (Steam Sonic Mania 584400 + Mania Mod Loader, Proton):
+#    Megamix is a DLL-based mod (ManiaAPI) — Windows-only logic, so it runs on
+#    the WINDOWS game under Proton via the Mania Mod Loader. "Install loader"
+#    is just: copy mods/ManiaModLoader.dll -> <game>/d3d9.dll (proxy hijack;
+#    sonicretro/mania-mod-loader MainForm.cs `datadllpath`), enable mods in
+#    mods/ManiaModLoader.ini (Mod1=<folder>), and launch with
+#    WINEDLLOVERRIDES="d3d9=n,b" (in dg_steam_launch_options_by_appid).
+#    Requires the Encore DLC (owned). The .NET ManiaModManager GUI does NOT
+#    run under wine-mono — everything is done headlessly here.
+# 2) SONIC 2 (2013) + "Sonic 2 Mania" mod: RSDKv4 decompilation built natively
+#    in the box; Data.rsdk extracted from the user's Android XAPK
+#    (assets/Data.rsdk.xmf); the data-only mod goes in mods/ with
+#    mods/modconfig.ini ([mods] <folder>=y).
+# 3) A native Sonic Mania decompilation (RSDKv5U + libGame.so) is also built
+#    for DATA-ONLY Mania mods; it reads the Steam Data.rsdk via symlink.
+
+dg_mania_steam_lib_root: >-
+  {{ dg_external_usb_games_root
+     if (dg_external_usb_games_root | default('') | length > 0)
+     else '/run/media/' ~ ansible_facts.env.USER ~ '/STEAM' }}
+dg_mania_game_dir: "{{ dg_mania_steam_lib_root }}/steamapps/common/Sonic Mania"
+dg_mania_loader_7z: "{{ dg_roms_final_root }}/PC/sonic remake/ManiaModLoader.7z"
+dg_mania_megamix_rar: "{{ dg_roms_final_root }}/PC/sonic remake/Sonic Megamix Mania Release (v1.1.1).rar"
+dg_mania_megamix_mod_dir: "Sonic Megamix Mania v1.1.1"
+
+# Sonic 2 (2013) decomp
+dg_s2013_repo: https://github.com/RSDKModding/RSDKv4-Decompilation
+dg_s2013_src: "{{ dg_box_home }}/tools/sonic2013-decomp"
+dg_s2013_game_dir: "{{ dg_box_home }}/Games/sonic2-2013"
+dg_s2013_bin: "{{ dg_box_home }}/bin/sonic2-2013"
+dg_s2013_xapk: "{{ dg_roms_final_root }}/PC/sonic remake/Sonic+The+Hedgehog+2+Classic_3.0.0_APKPure.xapk"
+dg_s2013_mod_zip: "{{ dg_roms_final_root }}/PC/sonic remake/sonic_2_mania_9e646.zip"
+dg_s2013_packages: [base-devel, cmake, glew, sdl2, libogg, libvorbis, libtheora, glfw, unzip, p7zip]
+
+# Native Mania decomp (data-only mods)
+dg_maniadec_repo: https://github.com/RSDKModding/Sonic-Mania-Decompilation
+dg_maniadec_src: "{{ dg_box_home }}/tools/mania-decomp"
+dg_maniadec_game_dir: "{{ dg_box_home }}/Games/sonic-mania-decomp"
+dg_maniadec_bin: "{{ dg_box_home }}/bin/sonic-mania-decomp"
+
+dg_mania_main_output: "DP-1"
+dg_mania_revert: false

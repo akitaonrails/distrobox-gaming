@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+set -eu
+# Sonic Mania — native RSDKv5U decompilation (data-only mods), DP-1/RTX.
+# Reads the Steam install's Data.rsdk via symlink; DLL mods (Megamix) need
+# the Proton + Mania Mod Loader route instead (launch Sonic Mania from Steam).
+BIN="{{ dg_maniadec_game_dir }}/RSDKv5U"
+[ -x "$BIN" ] || { echo "ERROR: not installed; run install-sonic-mania-mods.yml" >&2; exit 1; }
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_mania_main_output }}" }))'); s.recv(256); s.close()
+PY
+export __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+cd "{{ dg_maniadec_game_dir }}"
+exec ./RSDKv5U "$@"
