@@ -134,7 +134,7 @@
     f="{{ dg_s2013_game_dir }}/settings.ini"
     [ -f "$f" ] && exit 0
     # VSync stays OFF: on the 240Hz panel it ties the engine to 240fps
-    # (game runs ~4x fast); the engine's own RefreshRate=60 limiter paces it.
+    # (game runs ~4x fast); the engine internal RefreshRate=60 limiter paces it.
     printf '[Dev]\nDevMenu=true\n\n[Window]\nFullScreen=true\nBorderless=true\nVSync=false\nRefreshRate=60\n' > "$f"
     echo seeded
   register: _s2set
