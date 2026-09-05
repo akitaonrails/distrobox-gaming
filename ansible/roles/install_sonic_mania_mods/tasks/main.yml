@@ -123,7 +123,7 @@
     set -eu
     cd "{{ dg_s2013_game_dir }}/mods"
     [ -d "Sonic 2 Mania" ] || unzip -oq "{{ dg_s2013_mod_zip }}"
-    [ -f modconfig.ini ] || printf '[mods]\nSonic 2 Mania=y\n' > modconfig.ini
+    [ -f modconfig.ini ] || printf '[mods]\nSonic 2 Mania=true\n' > modconfig.ini
     echo s2mod-ready
   register: _s2mod
   changed_when: false
