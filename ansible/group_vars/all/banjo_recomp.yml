@@ -1,0 +1,31 @@
+---
+# Banjo: Recompiled (BanjoRecomp/BanjoRecomp) — static recompilation
+# (N64Recomp + RT64) of Banjo-Kazooie, same family as the DK64 recomp, with
+# official prebuilt Linux x64 releases. Runs on the RTX (RT64 Vulkan).
+# Managed by install_banjo_recomp. Needs the user's own Banjo-Kazooie (USA)
+# v1.0 ROM. See docs/banjo-recomp.md.
+
+dg_banjo_repo: BanjoRecomp/BanjoRecomp
+dg_banjo_version: "v1.0.2"
+dg_banjo_asset_name: "BanjoRecompiled-{{ dg_banjo_version }}-Linux-X64.tar.gz"
+dg_banjo_asset_url: "https://github.com/{{ dg_banjo_repo }}/releases/download/{{ dg_banjo_version }}/{{ dg_banjo_asset_name }}"
+dg_banjo_asset_sha256: a34a4d361221171ea638e0165301fff817c53b9cd46167c5affd37867cfc7ad0
+
+dg_banjo_root: "{{ dg_box_home }}/tools/banjo-recomp"   # BanjoRecompiled + assets/ + recompcontrollerdb.txt
+dg_banjo_cache_dir: "{{ dg_box_home }}/cache/banjo-recomp"
+dg_banjo_bin: "{{ dg_banjo_root }}/BanjoRecompiled"
+dg_banjo_launcher: "{{ dg_box_home }}/bin/banjo-recomp"
+
+# N64ModernRuntime stores the chosen ROM as <config>/<game_id>.z64
+# (game_id "bk.n64.us.1.0" in src/main/main.cpp); pre-seeding skips the picker.
+dg_banjo_config_dir: "{{ dg_box_home }}/.config/BanjoRecompiled"
+dg_banjo_rom_stored: "{{ dg_banjo_config_dir }}/bk.n64.us.1.0.z64"
+
+# The user's Banjo-Kazooie (USA) v1.0 ROM — the goodset "(U) (!)" v64 inside
+# this zip converts to the accepted z64 (sha1 below). The EmuDeck "Rev A" dump
+# is v1.1 and is NOT accepted.
+dg_banjo_rom_zip: "{{ dg_roms_final_root }}/n64/Banjo-Kazooie (USA).zip"
+dg_banjo_rom_sha1_z64: 1fe1632098865f639e22c11b9a81ee8f29c75d7a
+
+dg_banjo_main_output: "DP-1"
+dg_banjo_revert: false

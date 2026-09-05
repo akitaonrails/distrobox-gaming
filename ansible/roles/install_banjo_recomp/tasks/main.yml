@@ -1,0 +1,129 @@
+---
+# Banjo: Recompiled — prebuilt native Linux release + ROM seed (DK64 pattern).
+# See group_vars/all/banjo_recomp.yml and docs/banjo-recomp.md.
+
+- name: Revert Banjo Recompiled when requested
+  when: dg_banjo_revert | bool
+  block:
+    - name: Remove the Banjo launcher + install dir (config/saves + ROM copy kept)
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_banjo_launcher }}"
+        - "{{ dg_banjo_root }}"
+    - name: Report Banjo reverted
+      ansible.builtin.debug:
+        msg: "Banjo Recompiled removed. {{ dg_banjo_config_dir }} and your NAS ROM are untouched."
+
+- name: Install Banjo Recompiled
+  when: not (dg_banjo_revert | bool)
+  block:
+    - name: Verify the Banjo-Kazooie ROM zip exists
+      ansible.builtin.stat:
+        path: "{{ dg_banjo_rom_zip }}"
+      register: _banjo_rom
+      failed_when: not _banjo_rom.stat.exists
+
+    - name: Create Banjo directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_banjo_cache_dir }}"
+        - "{{ dg_banjo_root }}"
+        - "{{ dg_banjo_config_dir }}"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Download the pinned Banjo Recompiled Linux release
+      ansible.builtin.get_url:
+        url: "{{ dg_banjo_asset_url }}"
+        dest: "{{ dg_banjo_cache_dir }}/{{ dg_banjo_asset_name }}"
+        checksum: "sha256:{{ dg_banjo_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Extract the release (version-gated)
+      ansible.builtin.shell: |
+        set -eu
+        root="{{ dg_banjo_root }}"
+        if [ -x "$root/BanjoRecompiled" ] && grep -qx "{{ dg_banjo_version }}" "$root/.dg-installed-ref" 2>/dev/null; then
+          exit 0
+        fi
+        tar xzf "{{ dg_banjo_cache_dir }}/{{ dg_banjo_asset_name }}" -C "$root"
+        chmod 0755 "$root/BanjoRecompiled"
+        printf '%s\n' "{{ dg_banjo_version }}" > "$root/.dg-installed-ref"
+        printf '%s\n' "installed-banjo"
+      register: _banjo_extract
+      changed_when: "'installed-banjo' in _banjo_extract.stdout"
+
+    - name: Seed the stored ROM (extract from zip, byteswap to z64, verify sha1)
+      ansible.builtin.shell: |
+        python3 - <<'PY'
+        import hashlib, zipfile
+        zf = zipfile.ZipFile("{{ dg_banjo_rom_zip }}")
+        names = [n for n in zf.namelist() if n.lower().endswith((".v64", ".n64", ".z64"))]
+        assert names, "no ROM inside the zip"
+        d = bytearray(zf.read(names[0])); m = bytes(d[:4])
+        if m == b'\x37\x80\x40\x12':
+            for i in range(0, len(d) - 1, 2): d[i], d[i+1] = d[i+1], d[i]
+        elif m == b'\x40\x12\x37\x80':
+            d = bytearray(b''.join(bytes(d[i:i+4][::-1]) for i in range(0, len(d), 4)))
+        assert bytes(d[:4]) == b'\x80\x37\x12\x40', m.hex()
+        h = hashlib.sha1(bytes(d)).hexdigest()
+        if h != "{{ dg_banjo_rom_sha1_z64 }}": raise SystemExit("ROM sha1 mismatch (need USA v1.0): " + h)
+        open("{{ dg_banjo_rom_stored }}", 'wb').write(bytes(d)); print("stored ROM ok (" + h + ")")
+        PY
+      args:
+        creates: "{{ dg_banjo_rom_stored }}"
+
+    - name: Seed graphics.json fullscreen + Vulkan (first install only)
+      ansible.builtin.copy:
+        content: |
+          {
+              "api_option": "Vulkan",
+              "ar_option": "Expand",
+              "cutscene_aspect_ratio_mode": "Clamp16x9",
+              "developer_mode": false,
+              "ds_option": 0,
+              "hpfb_option": "Off",
+              "hr_option": "Clamp16x9",
+              "msaa_option": "MSAA2X",
+              "res_option": "Auto",
+              "rr_manual_value": 60,
+              "rr_option": "Display",
+              "wm_option": "Fullscreen"
+          }
+        dest: "{{ dg_banjo_config_dir }}/graphics.json"
+        mode: "0644"
+        force: false
+
+    - name: Deploy the Banjo launcher
+      ansible.builtin.template:
+        src: banjo-launch.sh.j2
+        dest: "{{ dg_banjo_launcher }}"
+        mode: "0755"
+
+    - name: Render the Banjo desktop entry
+      ansible.builtin.template:
+        src: banjo.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-banjo-recomp.desktop"
+        mode: "0644"
+
+    - name: Install the desktop file into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _banjo_host_launchers
+      changed_when: >-
+        'installed ' in _banjo_host_launchers.stdout or
+        'removed stale ' in _banjo_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Banjo Recompiled {{ dg_banjo_version }} at {{ dg_banjo_root }}; launcher
+          {{ dg_banjo_launcher }}. ROM seeded as {{ dg_banjo_rom_stored }};
+          saves in {{ dg_banjo_config_dir }}/saves. Revert: -e dg_banjo_revert=true.

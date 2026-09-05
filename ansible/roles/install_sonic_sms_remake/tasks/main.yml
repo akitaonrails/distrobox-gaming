@@ -1,0 +1,114 @@
+---
+# Sonic SMS Remake — GameMaker exe under Wine (no Linux build exists).
+# See group_vars/all/sonic_sms_remake.yml and docs/sonic-sms-remake.md.
+
+- name: Revert Sonic SMS Remake when requested
+  when: dg_sms_revert | bool
+  block:
+    - name: Remove the SMS Remake launcher, install dir and prefix
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_sms_bin }}"
+        - "{{ dg_sms_install_dir }}"
+        - "{{ dg_sms_prefix }}"
+    - name: Report SMS Remake reverted
+      ansible.builtin.debug:
+        msg: "Sonic SMS Remake removed. The NAS zip is untouched."
+
+- name: Install Sonic SMS Remake
+  when: not (dg_sms_revert | bool)
+  block:
+    - name: Verify the NAS zip exists
+      ansible.builtin.stat:
+        path: "{{ dg_sms_zip }}"
+      register: _sms_zip
+      failed_when: not _sms_zip.stat.exists
+
+    - name: Create directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_sms_install_dir }}"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Extract the game exe (once)
+      ansible.builtin.shell: |
+        set -eu
+        [ -f "{{ dg_sms_install_dir }}/{{ dg_sms_exe }}" ] && exit 0
+        unzip -oq "{{ dg_sms_zip }}" -d "{{ dg_sms_install_dir }}"
+        echo extracted-sms
+      register: _sms_extract
+      changed_when: "'extracted-sms' in _sms_extract.stdout"
+
+    - name: Initialize the Wine prefix
+      ansible.builtin.shell: |
+        {{ dg_in_box }} bash -c '
+          set -eu
+          [ -d "{{ dg_sms_prefix }}/drive_c" ] && exit 0
+          export WINEPREFIX="{{ dg_sms_prefix }}"
+          "{{ dg_sms_wine_bin_dir }}/wineboot" -i >/dev/null 2>&1 || true
+          "{{ dg_sms_wine_bin_dir }}/wineserver" -w || true
+          echo prefix-created
+        '
+      register: _sms_prefix
+      changed_when: "'prefix-created' in _sms_prefix.stdout"
+
+    - name: Force the GLX OpenGL backend (wine 11 EGL -> iGPU regression)
+      ansible.builtin.shell: |
+        {{ dg_in_box }} bash -c '
+          export WINEPREFIX="{{ dg_sms_prefix }}"
+          W="{{ dg_sms_wine_bin_dir }}"
+          "$W/wine" reg query "HKCU\\Software\\Wine\\X11 Driver" /v UseEGL 2>/dev/null | grep -q N && exit 0
+          "$W/wine" reg add "HKCU\\Software\\Wine\\X11 Driver" /v UseEGL /d N /f >/dev/null
+          "$W/wineserver" -w || true
+          echo egl-pinned
+        '
+      register: _sms_egl
+      changed_when: "'egl-pinned' in _sms_egl.stdout"
+
+    - name: Route controllers through SDL (winebus) so the 8BitDo reaches the game
+      ansible.builtin.shell: |
+        {{ dg_in_box }} bash -c '
+          export WINEPREFIX="{{ dg_sms_prefix }}"
+          W="{{ dg_sms_wine_bin_dir }}"
+          "$W/wine" reg add "HKCU\\Software\\Wine\\WineBus" /v "{{ item.name }}" /t REG_DWORD /d {{ item.value }} /f >/dev/null
+          "$W/wineserver" -w || true
+        '
+      loop: "{{ dg_sms_winebus_registry }}"
+      loop_control:
+        label: "{{ item.name }}={{ item.value }}"
+      changed_when: true
+
+    - name: Deploy the launcher
+      ansible.builtin.template:
+        src: sonic-sms-remake.sh.j2
+        dest: "{{ dg_sms_bin }}"
+        mode: "0755"
+
+    - name: Render the desktop entry
+      ansible.builtin.template:
+        src: gaming-sonic-sms-remake.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-sonic-sms-remake.desktop"
+        mode: "0644"
+
+    - name: Install the desktop entry into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _sms_host_launchers
+      changed_when: >-
+        'installed ' in _sms_host_launchers.stdout or
+        'removed stale ' in _sms_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Sonic SMS Remake {{ dg_sms_version }} under Wine at
+          {{ dg_sms_install_dir }}; launcher {{ dg_sms_bin }} (4K virtual
+          desktop). Revert: -e dg_sms_revert=true.

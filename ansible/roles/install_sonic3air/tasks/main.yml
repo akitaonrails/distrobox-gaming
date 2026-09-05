@@ -1,0 +1,104 @@
+---
+# Sonic 3 A.I.R. — official native Linux build + ROM staging.
+# See group_vars/all/sonic3air.yml and docs/sonic3air.md.
+
+- name: Revert Sonic 3 A.I.R. when requested
+  when: dg_s3air_revert | bool
+  block:
+    - name: Remove the S3AIR launcher + install dir (save dir kept)
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_s3air_launcher }}"
+        - "{{ dg_s3air_install_dir }}"
+    - name: Report S3AIR reverted
+      ansible.builtin.debug:
+        msg: "Sonic 3 A.I.R. removed. {{ dg_s3air_save_dir }} (saves, ROM copy) and the NAS are untouched."
+
+- name: Install Sonic 3 A.I.R.
+  when: not (dg_s3air_revert | bool)
+  block:
+    - name: Verify the Sonic 3 & Knuckles ROM exists
+      ansible.builtin.stat:
+        path: "{{ dg_s3air_rom_src }}"
+      register: _s3air_rom
+      failed_when: not _s3air_rom.stat.exists
+
+    - name: Create S3AIR directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_s3air_cache_dir }}"
+        - "{{ dg_s3air_install_dir }}"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Reuse the NAS-staged tarball when present
+      ansible.builtin.copy:
+        src: "{{ dg_s3air_archive_source }}"
+        dest: "{{ dg_s3air_cache_dir }}/{{ dg_s3air_asset_name }}"
+        remote_src: true
+        force: false
+        mode: "0644"
+      when: dg_s3air_archive_source is file
+
+    - name: Download the pinned release (verifies the staged copy)
+      ansible.builtin.get_url:
+        url: "{{ dg_s3air_asset_url }}"
+        dest: "{{ dg_s3air_cache_dir }}/{{ dg_s3air_asset_name }}"
+        checksum: "sha256:{{ dg_s3air_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Extract the release (version-gated)
+      ansible.builtin.shell: |
+        set -eu
+        inst="{{ dg_s3air_install_dir }}"
+        if [ -x "$inst/sonic3air_linux" ] && grep -qx "{{ dg_s3air_version }}" "$inst/.dg-installed-ref" 2>/dev/null; then
+          exit 0
+        fi
+        tar xzf "{{ dg_s3air_cache_dir }}/{{ dg_s3air_asset_name }}" -C "$inst" --strip-components 1
+        chmod 0755 "$inst/sonic3air_linux"
+        printf '%s\n' "{{ dg_s3air_version }}" > "$inst/.dg-installed-ref"
+        printf '%s\n' "installed-s3air"
+      register: _s3air_extract
+      changed_when: "'installed-s3air' in _s3air_extract.stdout"
+
+    - name: Stage the ROM beside the binary (the game verifies + adopts it)
+      ansible.builtin.copy:
+        src: "{{ dg_s3air_rom_src }}"
+        dest: "{{ dg_s3air_install_dir }}/Sonic_Knuckles_wSonic3.bin"
+        remote_src: true
+        force: false
+        mode: "0644"
+
+    - name: Deploy the launcher
+      ansible.builtin.template:
+        src: sonic3air.sh.j2
+        dest: "{{ dg_s3air_launcher }}"
+        mode: "0755"
+
+    - name: Render the desktop entry
+      ansible.builtin.template:
+        src: gaming-sonic3air.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-sonic3air.desktop"
+        mode: "0644"
+
+    - name: Install the desktop entry into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _s3air_host_launchers
+      changed_when: >-
+        'installed ' in _s3air_host_launchers.stdout or
+        'removed stale ' in _s3air_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Sonic 3 A.I.R. {{ dg_s3air_version }} at {{ dg_s3air_install_dir }};
+          launcher {{ dg_s3air_launcher }}. ROM staged; saves + adopted ROM in
+          {{ dg_s3air_save_dir }}. Revert: -e dg_s3air_revert=true.

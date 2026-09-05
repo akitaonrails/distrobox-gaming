@@ -1,0 +1,7 @@
+---
+- name: Install Sonic 3 A.I.R. (official native Linux build)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_sonic3air

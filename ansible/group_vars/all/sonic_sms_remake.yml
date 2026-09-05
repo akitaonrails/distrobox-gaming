@@ -1,0 +1,30 @@
+---
+# Sonic SMS Remake (The Creative Araya, sonic-sms-remake.blogspot.com) — fan
+# remake of the Master System Sonic 1 (5 playable characters, no original game
+# data needed). GameMaker Windows exe, NO Linux build → runs under wine-11.8
+# with the established recipe (UseEGL=N GLX pin + WineBus SDL for the 8BitDo).
+# Runs inside a 4K Wine VIRTUAL DESKTOP: the game's exclusive fullscreen at a
+# low mode otherwise renders in the corner of the panel (the Sega Rally Revo
+# lesson). Opt-in role install_sonic_sms_remake. See docs/sonic-sms-remake.md.
+#
+# Source: the user's downloaded zip on the NAS (single 30 MB exe inside).
+
+dg_sms_version: "1.9-rev4"
+dg_sms_zip: "{{ dg_roms_final_root }}/PC/sonic remake/v1-9-rev4_Sonic_SMS_Remake.zip"
+dg_sms_zip_sha256: ""   # optional; set to pin the NAS zip
+
+dg_sms_install_dir: "{{ dg_box_home }}/Games/sonic-sms-remake"
+dg_sms_exe: "Sonic SMS Remake.exe"
+dg_sms_bin: "{{ dg_box_home }}/bin/sonic-sms-remake"
+dg_sms_prefix: "{{ dg_box_home }}/wineprefixes/sonic-sms-remake"
+dg_sms_wine_bin_dir: "{{ dg_pc_racing_wine_runner_root }}/wine-11.8/usr/bin"
+dg_sms_desktop_res: "3840x2160"
+
+dg_sms_winebus_registry:
+  - { name: DisableHidraw, value: 1 }
+  - { name: DisableInput, value: 1 }
+  - { name: "Enable SDL", value: 1 }
+  - { name: "Map Controllers", value: 1 }
+
+dg_sms_main_output: "DP-1"
+dg_sms_revert: false

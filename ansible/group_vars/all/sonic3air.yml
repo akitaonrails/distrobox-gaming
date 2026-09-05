@@ -1,0 +1,32 @@
+---
+# Sonic 3 A.I.R. — "Angel Island Revisited" (Eukaryot/sonic3air), the fan
+# remaster of Sonic 3 & Knuckles on the Oxygen engine. OFFICIAL NATIVE Linux
+# build (sonic3air_game.tar.gz from the stable GitHub release; the
+# sonic3air_game.zip the user downloaded from sonic3air.org is the Windows
+# package). Runs on the RTX; 8BitDo native. Opt-in role install_sonic3air.
+# See docs/sonic3air.md.
+#
+# REQUIRES the original "Sonic 3 & Knuckles" combined ROM (the standard 4 MiB
+# Sonic_Knuckles_wSonic3.bin). The game searches its own dir + the save dir +
+# Steam paths, verifies the dump itself, and copies it into the save dir.
+
+dg_s3air_repo: Eukaryot/sonic3air
+dg_s3air_version: "v26.03.28.0-stable"
+dg_s3air_asset_name: sonic3air_game.tar.gz
+dg_s3air_asset_url: "https://github.com/{{ dg_s3air_repo }}/releases/download/{{ dg_s3air_version }}/{{ dg_s3air_asset_name }}"
+dg_s3air_asset_sha256: b8e268e09eb0bd8241f9e1b75be5b1ee42b8e7f1dbcea1181e54068fe5a8d7b0
+# NAS-staged copy (reused on rebuilds; get_url only downloads if absent/corrupt)
+dg_s3air_archive_source: "{{ dg_roms_final_root }}/PC/sonic remake/sonic3air_game_linux_v26.03.28.0.tar.gz"
+
+dg_s3air_install_dir: "{{ dg_box_home }}/Games/sonic3air"
+dg_s3air_bin: "{{ dg_s3air_install_dir }}/sonic3air_linux"
+dg_s3air_launcher: "{{ dg_box_home }}/bin/sonic3air"
+dg_s3air_cache_dir: "{{ dg_box_home }}/cache/sonic3air"
+dg_s3air_save_dir: "{{ dg_box_home }}/.local/share/Sonic3AIR"
+
+# The user's Sonic 3 & Knuckles combined ROM (standard 4 MiB dump; the game
+# validates it itself — sha1 of this box's accepted copy: cfbf98c3...).
+dg_s3air_rom_src: "{{ dg_emudeck_root }}/../romhacking/genesis/Sonic3Complete_v130810/Sonic and Knuckles & Sonic 3 (JUE) [!].bin"
+
+dg_s3air_main_output: "DP-1"
+dg_s3air_revert: false

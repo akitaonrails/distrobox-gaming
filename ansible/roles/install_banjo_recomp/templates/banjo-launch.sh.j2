@@ -1,0 +1,32 @@
+#!/usr/bin/env sh
+set -eu
+# Banjo: Recompiled (N64Recomp + RT64) launcher — native on the RTX, DP-1.
+# Managed by install_banjo_recomp. ROM pre-seeded in the config dir, so it
+# launches straight into the game. 8BitDo native via SDL2.
+
+BIN="{{ dg_banjo_bin }}"
+if [ ! -x "$BIN" ]; then
+  printf '%s\n' "ERROR: BanjoRecompiled missing at $BIN. Run: ansible-playbook install-banjo-recomp.yml" >&2
+  exit 1
+fi
+
+# Focus the main landscape 4K monitor (Hyprland >= 0.56 Lua IPC form).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_banjo_main_output }}" }))'); s.recv(256); s.close()
+PY
+
+# RT64 renders on Vulkan — pin the nvidia ICD (not the AMD iGPU).
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+# assets/ are loaded relative to cwd.
+cd "{{ dg_banjo_root }}"
+exec ./BanjoRecompiled "$@"

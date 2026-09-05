@@ -1,0 +1,7 @@
+---
+- name: Install Sonic SMS Remake (GameMaker exe under Wine)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_sonic_sms_remake
