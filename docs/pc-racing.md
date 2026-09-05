@@ -632,8 +632,22 @@ the `0041DA27` crash, or a Windows VM/container path outside Wine.
 OutRun 2006 uses the Inno Setup repack source under
 `{{ dg_pc_racing_source_root }}/OutRun-2006-Coast-2-Coast_Win_EN-FR-DE-IT-ES_Repack`.
 The focused playbook runs the installer silently to `G:\outrun-2006`, installs
-`vcrun2022`, downloads `OutRun2006Tweaks`, backs up the original
-`OR2006C2C.exe`, and extracts the Tweaks DLL/EXE/INI into the game directory.
+`vcrun2022`, installs `OutRun2006Tweaks`, backs up the original
+`OR2006C2C.exe`, and extracts the Tweaks DLL/EXE into the game directory.
+
+**Tweaks build:** the tagged releases are "very outdated" (upstream README) —
+the current builds (new input system, config overlay, framerate interpolation)
+live only on the GitHub Actions tab. We pin the **CI build at commit `08e5efb4`
+(2026-08-26)**, fetched via [nightly.link](https://nightly.link) (no GitHub
+auth) and staged on the NAS at
+`ROMS_FINAL/PC/OutRun2006Tweaks-ci-08e5efb4.zip`. The patch uses `extract_files`
+to pull only `dinput8.dll` + `OR2006C2C.exe` + `OutRun2006Tweaks.lods.ini`, so
+our tuned `OutRun2006Tweaks.ini` (4K/borderless/DP-1 position/ControllerHotPlug/
+SkipIntroLogos, re-applied by the role's `ini:` edits) is preserved. The CI
+build still self-reports "v0.6.1.0" in its log — that's an unbumped version
+constant, not the old binary (the new `dinput8.dll` is ~4.4 MB vs the release's
+1.2 MB). To bump: drop a newer CI zip on the NAS and update the `url`/`source`/
+`creates` marker in the `outrun-2006` entry.
 
 The launcher sets `WINEDLLOVERRIDES=dinput8=n,b;d3d9=n,b` so the native Tweaks
 DLL loads under Wine and D3D9 is served by DXVK from the prefix. The repack also
