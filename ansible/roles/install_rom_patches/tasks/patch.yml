@@ -20,8 +20,8 @@
   ansible.builtin.fail:
     msg: >-
       {{ item.base }} sha1 is {{ _rp_base.stat.checksum }}, expected
-      {{ item.base_sha1 }} for "{{ item.name }}". The IPS patch is offset-specific
-      to that revision and would corrupt any other dump.
+      {{ item.base_sha1 }} for "{{ item.name }}". The patch is specific to that
+      revision and would corrupt any other dump.
   when:
     - _rp_base.stat.exists
     - _rp_base.stat.checksum != item.base_sha1
@@ -39,15 +39,20 @@
     mode: "0755"
   when: not _rp_out.stat.exists
 
-- name: "{{ item.name }} — apply IPS patch (hash-verified)"
-  # apply_ips.py asserts the base sha1 before patching and the output sha1
-  # after, so a wrong base or bad patch fails instead of writing a broken ROM.
+- name: "{{ item.name }} — apply patch (hash-verified)"
+  # The applier asserts the base sha1 before patching and the output sha1 after,
+  # so a wrong base or bad patch fails instead of writing a broken ROM. The
+  # applier is chosen by the patch extension: apply_bps.py for BPS (which also
+  # checks the format's built-in source/target/patch CRC32s), else apply_ips.py.
   ansible.builtin.command:
     argv:
       - python3
-      - "{{ role_path }}/files/apply_ips.py"
+      - "{{ role_path }}/files/{{ 'apply_bps.py' if item.ips is search('\\.bps$') else 'apply_ips.py' }}"
       - "{{ item.base }}"
-      - "{{ role_path }}/files/{{ item.ips }}"
+      # Small patches live in the role's files/ (committed); large ones (e.g. a
+      # multi-MB BPS that is effectively the whole hacked ROM) are NAS-staged and
+      # referenced via item.patch_src so they never bloat the repo.
+      - "{{ item.patch_src | default(role_path ~ '/files/' ~ item.ips) }}"
       - "{{ item.out }}"
       - "{{ item.base_sha1 }}"
       - "{{ item.out_sha1 }}"

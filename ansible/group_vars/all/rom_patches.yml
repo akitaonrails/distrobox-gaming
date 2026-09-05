@@ -57,3 +57,21 @@ dg_rom_patches:
     ips: "super_metroid_redux.ips"
     out: "{{ dg_rom_root }}/snes/Super Metroid Redux.sfc"
     out_sha1: "0f4133f2e6bdd275b0ceec3e348e2d6bf1c8189e"
+
+  # Return to Yoshi's Island — DEMO 2 (Kaze Emanuar), N64. A BPS patch (not IPS)
+  # against Super Mario 64 (USA) [!] (.z64, sha1 9bef1128...). The only verified
+  # 9bef1128 dump on the box is the SM64 decomp-port baserom; we read it (never
+  # modify it). Output goes into roms_mid/n64 ALONGSIDE the originals (does not
+  # touch the stock Mario ROMs). HEAVY hack: Mupen64Plus-Next won't boot it — it
+  # needs the ParaLLEl-N64 core (parallel RDP + parallel RSP/CPU); pick that
+  # alt-emulator per-game in ES-DE (same as SM64 Last Impact). See docs.
+  - name: "Return to Yoshi's Island Demo 2 (Kaze, N64)"
+    base: "{{ dg_box_home }}/tools/render96ex/source/baserom.us.z64"
+    base_sha1: "9bef1128717f958171a4afac3ed78ee2bb4e86ce"
+    # The .bps extension selects apply_bps.py. The patch is ~19 MB (effectively a
+    # whole custom ROM), so it is NAS-staged instead of committed. out_sha1 +
+    # the BPS's own CRC32 still guarantee a correct result.
+    ips: "rtyi_demo2_v1.06.bps"
+    patch_src: "{{ dg_roms_final_root }}/n64/romhack-patches/RTYI Demo TWO 1.06.bps"
+    out: "{{ dg_rom_mid_root }}/n64/Return to Yoshi's Island (Demo 2 v1.06).z64"
+    out_sha1: "4e91e2375d4094ec5e04beeaa87b883de51dfcec"
