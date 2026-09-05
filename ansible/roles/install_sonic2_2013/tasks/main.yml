@@ -1,0 +1,128 @@
+---
+# Sonic 2 (2013) + the "Sonic 2 Mania" mod — native RSDKv4 decompilation.
+# See group_vars/all/sonic2_2013.yml and docs/sonic2-2013.md.
+
+- name: Revert Sonic 2 (2013) when requested
+  when: dg_s2013_revert | bool
+  block:
+    - name: Remove the launcher + install dir + source tree
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_s2013_bin }}"
+        - "{{ dg_s2013_game_dir }}"
+        - "{{ dg_s2013_src }}"
+    - name: Report reverted
+      ansible.builtin.debug:
+        msg: "Sonic 2 (2013) removed. NAS archives untouched."
+
+- name: Install Sonic 2 (2013) + Sonic 2 Mania
+  when: not (dg_s2013_revert | bool)
+  block:
+    - name: Install build deps inside the box
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} sudo pacman -S --needed --noconfirm {{ dg_s2013_packages | join(' ') }}
+      register: _s2_pacman
+      changed_when: "'installing' in _s2_pacman.stdout or 'upgrading' in _s2_pacman.stdout"
+
+    - name: Assert the NAS archives exist
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - "{{ dg_s2013_xapk }}"
+        - "{{ dg_s2013_mod_zip }}"
+      loop_control:
+        label: "{{ item | basename }}"
+      register: _s2_files
+      failed_when: not _s2_files.stat.exists
+
+    - name: Clone + build the RSDKv4 decompilation (once)
+      ansible.builtin.shell: |
+        {{ dg_in_box }} bash -c '
+          set -eu
+          [ -x "{{ dg_s2013_game_dir }}/RSDKv4" ] && exit 0
+          [ -d "{{ dg_s2013_src }}/.git" ] || git clone --recursive "{{ dg_s2013_repo }}" "{{ dg_s2013_src }}"
+          cd "{{ dg_s2013_src }}"
+          cmake -B build -DCMAKE_BUILD_TYPE=Release >/dev/null
+          make -C build -j"$(nproc)" >/dev/null
+          mkdir -p "{{ dg_s2013_game_dir }}/mods"
+          cp build/RSDKv4 "{{ dg_s2013_game_dir }}/"
+          chmod 0755 "{{ dg_s2013_game_dir }}/RSDKv4"
+          echo s2013-built
+        '
+      register: _s2013
+      changed_when: "'s2013-built' in _s2013.stdout"
+
+    - name: Extract Sonic 2 (2013) Data.rsdk from the user's XAPK (once)
+      ansible.builtin.shell: |
+        set -eu
+        [ -f "{{ dg_s2013_game_dir }}/Data.rsdk" ] && exit 0
+        tmp="$(mktemp -d)"
+        unzip -oq "{{ dg_s2013_xapk }}" com.sega.sonic2.runner.apk -d "$tmp"
+        unzip -oq "$tmp/com.sega.sonic2.runner.apk" "assets/Data.rsdk.xmf" -d "$tmp"
+        cp "$tmp/assets/Data.rsdk.xmf" "{{ dg_s2013_game_dir }}/Data.rsdk"
+        rm -rf "$tmp"
+        echo s2data-staged
+      register: _s2data
+      changed_when: "'s2data-staged' in _s2data.stdout"
+
+    - name: Install the Sonic 2 Mania mod (once)
+      ansible.builtin.shell: |
+        set -eu
+        cd "{{ dg_s2013_game_dir }}/mods"
+        [ -d "{{ dg_s2013_mod_dir }}" ] || unzip -oq "{{ dg_s2013_mod_zip }}"
+        echo s2mod-ready
+      register: _s2mod
+      changed_when: false
+
+    - name: Enable the mod in modconfig.ini (value MUST be 'true' — the parser rejects 'y')
+      ansible.builtin.copy:
+        content: |
+          [mods]
+          {{ dg_s2013_mod_dir }}=true
+        dest: "{{ dg_s2013_game_dir }}/mods/modconfig.ini"
+        force: false
+        mode: "0644"
+
+    - name: Seed settings fullscreen (VSync OFF — 240Hz would run the engine ~4x fast)
+      ansible.builtin.copy:
+        content: |
+          [Dev]
+          DevMenu=true
+
+          [Window]
+          FullScreen=true
+          Borderless=true
+          VSync=false
+          RefreshRate=60
+        dest: "{{ dg_s2013_game_dir }}/settings.ini"
+        force: false
+        mode: "0644"
+
+    - name: Deploy the launcher
+      ansible.builtin.template:
+        src: sonic2-2013.sh.j2
+        dest: "{{ dg_s2013_bin }}"
+        mode: "0755"
+
+    - name: Render the desktop entry
+      ansible.builtin.template:
+        src: sonic2-2013.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-sonic2-2013.desktop"
+        mode: "0644"
+
+    - name: Install the desktop entry into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _s2_host_launchers
+      changed_when: >-
+        'installed ' in _s2_host_launchers.stdout or
+        'removed stale ' in _s2_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: "Sonic 2 (2013) + Sonic 2 Mania at {{ dg_s2013_game_dir }} (bin/sonic2-2013). Revert: -e dg_s2013_revert=true."

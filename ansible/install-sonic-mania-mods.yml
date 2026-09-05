@@ -1,8 +1,0 @@
----
-- name: Install the Sonic Mania modding stack + Sonic 2 (2013)
-  hosts: localhost
-  connection: local
-  gather_facts: true
-  roles:
-    - install_sonic_mania_mods
-    - steam_launch_options

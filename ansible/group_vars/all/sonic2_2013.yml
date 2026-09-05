@@ -1,0 +1,28 @@
+---
+# Sonic 2 (2013) + the "Sonic 2 Mania" mod — native RSDKv4 decompilation built
+# in the box. See docs/sonic2-2013.md.
+#
+# The GameBanana "Sonic 2 Mania" mod targets Sonic the Hedgehog 2 (2013), NOT
+# Sonic Mania. Data.rsdk is extracted from the user's Android XAPK
+# (assets/Data.rsdk.xmf); the data-only mod is enabled via mods/modconfig.ini.
+#
+# (Sonic Megamix Mania was PARKED 2026-09-05: it's a DLL code-mod for Steam
+#  Sonic Mania and its character DLLs don't hook cleanly under Proton — see
+#  docs/sonic2-2013.md "Parked: Megamix" and memory. Its downloads stay on the
+#  NAS under ROMS_FINAL/PC/sonic remake/.)
+
+dg_s2013_packages: [base-devel, cmake, glew, sdl2, libogg, libvorbis, libtheora, glfw, unzip, p7zip]
+
+dg_s2013_repo: https://github.com/RSDKModding/RSDKv4-Decompilation
+dg_s2013_src: "{{ dg_box_home }}/tools/sonic2013-decomp"
+dg_s2013_game_dir: "{{ dg_box_home }}/Games/sonic2-2013"
+dg_s2013_bin: "{{ dg_box_home }}/bin/sonic2-2013"
+
+# The user's Sonic 2 (2013) Android release + the GameBanana mod, both staged
+# on the NAS.
+dg_s2013_xapk: "{{ dg_roms_final_root }}/PC/sonic remake/Sonic+The+Hedgehog+2+Classic_3.0.0_APKPure.xapk"
+dg_s2013_mod_zip: "{{ dg_roms_final_root }}/PC/sonic remake/sonic_2_mania_9e646.zip"
+dg_s2013_mod_dir: "Sonic 2 Mania"
+
+dg_s2013_main_output: "DP-1"
+dg_s2013_revert: false

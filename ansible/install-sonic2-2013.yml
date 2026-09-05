@@ -1,0 +1,7 @@
+---
+- name: Install Sonic 2 (2013) + the Sonic 2 Mania mod
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_sonic2_2013

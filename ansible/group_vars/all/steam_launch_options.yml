@@ -51,12 +51,6 @@ dg_steam_launch_options_by_appid:
   "13560":
     name: "Tom Clancy's Splinter Cell"
     options: 'PROTON_ENABLE_WAYLAND=1 PROTON_USE_NTSYNC=1 %command% -nointro'
-  # Sonic Mania: the Mania Mod Loader proxy (d3d9.dll in the game dir,
-  # installed by install_sonic_mania_mods) needs the native override to load —
-  # this is what activates Megamix Mania and other DLL mods.
-  "584400":
-    name: "Sonic Mania"
-    options: 'WINEDLLOVERRIDES="d3d9=n,b" %command%'
   # Sonic Origins renders in a tiny bottom-left window under Proton (the
   # Wine X11 driver mis-sizes its fullscreen); the Wine WAYLAND driver fixes
   # it (Splinter Cell lesson). Set the in-game Display to Fullscreen at <=1080p
