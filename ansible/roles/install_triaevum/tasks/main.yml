@@ -1,0 +1,114 @@
+---
+# TriAevum — OoT 3D AOT recomp under Wine (NRI/Vulkan + DXVK/vkd3d-proton).
+# See group_vars/all/triaevum.yml and docs/triaevum.md.
+
+- name: Revert TriAevum when requested
+  when: dg_triaevum_revert | bool
+  block:
+    - name: Remove the launcher + Wine prefix (keeps the NAS install/data)
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_triaevum_launcher }}"
+        - "{{ dg_triaevum_prefix }}"
+    - name: Report reverted
+      ansible.builtin.debug:
+        msg: >-
+          TriAevum launcher + prefix removed. The NAS install
+          ({{ dg_triaevum_install_dir }}) and its Forge-prepared data/ are kept.
+
+- name: Install TriAevum
+  when: not (dg_triaevum_revert | bool)
+  block:
+    - name: Install Wine runtime packages
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} sudo pacman -S --needed --noconfirm {{ dg_triaevum_packages | join(' ') }}
+      register: _tri_pac
+      changed_when: "'installing' in _tri_pac.stdout or 'upgrading' in _tri_pac.stdout"
+
+    - name: Ensure the NAS release directory exists
+      ansible.builtin.file:
+        path: "{{ dg_triaevum_root }}"
+        state: directory
+        mode: "0755"
+
+    - name: Download the TriAevum Windows-x64 release (hash-pinned)
+      ansible.builtin.get_url:
+        url: "{{ dg_triaevum_zip_url }}"
+        dest: "{{ dg_triaevum_zip }}"
+        checksum: "sha256:{{ dg_triaevum_zip_sha256 }}"
+        mode: "0644"
+
+    - name: Extract the release (once — never clobbers the Forge-prepared data/)
+      ansible.builtin.shell: |
+        set -eu
+        inst="{{ dg_triaevum_install_dir }}"
+        [ -f "$inst/{{ dg_triaevum_game_exe }}" ] && exit 0
+        mkdir -p "$inst"
+        unzip -oq "{{ dg_triaevum_zip }}" -d "$inst"
+        echo tri-extracted
+      register: _tri_extract
+      changed_when: "'tri-extracted' in _tri_extract.stdout"
+
+    - name: Create/refresh the Wine prefix
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          export WINEPREFIX="{{ dg_triaevum_prefix }}" WINEDEBUG=-all WINEARCH=win64
+          if [ ! -d "$WINEPREFIX/drive_c" ]; then
+            wineboot -i >/dev/null 2>&1
+            echo tri-prefix-created
+          fi
+        '
+      register: _tri_prefix
+      changed_when: "'tri-prefix-created' in _tri_prefix.stdout"
+
+    - name: Install GE-Proton's DXVK + vkd3d-proton DLLs into the prefix
+      # NRI enumerates the GPU via DXGI/D3D12; Wine's built-in vkd3d can't map
+      # the adapter to a Vulkan device (crash). GE-Proton's DXVK (dxgi,d3d11) +
+      # vkd3d-proton (d3d12,d3d12core) do, so the game reaches the RTX. The
+      # launcher sets WINEDLLOVERRIDES to prefer these native DLLs.
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          ge="$(ls -d {{ dg_triaevum_geproton_glob }} 2>/dev/null | sort -V | tail -1)"
+          [ -n "$ge" ] || { echo "NO_GE_PROTON"; exit 1; }
+          sys="{{ dg_triaevum_prefix }}/drive_c/windows/system32"
+          w="$ge/files/lib/wine"
+          cp -f "$w/dxvk/x86_64-windows/dxgi.dll"           "$sys/"
+          cp -f "$w/dxvk/x86_64-windows/d3d11.dll"          "$sys/"
+          cp -f "$w/vkd3d-proton/x86_64-windows/d3d12.dll"  "$sys/"
+          cp -f "$w/vkd3d-proton/x86_64-windows/d3d12core.dll" "$sys/"
+          echo "tri-dlls:$(basename "$ge")"
+        '
+      register: _tri_dlls
+      changed_when: "'tri-dlls:' in _tri_dlls.stdout"
+
+    - name: Deploy the TriAevum launcher
+      ansible.builtin.template:
+        src: triaevum-launch.sh.j2
+        dest: "{{ dg_triaevum_launcher }}"
+        mode: "0755"
+
+    - name: Render + install the desktop entry
+      ansible.builtin.template:
+        src: triaevum.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-triaevum.desktop"
+        mode: "0644"
+
+    - name: Install the desktop entry into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _tri_host
+      changed_when: "'installed ' in _tri_host.stdout or 'removed stale ' in _tri_host.stdout"
+
+    - name: Report
+      ansible.builtin.debug:
+        msg:
+          - "TriAevum {{ dg_triaevum_version }} at {{ dg_triaevum_install_dir }}; launcher {{ dg_triaevum_launcher }} (Walker: TriAevum - OoT 3D)."
+          - "ONE-TIME setup on a fresh install: run TriAevumForge.exe once, select the decrypted OoT 3D .cci, let it prepare + download the TopScreen pack. Our NAS install already has the prepared data/."
+          - "Rendering: Wine + DXVK/vkd3d-proton on the RTX (VK_ICD nvidia). 8BitDo via SDL. Revert: -e dg_triaevum_revert=true."

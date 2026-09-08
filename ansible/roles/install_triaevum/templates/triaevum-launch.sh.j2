@@ -1,0 +1,54 @@
+#!/usr/bin/env sh
+# TriAevum (OoT 3D AOT recomp) launcher — Wine + DXVK/vkd3d-proton on the RTX.
+#   triaevum          launch the game
+#   triaevum setup     run TriAevumForge.exe (one-time ROM import / TopScreen)
+set -eu
+
+install_dir="{{ dg_triaevum_install_dir }}"
+prefix="{{ dg_triaevum_prefix }}"
+game_exe="{{ dg_triaevum_game_exe }}"
+forge_exe="{{ dg_triaevum_forge_exe }}"
+
+if [ ! -f "$install_dir/$game_exe" ]; then
+  printf '%s\n' "ERROR: TriAevum not installed ($install_dir/$game_exe)." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-triaevum.yml" >&2
+  exit 1
+fi
+
+# Render on the RTX: pin the Vulkan ICD + GLX vendor to nvidia (winevulkan
+# forwards to the host loader). NRI reaches Vulkan via DXGI/D3D12, so prefer the
+# DXVK + vkd3d-proton DLLs staged in the prefix (Wine's built-in vkd3d can't map
+# the DXGI adapter -> crash without these).
+export WINEPREFIX="$prefix" WINEARCH=win64 WINEDEBUG="${WINEDEBUG:--all}"
+export WINEDLLOVERRIDES="${WINEDLLOVERRIDES:-{{ dg_triaevum_dll_overrides }}}"
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-{{ dg_triaevum_nvidia_icd }}}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+# 8BitDo via SDL2 (WineBus SDL). Background events so it keeps input on focus loss.
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+# All games open on the main landscape 4K monitor (DP-1).
+if command -v hyprctl >/dev/null 2>&1; then
+  hyprctl eval 'hl.dispatch(hl.dsp.focus({ monitor = "DP-1" }))' >/dev/null 2>&1 || true
+else
+  python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'/eval hl.dispatch(hl.dsp.focus({ monitor = "DP-1" }))'); s.recv(64); s.close()
+PY
+fi
+
+cd "$install_dir"
+if [ "${1:-}" = "setup" ]; then
+  exec env -u PYTHONHOME -u PYTHONPATH wine "$forge_exe"
+fi
+if [ ! -f "$install_dir/data/active-title.json" ]; then
+  printf '%s\n' "TriAevum has no prepared title yet. Run: triaevum setup" >&2
+  printf '%s\n' "(select the decrypted OoT 3D .cci; it prepares + downloads TopScreen)." >&2
+  exit 1
+fi
+exec env -u PYTHONHOME -u PYTHONPATH wine "$game_exe"

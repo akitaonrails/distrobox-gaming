@@ -1,0 +1,7 @@
+---
+- name: Install TriAevum (OoT 3D AOT recomp under Wine)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_triaevum

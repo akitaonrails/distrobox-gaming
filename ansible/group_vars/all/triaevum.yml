@@ -1,0 +1,40 @@
+---
+# TriAevum — a native PC AOT recompilation of Zelda: Ocarina of Time 3D (the
+# 3DS remake), NRI/Vulkan renderer, single-screen UI. Opt-in role
+# install_triaevum. See docs/triaevum.md.
+#
+# Windows x64 only (the project doesn't target Linux), so it runs under Wine.
+# The crash-fix is that its NRI backend enumerates the GPU via DXGI/D3D12, which
+# Wine's BUILT-IN vkd3d can't map to a Vulkan device -> we drop GE-Proton's DXVK
+# + vkd3d-proton DLLs into the prefix (overridden native). It renders on the RTX
+# via winevulkan (VK_ICD pinned to nvidia). Your OoT 3D .cci is already
+# decrypted (Forge needs a decrypted ROM; ours qualifies), so no key step.
+
+dg_triaevum_version: "v0.6.0-alpha.1c"
+dg_triaevum_zip_url: "https://github.com/coccofresco/TriAevum/releases/download/{{ dg_triaevum_version }}/TriAevum-{{ dg_triaevum_version }}-Windows-x64.zip"
+dg_triaevum_zip_sha256: "400bac880b0f10ef982417044e0a2a0581bd40bf9fe766ef0e16008a9e681eb7"
+
+# NAS-staged release + install/working dir (holds the Forge-prepared data/).
+dg_triaevum_root: "{{ dg_roms_final_root }}/PC/triaevum"
+dg_triaevum_zip: "{{ dg_triaevum_root }}/TriAevum-{{ dg_triaevum_version }}-Windows-x64.zip"
+dg_triaevum_install_dir: "{{ dg_triaevum_root }}/extracted"
+dg_triaevum_forge_exe: TriAevumForge.exe
+dg_triaevum_game_exe: TriAevum.exe
+
+# Wine prefix + launcher.
+dg_triaevum_prefix: "{{ dg_box_home }}/wineprefixes/triaevum"
+dg_triaevum_launcher: "{{ dg_box_home }}/bin/triaevum"
+dg_triaevum_nvidia_icd: /usr/share/vulkan/icd.d/nvidia_icd.json
+
+# GE-Proton supplies the DXVK (dxgi,d3d11) + vkd3d-proton (d3d12,d3d12core) DLLs.
+# A glob picks the newest installed GE-Proton if this exact one is gone.
+dg_triaevum_geproton_glob: "{{ dg_box_home }}/.local/share/Steam/compatibilitytools.d/GE-Proton*"
+dg_triaevum_dll_overrides: "dxgi,d3d11,d3d12,d3d12core=n,b"
+
+# The decrypted OoT 3D ROM Forge imports (the same dump Azahar runs — verified
+# decrypted despite the legacy crypto flag). USA. Used only for the one-time
+# Forge GUI setup; not read at play time.
+dg_triaevum_rom: "{{ dg_rom_heavy_root }}/n3ds/Legend of Zelda The - Ocarina of Time 3D (USA) (EnFrEs) (Rev 1)/Legend of Zelda, The - Ocarina of Time 3D (USA) (En,Fr,Es) (Rev 1).cci"
+
+dg_triaevum_packages: [wine, sdl2]
+dg_triaevum_revert: false
