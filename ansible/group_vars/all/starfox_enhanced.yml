@@ -12,10 +12,10 @@
 # companion, and never needs the ROM again.
 
 dg_sfe_repo: kandowontu/starfox-enhanced
-dg_sfe_version: "0.0.3"
+dg_sfe_version: "0.0.6.5"
 dg_sfe_asset_name: "StarFoxEnhanced-{{ dg_sfe_version }}-linux-x64.zip"
 dg_sfe_asset_url: "https://github.com/{{ dg_sfe_repo }}/releases/download/v{{ dg_sfe_version }}/{{ dg_sfe_asset_name }}"
-dg_sfe_asset_sha256: c2bc064ab0dd28cb45ee981a733c8d084f61f0f1124cbad6dd7b17f4eb675e9e
+dg_sfe_asset_sha256: 93e65ac362ae7995ea2b2e6519245a2cc64bbf8b8f2c2594242e59ce2db7ebed
 # NAS-staged copy reused on rebuilds (get_url downloads only if absent/corrupt).
 dg_sfe_archive_source: "{{ dg_roms_final_root }}/PC/starfox-enhanced/{{ dg_sfe_asset_name }}"
 

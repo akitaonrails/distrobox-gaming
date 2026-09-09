@@ -68,7 +68,7 @@
         fi
         tmp="$(mktemp -d)"
         unzip -q "{{ dg_sfe_cache_dir }}/{{ dg_sfe_asset_name }}" -d "$tmp"
-        cp -f "$tmp"/dist/StarFoxEnhanced-linux-x64/* "$game"/
+        cp -rf "$tmp"/dist/StarFoxEnhanced-linux-x64/. "$game"/
         rm -rf "$tmp"
         chmod 0755 "$game/starfox_pc" "$game/starfox_asset_builder"
         # a version bump invalidates the version-bound assets companion
