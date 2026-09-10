@@ -1,0 +1,36 @@
+#!/usr/bin/env sh
+# Wave Race 64 Recompiled launcher — prebuilt Windows RT64 build under Wine,
+# D3D12 via vkd3d-proton on the RTX.
+set -eu
+
+install_dir="{{ dg_wr64_install_dir }}"
+prefix="{{ dg_wr64_prefix }}"
+exe="{{ dg_wr64_exe }}"
+rom="{{ dg_wr64_rom_z64 }}"
+
+if [ ! -f "$install_dir/$exe" ]; then
+  printf '%s\n' "ERROR: Wave Race 64 recomp not installed ($install_dir/$exe)." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-waverace-recomp.yml" >&2
+  exit 1
+fi
+
+# RT64 reaches Vulkan via D3D12 (DXGI). Prefer the DXVK + vkd3d-proton DLLs
+# staged in the prefix, and pin the Vulkan ICD + GLX vendor to nvidia so it
+# renders on the RTX, not the AMD iGPU.
+export WINEPREFIX="$prefix" WINEARCH=win64 WINEDEBUG="${WINEDEBUG:--all}"
+export WINEDLLOVERRIDES="${WINEDLLOVERRIDES:-{{ dg_wr64_dll_overrides }}}"
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-{{ dg_wr64_nvidia_icd }}}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+# All games open on the main landscape 4K monitor (DP-1).
+if command -v hyprctl >/dev/null 2>&1; then
+  hyprctl eval 'hl.dispatch(hl.dsp.focus({ monitor = "DP-1" }))' >/dev/null 2>&1 || true
+fi
+
+# Pass the verified ROM to skip the picker. Use the Z: drive (Linux root) with
+# FORWARD slashes — Wine accepts them, and they avoid the backslash-escape trap
+# (a `\t`/`\n` in the path would otherwise become a tab/newline).
+cd "$install_dir"
+exec env -u PYTHONHOME -u PYTHONPATH wine "$exe" "Z:$rom" "$@"

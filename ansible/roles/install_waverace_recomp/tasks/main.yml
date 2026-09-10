@@ -1,0 +1,133 @@
+---
+# Wave Race 64 Recompiled — prebuilt Windows RT64 build under Wine + vkd3d-proton.
+# See group_vars/all/waverace_recomp.yml and docs/waverace-recomp.md.
+
+- name: Revert Wave Race 64 recomp when requested
+  when: dg_wr64_revert | bool
+  block:
+    - name: Remove the launcher + install dir + Wine prefix
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_wr64_launcher }}"
+        - "{{ dg_wr64_install_dir }}"
+        - "{{ dg_wr64_prefix }}"
+    - name: Report reverted
+      ansible.builtin.debug:
+        msg: "Wave Race 64 recomp removed. The NAS zip + z64 ROM are kept."
+
+- name: Install Wave Race 64 recomp
+  when: not (dg_wr64_revert | bool)
+  block:
+    - name: Verify the Wave Race 64 (USA) (Rev A) ROM exists
+      ansible.builtin.stat:
+        path: "{{ dg_wr64_rom_src }}"
+      register: _wr64_rom
+      failed_when: not _wr64_rom.stat.exists
+
+    - name: Install Wine runtime packages
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} sudo pacman -S --needed --noconfirm {{ dg_wr64_packages | join(' ') }}
+      register: _wr64_pac
+      changed_when: "'installing' in _wr64_pac.stdout or 'upgrading' in _wr64_pac.stdout"
+
+    - name: Ensure the NAS release dir exists
+      ansible.builtin.file:
+        path: "{{ dg_wr64_root }}"
+        state: directory
+        mode: "0755"
+
+    - name: Download the prebuilt Windows build (hash-pinned)
+      ansible.builtin.get_url:
+        url: "{{ dg_wr64_zip_url }}"
+        dest: "{{ dg_wr64_zip }}"
+        checksum: "sha256:{{ dg_wr64_zip_sha256 }}"
+        mode: "0644"
+
+    - name: Extract the build (once)
+      ansible.builtin.shell: |
+        set -eu
+        inst="{{ dg_wr64_install_dir }}"
+        [ -f "$inst/{{ dg_wr64_exe }}" ] && exit 0
+        mkdir -p "$inst"
+        unzip -oq "{{ dg_wr64_zip }}" -d "$inst"
+        echo wr64-extracted
+      register: _wr64_extract
+      changed_when: "'wr64-extracted' in _wr64_extract.stdout"
+
+    - name: Convert the ROM to a big-endian z64 + verify (creates once)
+      ansible.builtin.shell: |
+        python3 - <<'PY'
+        import hashlib
+        src = "{{ dg_wr64_rom_src }}"; dst = "{{ dg_wr64_rom_z64 }}"
+        d = open(src, 'rb').read(); m = d[:4]
+        if m == b'\x80\x37\x12\x40': z = d
+        elif m == b'\x37\x80\x40\x12':
+            b = bytearray(d); b[0::2], b[1::2] = d[1::2], d[0::2]; z = bytes(b)
+        elif m == b'\x40\x12\x37\x80':
+            b = bytearray(len(d))
+            for i in range(0, len(d) & ~3, 4): b[i:i+4] = d[i:i+4][::-1]
+            z = bytes(b)
+        else: raise SystemExit("unknown ROM byte order: " + m.hex())
+        # sanity: 8 MiB Wave Race 64
+        if len(z) != 8 * 1024 * 1024: raise SystemExit("unexpected ROM size: %d" % len(z))
+        open(dst, 'wb').write(z); print("z64 ok (md5 %s)" % hashlib.md5(z).hexdigest())
+        PY
+      args:
+        creates: "{{ dg_wr64_rom_z64 }}"
+
+    - name: Create/refresh the Wine prefix
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          export WINEPREFIX="{{ dg_wr64_prefix }}" WINEDEBUG=-all WINEARCH=win64
+          if [ ! -d "$WINEPREFIX/drive_c" ]; then wineboot -i >/dev/null 2>&1; echo wr64-prefix-created; fi
+        '
+      register: _wr64_prefix
+      changed_when: "'wr64-prefix-created' in _wr64_prefix.stdout"
+
+    - name: Install GE-Proton's DXVK + vkd3d-proton DLLs into the prefix
+      # RT64 renders via D3D12; Wine's built-in vkd3d can't map the DXGI adapter,
+      # so use GE-Proton's DXVK (dxgi,d3d11) + vkd3d-proton (d3d12,d3d12core).
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          ge="$(ls -d {{ dg_wr64_geproton_glob }} 2>/dev/null | sort -V | tail -1)"
+          [ -n "$ge" ] || { echo "NO_GE_PROTON"; exit 1; }
+          sys="{{ dg_wr64_prefix }}/drive_c/windows/system32"; w="$ge/files/lib/wine"
+          cp -f "$w/dxvk/x86_64-windows/dxgi.dll"              "$sys/"
+          cp -f "$w/dxvk/x86_64-windows/d3d11.dll"             "$sys/"
+          cp -f "$w/vkd3d-proton/x86_64-windows/d3d12.dll"     "$sys/"
+          cp -f "$w/vkd3d-proton/x86_64-windows/d3d12core.dll" "$sys/"
+          echo "wr64-dlls:$(basename "$ge")"
+        '
+      register: _wr64_dlls
+      changed_when: "'wr64-dlls:' in _wr64_dlls.stdout"
+
+    - name: Deploy the launcher
+      ansible.builtin.template:
+        src: waverace-launch.sh.j2
+        dest: "{{ dg_wr64_launcher }}"
+        mode: "0755"
+
+    - name: Render + install the desktop entry
+      ansible.builtin.template:
+        src: waverace.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-waverace-recomp.desktop"
+        mode: "0644"
+
+    - name: Install the desktop entry into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _wr64_host
+      changed_when: "'installed ' in _wr64_host.stdout or 'removed stale ' in _wr64_host.stdout"
+
+    - name: Report
+      ansible.builtin.debug:
+        msg:
+          - "Wave Race 64 Recompiled {{ dg_wr64_version }} at {{ dg_wr64_install_dir }}; launcher {{ dg_wr64_launcher }} (Walker: Wave Race 64 · Recompiled)."
+          - "Prebuilt Windows RT64 build under Wine + vkd3d-proton on the RTX (VK_ICD nvidia). ROM verified as USA Rev A. Gamepad + keyboard supported. Revert: -e dg_wr64_revert=true."

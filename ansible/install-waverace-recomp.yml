@@ -1,0 +1,7 @@
+---
+- name: Install Wave Race 64 Recompiled (Windows RT64 build under Wine)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_waverace_recomp

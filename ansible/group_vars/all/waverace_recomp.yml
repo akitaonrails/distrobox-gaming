@@ -1,0 +1,38 @@
+---
+# Wave Race 64 Recompiled (elliotttate/wave-race-64-recomp) — an N64ModernRuntime
+# + RT64 static recomp PC port of Wave Race 64. Opt-in role install_waverace_recomp.
+# See docs/waverace-recomp.md.
+#
+# There is NO Linux build (upstream ships Windows-x64 + macOS only; the Linux
+# source build is undocumented and the author never tested RT64's Vulkan path),
+# so we run the prebuilt WINDOWS build under Wine — RT64's D3D12 goes through
+# GE-Proton's vkd3d-proton to the RTX (VK_ICD pinned nvidia). The author
+# smoke-tested this same Windows/D3D12 build on an RTX 5090, so it's a good fit.
+
+dg_wr64_version: "0.4.0"
+# The windows-x64 asset lives under the v0.4.0-macos.3 release tag.
+dg_wr64_release_tag: "v0.4.0-macos.3"
+dg_wr64_zip_url: "https://github.com/elliotttate/wave-race-64-recomp/releases/download/{{ dg_wr64_release_tag }}/WaveRace64Recomp-{{ dg_wr64_version }}-windows-x64.zip"
+dg_wr64_zip_sha256: "88b037d32fa7fc0de6a1b64c7e65db733771532c1840de935a9ceb9f92ecbb31"
+
+dg_wr64_root: "{{ dg_roms_final_root }}/PC/waverace-recomp"
+dg_wr64_zip: "{{ dg_wr64_root }}/WaveRace64Recomp-{{ dg_wr64_version }}-windows-x64.zip"
+dg_wr64_install_dir: "{{ dg_box_home }}/tools/waverace-recomp"
+dg_wr64_exe: WaveRace64Recomp.exe
+
+# ROM: Wave Race 64 (USA) (Rev A) / v1.1 ONLY (cart WR, region E, rev 1, header
+# CRC 0x492F4B61 0x04E5146A). The box's dump is the byte-swapped .n64; the role
+# converts it to a big-endian .z64 and the exe's --identify verifies it.
+dg_wr64_rom_src: "{{ dg_rom_mid_root }}/n64/Wave Race 64 (USA) (Rev A).n64"
+dg_wr64_rom_z64: "{{ dg_wr64_root }}/Wave Race 64 (USA) (Rev A).z64"
+
+# Wine prefix + launcher.
+dg_wr64_prefix: "{{ dg_box_home }}/wineprefixes/waverace"
+dg_wr64_launcher: "{{ dg_box_home }}/bin/waverace-recomp"
+dg_wr64_nvidia_icd: /usr/share/vulkan/icd.d/nvidia_icd.json
+# GE-Proton supplies DXVK (dxgi,d3d11) + vkd3d-proton (d3d12,d3d12core).
+dg_wr64_geproton_glob: "{{ dg_box_home }}/.local/share/Steam/compatibilitytools.d/GE-Proton*"
+dg_wr64_dll_overrides: "dxgi,d3d11,d3d12,d3d12core=n,b"
+
+dg_wr64_packages: [wine, sdl2]
+dg_wr64_revert: false
