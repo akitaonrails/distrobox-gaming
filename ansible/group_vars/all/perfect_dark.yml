@@ -1,23 +1,26 @@
 ---
-# Perfect Dark PC port (perfect-dark-pc-port/perfect_dark, formerly fgsfdsfgs) —
-# a native port built from the N64 decompilation: OpenGL 3, any resolution,
-# dual-analog + mouse, configurable FOV. Prebuilt Linux x64 builds from the
-# rolling `ci-dev-build` release tag. Runs on the RTX. Managed by
-# install_perfect_dark. Needs the user's own NTSC-U V1.1 ROM. See docs/perfect-dark.md.
+# Perfect Dark PC port — DabDavis/perfect-dark-dabs-mod, a superset FORK of the
+# mainline perfect-dark-pc-port/perfect_dark (itself from the N64 decomp). Keeps
+# everything upstream (OpenGL 3, any resolution, dual-analog + mouse, FOV) and
+# adds opt-in extras: jump/roll/melee, third-person + spectator cameras, 8->80
+# simulants, body persistence, F12 screenshots, MP4 recording, 2x/4x/8x texture
+# upscaling + texture-pack auto-download, and an xdelta/bps/ips mod + stage
+# loader. Same ROM (NTSC-U V1.1) and pd.ini-compatible (Mod.* keys are additive).
+# Runs on the RTX. Managed by install_perfect_dark. See docs/perfect-dark.md.
 
-# Rolling release tag: the asset is rebuilt in place, so the sha256 below pins a
-# specific build. The tarball is staged on the NAS (dg_pd_archive_source) and
-# reused on rebuilds; get_url only downloads if it's missing/corrupt (and will
-# refuse a newer upstream build until the sha is bumped — intentional).
-dg_pd_repo: perfect-dark-pc-port/perfect_dark
-dg_pd_release_tag: ci-dev-build
-dg_pd_asset_name: pd-x86_64-linux.tar.gz
+# Unlike the mainline's rolling `ci-dev-build`, the fork ships STABLE version
+# tags — pin one by sha256. The tarball is staged on the NAS
+# (dg_pd_archive_source) and reused on rebuilds; get_url only downloads if it's
+# missing/corrupt (and refuses a newer build until the sha is bumped).
+dg_pd_repo: DabDavis/perfect-dark-dabs-mod
+dg_pd_release_tag: v3.2.2
+dg_pd_asset_name: pd-dabs-mod-x86_64-linux.tar.gz
 dg_pd_asset_url: "https://github.com/{{ dg_pd_repo }}/releases/download/{{ dg_pd_release_tag }}/{{ dg_pd_asset_name }}"
-dg_pd_asset_sha256: 0f28fd59b488e0a919aae4350083059faebd462fce52df7bfdc9a4aec26f92ae
-dg_pd_build_ref: "port@32a1cb9f (2026-08-13)"     # provenance of the pinned sha256, informational
+dg_pd_asset_sha256: c4f3d6370af93a9c64f2d089c17e335f00fb774b0f79b83e5256e0e780acaf4e
+dg_pd_build_ref: "dabs-mod v3.2.2 (2026-09-10)"   # provenance of the pinned sha256, informational
 dg_pd_archive_source: "{{ dg_roms_final_root }}/PC/perfect-dark-port/{{ dg_pd_asset_name }}"
 
-dg_pd_root: "{{ dg_box_home }}/tools/perfect-dark"    # pd.x86_64 (+ pal/jpn) + data/
+dg_pd_root: "{{ dg_box_home }}/tools/perfect-dark"    # pd.x86_64 + data/
 dg_pd_cache_dir: "{{ dg_box_home }}/cache/perfect-dark"
 dg_pd_bin: "{{ dg_pd_root }}/pd.x86_64"
 dg_pd_launcher: "{{ dg_box_home }}/bin/perfect-dark-launch"
