@@ -1,0 +1,114 @@
+---
+- name: Configure native macOS console emulation
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  tasks:
+    - name: Require macOS
+      ansible.builtin.assert:
+        that: ansible_facts['system'] == 'Darwin'
+        fail_msg: Use the Linux playbooks on other operating systems.
+
+    - name: Validate absolute paths and supported systems
+      ansible.builtin.assert:
+        that:
+          - dg_macos_rom_root.startswith('/')
+          - dg_macos_esde_home.startswith('/')
+          - dg_macos_rom_paths.keys() | difference(dg_macos_systems | map(attribute='name') | list) | length == 0
+        fail_msg: Use absolute paths and only the documented console system keys.
+
+    - name: Validate each ROM path
+      ansible.builtin.assert:
+        that: (dg_macos_rom_paths.get(item.name, dg_macos_rom_root ~ '/' ~ item.name)).startswith('/')
+      loop: "{{ dg_macos_systems }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Inspect ROM directories without changing library contents
+      ansible.builtin.stat:
+        path: "{{ dg_macos_rom_paths.get(item.name, dg_macos_rom_root ~ '/' ~ item.name) }}"
+      loop: "{{ dg_macos_systems }}"
+      loop_control:
+        label: "{{ item.name }}"
+      register: dg_macos_rom_stats
+
+    - name: Report unavailable libraries
+      # Resolve the path from the loop item, NOT from item.invocation: since
+      # ansible-core 2.19 registered results no longer carry `invocation`, and
+      # 2.21 (what `brew install ansible` gives you today) fails the task with
+      # "object of type 'dict' has no attribute 'invocation'". That fires
+      # exactly when a ROM directory is missing — the default state on a first
+      # run — so it broke `bootstrap.sh check` for every new user.
+      ansible.builtin.debug:
+        msg: "ROM directory unavailable: {{ dg_macos_rom_paths.get(item.item.name, dg_macos_rom_root ~ '/' ~ item.item.name) }}. Mount your volume or configure its path before playing."
+      loop: "{{ dg_macos_rom_stats.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"
+      when: not (item.stat.isdir | default(false))
+
+    - name: Create ROM directories only when explicitly enabled
+      ansible.builtin.file:
+        path: "{{ dg_macos_rom_paths.get(item.name, dg_macos_rom_root ~ '/' ~ item.name) }}"
+        state: directory
+        mode: '0755'
+      loop: "{{ dg_macos_systems }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: dg_macos_create_rom_dirs | bool
+
+    - name: Create ES-DE custom systems directory
+      ansible.builtin.file:
+        path: "{{ dg_macos_esde_home }}/custom_systems"
+        state: directory
+        mode: '0755'
+
+    - name: Configure RetroArch launch defaults
+      ansible.builtin.copy:
+        dest: "{{ dg_macos_retroarch_config }}"
+        content: |
+          # Applied only when launched by this ES-DE integration.
+          video_driver = "vulkan"
+          # ES-DE may retain focus while the macOS app starts.
+          pause_nonactive = "false"
+          input_autodetect_enable = "true"
+          input_enable_hotkey = "f8"
+          input_exit_emulator = "escape"
+          config_save_on_exit = "false"
+        backup: true
+        mode: '0644'
+
+    - name: Render macOS console launch commands
+      ansible.builtin.template:
+        src: es_systems.xml.j2
+        dest: "{{ dg_macos_esde_home }}/custom_systems/es_systems.xml"
+        backup: true
+        mode: '0644'
+
+    - name: Import existing collection metadata and cover links
+      ansible.builtin.script:
+        cmd: >-
+          files/import-metadata.py
+          {{ dg_macos_rom_paths.get(item.name, dg_macos_rom_root ~ '/' ~ item.name) | quote }}
+          {{ dg_macos_esde_home | quote }}
+          {{ item.name | quote }}
+        executable: /usr/bin/python3
+      loop: "{{ dg_macos_systems }}"
+      loop_control:
+        label: "{{ item.name }}"
+      register: dg_macos_metadata
+      changed_when: "dg_macos_metadata.stdout | trim == 'changed'"
+      when: not ansible_check_mode
+
+    - name: Inspect installed application bundles
+      ansible.builtin.stat:
+        path: "/Applications/{{ item }}.app/Contents/Info.plist"
+      loop: [ES-DE, Dolphin, PCSX2, PPSSPPSDL, RetroArch]
+      register: dg_macos_apps
+
+    - name: Report missing applications
+      ansible.builtin.debug:
+        msg: "Missing /Applications/{{ item.item }}.app; run macos/bootstrap.sh install."
+      loop: "{{ dg_macos_apps.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+      when: not item.stat.exists

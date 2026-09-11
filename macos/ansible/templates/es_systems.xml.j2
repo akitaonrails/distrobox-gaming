@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Managed by macos/ansible/site.yml. Previous versions are backed up. -->
+<systemList>
+{% for system in dg_macos_systems %}
+  <system>
+    <name>{{ system.name | e }}</name>
+    <fullname>{{ system.fullname | e }}</fullname>
+    <path>{{ dg_macos_rom_paths.get(system.name, dg_macos_rom_root ~ '/' ~ system.name) | e }}</path>
+    <extension>{{ system.extension | e }}</extension>
+    <command label="{{ system.label | e }}">{{ system.command | e }}</command>
+    <platform>{{ system.platform | default(system.name) | e }}</platform>
+    <theme>{{ system.platform | default(system.name) | e }}</theme>
+  </system>
+{% endfor %}
+</systemList>

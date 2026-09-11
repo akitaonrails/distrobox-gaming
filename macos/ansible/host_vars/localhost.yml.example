@@ -1,0 +1,22 @@
+# Copy to localhost.yml. Use absolute paths; spaces are supported.
+# dg_macos_rom_root: /Volumes/Games/roms
+# dg_macos_esde_home: /Users/your-user/ES-DE
+# Optional per-system paths support an existing split library:
+# dg_macos_rom_paths:
+#   gc: /Volumes/Games/roms_heavy/gc
+#   wii: /Volumes/Games/roms_heavy/wii
+#   ps2: /Volumes/Games/roms_heavy/ps2
+#   psp: /Volumes/Games/roms/psp
+# False by default: never create directories on a missing external volume.
+# dg_macos_create_rom_dirs: true
+
+# Retro collections (add entries to the same dg_macos_rom_paths mapping):
+#   atari2600: /Volumes/Games/ROMS/Atari2600
+#   atari2600homebrew: /Volumes/Games/ROMS/atari2600-games
+#   nes: /Volumes/Games/ROMS/nes-games
+#   snes: /Volumes/Games/ROMS/snes-games
+#   mastersystem: /Volumes/Games/ROMS/sms-games
+#   megadrive: /Volumes/Games/ROMS/md-games
+#   gba: /Volumes/Games/ROMS/gba-games
+#   gbc: /Volumes/Games/ROMS/gbc-games
+#   c64: /Volumes/Games/ROMS/c64-games

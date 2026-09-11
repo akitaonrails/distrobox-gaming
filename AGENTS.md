@@ -7,7 +7,9 @@ live in `ansible/`, reusable roles in `ansible/roles/`, defaults in
 `ansible/group_vars/all/`, and machine-specific overrides in
 `ansible/host_vars/localhost.yml`. Rendered desktop entries live under
 `config/desktop/rendered/`; source templates live under role `templates/`.
-Focused setup notes are in `docs/`.
+Focused setup notes are in `docs/`. The native macOS baseline is a separate
+stack under `macos/` and shares no code with the Linux tree — keep macOS
+changes there and Linux changes out of it.
 
 ## Build, Test, and Development Commands
 
@@ -18,6 +20,14 @@ ansible-playbook site.yml                  # full setup
 ansible-playbook --syntax-check site.yml   # validate playbook syntax
 ansible-playbook install-sonic-p06.yml     # run optional P-06 setup
 desktop-file-validate ../config/desktop/rendered/*.desktop
+```
+
+The macOS stack has its own checks, run from the repository root on a Mac:
+
+```sh
+bash -n macos/bootstrap.sh
+python3 macos/tests/verify.py       # real Ansible, temp dirs, installs nothing
+brew bundle check --file=macos/Brewfile
 ```
 
 Use focused playbooks for optional apps (`install-xenia.yml`,

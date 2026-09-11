@@ -63,6 +63,18 @@ There is no unit test suite. The `verify` role is the validation step — run it
 - Override defaults by creating `ansible/host_vars/localhost.yml` (see `.example`).
 - UID 1026 is the default for NAS access — set `dg_host_uid`/`dg_host_gid` to override.
 
+### macOS (`macos/`, separate stack)
+
+`macos/` is a native macOS baseline that shares **no** code with the Linux tree
+— its own `site.yml`, its own `dg_macos_*` variables, its own ES-DE template.
+It configures ES-DE plus Dolphin, PCSX2 and PPSSPP installed through Homebrew
+(`macos/Brewfile`), driven by `macos/bootstrap.sh {install|check|configure}`.
+Windows software (Wine, Proton, CrossOver, Windows Steam games, mod managers)
+is permanently out of its scope, and the Linux playbooks are never imported.
+Its integration test is `python3 macos/tests/verify.py`, which runs real
+Ansible in temporary directories and installs nothing. Do not fold macOS
+concerns into the Linux roles, or vice versa. See `macos/README.md`.
+
 ### Helper scripts and config sources
 
 `scripts/` holds helper scripts invoked **by the Ansible roles** — `install-host-launchers.sh` (host `.desktop` export, used by `desktop_apps` and several game roles), the `set-*.py` Steam/INI helpers (`metal_gear`, `steam_lib32_nvidia`, `steam_trainers`), `sync-emulator-cheats.py`, and a couple of download utilities. `config/` holds the live config **source trees** (emulator INIs, ES-DE, Steam vdfs, `config/desktop/` templates) that `seed_configs` and related roles copy into the box. Neither directory is a standalone interface — the roles drive them.

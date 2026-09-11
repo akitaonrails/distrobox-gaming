@@ -20,6 +20,16 @@ Recomp, PrBoom-Plus Doom II RT), Windows/Wine games (Colin McRae Rally, OutRun
 and reproducible **NexusMods mod-set** roles per game. See `docs/nexusmods.md`,
 `docs/external-installers.md`, and `docs/rebuild-runbook.md`.
 
+## macOS
+
+`macos/` is a separate, native macOS baseline — ES-DE plus Dolphin, PCSX2 and
+PPSSPP over Homebrew, with its own small Ansible playbook. It shares no code
+with the Linux tree: no Distrobox, no Wine/Proton, no `.so` cores. Windows
+software is permanently out of its scope. See [macos/README.md](macos/README.md)
+and [macos/INSTALL.md](macos/INSTALL.md).
+
+Everything else in this file describes the Linux distrobox.
+
 ## Quick Start
 
 ```sh

@@ -1,0 +1,9 @@
+# macOS console-emulation baseline. Windows runtimes are intentionally excluded.
+# Single package inventory for install-apps.sh and bootstrap.sh install.
+# Add new macOS applications as cask entries; CLI tools as brew entries.
+brew "ansible"
+cask "es-de"
+cask "dolphin"
+cask "pcsx2"
+cask "ppsspp-emulator"
+cask "retroarch-metal"
