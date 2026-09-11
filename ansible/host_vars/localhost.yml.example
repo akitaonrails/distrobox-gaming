@@ -148,6 +148,10 @@
 # Set false only if a future wine build drops the EGL regression.
 # dg_wine_force_glx: true
 
+# Atari 2600/5200/7800/Lynx/800 ES-DE systems (off by default; see docs/atari.md).
+# Enable, then re-run configure_esde (site.yml --tags esde).
+# dg_atari_enabled: true
+
 # Atari ST (install-atari-st.yml; see docs/atari-st.md).
 # Enable to reapply its profile with reset-configs.yml --tags configs.
 # dg_atari_st_enabled: true

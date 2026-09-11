@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!-- Managed by Ansible - run reset-configs.yml to restore defaults. -->
 <systemList>
-{% for sys in dg_esde_systems %}
+{% for sys in dg_esde_systems if sys.enabled | default(true) | bool %}
     <system>
         <name>{{ sys.name }}</name>
         <fullname>{{ sys.fullname }}</fullname>

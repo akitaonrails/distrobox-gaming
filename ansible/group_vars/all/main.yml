@@ -123,6 +123,11 @@ dg_retroarch_buildbot: https://buildbot.libretro.com
 # dump and the core boots fine without it. The list is the extension
 # point for any future core: add the filename, drop the file in
 # dg_bios_root, done.
+# Atari retro systems (2600/5200/7800/Lynx/800) are OFF by default so the
+# maintainer's ES-DE stays Atari-free; set true (e.g. in host_vars) to add them.
+# Atari ST has its own flag, dg_atari_st_enabled (group_vars/all/atari_st.yml).
+dg_atari_enabled: false
+
 dg_retroarch_system_dir: "{{ dg_retroarch_dir }}/system"
 dg_retroarch_system_bios:
   - 5200.ROM

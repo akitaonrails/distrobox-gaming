@@ -419,6 +419,7 @@ dg_esde_systems:
   # ---------------------------------------------------------------------
 
   - name: atari2600
+    enabled: "{{ dg_atari_enabled }}"
     fullname: Atari 2600
     path: "{{ dg_emudeck_root }}/roms/atari2600"
     extension: ".a26 .A26 .bin .BIN .rom .ROM .zip .ZIP .7z .7Z"
@@ -436,6 +437,7 @@ dg_esde_systems:
   # from the ROM's system dir before every launch to close that, the same
   # pre-launch enforcement the xemu wrapper uses for surface_scale.
   - name: atari5200
+    enabled: "{{ dg_atari_enabled }}"
     fullname: Atari 5200
     path: "{{ dg_emudeck_root }}/roms/atari5200"
     extension: ".a52 .A52 .bin .BIN .car .CAR .rom .ROM .zip .ZIP .7z .7Z"
@@ -445,6 +447,7 @@ dg_esde_systems:
     theme: atari5200
 
   - name: atari7800
+    enabled: "{{ dg_atari_enabled }}"
     fullname: Atari 7800 ProSystem
     path: "{{ dg_emudeck_root }}/roms/atari7800"
     extension: ".a78 .A78 .bin .BIN .zip .ZIP .7z .7Z"
@@ -454,6 +457,7 @@ dg_esde_systems:
     theme: atari7800
 
   - name: atarilynx
+    enabled: "{{ dg_atari_enabled }}"
     fullname: Atari Lynx
     path: "{{ dg_emudeck_root }}/roms/atarilynx"
     extension: ".lnx .LNX .o .O .zip .ZIP .7z .7Z"
@@ -463,6 +467,7 @@ dg_esde_systems:
     theme: atarilynx
 
   - name: atari800
+    enabled: "{{ dg_atari_enabled }}"
     fullname: Atari 800
     path: "{{ dg_emudeck_root }}/roms/atari800"
     extension: ".atr .ATR .bas .BAS .bin .BIN .car .CAR .cas .CAS .dcm .DCM .xex .XEX .xfd .XFD .zip .ZIP .7z .7Z"
@@ -473,6 +478,7 @@ dg_esde_systems:
 
   # Atari ST uses an isolated BIOS profile; see docs/atari-st.md.
   - name: atarist
+    enabled: "{{ dg_atari_st_enabled }}"
     fullname: Atari ST
     path: "{{ dg_atari_st_rom_dir }}"
     extension: ".st .ST .stx .STX .msa .MSA .dim .DIM .ipf .IPF .zip .ZIP"

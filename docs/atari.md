@@ -9,6 +9,14 @@ was missing was the ES-DE side: with no entry in `dg_esde_systems` the
 frontend never showed a system for them, so the cores sat installed and
 unreachable except by loading a ROM by hand from RetroArch's own menu.
 
+These five systems are **opt-in** and **off by default** — `dg_atari_enabled`
+is `false`, so a stock setup stays Atari-free. Enable them by setting
+`dg_atari_enabled: true` (in `host_vars/localhost.yml` or `-e`) and re-running
+`configure_esde` (`site.yml --tags esde` or `reset-configs.yml --tags esde`);
+the `enabled` flag on each system's `dg_esde_systems` entry then lets it into
+`es_systems.xml`. ES-DE additionally hides any enabled system whose ROM dir is
+empty, so you only see the ones you actually have games for.
+
 The **Atari ST** has its own page, [atari-st.md](atari-st.md): it is
 opt-in (`install-atari-st.yml`) and keeps its TOS image in an isolated
 RetroArch system dir rather than the shared one described below, because

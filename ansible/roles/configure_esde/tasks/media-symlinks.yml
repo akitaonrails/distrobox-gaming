@@ -52,7 +52,7 @@
       created=$((created + 1))
     }
 
-    {% for s in dg_esde_systems %}
+    {% for s in dg_esde_systems if s.enabled | default(true) | bool %}
     # ----- {{ s.name }} -----
     rom_dir="{{ s.path }}"
 
