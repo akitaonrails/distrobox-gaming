@@ -1,0 +1,37 @@
+---
+- name: Configure and validate Atari ST in an existing gaming box
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  vars:
+    dg_atari_st_enabled: true
+  tasks:
+    - name: Configure Atari ST TOS and RetroArch profile
+      ansible.builtin.include_role:
+        name: seed_configs
+        tasks_from: atari-st
+
+    - name: Install only the Hatari core
+      ansible.builtin.include_role:
+        name: retroarch_extras
+      vars:
+        dg_retroarch_cores: [hatari]
+        dg_retroarch_assets: []
+
+    - name: Ensure ES-DE custom systems directory exists
+      ansible.builtin.file:
+        path: "{{ dg_box_home }}/ES-DE/custom_systems"
+        state: directory
+        mode: "0755"
+
+    - name: Refresh the managed ES-DE catalog
+      ansible.builtin.template:
+        src: roles/configure_esde/templates/es_systems.xml.j2
+        dest: "{{ dg_box_home }}/ES-DE/custom_systems/es_systems.xml"
+        backup: true
+        mode: "0644"
+
+    - name: Validate Atari ST installation
+      ansible.builtin.include_role:
+        name: verify
+        tasks_from: atari-st

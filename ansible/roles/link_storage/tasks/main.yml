@@ -71,3 +71,46 @@
   ansible.builtin.debug:
     msg: "WARNING: PS4 firmware modules missing: {{ dg_ps4_firmware_modules }}"
   when: not _fw_dir.stat.exists
+
+# RetroArch system BIOS symlinks (Atari 5200 / 800 / Lynx / ST)
+#
+# The libretro cores look for these by exact filename in RetroArch's
+# system dir and give no visible error when one is absent — the core
+# just refuses to boot, which from ES-DE looks like the game silently
+# doing nothing. Same first-class treatment as the xemu BIOS above:
+# symlink what exists, warn about what doesn't, never hard-fail.
+
+- name: Create RetroArch system directory
+  ansible.builtin.file:
+    path: "{{ dg_retroarch_system_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Stat RetroArch system BIOS sources
+  ansible.builtin.stat:
+    path: "{{ dg_bios_root }}/{{ item }}"
+  loop: "{{ dg_retroarch_system_bios }}"
+  register: _retroarch_bios_sources
+  loop_control:
+    label: "{{ item }}"
+
+- name: Symlink RetroArch system BIOS files
+  ansible.builtin.file:
+    src: "{{ dg_bios_root }}/{{ item.item }}"
+    dest: "{{ dg_retroarch_system_dir }}/{{ item.item }}"
+    state: link
+    force: true
+  loop: "{{ _retroarch_bios_sources.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+  when: item.stat.exists
+
+- name: Warn about missing RetroArch system BIOS files
+  ansible.builtin.debug:
+    msg: >-
+      WARNING: RetroArch system BIOS missing, the systems needing it stay
+      unbootable: {{ dg_bios_root }}/{{ item.item }}
+  loop: "{{ _retroarch_bios_sources.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+  when: not item.stat.exists

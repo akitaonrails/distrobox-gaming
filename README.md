@@ -187,9 +187,11 @@ dg_host_gid: 1000
 - Arch-based distrobox named `gaming` with `--nvidia` drivers bind-mounted
 - Pacman and AUR emulator packages (see `group_vars/all/packages.yml`)
 - ES-DE (emulationstation-de) as the frontend
-- RetroArch plus 21 buildbot cores (fbneo, mednafen variants, etc.) and
+- RetroArch plus 25 buildbot cores (fbneo, mednafen variants, etc.) and
   all 8 asset packs (info, assets, autoconfig, cheats, databases, shaders,
   overlays) — ~760 MB total
+- Atari 2600, 5200, 7800 and Lynx as ES-DE systems on cores that list
+  already carried (`docs/atari.md`)
 - Minimal zsh + starship prompt inside the box
 
 ### Per-emulator
@@ -478,6 +480,8 @@ Core setup & rebuild:
 
 - [Rebuild Runbook](docs/rebuild-runbook.md) — from-scratch rebuild, opt-in tags, standalone playbooks
 - [External Installers](docs/external-installers.md) — download inventory for the opt-in Windows/Wine games and tools
+- [Atari ST / Hatari](docs/atari-st.md) — focused installation, BIOS setup and mandatory validation
+
 - [Controller Hotkeys](docs/controller-hotkeys.md) · [Input Latency](docs/input-latency.md) · [Hyprland Gaming](docs/hyprland-gaming.md)
 - [Flycast Resolution](docs/flycast-resolution.md)
 

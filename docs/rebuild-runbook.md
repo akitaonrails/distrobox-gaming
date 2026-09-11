@@ -163,3 +163,11 @@ bind mount are untouched.
 
 Do not run cleanup commands against ROM, BIOS, save, firmware, or game-data
 directories from these playbooks or scripts.
+
+## Atari ST
+
+For an existing gaming box, run `ansible-playbook install-atari-st.yml` from
+`ansible/`. This installs Hatari and requires BIOS/configuration validation.
+See [Atari ST](atari-st.md) for paths, repeat runs and the mandatory Linux
+game smoke test. `ansible-playbook verify-atari-st.yml` reruns prerequisite
+checks without installing games or changing configuration.

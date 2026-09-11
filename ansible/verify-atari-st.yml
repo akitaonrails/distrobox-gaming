@@ -1,0 +1,9 @@
+---
+- name: Validate Atari ST without installing or launching games
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - ansible.builtin.include_role:
+        name: verify
+        tasks_from: atari-st

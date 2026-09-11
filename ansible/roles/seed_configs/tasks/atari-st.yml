@@ -1,0 +1,49 @@
+---
+- name: Check user-supplied Atari ST TOS
+  ansible.builtin.stat:
+    path: "{{ dg_atari_st_tos_source }}"
+  register: _atari_st_tos
+
+- name: Require Atari ST TOS before configuring Hatari
+  ansible.builtin.assert:
+    that:
+      - _atari_st_tos.stat.isreg | default(false)
+      - _atari_st_tos.stat.size | default(0) > 0
+    fail_msg: "Provide a nonempty ST-compatible TOS image at dg_atari_st_tos_source; see docs/atari-st.md."
+
+- name: Create Atari ST configuration directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_atari_st_system_dir }}"
+    - "{{ dg_atari_st_retroarch_config | dirname }}"
+
+- name: Link user-supplied Atari ST TOS
+  # force: true so a re-run replaces a stale link, or a real file someone
+  # dropped here by hand, instead of failing — same contract as the xemu
+  # and RetroArch system BIOS links in link_storage.
+  ansible.builtin.file:
+    src: "{{ dg_atari_st_tos_source }}"
+    dest: "{{ dg_atari_st_system_dir }}/tos.img"
+    state: link
+    force: true
+
+- name: Set Atari ST system directory without changing global RetroArch settings
+  ansible.builtin.copy:
+    dest: "{{ dg_atari_st_retroarch_config }}"
+    content: |
+      # Managed by Ansible; used only by the Atari ST ES-DE command.
+      system_directory = "{{ dg_atari_st_system_dir }}"
+    backup: true
+    mode: "0644"
+
+- name: Point Hatari at the managed TOS image
+  community.general.ini_file:
+    path: "{{ dg_atari_st_system_dir }}/hatari.cfg"
+    section: ROM
+    option: szTosImageFileName
+    value: "{{ dg_atari_st_system_dir }}/tos.img"
+    backup: true
+    mode: "0644"

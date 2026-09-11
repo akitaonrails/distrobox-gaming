@@ -1,0 +1,99 @@
+#!/bin/sh
+# Launch a ROM on the RetroArch atari800 core with the right machine type.
+#
+# One core serves two ES-DE systems: the Atari 8-bit computer line
+# (atari800) and the Atari 5200 console (atari5200). Which machine it
+# boots is the `atari800_system` core option, read at core init, and
+# RetroArch has no CLI flag for core options — the only way to drive it
+# from a launcher is to write the core's .opt file first. Same
+# pre-launch enforcement the xemu wrapper uses for surface_scale.
+#
+# The direction that actually matters is 8-bit, not 5200. Reading
+# libretro-atari800's libretro/libretro-core.c: the core already forces
+# 5200 mode on its own when it recognises a 5200 cart — by the .a52
+# extension, or by CRC32 against a built-in 5200 database for .bin/.rom
+# (lines 660-696). But that force is one-way:
+#
+#     if (autorunCartridge == A5200_CART || strcmp(var.value, "5200") == 0)
+#
+# turns 5200 mode ON and never off. So after a 5200 session leaves the
+# option at "5200", the next .atr or .xex boots as a 5200 — silently.
+# Rewriting the option per launch is what prevents that. On the 5200
+# side this is a fallback, for carts the CRC database does not know.
+#
+# Machine values the core accepts: 400/800 (OS B), 800XL (64K),
+# 130XE (128K), XEGS, Modern XL/XE(320K CS), (576K), (1088K), 5200.
+
+set -eu
+
+if [ "$#" -lt 1 ]; then
+  echo "Usage: retroarch-atari800 ROM [retroarch args...]" >&2
+  exit 64
+fi
+
+rom=$1
+shift
+
+cfg_dir=${RETROARCH_CONFIG_DIR:-"$HOME/.config/retroarch"}
+core_dir=${RETROARCH_CORE_DIR:-"$cfg_dir/cores"}
+system_dir=${RETROARCH_SYSTEM_DIR:-"$cfg_dir/system"}
+
+# RetroArch names the per-core config dir after the core's library_name.
+# It is "Atari800" (libretro-core.c: info->library_name = "Atari800").
+# Still matched case-insensitively first, so a future upstream rename
+# degrades to "wrote the wrong dir" rather than "option silently
+# dropped"; the literal is the fallback for a box where the core has
+# never run and the dir therefore does not exist yet.
+opt_dir=$(find "$cfg_dir/config" -maxdepth 1 -type d -iname 'atari800*' 2>/dev/null | head -n 1)
+[ -n "$opt_dir" ] || opt_dir="$cfg_dir/config/Atari800"
+opt_file="$opt_dir/$(basename "$opt_dir").opt"
+
+# ES-DE passes an absolute path, so the ROM's own system directory is the
+# signal. The .a52 extension is honoured too, for 5200 carts that ended up
+# filed outside roms/atari5200.
+case $(printf '%s' "$rom" | tr '[:upper:]' '[:lower:]') in
+  */atari5200/*|*.a52) system=5200 ;;
+  *) system=${DG_ATARI800_SYSTEM:-"800XL (64K)"} ;;
+esac
+
+# The core bundles Avery Lee's AltirraOS as a built-in, freely
+# redistributable replacement for the 5200 BIOS — it is compiled in as
+# atari800/src/roms/altirra_5200_os.c and selected by atari800_os_5200.
+# So a missing 5200.ROM is not fatal, it just needs choosing. Pick the
+# real BIOS when it is there and the built-in when it is not, rather
+# than leaving a launch that dies silently.
+os_5200=
+if [ "$system" = 5200 ]; then
+  if [ -e "$system_dir/5200.ROM" ] || [ -e "$system_dir/5200.rom" ]; then
+    os_5200='Original'
+  else
+    os_5200='AltirraOS'
+  fi
+fi
+
+if [ "${DG_ATARI800_PRINT_SYSTEM:-0}" = 1 ]; then
+  printf '%s\n' "$system"
+  printf '%s\n' "$opt_file"
+  [ -z "$os_5200" ] || printf 'atari800_os_5200=%s\n' "$os_5200"
+  exit 0
+fi
+
+# Rewrite one key in place, preserving every other core option.
+set_opt() {
+  _key=$1
+  _value=$2
+  _tmp=$(mktemp "$opt_dir/.atari800.opt.XXXXXX")
+  if [ -f "$opt_file" ]; then
+    grep -v "^${_key}[[:space:]]*=" "$opt_file" > "$_tmp" || true
+  fi
+  printf '%s = "%s"\n' "$_key" "$_value" >> "$_tmp"
+  mv -f "$_tmp" "$opt_file" || { rm -f "$_tmp"; return 1; }
+}
+
+mkdir -p "$opt_dir"
+set_opt atari800_system "$system"
+if [ -n "$os_5200" ]; then
+  set_opt atari800_os_5200 "$os_5200"
+fi
+
+exec retroarch -L "$core_dir/atari800_libretro.so" "$rom" "$@"

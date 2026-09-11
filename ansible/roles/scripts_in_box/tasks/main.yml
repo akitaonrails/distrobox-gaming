@@ -32,6 +32,12 @@
     dest: "{{ dg_box_home }}/bin/retroarch-snes"
     mode: "0755"
 
+- name: Deploy RetroArch Atari800 machine-type selector
+  ansible.builtin.copy:
+    src: retroarch-atari800
+    dest: "{{ dg_box_home }}/bin/retroarch-atari800"
+    mode: "0755"
+
 - name: Deploy Steam runtime environment launcher
   ansible.builtin.copy:
     src: steam-launch

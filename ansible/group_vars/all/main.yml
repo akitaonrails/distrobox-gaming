@@ -102,6 +102,35 @@ dg_retroarch_dir: "{{ dg_box_home }}/.config/retroarch"
 dg_retroarch_cache_dir: "{{ dg_box_home }}/cache/retroarch-downloads"
 dg_retroarch_config: "{{ dg_retroarch_dir }}/retroarch.cfg"
 dg_retroarch_buildbot: https://buildbot.libretro.com
+# RetroArch's system dir is where every libretro core looks for BIOS /
+# firmware. link_storage symlinks these out of dg_bios_root; a missing
+# source warns and is skipped, exactly like the xemu BIOS links.
+#
+# Who needs what:
+#   5200.ROM      atari800 core in 5200 mode (Atari 5200)
+#   ATARIXL.ROM   atari800 core, 800XL/130XE machine types
+#   ATARIBAS.ROM  atari800 core, built-in BASIC (cartridge-less .bas)
+#   ATARIOSA.ROM  atari800 core, 400/800 OS rev A
+#   ATARIOSB.ROM  atari800 core, 400/800 OS rev B
+#   lynxboot.img  handy core (Atari Lynx)
+# None of these are actually required. The atari800 core compiles in
+# AltirraOS, a freely redistributable OS replacement (the wrapper selects
+# it for the 5200 automatically), and handy high-level-emulates the Lynx
+# boot ROM when lynxboot.img is absent. The list exists so that a user who
+# DOES own the dumps runs the original ROMs. See docs/atari.md.
+# Stella (2600) needs none. ProSystem (7800) takes an optional
+# "7800 BIOS (U).rom"; it is left out because the filename varies by
+# dump and the core boots fine without it. The list is the extension
+# point for any future core: add the filename, drop the file in
+# dg_bios_root, done.
+dg_retroarch_system_dir: "{{ dg_retroarch_dir }}/system"
+dg_retroarch_system_bios:
+  - 5200.ROM
+  - ATARIXL.ROM
+  - ATARIBAS.ROM
+  - ATARIOSA.ROM
+  - ATARIOSB.ROM
+  - lynxboot.img
 # Key=value settings enforced in retroarch.cfg on every reset-configs run.
 # RetroArch's frame timer slaves to audio_sync; if its native pipewire
 # driver fails to bind a sink (Arch's default), audio is silently disabled

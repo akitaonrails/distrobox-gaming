@@ -16,3 +16,6 @@
 - ansible.builtin.include_tasks: cemu.yml
 - ansible.builtin.include_tasks: retroarch.yml
 - ansible.builtin.include_tasks: melonds.yml
+
+- ansible.builtin.include_tasks: atari-st.yml
+  when: dg_atari_st_enabled | bool

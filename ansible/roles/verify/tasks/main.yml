@@ -99,6 +99,7 @@
     path: "{{ item }}"
   loop:
     - "{{ dg_box_home }}/bin/flycast-hires"
+    - "{{ dg_box_home }}/bin/retroarch-atari800"
     - "{{ dg_dolphin_config_dir }}/GCPadNew.ini"
     - "{{ dg_dolphin_config_dir }}/WiimoteNew.ini"
     - "{{ dg_dolphin_config_dir }}/Profiles/GCPad/8BitDo Ultimate 2 SDL.ini"
@@ -322,6 +323,9 @@
   loop_control:
     label: "{{ item.item.item.name }}"
   when: item is not skipped
+
+- ansible.builtin.include_tasks: atari-st.yml
+  when: dg_atari_st_enabled | bool
 
 - name: Verification completed
   ansible.builtin.debug:

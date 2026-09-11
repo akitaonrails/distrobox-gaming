@@ -1,0 +1,6 @@
+# Atari ST via the existing Hatari libretro core. See docs/atari-st.md.
+dg_atari_st_enabled: false
+dg_atari_st_rom_dir: "{{ dg_rom_root }}/atarist"
+dg_atari_st_tos_source: "{{ dg_bios_root }}/tos.img"
+dg_atari_st_system_dir: "{{ dg_retroarch_system_dir }}/atarist"
+dg_atari_st_retroarch_config: "{{ dg_retroarch_dir }}/config/atari-st.cfg"

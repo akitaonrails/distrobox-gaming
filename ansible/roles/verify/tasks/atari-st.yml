@@ -1,0 +1,93 @@
+---
+- name: Check required Atari ST files from inside the gaming box
+  ansible.builtin.command:
+    argv:
+      - distrobox-enter
+      - -n
+      - "{{ dg_box_name }}"
+      - --
+      - test
+      - -s
+      - "{{ item }}"
+  loop:
+    - "{{ dg_retroarch_dir }}/cores/hatari_libretro.so"
+    - "{{ dg_atari_st_system_dir }}/tos.img"
+    - "{{ dg_atari_st_system_dir }}/hatari.cfg"
+    - "{{ dg_atari_st_retroarch_config }}"
+    - "{{ dg_box_home }}/ES-DE/custom_systems/es_systems.xml"
+  register: _atari_st_files
+  changed_when: false
+  failed_when: false
+  loop_control:
+    label: "{{ item }}"
+
+- name: Assert every required Atari ST file is present and non-empty
+  # Asserting over registered results rather than letting `command` fail:
+  # a bare non-zero rc names no path, and this role's only job is to say
+  # precisely what is wrong.
+  ansible.builtin.assert:
+    that: item.rc == 0
+    fail_msg: >-
+      Missing or empty inside the box: {{ item.item }}.
+      Rerun install-atari-st.yml; see docs/atari-st.md.
+    quiet: true
+  loop: "{{ _atari_st_files.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: Check RetroArch inside the gaming box
+  ansible.builtin.command:
+    argv: [distrobox-enter, -n, "{{ dg_box_name }}", --, sh, -lc, "command -v retroarch"]
+  register: _atari_st_retroarch
+  changed_when: false
+  failed_when: false
+
+- name: Assert RetroArch is installed in the box
+  ansible.builtin.assert:
+    that: _atari_st_retroarch.rc == 0
+    fail_msg: >-
+      retroarch not found inside box '{{ dg_box_name }}'.
+      Run site.yml --tags bootstrap first.
+
+- name: Check the Atari ST ROM directory inside the gaming box
+  ansible.builtin.command:
+    argv: [distrobox-enter, -n, "{{ dg_box_name }}", --, test, -d, "{{ dg_atari_st_rom_dir }}"]
+  register: _atari_st_rom_dir
+  changed_when: false
+  failed_when: false
+
+- name: Assert the Atari ST ROM directory exists
+  ansible.builtin.assert:
+    that: _atari_st_rom_dir.rc == 0
+    fail_msg: >-
+      ROM directory not visible in the box: {{ dg_atari_st_rom_dir }}.
+      Create it on the host — the ROM tree is bind-mounted read-only, so
+      no role can create it for you.
+
+- name: Read Atari ST RetroArch profile
+  ansible.builtin.slurp:
+    src: "{{ dg_atari_st_retroarch_config }}"
+  register: _atari_st_profile
+
+- name: Read Hatari configuration
+  ansible.builtin.slurp:
+    src: "{{ dg_atari_st_system_dir }}/hatari.cfg"
+  register: _atari_st_config
+
+- name: Read ES-DE catalog
+  ansible.builtin.slurp:
+    src: "{{ dg_box_home }}/ES-DE/custom_systems/es_systems.xml"
+  register: _atari_st_catalog
+
+- name: Require managed Atari ST configuration references
+  ansible.builtin.assert:
+    that:
+      - ('system_directory = "' ~ dg_atari_st_system_dir ~ '"') in (_atari_st_profile.content | b64decode)
+      - ('szTosImageFileName = ' ~ dg_atari_st_system_dir ~ '/tos.img') in (_atari_st_config.content | b64decode)
+      - "'<name>atarist</name>' in (_atari_st_catalog.content | b64decode)"
+      - dg_atari_st_retroarch_config in (_atari_st_catalog.content | b64decode)
+    fail_msg: "Atari ST configuration is incomplete; rerun install-atari-st.yml."
+
+- name: Report Atari ST prerequisite validation
+  ansible.builtin.debug:
+    msg: "Atari ST prerequisites passed. BIOS compatibility, core loading, video/audio and input still require the game smoke test in docs/atari-st.md."

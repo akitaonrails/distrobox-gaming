@@ -147,3 +147,9 @@
 # sonic_p06, model1) force the GLX backend via UseEGL=N by default.
 # Set false only if a future wine build drops the EGL regression.
 # dg_wine_force_glx: true
+
+# Atari ST (install-atari-st.yml; see docs/atari-st.md).
+# Enable to reapply its profile with reset-configs.yml --tags configs.
+# dg_atari_st_enabled: true
+# dg_atari_st_rom_dir: "{{ dg_rom_root }}/atarist"
+# dg_atari_st_tos_source: "{{ dg_bios_root }}/tos.img"

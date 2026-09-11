@@ -134,3 +134,10 @@ The active live configs are:
 Wii still needs per-game judgment. Use the default Nunchuk layout first, then
 switch to the Classic profile for games that support it and play better on a
 standard pad.
+
+## Atari ST / Hatari
+
+Hatari uses RetroPad; its default Y opens the emulator menu and Select
+switches mouse mode. Verify the physical controller mapping on the target.
+Use Hatari's Floppy menu for disk changes. See [Atari ST](atari-st.md) for
+the mandatory controller/game validation procedure and upstream reference.
