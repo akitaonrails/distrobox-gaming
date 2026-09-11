@@ -200,8 +200,9 @@ dg_host_gid: 1000
 - RetroArch plus 25 buildbot cores (fbneo, mednafen variants, etc.) and
   all 8 asset packs (info, assets, autoconfig, cheats, databases, shaders,
   overlays) — ~760 MB total
-- Atari 2600, 5200, 7800 and Lynx as ES-DE systems on cores that list
-  already carried (`docs/atari.md`)
+- Atari 2600, 5200, 7800 and Lynx as **opt-in** ES-DE systems
+  (`dg_atari_enabled`, off by default) on cores the list already carried
+  (`docs/atari.md`)
 - Minimal zsh + starship prompt inside the box
 
 ### Per-emulator
