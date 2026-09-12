@@ -4,6 +4,8 @@
  * (the same fallbacks used on macOS when the Metal presenter is disabled).
  * Maintained by the distrobox-gaming install_dkc_recomp role. */
 #include <stddef.h>
+#include <string.h>
+#include <SDL.h>
 
 #include "macos_file_picker.h"
 #include "macos_metal_presenter.h"
@@ -102,7 +104,29 @@ int Dkc1MacShowPauseMenu(void *window, Dkc1GraphicsSettings *settings,
 }
 
 void Dkc1MacSaveControls(const Dkc1Controls *controls) { (void)controls; }
-void Dkc1MacLoadControls(Dkc1Controls *controls) { (void)controls; }
+/* macOS loads persisted controls here, seeding macos_controls.m's Defaults()
+ * first. On Linux there are no prefs, so apply those same defaults verbatim —
+ * P1 = keyboard + gamepad, the SNES-button -> SDL-pad map, deadzone 25, assist
+ * on the triggers. A no-op left the static s_controls zero-initialised
+ * (source=None, empty pad bindings) so the gamepad was ignored entirely. */
+void Dkc1MacLoadControls(Dkc1Controls *c) {
+  memset(c, 0, sizeof *c);
+  c->source[0] = kDkc1InputSourceBoth;
+  const int keys[12] = {SDL_SCANCODE_UP, SDL_SCANCODE_DOWN,
+    SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT, SDL_SCANCODE_S, SDL_SCANCODE_Z,
+    SDL_SCANCODE_A, SDL_SCANCODE_X, SDL_SCANCODE_Q, SDL_SCANCODE_W,
+    SDL_SCANCODE_RETURN, SDL_SCANCODE_RSHIFT};
+  const int pads[12] = {12, 13, 14, 15, 2, 1, 4, 3, 10, 11, 7, 5};
+  memcpy(c->keys[0], keys, sizeof keys);
+  for (int p = 0; p < 2; p++) {
+    c->deadzone[p] = 25;
+    memcpy(c->pads[p], pads, sizeof pads);
+  }
+  c->assist_keys[0] = SDL_SCANCODE_BACKSPACE;
+  c->assist_keys[1] = SDL_SCANCODE_TAB;
+  c->assist_pads[0] = DKC1_PAD_AXIS(SDL_CONTROLLER_AXIS_TRIGGERLEFT, 1);
+  c->assist_pads[1] = DKC1_PAD_AXIS(SDL_CONTROLLER_AXIS_TRIGGERRIGHT, 1);
+}
 int Dkc1MacEditControls(Dkc1Controls *controls) { (void)controls; return 0; }
 
 void Dkc1MacMetalPresenterFlush(void) {}
