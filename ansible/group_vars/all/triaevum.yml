@@ -10,9 +10,12 @@
 # via winevulkan (VK_ICD pinned to nvidia). Your OoT 3D .cci is already
 # decrypted (Forge needs a decrypted ROM; ours qualifies), so no key step.
 
-dg_triaevum_version: "v0.6.0-alpha.1c"
+dg_triaevum_version: "v0.6.0-alpha.2c"
 dg_triaevum_zip_url: "https://github.com/coccofresco/TriAevum/releases/download/{{ dg_triaevum_version }}/TriAevum-{{ dg_triaevum_version }}-Windows-x64.zip"
-dg_triaevum_zip_sha256: "400bac880b0f10ef982417044e0a2a0581bd40bf9fe766ef0e16008a9e681eb7"
+dg_triaevum_zip_sha256: "edd7267dc63ae19ba50257ae7ec0d43b04835dba085498f4f3e9c5c00fd74a04"
+# NOTE: alpha.2c is the first build to also ship a native Linux flatpak
+# (TriAevum-*-Linux-x86_64.flatpak). We stay on the Wine path here for
+# continuity; migrating to the native flatpak is a possible follow-up.
 
 # NAS-staged release + install/working dir (holds the Forge-prepared data/).
 dg_triaevum_root: "{{ dg_roms_final_root }}/PC/triaevum"

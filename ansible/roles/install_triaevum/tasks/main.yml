@@ -40,13 +40,26 @@
         checksum: "sha256:{{ dg_triaevum_zip_sha256 }}"
         mode: "0644"
 
-    - name: Extract the release (once — never clobbers the Forge-prepared data/)
+    - name: Extract the release (version-gated; refreshes game files, keeps Forge data/)
+      # Re-extracts on a version bump but never touches the Forge-prepared data/
+      # (and .forge-*, logs, imgui.ini) — those are runtime state the zip does
+      # not carry, so copying the zip payload over the top leaves them intact.
+      # Newer releases (>= alpha.2c) wrap everything in a top-level Windows/ dir;
+      # older ones ship at the root. Handle both.
       ansible.builtin.shell: |
         set -eu
         inst="{{ dg_triaevum_install_dir }}"
-        [ -f "$inst/{{ dg_triaevum_game_exe }}" ] && exit 0
+        if [ -f "$inst/{{ dg_triaevum_game_exe }}" ] \
+           && grep -qx "{{ dg_triaevum_version }}" "$inst/.dg-installed-ref" 2>/dev/null; then
+          exit 0
+        fi
         mkdir -p "$inst"
-        unzip -oq "{{ dg_triaevum_zip }}" -d "$inst"
+        tmp="$(mktemp -d)"
+        unzip -oq "{{ dg_triaevum_zip }}" -d "$tmp"
+        src="$tmp"; [ -d "$tmp/Windows" ] && src="$tmp/Windows"
+        cp -a "$src/." "$inst/"
+        rm -rf "$tmp"
+        printf "%s\n" "{{ dg_triaevum_version }}" > "$inst/.dg-installed-ref"
         echo tri-extracted
       register: _tri_extract
       changed_when: "'tri-extracted' in _tri_extract.stdout"
