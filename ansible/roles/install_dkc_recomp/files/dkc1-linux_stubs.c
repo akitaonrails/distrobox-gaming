@@ -7,6 +7,8 @@
 
 #include "macos_file_picker.h"
 #include "macos_metal_presenter.h"
+#include "macos_pause_menu.h"
+#include "macos_controls.h"
 
 int Dkc1MacMetalPresenterStart(void *native_window, double preferred_hz,
                                Dkc1MacFullscreenScaling scaling,
@@ -76,3 +78,31 @@ int Dkc1MacDisplayLinkWait(unsigned long long after_callback_number,
   return 0;
 }
 void Dkc1MacDisplayLinkStop(void) {}
+
+/* v0.0.10 (e873d89) added a native Cocoa/Metal in-game pause + graphics/controls
+ * settings menu. None of it exists on Linux; these route to no-ops so the port
+ * keeps its SDL fullscreen + env-driven settings. Dkc1MacShowPauseMenu returns 1
+ * ("resume") so the pause key simply unpauses instead of opening a dead menu.
+ * (ApplyGraphics/AssistEnabled/PauseMenuController/HostStatus/MenuCommand are
+ * NOT stubbed here — sdl_host.c already defines them on the non-Apple path.) */
+void Dkc1MacLoadGraphics(Dkc1GraphicsSettings *settings) { (void)settings; }
+void Dkc1MacSaveGraphics(const Dkc1GraphicsSettings *settings) { (void)settings; }
+int Dkc1MacPauseMenuIsOpen(void) { return 0; }
+int Dkc1MacShowPauseMenu(void *window, Dkc1GraphicsSettings *settings,
+                         Dkc1Controls *controls, int graphics_page) {
+  (void)window; (void)settings; (void)controls; (void)graphics_page;
+  return 1; /* resume */
+}
+
+void Dkc1MacSaveControls(const Dkc1Controls *controls) { (void)controls; }
+void Dkc1MacLoadControls(Dkc1Controls *controls) { (void)controls; }
+int Dkc1MacEditControls(Dkc1Controls *controls) { (void)controls; return 0; }
+
+void Dkc1MacMetalPresenterFlush(void) {}
+void Dkc1MacMetalPresenterSetGraphics(const Dkc1GraphicsSettings *settings) {
+  (void)settings;
+}
+
+void Dkc1MacUpdateGraphicsMenuState(int display, int upscaler, int screen) {
+  (void)display; (void)upscaler; (void)screen;
+}

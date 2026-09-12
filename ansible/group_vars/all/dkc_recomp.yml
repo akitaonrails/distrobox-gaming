@@ -18,7 +18,11 @@ dg_dkc_games:
   - key: dkc1
     name: "Donkey Kong Country"
     repo: https://github.com/elliotttate/DKC1Recomp.git
-    ref: ee6d662b75021acfdd0592324aab0acf01344f57
+    # v0.0.10's e873d89 (Mac graphics/pacing/aquatic-widescreen fixes, shared
+    # SDL host) — NOT the following cb4dae7 "Windows release host" commit, which
+    # refactors sdl_host.c/CMakeLists around _WIN32 and breaks the Linux patch
+    # for no Linux benefit. e873d89 keeps the pre-refactor host our patch targets.
+    ref: e873d898cf4b02b83cb08281219679112ed24995
     src_dir: "{{ dg_box_home }}/tools/dkc1-src"
     # patch fixes: mach-time shim, cocoa window ptr, QoS guard, _GNU_SOURCE,
     # and adds the dkc1_linux CMake target; linux_stubs.c stubs the macOS
@@ -48,7 +52,7 @@ dg_dkc_games:
   - key: dkc3
     name: "Donkey Kong Country 3"
     repo: https://github.com/elliotttate/DKC3Recomp.git
-    ref: 5afdacbd284144a92521d5219250d39ddca167c3
+    ref: eeb16d0853c641189fec8075e94fa71c75fee2a2
     src_dir: "{{ dg_box_home }}/tools/dkc3-src"
     # DKC3's desktop host supports Linux upstream; the patch only adds
     # _GNU_SOURCE for the strict-C11 POSIX declarations.

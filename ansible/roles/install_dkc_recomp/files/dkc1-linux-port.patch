@@ -1,8 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index df221db..0cb26ee 100644
+index a3f786b..a2ef406 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -147,3 +147,35 @@ if(APPLE)
+@@ -165,3 +165,42 @@ if(APPLE)
          MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
          XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED "NO")
  endif()
@@ -16,6 +16,13 @@ index df221db..0cb26ee 100644
 +        runner/headless_host.c
 +        runner/dkc1_haptics.c
 +        runner/dkc1_msu1.c
++        runner/desktop_audio_rate.c
++        runner/desktop_rewind.c
++        runner/desktop_input.c
++        runner/desktop_refresh.c
++        runner/desktop_crt.c
++        runner/desktop_filter.c
++        runner/desktop_graphics.c
 +        runner/sdl_host.c
 +        runner/linux_stubs.c)
 +    target_include_directories(dkc1_linux PRIVATE
@@ -39,10 +46,10 @@ index df221db..0cb26ee 100644
 +    set_target_properties(dkc1_linux PROPERTIES OUTPUT_NAME "dkc1_recomp")
 +endif()
 diff --git a/runner/sdl_host.c b/runner/sdl_host.c
-index 3a3b4d4..a72243f 100644
+index c737ad0..3d58c4a 100644
 --- a/runner/sdl_host.c
 +++ b/runner/sdl_host.c
-@@ -29,7 +29,26 @@
+@@ -36,7 +36,26 @@
  
  #include <float.h>
  #include <limits.h>
@@ -69,7 +76,7 @@ index 3a3b4d4..a72243f 100644
  #include <pthread.h>
  #include <stdbool.h>
  #include <stdint.h>
-@@ -926,7 +945,7 @@ static void InitDisplayLink(void) {
+@@ -1012,7 +1031,7 @@ static void InitDisplayLink(void) {
                SDL_GetError());
      } else {
        s_metal_presenter_active = Dkc1MacMetalPresenterStart(
@@ -78,7 +85,7 @@ index 3a3b4d4..a72243f 100644
            s_fullscreen_scaling, s_fullscreen);
      }
    }
-@@ -941,7 +960,7 @@ static void InitDisplayLink(void) {
+@@ -1027,7 +1046,7 @@ static void InitDisplayLink(void) {
                SDL_GetError());
      } else {
        s_display_link_active =
@@ -87,7 +94,19 @@ index 3a3b4d4..a72243f 100644
                                    kHostPresentationFramesPerSecond);
      }
    }
-@@ -1698,7 +1717,9 @@ static void Cleanup(uint8_t *rom) {
+@@ -1743,7 +1762,11 @@ static void OpenPauseMenu(int graphics_page) {
+   s_graphics.fullscreen=s_fullscreen;
+   // Discard older packets so the menu rests on the latest completed image.
+   Dkc1MacMetalPresenterFlush(); Present(); UpdateTitle();
++#ifdef __APPLE__
+   int resume=Dkc1MacShowPauseMenu(window.info.cocoa.window,&s_graphics,&s_controls,graphics_page);
++#else /* Linux port: no native Cocoa window; the stub ignores the arg. */
++  int resume=Dkc1MacShowPauseMenu(NULL,&s_graphics,&s_controls,graphics_page);
++#endif
+   s_paused=resume ? 0 : was_paused; ResetAudioTimeline();
+   s_host_actions=s_previous_host_actions=0; s_input_release_gate=1;
+   s_reanchor_pacer=1;
+@@ -2012,7 +2035,9 @@ static void Cleanup(uint8_t *rom) {
  
  int main(int argc, char **argv) {
    SDL_SetMainReady();
