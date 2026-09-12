@@ -85,7 +85,14 @@ void Dkc1MacDisplayLinkStop(void) {}
  * ("resume") so the pause key simply unpauses instead of opening a dead menu.
  * (ApplyGraphics/AssistEnabled/PauseMenuController/HostStatus/MenuCommand are
  * NOT stubbed here — sdl_host.c already defines them on the non-Apple path.) */
-void Dkc1MacLoadGraphics(Dkc1GraphicsSettings *settings) { (void)settings; }
+/* macOS loads persisted graphics/audio settings here (falling back to
+ * defaults). On Linux there's no plist, so populate the portable defaults —
+ * critically audio_enabled=1 / volume=100. A no-op would leave the static
+ * s_graphics zero-initialised, and sdl_host.c gates output on
+ * `s_graphics.audio_enabled ? s_graphics.volume : 0` → dead silence. */
+void Dkc1MacLoadGraphics(Dkc1GraphicsSettings *settings) {
+  Dkc1GraphicsDefault(settings);
+}
 void Dkc1MacSaveGraphics(const Dkc1GraphicsSettings *settings) { (void)settings; }
 int Dkc1MacPauseMenuIsOpen(void) { return 0; }
 int Dkc1MacShowPauseMenu(void *window, Dkc1GraphicsSettings *settings,
