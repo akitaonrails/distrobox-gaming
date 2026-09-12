@@ -1,13 +1,15 @@
 # Render96ex native Linux Super Mario 64 PC port with Render96 assets.
 
 dg_render96ex_repo_url: https://github.com/Render96/Render96ex.git
-dg_render96ex_git_ref: cd02b8886e0a0498c23b0c1f1e58f0b7c70ccc66
+# alpha-branch HEAD (2026-07-16); one commit past the old pin (a LatAm-Spanish
+# translation merge). No custom patches — a clean make build.
+dg_render96ex_git_ref: f6e9e1b54f43b2caeffcf71644c6165f2652948c
 
 dg_render96ex_model_pack_url: https://github.com/Render96/ModelPack/releases/download/3.25/Render96_DynOs_v3.25.7z
 dg_render96ex_model_pack_name: Render96_DynOs_v3.25.7z
 dg_render96ex_model_pack_sha256: 22eea6dafcc0a87659d60513eb6a6b0f4ea0acbc6645a6b1b445de9e5812e6df
 dg_render96ex_texture_pack_url: https://github.com/pokeheadroom/RENDER96-HD-TEXTURE-PACK.git
-dg_render96ex_texture_pack_ref: d67da21616b489b3829753dbc517e2ec8c606ef5
+dg_render96ex_texture_pack_ref: aa99a0e1a957355e7494f2109717c253905274dd
 
 dg_render96ex_make_flags: TEXTURE_FIX=1
 dg_render96ex_build_id: "{{ dg_render96ex_git_ref }}-texturefix-1"
