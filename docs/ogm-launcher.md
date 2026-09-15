@@ -12,7 +12,9 @@ The rendered `.desktop` files carry their own ogm metadata as freedesktop
 discovery mechanism — ogm lists an entry **only** when `X-OGM-Managed=true` is
 present (a legacy filename glob — `gaming-*`, `pc-*`, `screamer*`,
 `ridge-racer`, … — remains as a migration fallback). An entry that must never
-appear in the menu (e.g. `gaming-steam`) simply omits the marker.
+appear in the menu sets `X-OGM-Managed=false` — the explicit opt-out that
+excludes it even when the legacy glob would match (`gaming-steam` uses this;
+in `dg_ogm_games` it is the one entry with `managed: false`).
 
 ```ini
 [Desktop Entry]

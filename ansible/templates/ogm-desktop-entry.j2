@@ -18,11 +18,15 @@
 {%- set _m = (dg_ogm_games | default([])) | selectattr('desktop_id', 'equalto', desktop_id) | list -%}
 {%- if _m -%}
 {%- set _e = _m[0] -%}
+{%- if _e.managed is defined and not _e.managed -%}
+X-OGM-Managed=false
+{% else -%}
 X-OGM-Managed=true
 X-OGM-Category={{ _e.category }}
 {% if _e.github is defined and _e.github %}X-OGM-GitHub={{ _e.github }}
 {% endif -%}
 {%- if _e.sgdb_query is defined and _e.sgdb_query %}X-OGM-SGDBQuery={{ _e.sgdb_query }}
 {% endif -%}
+{%- endif -%}
 {%- endif -%}
 {%- endmacro -%}
