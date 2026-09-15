@@ -1,3 +1,4 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
 [Desktop Entry]
 Name=Sonic 2 (2013) + Sonic 2 Mania (on {{ dg_box_name }})
 Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_s2013_bin }}
@@ -8,3 +9,4 @@ Comment=Sonic 2 (2013 remaster) native RSDKv4 decompilation with the Sonic 2 Man
 Categories=Game;
 Keywords=sonic 2;2013;rsdk;mania;taxman;
 StartupWMClass=RSDKv4;
+{{ ogm_metadata('gaming-sonic2-2013') }}

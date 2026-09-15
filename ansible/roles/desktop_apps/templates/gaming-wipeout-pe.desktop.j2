@@ -1,3 +1,4 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
 [Desktop Entry]
 Name=WipEout Phantom Edition (on {{ dg_box_name }})
 Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_gpu_env }} {{ dg_wipeout_pe_bin }}
@@ -7,3 +8,4 @@ Icon=wine
 Comment=Enhanced PC source port of WipEout (PSX)
 Categories=Game;
 StartupWMClass=wipeout.exe;
+{{ ogm_metadata('gaming-wipeout-pe') }}

@@ -1,3 +1,4 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
 [Desktop Entry]
 Name=DOOM 3 · DUDE (on {{ dg_box_name }})
 Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_box_home }}/bin/dude-launch
@@ -8,3 +9,4 @@ Comment=Doom 3 via DUDE (dhewm3 fork, GL3/Vulkan renderers). Needs classic Doom 
 Categories=Game;
 Keywords=doom;doom3;dude;dhewm3;
 StartupWMClass=dude;
+{{ ogm_metadata('gaming-dude') }}

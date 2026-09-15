@@ -1,3 +1,4 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
 [Desktop Entry]
 Name=Donkey Kong 64 · Recompiled (on {{ dg_box_name }})
 Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_dk64_launcher }}
@@ -8,3 +9,4 @@ Comment=Donkey Kong 64 (N64) native recompilation — N64Recomp + RT64 (Vulkan) 
 Categories=Game;
 Keywords=donkey kong;dk64;n64;recomp;rt64;
 StartupWMClass=DK64Recompiled;
+{{ ogm_metadata('gaming-dk64-recomp') }}

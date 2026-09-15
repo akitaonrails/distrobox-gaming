@@ -1,3 +1,4 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
 [Desktop Entry]
 Name=Streets of Rage Remake (on {{ dg_box_name }})
 Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_box_home }}/bin/sorr-launch
@@ -7,3 +8,4 @@ Icon=wine
 Comment=Streets of Rage Remake v5.2 (BomberGames) via Wine in {{ dg_box_name }}
 Categories=Game;
 StartupWMClass=sorr.exe;
+{{ ogm_metadata('streets-of-rage-remake') }}

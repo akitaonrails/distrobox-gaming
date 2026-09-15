@@ -7,6 +7,13 @@ live in `ansible/`, reusable roles in `ansible/roles/`, defaults in
 `ansible/group_vars/all/`, and machine-specific overrides in
 `ansible/host_vars/localhost.yml`. Rendered desktop entries live under
 `config/desktop/rendered/`; source templates live under role `templates/`.
+Desktop entries carry ogm (omarchy-games-menu) discovery metadata as
+`X-OGM-*` keys: every `*.desktop.j2` imports the shared
+`ansible/templates/ogm-desktop-entry.j2` macro (`with context`) and calls it
+with its rendered stem, which emits the keys from `group_vars/all/ogm.yml`
+(`dg_ogm_games`) — add a new game there, never restate metadata in templates.
+The opt-in `ogm_catalog` role (tag `ogm`) renders the same data to a
+`catalog.d` fallback fragment. See `docs/ogm-launcher.md`.
 Focused setup notes are in `docs/`. The native macOS baseline is a separate
 stack under `macos/` and shares no code with the Linux tree — keep macOS
 changes there and Linux changes out of it.

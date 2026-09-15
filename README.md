@@ -98,6 +98,7 @@ ansible-playbook site.yml --tags pcsx2_textures  # PCSX2 HD texture packs + per-
 ansible-playbook site.yml --tags pc_racing       # prepare tested Windows PC racing games via Wine
 ansible-playbook site.yml --tags sonic_p06       # install Sonic Project '06 via system Wine
 ansible-playbook site.yml --tags unleashed_recomp # install native Unleashed Recompiled Flatpak
+ansible-playbook site.yml --tags ogm             # render the ogm (omarchy-games-menu) catalog fragment
 ```
 
 ## Path Configuration
@@ -449,6 +450,7 @@ ansible/                            # Ansible playbooks and roles (primary)
     emulators.yml                   # per-emulator INI settings
     esde.yml                        # ES-DE system definitions
     launchers.yml                   # rendered host desktop launcher definitions
+    ogm.yml                         # ogm (omarchy-games-menu) catalog metadata
     gpu.yml                         # NVIDIA preference config
     shadps4.yml                     # shadPS4 release / path config
     xenia.yml                       # Xenia Manager config
@@ -480,6 +482,7 @@ ansible/                            # Ansible playbooks and roles (primary)
     install_pc_racing/              # Wine wrappers for tested Windows racing games
     install_sonic_p06/              # Wine wrapper for Sonic Project '06
     install_unleashed_recomp/       # native Unleashed Recompiled Flatpak install
+    ogm_catalog/                    # host-side ogm (omarchy-games-menu) catalog fragment
 scripts/                            # helper scripts invoked by the Ansible roles
 config/                             # live config source trees (emulator INIs, ES-DE, desktop templates)
 docs/                               # historical notes and focused docs
@@ -491,6 +494,7 @@ Core setup & rebuild:
 
 - [Rebuild Runbook](docs/rebuild-runbook.md) — from-scratch rebuild, opt-in tags, standalone playbooks
 - [External Installers](docs/external-installers.md) — download inventory for the opt-in Windows/Wine games and tools
+- [ogm launcher integration](docs/ogm-launcher.md) — omarchy-games-menu catalog fragment, `ogm scan` hooks
 - [Atari ST / Hatari](docs/atari-st.md) — focused installation, BIOS setup and mandatory validation
 
 - [Controller Hotkeys](docs/controller-hotkeys.md) · [Input Latency](docs/input-latency.md) · [Hyprland Gaming](docs/hyprland-gaming.md)

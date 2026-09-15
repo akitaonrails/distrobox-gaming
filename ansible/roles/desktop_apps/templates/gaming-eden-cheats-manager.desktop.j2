@@ -1,3 +1,4 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
 [Desktop Entry]
 Name=Eden Cheats Manager (on {{ dg_box_name }})
 Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_gpu_env }} env -u QT_STYLE_OVERRIDE {{ dg_eden_cheats_manager_bin }}
@@ -7,3 +8,4 @@ Icon=eden
 Comment=Manage cheat codes for the Eden Nintendo Switch emulator
 Categories=Game;Emulator;
 StartupWMClass=eden-cheats-manager;
+{{ ogm_metadata('gaming-eden-cheats-manager') }}

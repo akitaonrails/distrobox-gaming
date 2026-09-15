@@ -1,3 +1,4 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
 [Desktop Entry]
 Name={{ item.name }} (on {{ dg_box_name }})
 Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_box_home }}/bin/{{ item.slug }}-launch
@@ -7,3 +8,4 @@ Icon=dosbox-staging
 Comment={{ item.name }} — GOG MS-DOS racing game via dosbox-staging in {{ dg_box_name }}
 Categories=Game;
 StartupWMClass=dosbox;
+{{ ogm_metadata(item.slug) }}

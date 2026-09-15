@@ -1,3 +1,4 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
 [Desktop Entry]
 Name={{ item.name }} · Recomp (on {{ dg_box_name }})
 Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_box_home }}/bin/{{ item.key }}-recomp
@@ -8,3 +9,4 @@ Comment={{ item.name }} (SNES) native widescreen recompilation — built from th
 Categories=Game;
 Keywords=donkey kong;dkc;snes;recomp;widescreen;
 StartupWMClass={{ item.wmclass }};
+{{ ogm_metadata('gaming-' ~ item.key ~ '-recomp') }}

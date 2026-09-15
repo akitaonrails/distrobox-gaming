@@ -103,6 +103,7 @@
     - { role: install_smm2_levels,   tags: [smm2_levels, never] }
     - { role: install_rom_patches,       tags: [rom_patches, dkc_gba_restoration, ffoae, never] }
     - { role: install_7th_heaven,        tags: [seven_heaven, "7th_heaven", materiaforge, ffvii_7th_heaven, never] }
+    - { role: ogm_catalog,               tags: [ogm, never] }
     - { role: desktop_apps,              tags: [configure, desktop, reset_configs] }
     - { role: configure_esde,            tags: [configure, esde, reset_configs] }
     - { role: shell_config,              tags: [configure, shell, reset_configs] }

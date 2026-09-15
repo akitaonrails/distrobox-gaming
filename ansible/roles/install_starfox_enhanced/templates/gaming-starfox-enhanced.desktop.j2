@@ -1,3 +1,4 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
 [Desktop Entry]
 Name=Star Fox Enhanced (on {{ dg_box_name }})
 Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_sfe_bin }}
@@ -8,3 +9,4 @@ Comment=SNES Star Fox source port (UltraStarFox) — native build, 20-480 FPS, w
 Categories=Game;
 Keywords=star fox;snes;starwing;ultrastarfox;fan port;
 StartupWMClass=starfox_pc;
+{{ ogm_metadata('gaming-starfox-enhanced') }}

@@ -1,3 +1,4 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
 [Desktop Entry]
 Name=Perfect Dark · PC port (on {{ dg_box_name }})
 Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_pd_launcher }}
@@ -8,3 +9,4 @@ Comment=Perfect Dark (N64) native decompilation port — OpenGL on the RTX, dual
 Categories=Game;
 Keywords=perfect dark;n64;rare;decomp;port;
 StartupWMClass=pd.x86_64;
+{{ ogm_metadata('gaming-perfect-dark') }}

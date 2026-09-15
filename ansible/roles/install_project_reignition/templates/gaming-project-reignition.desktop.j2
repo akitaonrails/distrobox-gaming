@@ -1,3 +1,4 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
 [Desktop Entry]
 Name=Project Reignition (on {{ dg_box_name }})
 Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_project_reignition_bin }}
@@ -8,3 +9,4 @@ Comment=Sonic and the Secret Rings fan remake (KumaPauZ) — native Godot 4 on t
 Categories=Game;
 Keywords=sonic;secret rings;reignition;fan game;godot;
 StartupWMClass=Sonic and the Secret Rings Remake;
+{{ ogm_metadata('gaming-project-reignition') }}

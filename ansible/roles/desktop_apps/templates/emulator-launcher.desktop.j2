@@ -1,3 +1,4 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
 [Desktop Entry]
 Name={{ launcher.display_name }}
 Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ launcher.gpu_env | default(dg_gpu_env) }} {{ launcher.exec }}
@@ -7,3 +8,4 @@ Icon={{ launcher.icon }}
 Comment={{ launcher.comment }}
 Categories=Game;Emulator;
 StartupWMClass={{ launcher.wm_class }};
+{{ ogm_metadata(launcher.name) }}

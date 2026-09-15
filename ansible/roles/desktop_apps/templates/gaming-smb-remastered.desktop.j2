@@ -1,3 +1,4 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
 [Desktop Entry]
 Name=Super Mario Bros. Remastered (on {{ dg_box_name }})
 Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_gpu_env }} {{ dg_smb_remastered_bin }}
@@ -7,3 +8,4 @@ Icon=wine
 Comment=Godot remake of Super Mario Bros. (JHDev2006)
 Categories=Game;
 StartupWMClass=SMB1R.x86_64;
+{{ ogm_metadata('gaming-smb-remastered') }}

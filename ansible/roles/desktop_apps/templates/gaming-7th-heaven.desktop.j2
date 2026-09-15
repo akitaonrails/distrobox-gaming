@@ -1,3 +1,4 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
 [Desktop Entry]
 Name=7th Heaven Mod Manager (on {{ dg_box_name }})
 Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_7th_heaven_bin }} launch
@@ -6,3 +7,4 @@ Type=Application
 Icon=steam_icon_3837340
 Comment=Open the 7th Heaven mod manager for Final Fantasy VII classic
 Categories=Game;
+{{ ogm_metadata('gaming-7th-heaven') }}

@@ -1,0 +1,19 @@
+# Managed by Ansible (role ogm_catalog; data in group_vars/all/ogm.yml).
+# Do not edit — ogm merges this fragment over its bundled catalog on `ogm scan`.
+
+{% for game in dg_ogm_games -%}
+[[game]]
+id = {{ game.id | to_json }}
+desktop_id = {{ game.desktop_id | to_json }}
+{% if game.name is defined -%}
+name = {{ game.name | to_json }}
+{% endif -%}
+category = {{ game.category | to_json }}
+{% if game.github is defined -%}
+github = {{ game.github | to_json }}
+{% endif -%}
+{% if game.sgdb_query is defined -%}
+sgdb_query = {{ game.sgdb_query | to_json }}
+{% endif %}
+
+{% endfor -%}

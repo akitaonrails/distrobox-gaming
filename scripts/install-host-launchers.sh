@@ -153,6 +153,16 @@ main() {
   if [[ "${DG_SKIP_WALKER_RESTART:-0}" != "1" ]]; then
     pkill -f '/usr/bin/walker --gapplication-service' >/dev/null 2>&1 || true
   fi
+
+  # ogm (omarchy-games-menu) scans these desktop entries; rescan so the menu
+  # picks up additions/removals immediately. Quiet no-op when ogm is absent.
+  if command -v ogm >/dev/null 2>&1; then
+    if ogm scan >/dev/null 2>&1; then
+      log "ogm scan done"
+    else
+      log "ogm scan failed (ignored)"
+    fi
+  fi
   log "done"
 }
 

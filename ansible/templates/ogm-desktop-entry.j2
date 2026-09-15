@@ -1,0 +1,28 @@
+{#- Shared ogm (omarchy-games-menu) metadata block, resolvable from any
+    *.desktop.j2 in any role (it lives on the playbook-dir template search
+    path). Emits the X-OGM-* discovery keys for a rendered .desktop when its
+    stem is registered in dg_ogm_games (group_vars/all/ogm.yml); stems not in
+    that list render nothing, so they carry no X-OGM-Managed marker and stay
+    hidden from omarchy-games-menu. Keep the metadata itself in ogm.yml — this
+    macro only looks it up, never restates it.
+
+    Usage, as the final line(s) of the [Desktop Entry] group:
+        {% from 'ogm-desktop-entry.j2' import ogm_metadata %}
+        [Desktop Entry]
+        ... entry keys ...
+        {{ ogm_metadata('gaming-ship-of-harkinian') }}
+    The argument is the rendered file's stem (its basename without .desktop),
+    e.g. 'pc-' ~ item.slug or 'gaming-' ~ item.key ~ '-recomp' for looped
+    templates. -#}
+{%- macro ogm_metadata(desktop_id) -%}
+{%- set _m = (dg_ogm_games | default([])) | selectattr('desktop_id', 'equalto', desktop_id) | list -%}
+{%- if _m -%}
+{%- set _e = _m[0] -%}
+X-OGM-Managed=true
+X-OGM-Category={{ _e.category }}
+{% if _e.github is defined and _e.github %}X-OGM-GitHub={{ _e.github }}
+{% endif -%}
+{%- if _e.sgdb_query is defined and _e.sgdb_query %}X-OGM-SGDBQuery={{ _e.sgdb_query }}
+{% endif -%}
+{%- endif -%}
+{%- endmacro -%}

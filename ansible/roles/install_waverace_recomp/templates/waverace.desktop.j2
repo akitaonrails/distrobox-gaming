@@ -1,3 +1,4 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
 [Desktop Entry]
 Name=Wave Race 64 · Recompiled ({{ dg_box_name }})
 Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_wr64_launcher }}
@@ -7,3 +8,4 @@ Icon=wine
 Comment=Wave Race 64 Recompiled — N64ModernRuntime + RT64 PC port via Wine + vkd3d-proton on the RTX
 Categories=Game;
 StartupWMClass=waverace64recomp.exe;
+{{ ogm_metadata('gaming-waverace-recomp') }}

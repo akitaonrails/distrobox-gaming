@@ -1,0 +1,28 @@
+---
+# ogm (omarchy-games-menu) catalog fragment. Host-side only: renders a TOML
+# fragment into ~/.config/ogm/catalog.d/ so ogm can group and label the
+# desktop entries this repo exports, then asks ogm to rescan. Opt-in via
+# --tags ogm. See group_vars/all/ogm.yml and docs/ogm-launcher.md.
+
+- name: Check for the ogm binary on the host
+  ansible.builtin.command: command -v ogm
+  register: _ogm_binary
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Render the ogm catalog fragment
+  when: dg_ogm_enabled | bool
+  block:
+    - name: Create the ogm catalog.d directory
+      ansible.builtin.file:
+        path: "{{ dg_ogm_catalog_path | dirname }}"
+        state: directory
+        mode: "0755"
+
+    - name: Render the distrobox-gaming ogm catalog fragment
+      ansible.builtin.template:
+        src: distrobox-gaming.toml.j2
+        dest: "{{ dg_ogm_catalog_path }}"
+        mode: "0644"
+      notify: Rescan ogm game state

@@ -1,3 +1,4 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
 [Desktop Entry]
 Name=Sonic 3 A.I.R. (on {{ dg_box_name }})
 Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_s3air_launcher }}
@@ -8,3 +9,4 @@ Comment=Sonic 3 & Knuckles — Angel Island Revisited fan remaster, native on th
 Categories=Game;
 Keywords=sonic;sonic 3;knuckles;air;angel island;
 StartupWMClass=sonic3air_linux;
+{{ ogm_metadata('gaming-sonic3air') }}

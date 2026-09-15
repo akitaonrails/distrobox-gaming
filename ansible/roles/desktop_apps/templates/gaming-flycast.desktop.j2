@@ -1,3 +1,4 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
 [Desktop Entry]
 Name=Flycast Hi-Res (on {{ dg_box_name }})
 Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_gpu_env }} {{ dg_box_home }}/bin/flycast-hires %f
@@ -7,3 +8,4 @@ Icon=flycast
 Comment=Dreamcast and Naomi emulator
 Categories=Game;Emulator;
 StartupWMClass=flycast;
+{{ ogm_metadata('gaming-flycast') }}

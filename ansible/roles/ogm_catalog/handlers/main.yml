@@ -1,0 +1,9 @@
+---
+# `ogm scan` is idempotent and offline (re-reads desktop files + catalogs and
+# rewrites ogm's state). It only fires when the fragment changed; skip it
+# quietly when ogm is not installed on the host. Never run `ogm refresh`
+# here — it is network-heavy (GitHub release checks + cover downloads).
+
+- name: Rescan ogm game state
+  ansible.builtin.command: ogm scan
+  when: _ogm_binary.rc == 0
