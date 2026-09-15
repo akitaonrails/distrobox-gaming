@@ -15,3 +15,21 @@
 - ansible.builtin.include_tasks: media-symlinks.yml
 - ansible.builtin.include_tasks: ps4-gamelist.yml
 - ansible.builtin.include_tasks: arcade-gamelists.yml
+
+# es_settings.xml is created and rewritten by ES-DE itself (a flat, rootless
+# list of <bool>/<string> lines), so it isn't templated — we just flip the one
+# ParseGamelistOnly line when the file already exists. ES-DE persists the value
+# unless it is toggled in-menu; edit while ES-DE is closed so it isn't
+# overwritten on exit. See docs/esde-fast-startup.md.
+- name: Check for the ES-DE settings file
+  ansible.builtin.stat:
+    path: "{{ dg_esde_settings_file }}"
+  register: _esde_settings
+
+- name: Set ES-DE to load from the gamelist cache only (skip the startup ROM scan)
+  ansible.builtin.lineinfile:
+    path: "{{ dg_esde_settings_file }}"
+    regexp: '<bool name="ParseGamelistOnly" value="[^"]*" />'
+    line: '<bool name="ParseGamelistOnly" value="{{ dg_esde_parse_gamelist_only | ternary(''true'', ''false'') }}" />'
+    backup: true
+  when: _esde_settings.stat.exists

@@ -96,6 +96,14 @@ dg_eden_nand_registered: "{{ dg_eden_data_dir }}/nand/user/Contents/registered"
 
 # ES-DE
 dg_esde_media_dir: "{{ dg_box_home }}/ES-DE/downloaded_media"
+dg_esde_settings_file: "{{ dg_box_home }}/ES-DE/settings/es_settings.xml"
+# Load the game collection only from the cached gamelist.xml files instead of
+# rescanning every ROM directory on each launch (ES-DE's ParseGamelistOnly).
+# Makes startup near-instant on a large NAS library; the trade-off is that
+# newly added ROMs do NOT appear until the gamelists are regenerated — see
+# docs/esde-fast-startup.md for the rescan step. SaveGamelistsMode=always keeps
+# the gamelists current, so this is safe once ES-DE has scanned at least once.
+dg_esde_parse_gamelist_only: true
 
 # RetroArch
 dg_retroarch_dir: "{{ dg_box_home }}/.config/retroarch"

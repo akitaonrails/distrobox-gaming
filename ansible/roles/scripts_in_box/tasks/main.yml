@@ -43,3 +43,9 @@
     src: steam-launch
     dest: "{{ dg_box_home }}/bin/steam-launch"
     mode: "0755"
+
+- name: Deploy ES-DE on-demand rescan helper
+  ansible.builtin.copy:
+    src: esde-rescan
+    dest: "{{ dg_box_home }}/bin/esde-rescan"
+    mode: "0755"

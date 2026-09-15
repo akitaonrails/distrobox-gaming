@@ -1,0 +1,33 @@
+#!/usr/bin/env sh
+# esde-rescan — launch ES-DE once with a full ROM rescan, then restore fast
+# startup.
+#
+# Normal startup uses ParseGamelistOnly=true: ES-DE loads the cached
+# gamelist.xml files and does not scan the ROM directories, so it opens almost
+# instantly. Run this after you ADD or REMOVE ROMs — it launches ES-DE with the
+# scan enabled just for this session, so the new games are found and written
+# into the gamelists (SaveGamelistsMode=always), then flips fast startup back on
+# when you quit ES-DE. Managed by the distrobox-gaming scripts_in_box role.
+set -eu
+
+settings="$HOME/ES-DE/settings/es_settings.xml"
+
+set_scan() {  # $1 = ParseGamelistOnly value (true|false)
+  [ -f "$settings" ] || return 0
+  grep -q 'name="ParseGamelistOnly"' "$settings" || return 0
+  sed -i "s#<bool name=\"ParseGamelistOnly\" value=\"[^\"]*\" />#<bool name=\"ParseGamelistOnly\" value=\"$1\" />#" "$settings"
+}
+
+if pgrep -x es-de >/dev/null 2>&1; then
+  echo "esde-rescan: ES-DE is already running — quit it first, then re-run." >&2
+  exit 1
+fi
+
+# Restore fast startup no matter how ES-DE exits (ES-DE rewrites the file on
+# exit with the scanning value, so this trap gets the last word).
+trap 'set_scan true' EXIT INT TERM
+
+set_scan false
+echo "esde-rescan: launching ES-DE with a full ROM rescan; new games get added to the gamelists."
+echo "            Quit ES-DE when done — fast startup (gamelist cache) restores automatically."
+es-de "$@"
