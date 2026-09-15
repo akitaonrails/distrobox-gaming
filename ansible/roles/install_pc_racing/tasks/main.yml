@@ -1036,8 +1036,9 @@
       game_dir="{{ item.0.installed_path | default(dg_pc_racing_install_root ~ "/" ~ item.0.slug) }}"
       ini="$game_dir/{{ item.1.file }}"
       key="{{ item.1.key }}"
-      value="{{ item.1.value }}"
+      value="{{ item.1.value | default('') }}"
       separator="{{ item.1.separator | default('=') }}"
+      state="{{ item.1.state | default('present') }}"
       tmp="$ini.tmp.$$"
 
       if [ ! -d "$game_dir" ]; then
@@ -1045,6 +1046,17 @@
         exit 1
       fi
       touch "$ini"
+
+      # state: absent — drop any line whose key matches (leave the rest intact).
+      if [ "$state" = "absent" ]; then
+        if grep -Eq "^[[:space:]]*${key}[[:space:]]*=" "$ini"; then
+          grep -Ev "^[[:space:]]*${key}[[:space:]]*=" "$ini" > "$tmp"
+          mv "$tmp" "$ini"
+          printf "%s\n" "configured {{ item.0.name }} {{ item.1.file }} {{ item.1.key }} (removed)"
+        fi
+        exit 0
+      fi
+
       desired="${key}${separator}${value}"
 
       if grep -Eq "^[[:space:]]*${key}[[:space:]]*=" "$ini"; then

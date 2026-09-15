@@ -845,6 +845,22 @@ dg_pc_racing_games:
         key: HideOnlineSigninText
         value: "true"
         separator: " = "
+      # Audio: the default [CDTracks] list (what the in-game CD Switcher cycles)
+      # ships 11 non-BGM entries — SEGA/title/ending jingles and SFX — mixed in
+      # with the 28 racing tracks, so cycling music lands on stingers and
+      # ambience. Drop them (emoose/OutRun2006Tweaks PR #312, not yet in a master
+      # CI build) so only the 28 real BGM tracks remain. Removal-only edits.
+      - { file: "OutRun2006Tweaks.ini", key: "Last_Wave.ogg", state: absent }
+      - { file: "OutRun2006Tweaks.ini", key: "SEGA441.ogg", state: absent }
+      - { file: "OutRun2006Tweaks.ini", key: "Beach_wave.ogg", state: absent }
+      - { file: "OutRun2006Tweaks.ini", key: "title_pattern1.ogg", state: absent }
+      - { file: "OutRun2006Tweaks.ini", key: "title_01.ogg", state: absent }
+      - { file: "OutRun2006Tweaks.ini", key: "or2ed1.ogg", state: absent }
+      - { file: "OutRun2006Tweaks.ini", key: "or2ed2.ogg", state: absent }
+      - { file: "OutRun2006Tweaks.ini", key: "or2ed3a.ogg", state: absent }
+      - { file: "OutRun2006Tweaks.ini", key: "or2ed3b.ogg", state: absent }
+      - { file: "OutRun2006Tweaks.ini", key: "or2ed4.ogg", state: absent }
+      - { file: "OutRun2006Tweaks.ini", key: "or2ed5.ogg", state: absent }
     notes: "Inno Setup repack installed silently to G:\\outrun-2006. OutRun2006Tweaks replaces the DRM-sensitive EXE and must load through native dinput8. The bundled SpecialK d3d9 files are backed up and disabled so prefix DXVK can provide D3D9."
 
   - slug: sega-rally-revo
