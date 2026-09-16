@@ -495,6 +495,7 @@ Core setup & rebuild:
 - [Rebuild Runbook](docs/rebuild-runbook.md) — from-scratch rebuild, opt-in tags, standalone playbooks
 - [External Installers](docs/external-installers.md) — download inventory for the opt-in Windows/Wine games and tools
 - [ogm launcher integration](docs/ogm-launcher.md) — omarchy-games-menu catalog fragment, `ogm scan` hooks
+- [Unsupported / parked games](docs/unsupported-games.md) — games/mods we couldn't get working; the detailed trail lives in GitHub issues
 - [Atari ST / Hatari](docs/atari-st.md) — focused installation, BIOS setup and mandatory validation
 
 - [Controller Hotkeys](docs/controller-hotkeys.md) · [Input Latency](docs/input-latency.md) · [Hyprland Gaming](docs/hyprland-gaming.md)

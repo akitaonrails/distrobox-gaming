@@ -11,7 +11,6 @@ Currently managed games:
 - Colin McRae Rally 3
 - Colin McRae Rally 04
 - OutRun 2006: Coast 2 Coast
-- Sega Rally 2: 25th Anniversary Edition
 - Sega Rally Revo
 
 Add more entries to `dg_pc_racing_games` only after testing their install and
@@ -116,9 +115,8 @@ Current per-game controller handling:
   conflict with the Tweaks loader.
 - Sega Rally Revo uses `Map Controllers=1`, because this game needs Wine's
   SDL-backed XInput device to see the 8BitDo controller.
-- Sega Rally 2 uses the 1.9.0 widescreen executable with `Map Controllers=0`.
-  Disable the repack's top-level `dinput.dll`/`dinput8.dll` shims on Linux;
-  they crash the widescreen launcher in `mginput` or early swapchain setup.
+- Sega Rally 2 is not managed here — it is a Wine dead-end; see
+  https://github.com/akitaonrails/distrobox-gaming/issues/3 .
 
 If `evdev-joystick --listdevs` only shows the Moonlander keyboard and SDL sees
 zero joysticks, the 8BitDo is in a hidraw-only mode such as `2dc8:6013`. Switch
@@ -181,12 +179,8 @@ cd ansible
 ansible-playbook install-sega-rally-revo.yml
 ```
 
-Focused install for Sega Rally 2:
-
-```sh
-cd ansible
-ansible-playbook install-sega-rally-2.yml
-```
+Sega Rally 2 is not installable (Wine dead-end, verified again with the 2.0.0
+repack on 2026-09-13) — see https://github.com/akitaonrails/distrobox-gaming/issues/3 .
 
 Install or refresh host menu entries separately from the host:
 
@@ -253,82 +247,16 @@ The game's own "restart now" flow after changing resolution just
 exits (it expects Windows to relaunch it) — relaunch manually.
 Rendering is the DiRT 2 stack: DXVK, gamescope at 4K, native XInput.
 
-## DiRT 3 Complete Edition (parked — no working controller path)
+## DiRT 3 Complete Edition
 
-ElAmigos repack of the 2015 Complete Edition re-release (EGO 2 engine,
-GFWL stripped). Installs and renders fine, but **no controller path was
-found**; parked and its box/Ansible artifacts removed on 2026-07-10.
-NAS original stays at `ROMS_FINAL/PC/DiRT.3.Complete.Edition`; a working
-14 GB install copy remains at `/mnt/data/Games/DiRT3` for future retries.
+Parked — installs and renders under Wine, but no working controller path was
+found (page-fault at the green light when a pad is active; Proton crashes
+earlier, even with no pad). Full attempt log: https://github.com/akitaonrails/distrobox-gaming/issues/5
+## DiRT Rally
 
-What was tried and where each wall stands:
-
-- **wine (11.12, distrobox)** — got furthest. Needs `openal` (the exe
-  hard-imports `OpenAL32.dll`; the repack skips the redist) and the
-  host `ntsync` module (else choppy). Menus, car-select and the
-  race-intro animation all work **with the keyboard**. The moment a
-  controller is active, it page-faults at the **green light** (race
-  start): the game reads raw HID (`HidP*`), a device handle closes
-  (`pdo_close`), then a `null+4` deref — frame pointer is null so no
-  backtrace. Tried: renderer `forcedx9`, vibration off, winebus
-  `DisableInput`, single pad, both pads — none avoided it.
-  wine-staging-9.19 crashes at startup instead.
-
-- **host Steam + GE-Proton11 (Steam Input)** — a *regression*. Crashes
-  **earlier**, at the "loading" screen **before the menu**, and does so
-  **even with every controller disconnected** — so this failure is
-  **not** controller-related. Trace shows GFWL `dbxLive32.dll` loaded
-  and `com_get_class_object apartment not initialised` on a worker
-  thread just before a deterministic fault at `dirt3_game+0x368c06`
-  (read of `null+8`). Steam Input never captured the pads either (the
-  game still enumerated the raw 8BitDo vendor-HID collections), but
-  that's moot since it dies with no pad at all. Bare GE-Proton outside
-  the Steam runtime fails separately (`kernel32.dll c0000135` — new
-  WOW64 needs the pressure-vessel 32-bit setup).
-
-- **Untried lever for a future attempt** — on the *wine* side only,
-  set winebus `DisableHidraw=1` + `Enable SDL=1` in the prefix so
-  dinput enumerates the controller through SDL instead of the raw-HID
-  backend that faults at the green light. This is the one plausible
-  fix not yet tested; the Proton path is a dead end.
-
-## DiRT Rally (parked — both cracks fail)
-
-Two copies exist on the NAS and **neither launches** on this box; parked
-2026-07-10 like DiRT 3. Both dead ends were repack/crack problems, not
-host-config problems — the rest of the racing library works.
-
-- **Native Feral Linux port** (`DiRT.Rally.Linux-ACTiVATED`, GoldMaster,
-  AppID 310560). The library side was fully solved: the 2016 build links
-  `libssl/libcrypto.so.1.0.0`, `libidn.so.11`, `librtmp.so.0`, openldap
-  2.4 and `libgconf-2.so.4`, none of which modern Arch ships. Harvesting
-  **only the missing sonames** (the system already has the rest) from the
-  Steam "scout" runtime (`~/.local/share/Steam/ubuntu12_32/steam-runtime`)
-  into a curated compat dir — *not* the whole runtime, which drags in an
-  old `libstdc++`/`libattr` that break `sed` and the game's own
-  `libsteam_api` — plus a system-SDL2 override under the old
-  `libSDL2-2.0.5.so` soname, gets it cleanly to `SDL2 initialised`. But
-  the game binary then **segfaults on its own main thread** in early init
-  (stripped; identical with sdl2-compat or real SDL2, gamescope or not,
-  taskset or not, and via the scout `run.sh`). A genuine 2016-binary vs
-  kernel-7.0/newest-glibc incompatibility. The scout `run.sh` is *worse*
-  than the curated approach (it discards the game's bundled libs and hits
-  a `CURL_OPENSSL_4` mismatch).
-
-- **Windows RELOADED repack** (`DiRT.Rally.v1.1-RELOADED`, DX11) via host
-  Steam + Proton Experimental. Installs fine (custom GUI installer, run
-  through Steam; then copy `crack/*` over the game dir). Loads and
-  **initialises DXVK**, then quits ~2–3 s later. The RELOADED Steam-emu
-  crack fights Proton's force-injected `lsteamclient`
-  (`err:steamclient:steamclient_init_registry Failed to connect to Steam`)
-  and no combination fixed it — Steam client up or down, `lsteamclient=d`
-  to force the crack's own `steamclient.dll`, gamescope for the
-  `NtUserChangeDisplaySettings … DISPLAY2` multi-monitor mode error, or a
-  `steam_appid.txt`. Same shape as DiRT 3: the crack won't cooperate.
-
-A legit Steam copy is Proton Platinum and would almost certainly just
-work; that's the path if DiRT Rally is ever revisited.
-
+Parked — neither copy launches (the native Feral Linux 2016 build segfaults on
+its own main thread even with the missing sonames supplied; the Windows RELOADED
+crack fights Proton's `lsteamclient`). Full attempt log: https://github.com/akitaonrails/distrobox-gaming/issues/6
 ## Colin McRae Rally (1998)
 
 Source is the ChemicalFlood portable repack at
@@ -589,44 +517,9 @@ that dialog for this game.
 
 ## Colin McRae Rally 2005
 
-Current status: not automated; treat the PC version as not feasible on the
-current Wine/distrobox stack. Use the PS2/PCSX2 entry for this title unless a
-new Wine runner, executable build, or game-specific Wine patch appears.
-
-The local PC sources are the DRM-free GOG installer set. The two available local
-folders were checksum-compared on 2026-06-30 and contain byte-identical
-`setup_colin2005.exe`, `setup_colin2005-1.bin`, and `setup_colin2005-2.bin`
-files, so the `DRM-Free` folder is not a distinct CD Projekt/Polish/Hungarian
-build to test.
-
-Previously tested and reverted paths include `innoextract` from the GOG
-installer, a clean 32-bit prefix with Wine 9.19-staging, XP SP3 mode, DXVK,
-Wine virtual desktop, disabled XVidMode/XRandR, and launch arguments such as
-`WIDESCREENDISPLAY`, `NOVIDEOMEMORYCHECK`, and `NOVIDEO`. Those attempts either
-hit Wine display-mode/XVidMode problems, a DXVK Vulkan-instance failure, or the
-stable CMR2005 crash signature:
-
-```text
-wine: Unhandled page fault on read access to 00000010 at address 0041DA27
-```
-
-The 2026-06-30 follow-up tried the only new online leads that differed from the
-old dead-end:
-
-- WineD3D/no-DXVK in a fresh prefix, to avoid the prior DXVK Vulkan-instance
-  failure. Running through an explicit Wine virtual desktop still reproduced the
-  `0041DA27` crash.
-- Running the real GOG installer instead of extracting it with `innoextract`,
-  because the GOG/PCGamingWiki Windows fix mentions reinstalling through the
-  original installer and preserving the `SG` folder. Under Wine this installer
-  hung badly enough that the distrobox had to be force-stopped; the scratch
-  install/prefix were removed afterward.
-
-Do not re-add CMR2005 to `pc_racing.yml` from these paths. A future attempt
-needs a genuinely new variable: a different DRM-free executable/build, an exact
-verified Lutris/Bottles recipe with a specific runner/DLL stack, a Wine patch for
-the `0041DA27` crash, or a Windows VM/container path outside Wine.
-
+Not feasible on the current Wine/distrobox stack (stable page fault `0041DA27`
+under Wine; the GOG installer hangs). Use the **PS2 version via PCSX2** for this
+title. Full attempt log: https://github.com/akitaonrails/distrobox-gaming/issues/4
 ## OutRun 2006
 
 OutRun 2006 uses the Inno Setup repack source under
@@ -748,62 +641,11 @@ main-menu path before the offline DirectX runtime was installed.
 
 ## Sega Rally 2
 
-Sega Rally 2 uses the OldNewPixel 1.9.0 archive under
-`{{ dg_pc_racing_source_root }}/Sega Rally 2 ~ 25th Anniversary Edition 1.9.0.7z`.
-The role extracts that archive into the PC racing cache so the installer files
-are available. The installer must still be run interactively, because the
-1.9.0 Inno setup exposes the widescreen mode through a custom UI page rather
-than a reliable `/COMPONENTS` flag. Choose the 16:9 widescreen option and keep
-the install path at `G:\sega-rally-2`.
+Not managed here — a Wine dead-end on this box (the game's own MGameD3D renderer
+null-derefs; verified with the 1.9.0 and 2.0.0 25th-Anniversary repacks). The
+2.0.0 installer payload (SHA-256 verified) is staged on the NAS at
+`ROMS_FINAL/PC/Sega Rally 2 ~ 25th Anniversary Edition 2.0.0/` for a future
+retry. Full attempt log + test matrix: https://github.com/akitaonrails/distrobox-gaming/issues/3
 
-After a widescreen install, launch `SEGA RALLY 2 WIDESCREEN.exe` directly. The
-launcher exposes the repack's 1067x600 16:9 dgVoodoo mode through gamescope and
-scales it to the configured output. The normal `SEGA RALLY 2.EXE` remains the
-4:3 fallback and should not be used for the desktop launcher.
-
-The package ships its own compatibility stack: dgVoodoo files, ReShade, DSOAL,
-Dinputto8, Xidi, and ogg-winmm support. On Linux, do not use the top-level
-`dinput.dll` or `dinput8.dll` shims, including the nested `MUSASHI/dinput.dll`
-Dinputto8 wrapper, and do not use the ReShade `dxgi.dll` layer. The launcher
-sets `WINEDLLOVERRIDES=ddraw,d3dimm=n,b` and the role disables those
-conflicting DLLs. Keep `DisableInput=0` and `Map Controllers=0`; basic
-DirectInput needs Wine input enabled for keyboard/controller events, but Wine's
-SDL controller mapper caused repeated menu input in earlier tests.
-The shared DirectInput disabled-device list also hides the 8BitDo composite
-keyboard/mouse interfaces by name, because this controller exposes extra HID
-functions that can confuse old DirectInput games.
-
-The role applies the repack's bundled Linux dgVoodoo 2.79.3 fallback from
-`Troubleshooting/Linux/dgVoodoo2_79_3.zip`. It replaces `D3DImm.dll`,
-`MUSASHI/DDraw.dll`, and `dgVoodooCpl.exe`, preserving `.original` backups
-before the first replacement. This matches the repack's Linux note for avoiding
-newer dgVoodoo failures under Wine/Proton.
-
-The game profile is still forced to the Logitech wheel device type
-(`nDeviceType=0A000000`, `InputSettings=10`) for now, but controller behavior
-needs retesting after the widescreen launcher is stable. A stale `dinput.dll`
-from the earlier 1.1.0 overlay caused the widescreen launcher to crash at
-`mginput+0x3fee`; the 1.9.0 `dinput8.dll`/Dinputto8 path also crashed under
-Wine with the 8BitDo attached, matching the repack's Linux troubleshooting
-note.
-
-**The real pad must stay hidden from DirectInput in this prefix**
-(2026-07-15): when the global stale-disable cleanup un-hid the 8BitDo's
-bare device names, SR2 immediately regressed — the 4:3 exe crashed with
-an error dialog and the widescreen launcher wedged at the intro, i.e.
-the documented mginput crash class. Both SR2 catalog entries therefore
-carry a per-game `dinput_disabled_joysticks` list re-disabling the bare
-names in this prefix only; the global removal task skips names a game
-explicitly disables. Consequence: **SR2 is keyboard-only for now**
-(advance the intro with Enter; the pad was never verified working in
-this game — building an evsieve pad→keyboard bridge like CMR1's is the
-future path if pad play is wanted).
-
-During manual testing, the game kept running and music continued even when the
-gamescope window lost focus or disappeared behind the desktop. Test from the
-host launcher rather than from an active terminal so tmux or assistant output
-does not steal focus while the game is switching modes.
-The bundled manual documents `Alt+F4` as the clean application quit shortcut;
-use that instead of Hyprland force-close, which can leave the game or
-`_inmmserv.exe` alive. The generated wrapper still supervises gamescope and
-runs `wineserver -k` for this prefix when gamescope exits.
+Play **Sega Rally Championship HD** (`install_sega_rally`) or **Sega Rally Revo**
+(`sega-rally-revo`) instead.

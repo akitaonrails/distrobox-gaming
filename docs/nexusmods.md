@@ -18,9 +18,9 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Art of Rally | artofrally | `550320` | 4 | 🔧 built — verify in-game |
 | Alex Kidd in Miracle World DX | alexkiddinmiracleworlddx | `1333470` | 1 | ✅ (see below) |
 | Ace Combat 7 | acecombat7skiesunknown | `502500` | 1 | ✅ (see below) |
-| Batman: Arkham Knight | batmanarkhamknight | `208650` | 2 | ⏸️ deferred (TFC GUI) |
-| Batman: Arkham City GOTY | batmanarkhamcity | `200260` | 3 | ⏸️ deferred (TFC GUI) |
-| Batman: Arkham Asylum GOTY | batmanarkhamasylum | `35140` | 2 | ⏸️ deferred (TFC GUI) |
+| Batman: Arkham Knight | batmanarkhamknight | `208650` | 2 | ⏸️ deferred (TFC GUI) — see #13 |
+| Batman: Arkham City GOTY | batmanarkhamcity | `200260` | 3 | ⏸️ deferred (TFC GUI) — see #13 |
+| Batman: Arkham Asylum GOTY | batmanarkhamasylum | `35140` | 2 | ⏸️ deferred (TFC GUI) — see #13 |
 | Black Myth: Wukong | blackmythwukong | `2358720` | 1 | ✅ (see below) |
 | Bloodstained: RotN | bloodstainedritualofthenight | `692850` | 7 | ✅ (see below) |
 | Dark Souls Remastered | darksoulsremastered | `570940` | 3 | ✅ #293 (see below); #220 deferred, #7 dropped |
@@ -35,7 +35,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | MGS2 (Master Collection) | metalgearsolid2mc | `2131640` | 6 | ✅ 5/6 (see below) |
 | MGSV: Ground Zeroes | metalgearsolidvgz | `311340` | 2 | ⏸️ deferred (GzsTool/CE) |
 | MGS1 (Master Collection) | metalgearsolidmc | `2131630` | 2 | ✅ 1/2 (see below) |
-| MGSV: The Phantom Pain | metalgearsolidvtpp | `287700` | 5 | ⏸️ deferred (SnakeBite) |
+| MGSV: The Phantom Pain | metalgearsolidvtpp | `287700` | 5 | ⏸️ deferred (SnakeBite) — see #12 |
 | Red Dead Redemption | reddeadredemption | `2668510` | 11 | ✅ 5/11 (see below) |
 | Red Dead Redemption 2 | reddeadredemption2 | `1174180` | 13 | ⏸️ deferred (ScriptHook/LML) |
 | Resident Evil 4 (2023 Remake) | residentevil42023 | `2050650` | 2 | ✅ 2/2 (see below) |
@@ -47,8 +47,8 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Resident Evil 0 (HD Remaster) | residentevil0biohazard0hdremaster | `339340` | 2 | ✅ 1/2 (see below) |
 | RoboCop: Rogue City | robocoproguecity | `1681430` | 8 | ✅ 7/8 (~mods + UE4SS + save; 7 config) |
 | Sekiro: Shadows Die Twice | sekiro | `814380` | 2 | ✅ 2/2 (Weapon Wheel + Mod Engine) |
-| Marvel's Spider-Man Remastered | marvelsspidermanremastered | `1817070` | 8 | ⏸️ deferred (Overstrike GUI) |
-| Marvel's Spider-Man: Miles Morales | spidermanmilesmorales | `1817190` | 6 | ⏸️ deferred (Overstrike GUI) |
+| Marvel's Spider-Man Remastered | marvelsspidermanremastered | `1817070` | 8 | ⏸️ deferred (Overstrike GUI) — see #11 |
+| Marvel's Spider-Man: Miles Morales | spidermanmilesmorales | `1817190` | 6 | ⏸️ deferred (Overstrike GUI) — see #11 |
 | Streets of Rage 4 | streetsofrage4 | `985890` | 1 | ✅ mod 133 (REIGNITED) via existing `install_sor4_reignited` |
 | Tokyo Xtreme Racer | tokyoxtremeracer | `2634950` | 3 | ✅ 3/3 (~mods + UE4SS + save) |
 | WRC 5 | wrc5 | `354160` | 1 | ⚠️ flagged — not installed (DLC-unlock crack, see below) |
