@@ -54,8 +54,33 @@ before launching:
 
 ## Optional HD packs
 
-Starship supports `.o2r`/`.otr` mods in `{{ dg_starship_install_dir }}/mods/`,
-but the only current visual overhaul found during review was LR2EB Preview 2,
-which is explicitly WIP, has known visual issues, and can cause large CPU hits
-with `ast_corneria.o2r`. It is not installed by default; add it as an opt-in pack
-only after accepting those caveats.
+Starship loads `.o2r` mods from `{{ dg_starship_install_dir }}/mods/` (the
+launcher `cd`s into the install directory, so the relative `mods/` path is
+found). The role installs LR2EB ("Lylat Reloaded 2: Electric Boogaloo" by
+MaddiAddi, <https://gamebanana.com/wips/90597>) when
+`dg_starship_lr2eb_enabled` is true. It is the only Starship-native visual
+overhaul: hi-poly Star Fox Zero / 64 3D models for the Arwing, Landmaster,
+Blue Marine, and Great Fox, plus HD textures, HUD, and explosion animations.
+
+The archive is staged on the NAS at
+`{{ dg_roms_final_root }}/PC/starship/` so rebuilds never re-download it. To
+bump to a newer preview, update `dg_starship_lr2eb_file_id`,
+`dg_starship_lr2eb_asset_name`, `dg_starship_lr2eb_asset_md5`, and
+`dg_starship_lr2eb_version` in `group_vars/all/starship.yml`.
+
+Caveats (LR2EB is a WIP preview):
+
+- Known visual issues: Venom 1 title mispositioned and skybox tiling, visible
+  seams in planet renders, map-screen planet shading offset, credits text
+  point-filtered, credits sunset skybox misaligned.
+- If the game crashes at the title screen, restart once or twice — a known
+  Starship custom-asset loading quirk, not fixable mod-side.
+- The beta boost gauge toggle requires Starship 2.0 "Barnard" or later (our
+  pin qualifies).
+- Not toggleable per-texture; HD vehicle models can be reverted by removing
+  the HD-model `.o2r` files from `mods/`.
+
+Emulator-format texture packs (UnaidedCoder's, Razius's HD, the original Lylat
+Reloaded for GLideN64/PJ64) cannot be loaded by Starship; they only work in
+N64 emulators. DirectX 11 / Helix Mod fixes are Windows-only and do not apply
+to the native Linux AppImage.

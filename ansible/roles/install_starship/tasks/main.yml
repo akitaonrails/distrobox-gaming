@@ -61,6 +61,43 @@
     dest: "{{ dg_starship_bin }}"
     mode: "0755"
 
+- name: Stage LR2EB visual overhaul archive on the NAS
+  ansible.builtin.get_url:
+    url: "{{ dg_starship_lr2eb_asset_url }}"
+    dest: "{{ dg_starship_lr2eb_archive }}"
+    checksum: "md5:{{ dg_starship_lr2eb_asset_md5 }}"
+    mode: "0644"
+  when: dg_starship_lr2eb_enabled | bool
+
+# The mods directory lives inside the install directory, which is recreated on
+# Starship upgrades, so this must run after the AppImage install task. The mods
+# directory is dedicated to LR2EB; a pack bump replaces every .o2r in it.
+- name: Install LR2EB .o2r mods into the Starship mods directory
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      mods="{{ dg_starship_mods_dir }}"
+      marker="$mods/.dg-lr2eb-ref"
+      if [ -f "$marker" ] && grep -qx "{{ dg_starship_lr2eb_install_id }}" "$marker"; then
+        exit 0
+      fi
+
+      mkdir -p "$mods"
+      rm -f "$mods"/*.o2r
+      tmp="{{ dg_starship_cache_dir }}/lr2eb-extract"
+      rm -rf "$tmp"
+      mkdir -p "$tmp"
+      unzip -q "{{ dg_starship_lr2eb_archive }}" -d "$tmp"
+      find "$tmp" -type f -name "*.o2r" -exec cp -f {} "$mods/" \;
+      rm -rf "$tmp"
+      test -n "$(find "$mods" -maxdepth 1 -name "*.o2r" -print -quit)"
+      printf "%s\n" "{{ dg_starship_lr2eb_install_id }}" > "$marker"
+      printf "%s\n" "installed-lr2eb $mods"
+    '
+  register: _starship_lr2eb
+  changed_when: "'installed-lr2eb' in _starship_lr2eb.stdout"
+  when: dg_starship_lr2eb_enabled | bool
+
 - name: Remove legacy Starship launcher that shadows prompt binary
   ansible.builtin.file:
     path: "{{ dg_starship_legacy_bin }}"

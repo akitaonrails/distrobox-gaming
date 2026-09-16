@@ -27,6 +27,24 @@ dg_starship_rom_sha1: 09f0d105f476b00efa5303a3ebc42e60a7753b7a
 
 dg_starship_install_id: "{{ dg_starship_version }}-{{ dg_starship_git_ref }}-{{ dg_starship_asset_sha256 }}"
 
+# Optional LR2EB ("Lylat Reloaded 2: Electric Boogaloo") visual overhaul by
+# MaddiAddi — https://gamebanana.com/wips/90597. The only Starship-native
+# (.o2r) visual overhaul: hi-poly Star Fox Zero / 64 3D vehicle models plus HD
+# textures, HUD, and explosion animations. WIP with known visual issues (see
+# docs/starship.md). The zip is staged on the NAS so rebuilds never re-download
+# it. Emulator texture packs (UnaidedCoder, Razius, original Lylat Reloaded)
+# are GLideN64/PJ64 format and cannot be loaded by Starship.
+dg_starship_lr2eb_enabled: true
+dg_starship_lr2eb_version: preview-3.5
+# GameBanana file IDs are stable per upload; bump both when a new preview ships.
+dg_starship_lr2eb_file_id: "1614597"
+dg_starship_lr2eb_asset_name: lr2eb_preview_35.zip
+dg_starship_lr2eb_asset_url: "https://gamebanana.com/dl/{{ dg_starship_lr2eb_file_id }}"
+dg_starship_lr2eb_asset_md5: 7a9667b01417ad7f67bdafb4201eb731
+dg_starship_lr2eb_archive: "{{ dg_roms_final_root }}/PC/starship/{{ dg_starship_lr2eb_asset_name }}"
+dg_starship_mods_dir: "{{ dg_starship_install_dir }}/mods"
+dg_starship_lr2eb_install_id: "lr2eb-{{ dg_starship_lr2eb_version }}-{{ dg_starship_lr2eb_asset_md5 }}"
+
 dg_starship_pacman_packages:
   - unzip
   - fuse2
