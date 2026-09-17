@@ -49,3 +49,9 @@
     src: esde-rescan
     dest: "{{ dg_box_home }}/bin/esde-rescan"
     mode: "0755"
+
+- name: Deploy Xenia XBLA unlock helper
+  ansible.builtin.copy:
+    src: xenia-unlock-xbla
+    dest: "{{ dg_box_home }}/bin/xenia-unlock-xbla"
+    mode: "0755"

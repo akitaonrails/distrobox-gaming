@@ -56,6 +56,52 @@ If your Xbox 360 ROMs live elsewhere, override in
 dg_xenia_game_dir: /your/path/xbox360
 ```
 
+## Adding games to the catalog
+
+Xenia Manager keeps its catalog in `Config/games.json` and populates it through
+its **GUI only** — *Library → Add Games → scan a folder* points it at
+`dg_xenia_game_dir`, boots each title to read its title-ID/media-ID, and
+downloads artwork + compatibility ratings. There is no import CLI, so add games
+through the GUI (the scan skips titles already added). Re-run the scan whenever
+you drop new ISOs into `roms_heavy/xbox360`. Hand-editing `games.json` is not
+recommended — a malformed entry can drop the whole catalog, and entries added
+that way have no artwork.
+
+If the same game gets imported twice you get a duplicate entry (Xenia Manager
+renames the second `… (1)`); remove the redundant entry from `games.json` (and
+its `GameData/<title>/` artwork dir + `…/config/<title>.config.toml`) with
+Xenia closed.
+
+## Unlocking XBLA (Arcade) games
+
+XBLA titles ship as a **trial** that checks whether you own the full-game
+license — on real hardware that comes from your Xbox Live account. Xenia has no
+real Live, so it reports ownership through each game's **`license_mask`** config
+setting (default `0` = own nothing → the game shows locked and nags you to "go
+online"). Setting it to `1` (own the first license = full game) unlocks the
+title **offline**.
+
+The helper **`bin/xenia-unlock-xbla`** (deployed by `scripts_in_box`) does this
+in bulk: it reads the Xenia Manager catalog, finds every XBLA title (content
+type `000D0000`), sets `license_mask = 1` in each one's config (backing up
+`.bak`), and bumps the global `xenia-canary.config.toml` default so
+freshly-imported games start unlocked. Run it after importing new XBLA games,
+with **Xenia closed** (Xenia rewrites its configs on exit; the helper refuses if
+Xenia or the Manager is running):
+
+```sh
+distrobox enter gaming -- xenia-unlock-xbla
+```
+
+Notes:
+
+- A few titles with multiple entitlements want `license_mask = -1` (own **all**
+  licenses) rather than `1` — set those by hand in the game's config (or via
+  Xenia Manager → the game → Xenia settings).
+- `license_mask` unlocks only the local trial→full / DLC entitlement. It does
+  **not** provide real online multiplayer or leaderboards (no actual Live;
+  Xenia's netplay is separate and experimental).
+
 ## Why `pacman -Sy` and not `-Syu`
 
 This role installs `wine` + `winetricks` with `pacman -Sy --needed` (sync

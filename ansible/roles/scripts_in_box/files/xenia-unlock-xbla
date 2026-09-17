@@ -1,0 +1,60 @@
+#!/usr/bin/env sh
+# xenia-unlock-xbla — unlock XBLA (Xbox Live Arcade) games in Xenia.
+#
+# XBLA titles ship as a trial that checks whether you own the full-game
+# license; on real hardware that comes from your Xbox Live account. Xenia has
+# no real Live, so it reports ownership via the per-game `license_mask` setting
+# (default 0 = own nothing -> the game shows locked and nags you to "go
+# online"). This sweeps every XBLA title in the Xenia Manager catalog and sets
+# `license_mask = 1` in its config (own the first license = full game), backing
+# up each changed config as .bak. Also bumps the global default so newly
+# imported games start unlocked.
+#
+# Run it after importing new XBLA games in Xenia Manager, with Xenia CLOSED
+# (Xenia rewrites its configs on exit). A few titles with multiple entitlements
+# want `license_mask = -1` (own ALL licenses) instead of 1 — set those by hand.
+# Managed by the distrobox-gaming scripts_in_box role.
+set -eu
+
+XMC="$HOME/tools/xenia-manager/current"
+games="$XMC/Config/games.json"
+[ -f "$games" ] || { echo "xenia-unlock-xbla: no Xenia Manager catalog at $games" >&2; exit 1; }
+
+if pgrep -fi "xenia_canary|xenia.exe|XeniaManager|Xenia Canary" >/dev/null 2>&1; then
+  echo "xenia-unlock-xbla: close Xenia / Xenia Manager first (they rewrite configs on exit)." >&2
+  exit 1
+fi
+
+# XBLA is detected by the 000D0000 content type (or an /xbla/ path) in the
+# game's install location. Per-game configs are Xenia-Manager-generated.
+python3 - "$XMC" <<'PY'
+import json, os, re, shutil, sys
+XMC = sys.argv[1]
+games = json.load(open(f"{XMC}/Config/games.json"))
+total = changed = 0
+for g in games:
+    path = (g.get("file_locations", {}).get("game") or "").lower()
+    if "000d0000" not in path and "xbla" not in path:
+        continue
+    total += 1
+    cfg = g.get("file_locations", {}).get("config", "")
+    p = os.path.join(XMC, cfg.replace("\\", "/"))
+    if not os.path.isfile(p):
+        continue
+    txt = open(p, errors="ignore").read()
+    new = re.sub(r"(?m)^(\s*license_mask\s*=\s*)0\b", r"\g<1>1", txt, count=1)
+    if new != txt:
+        shutil.copyfile(p, p + ".bak")
+        open(p, "w").write(new)
+        changed += 1
+        print("  unlocked:", g["title"])
+print(f"XBLA titles: {total}; newly unlocked: {changed} (the rest were already license_mask=1)")
+PY
+
+# Global default: new per-game configs Xenia Manager creates start unlocked too.
+gc="$XMC/Emulators/Xenia Canary/xenia-canary.config.toml"
+if [ -f "$gc" ] && grep -q '^license_mask = 0' "$gc"; then
+  sed -i '0,/^license_mask = 0/s//license_mask = 1/' "$gc"
+  echo "  set global default license_mask = 1"
+fi
+echo "xenia-unlock-xbla: done."
