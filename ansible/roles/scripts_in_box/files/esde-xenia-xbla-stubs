@@ -1,0 +1,71 @@
+#!/usr/bin/env sh
+# esde-xenia-xbla-stubs — make Xenia XBLA (Arcade) titles visible in ES-DE.
+#
+# XBLA games are stored as extension-less content packages
+# (xbla/<title>/<mediaid>/000D0000/<hash>), which ES-DE's file scan can't see —
+# so they never appear alongside the disc (.iso/.xex) titles. This reads the
+# Xenia Manager catalog (games.json), and for every XBLA title writes a tiny
+# `<title>.xbla` stub into the xbla/ folder whose contents are the Linux path of
+# the content package to boot. `.xbla` is a scanned extension for the ES-DE
+# xbox360 system, and xenia-canary-launch resolves the stub back to that content
+# file (and thus its per-game config, where license_mask=1 lives).
+#
+# Idempotent: rewrites only changed stubs and prunes stubs whose title has left
+# the catalog. Run after importing new XBLA games in Xenia Manager (then rescan
+# in ES-DE). Managed by the distrobox-gaming scripts_in_box role.
+set -eu
+
+XMC="${DG_XENIA_RELEASE_DIR:-$HOME/tools/xenia-manager/current}"
+games="$XMC/Config/games.json"
+[ -f "$games" ] || { echo "esde-xenia-xbla-stubs: no Xenia Manager catalog at $games" >&2; exit 1; }
+
+python3 - "$games" <<'PY'
+import json, os, re, sys
+
+games = json.load(open(sys.argv[1]))
+
+def wine_to_linux(p):
+    # "Z:\mnt\...\hash" -> "/mnt/.../hash"
+    if re.match(r'^[A-Za-z]:', p):
+        p = "/" + p[2:].lstrip("\\").replace("\\", "/")
+    return p
+
+written = kept = 0
+managed_dirs = {}          # xbla_dir -> set(expected stub basenames)
+for g in games:
+    game = (g.get("file_locations", {}).get("game") or "")
+    low = game.lower()
+    if "000d0000" not in low and "\\xbla\\" not in low:
+        continue
+    content = wine_to_linux(game)
+    parts = content.split("/")
+    try:
+        idx = [p.lower() for p in parts].index("xbla")
+    except ValueError:
+        continue
+    xbla_dir = "/".join(parts[:idx + 1])
+    title = (g.get("title") or "").strip() or os.path.basename(parts[idx + 1] if len(parts) > idx + 1 else "game")
+    safe = re.sub(r'[\\/:*?"<>|]', "_", title).strip()
+    stub = os.path.join(xbla_dir, safe + ".xbla")
+    managed_dirs.setdefault(xbla_dir, set()).add(os.path.basename(stub))
+    body = content + "\n"
+    if not os.path.isdir(xbla_dir):
+        print(f"  skip (no xbla dir): {title}", file=sys.stderr)
+        continue
+    if os.path.isfile(stub) and open(stub, errors="ignore").read() == body:
+        kept += 1
+        continue
+    open(stub, "w").write(body)
+    written += 1
+    print("  stub:", os.path.basename(stub))
+
+pruned = 0
+for d, expected in managed_dirs.items():
+    for fn in os.listdir(d):
+        if fn.lower().endswith(".xbla") and fn not in expected:
+            os.remove(os.path.join(d, fn))
+            pruned += 1
+            print("  pruned stale stub:", fn)
+
+print(f"esde-xenia-xbla-stubs: {written} written, {kept} unchanged, {pruned} pruned.")
+PY

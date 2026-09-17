@@ -24,6 +24,27 @@ ROM="${1:-}"
   exit 2
 }
 
+# XBLA (Arcade) titles have no scannable file, so ES-DE scans a small
+# `<title>.xbla` stub instead (written by the esde-xenia-xbla-stubs helper).
+# The stub's first non-empty line is the real content package to boot — a
+# Linux path, or the Wine Z:\ form as recorded in games.json. Resolve it here
+# so the rest of the script sees the actual ROM (and matches its per-game
+# config, where license_mask=1 lives).
+case "$ROM" in
+  *.xbla | *.XBLA)
+    target=$(grep -m1 -v '^[[:space:]]*$' "$ROM" 2>/dev/null || true)
+    case "$target" in
+      [Zz]:*) target="/$(printf '%s' "${target#?:}" | tr '\\' '/')" ;;
+    esac
+    [ -n "$target" ] && [ -e "$target" ] || {
+      echo "[xenia-launch] bad .xbla stub (no valid content path inside): $ROM" >&2
+      exit 2
+    }
+    echo "[xenia-launch] XBLA stub -> $target" >&2
+    ROM="$target"
+    ;;
+esac
+
 : "${DG_XENIA_RELEASE_DIR:=${HOME}/tools/xenia-manager/current}"
 : "${DG_XENIA_PREFIX:=${HOME}/wineprefixes/xenia-manager}"
 

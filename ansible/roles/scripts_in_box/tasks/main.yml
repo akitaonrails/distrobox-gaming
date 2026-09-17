@@ -61,3 +61,9 @@
     src: esde-name-romhacks
     dest: "{{ dg_box_home }}/bin/esde-name-romhacks"
     mode: "0755"
+
+- name: Deploy ES-DE XBLA stub generator (surfaces Xenia XBLA titles in ES-DE)
+  ansible.builtin.copy:
+    src: esde-xenia-xbla-stubs
+    dest: "{{ dg_box_home }}/bin/esde-xenia-xbla-stubs"
+    mode: "0755"

@@ -72,6 +72,34 @@ renames the second `… (1)`); remove the redundant entry from `games.json` (and
 its `GameData/<title>/` artwork dir + `…/config/<title>.config.toml`) with
 Xenia closed.
 
+## Showing Xbox 360 games in ES-DE
+
+The ES-DE **xbox360** system scans `roms_heavy/xbox360` for `.iso`/`.xex` files
+and launches each via `bin/xenia-canary-launch`, which resolves the ROM to its
+Xenia Manager per-game config. So **disc titles you drop in as ISOs (or the
+modded `default.xex` subdirs) appear in ES-DE automatically** on its next scan
+(`dg_esde_parse_gamelist_only: false` keeps the scan on; otherwise run
+`esde-rescan` — see [esde-fast-startup.md](esde-fast-startup.md)).
+
+**XBLA (Arcade) titles are the exception.** They live under `xbla/` as
+extension-less content packages (`<title>/<mediaid>/000D0000/<hash>`), which
+ES-DE's file scan can't see — so they never show up next to the disc games. The
+helper **`bin/esde-xenia-xbla-stubs`** (deployed by `scripts_in_box`) fixes that:
+it reads the Xenia Manager catalog and writes one small **`<title>.xbla` stub**
+per XBLA game into `xbla/`, each pointing at that game's content package.
+`.xbla` is a scanned extension for the xbox360 system, and `xenia-canary-launch`
+resolves a stub back to its content file (and thus its per-game config, where
+`license_mask` lives). Run it after importing new XBLA games, then rescan ES-DE:
+
+```sh
+distrobox enter gaming -- esde-xenia-xbla-stubs
+distrobox enter gaming -- esde-rescan     # only needed if fast-startup is on
+```
+
+It is idempotent (rewrites only changed stubs, prunes stubs whose title left the
+catalog). A game imported twice in Xenia Manager (`… (1)`) yields a second stub;
+remove the duplicate catalog entry (see above) and re-run to prune it.
+
 ## Unlocking XBLA (Arcade) games
 
 XBLA titles ship as a **trial** that checks whether you own the full-game

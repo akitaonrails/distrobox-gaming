@@ -151,15 +151,21 @@ dg_esde_systems:
     # Plus, RidgeRacerCollection, etc.) have default.xex inside; ES-DE
     # recurses subdirs by default and picks them up. The wrapper resolves
     # each ROM to its Xenia Manager per-game config via games.json.
+    #
+    # XBLA (Arcade) titles under xbla/ are extension-less content packages
+    # (<title>/<mediaid>/000D0000/<hash>) that ES-DE's file scan can't see.
+    # The `esde-xenia-xbla-stubs` helper (scripts_in_box) writes one small
+    # `<title>.xbla` stub per XBLA game, pointing at its content package;
+    # `.xbla` is in the extension list below so ES-DE lists them, and the
+    # wrapper resolves a stub back to the content file + its per-game config.
     path: "{{ dg_emudeck_root }}/roms_heavy/xbox360"
-    extension: ".iso .ISO .xex .XEX"
+    extension: ".iso .ISO .xex .XEX .xbla .XBLA"
     commands:
       # Wrapper resolves %ROM% to its per-game .config.toml via Xenia
       # Manager's games.json, then runs xenia_canary.exe in the
       # dg_xenia_prefix wineprefix. Falls back to default config with a
-      # stderr warning if the ROM is unmapped (e.g. XBLA folder hashes
-      # whose tracked path in games.json doesn't match an .iso/.xex
-      # filename ES-DE scanned).
+      # stderr warning if the ROM is unmapped. A `.xbla` stub is first
+      # resolved to the real XBLA content package it names.
       - label: "Xenia Canary (per-game config)"
         cmd: "{{ dg_box_home }}/bin/xenia-canary-launch %ROM%"
     platform: xbox360
