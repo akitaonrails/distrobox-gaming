@@ -1,0 +1,133 @@
+---
+# Lighthouse — HarbourMasters' native Linux Banjo-Kazooie PC port (libultraship,
+# the Ship of Harkinian family). Prebuilt release zip + baserom placed next to
+# the appimage; LUS generates bk.o2r from it on first launch.
+# See group_vars/all/lighthouse.yml and docs/lighthouse.md.
+
+- name: Revert Lighthouse when requested
+  when: dg_lighthouse_revert | bool
+  block:
+    - name: Remove the Lighthouse launcher, desktop entry + install dir
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_lighthouse_launcher }}"
+        - "{{ dg_lighthouse_root }}"
+        - "{{ dg_desktop_render_dir }}/gaming-lighthouse.desktop"
+    - name: Refresh host launchers after removing Lighthouse
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      changed_when: true
+    - name: Report Lighthouse reverted
+      ansible.builtin.debug:
+        msg: "Lighthouse removed. Your NAS ROM is untouched."
+
+- name: Install Lighthouse
+  when: not (dg_lighthouse_revert | bool)
+  block:
+    - name: Verify the Banjo-Kazooie ROM zip exists
+      ansible.builtin.stat:
+        path: "{{ dg_lighthouse_rom_zip }}"
+      register: _lighthouse_rom
+      failed_when: not _lighthouse_rom.stat.exists
+
+    - name: Create Lighthouse directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_lighthouse_root }}"
+        - "{{ dg_lighthouse_cache_dir }}"
+        - "{{ dg_lighthouse_install_dir }}"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Install Lighthouse runtime dependencies inside box
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} sudo pacman -S --needed --noconfirm
+        {{ dg_lighthouse_pacman_packages | join(' ') }}
+      register: _lighthouse_pacman
+      changed_when: "'installing' in _lighthouse_pacman.stdout or 'upgrading' in _lighthouse_pacman.stdout"
+
+    - name: Download the pinned Lighthouse release ZIP
+      ansible.builtin.get_url:
+        url: "{{ dg_lighthouse_asset_url }}"
+        dest: "{{ dg_lighthouse_cache_dir }}/{{ dg_lighthouse_asset_name }}"
+        checksum: "sha256:{{ dg_lighthouse_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Install the Lighthouse release (appimage + gamecontrollerdb)
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          if [ -x "{{ dg_lighthouse_install_dir }}/lighthouse.appimage" ] &&
+             [ -f "{{ dg_lighthouse_install_dir }}/.dg-installed-ref" ] &&
+             grep -qx "{{ dg_lighthouse_install_id }}" "{{ dg_lighthouse_install_dir }}/.dg-installed-ref"; then
+            exit 0
+          fi
+
+          rm -rf "{{ dg_lighthouse_install_dir }}"
+          mkdir -p "{{ dg_lighthouse_install_dir }}"
+          unzip -q "{{ dg_lighthouse_cache_dir }}/{{ dg_lighthouse_asset_name }}" -d "{{ dg_lighthouse_install_dir }}"
+          chmod 0755 "{{ dg_lighthouse_install_dir }}/lighthouse.appimage"
+          printf "%s\n" "{{ dg_lighthouse_install_id }}" > "{{ dg_lighthouse_install_dir }}/.dg-installed-ref"
+          printf "%s\n" "installed-lighthouse {{ dg_lighthouse_install_dir }}"
+        '
+      register: _lighthouse_install
+      changed_when: "'installed-lighthouse' in _lighthouse_install.stdout"
+
+    - name: Seed the baserom next to the appimage (unzip, byteswap to z64, verify sha1)
+      ansible.builtin.shell: |
+        python3 - <<'PY'
+        import hashlib, zipfile
+        zf = zipfile.ZipFile("{{ dg_lighthouse_rom_zip }}")
+        names = [n for n in zf.namelist() if n.lower().endswith((".v64", ".n64", ".z64"))]
+        assert names, "no ROM inside the zip"
+        d = bytearray(zf.read(names[0])); m = bytes(d[:4])
+        if m == b'\x37\x80\x40\x12':                       # .v64 byte-swapped
+            for i in range(0, len(d) - 1, 2): d[i], d[i+1] = d[i+1], d[i]
+        elif m == b'\x40\x12\x37\x80':                     # .n64 little-endian
+            d = bytearray(b''.join(bytes(d[i:i+4][::-1]) for i in range(0, len(d), 4)))
+        assert bytes(d[:4]) == b'\x80\x37\x12\x40', m.hex()
+        h = hashlib.sha1(bytes(d)).hexdigest()
+        if h != "{{ dg_lighthouse_rom_sha1_z64 }}":
+            raise SystemExit("ROM sha1 mismatch (need Banjo-Kazooie USA v1.0): " + h)
+        open("{{ dg_lighthouse_rom_stored }}", 'wb').write(bytes(d)); print("stored baserom ok (" + h + ")")
+        PY
+      args:
+        creates: "{{ dg_lighthouse_rom_stored }}"
+
+    - name: Deploy the Lighthouse launcher
+      ansible.builtin.template:
+        src: lighthouse.sh.j2
+        dest: "{{ dg_lighthouse_launcher }}"
+        mode: "0755"
+
+    - name: Render the Lighthouse desktop entry
+      ansible.builtin.template:
+        src: lighthouse.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-lighthouse.desktop"
+        mode: "0644"
+
+    - name: Install the desktop file into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _lighthouse_host_launchers
+      changed_when: >-
+        'installed ' in _lighthouse_host_launchers.stdout or
+        'removed stale ' in _lighthouse_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Lighthouse {{ dg_lighthouse_version }} at {{ dg_lighthouse_install_dir }};
+          launcher {{ dg_lighthouse_launcher }}. Baserom seeded as
+          {{ dg_lighthouse_rom_name }} — first launch generates bk.o2r from it.
+          Revert: -e dg_lighthouse_revert=true.

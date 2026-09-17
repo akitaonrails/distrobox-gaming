@@ -197,11 +197,11 @@ dg_ogm_games:
     category: recomp
     sgdb_query: "Donkey Kong Country 3: Dixie Kong's Double Trouble!"
     github: "{{ dg_dkc_games | selectattr('key', 'eq', 'dkc3') | map(attribute='repo') | first | regex_replace('^https://(api\\.)?github\\.com/(repos/)?([^/]+/[^/]+?)(\\.git)?(/.*)?$', '\\3') }}"
-  - desktop_id: gaming-banjo-recomp
-    id: banjo-recomp
-    category: recomp
+  - desktop_id: gaming-lighthouse
+    id: lighthouse
+    category: port
     sgdb_query: "Banjo-Kazooie"
-    github: "{{ dg_banjo_repo }}"
+    github: "{{ dg_lighthouse_repo }}"
   - desktop_id: gaming-goldeneye
     id: goldeneye
     category: recomp

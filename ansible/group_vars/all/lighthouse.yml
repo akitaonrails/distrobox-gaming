@@ -1,0 +1,37 @@
+---
+# Lighthouse — HarbourMasters' native Linux Banjo-Kazooie PC port, built on
+# libultraship (the Ship of Harkinian / Starship / SpaghettiKart family).
+# Replaces the old BanjoRecomp static recompilation: same-family port means
+# upscaling, romhack/mod support, language packs and the shared LUS UX.
+# Needs the user's own Banjo-Kazooie (USA) v1.0 ROM. See docs/lighthouse.md.
+
+dg_lighthouse_repo: HarbourMasters/Lighthouse
+dg_lighthouse_version: "1.1.0"
+dg_lighthouse_asset_name: Lighthouse-Hatteras-Alfa-Linux.zip
+dg_lighthouse_asset_url: "https://github.com/{{ dg_lighthouse_repo }}/releases/download/{{ dg_lighthouse_version }}/{{ dg_lighthouse_asset_name }}"
+dg_lighthouse_asset_sha256: 0ed81123ab142e711854c95921c1e37b2e75dd4a3966fa0382f65da7c775986d
+
+dg_lighthouse_root: "{{ dg_box_home }}/tools/lighthouse"
+dg_lighthouse_install_dir: "{{ dg_lighthouse_root }}/current"   # appimage + gamecontrollerdb + baserom + generated bk.o2r
+dg_lighthouse_cache_dir: "{{ dg_lighthouse_root }}/cache"
+dg_lighthouse_bin: "{{ dg_lighthouse_install_dir }}/lighthouse.appimage"
+dg_lighthouse_launcher: "{{ dg_box_home }}/bin/lighthouse"
+
+# ROM: the user's own Banjo-Kazooie (USA) v1.0. Lighthouse self-generates its
+# bk.o2r asset archive from a baserom placed next to the appimage on first
+# launch (LUS auto-detects it in the cwd — no picker), exactly like the SoH
+# role. We reuse the proven ROMS_FINAL zip; its extracted z64 sha1 IS the
+# Lighthouse-supported US v1.0 checksum, so the same dump keeps working.
+dg_lighthouse_rom_zip: "{{ dg_roms_final_root }}/n64/Banjo-Kazooie (USA).zip"
+dg_lighthouse_rom_name: baserom.us.v10.z64
+dg_lighthouse_rom_stored: "{{ dg_lighthouse_install_dir }}/{{ dg_lighthouse_rom_name }}"
+dg_lighthouse_rom_sha1_z64: 1fe1632098865f639e22c11b9a81ee8f29c75d7a
+
+dg_lighthouse_install_id: "{{ dg_lighthouse_version }}-{{ dg_lighthouse_asset_sha256 }}"
+dg_lighthouse_main_output: "DP-1"
+dg_lighthouse_revert: false
+
+dg_lighthouse_pacman_packages:
+  - unzip
+  - fuse2
+  - zenity

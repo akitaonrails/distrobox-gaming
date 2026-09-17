@@ -1,0 +1,33 @@
+#!/usr/bin/env sh
+set -eu
+# Lighthouse — HarbourMasters' Banjo-Kazooie PC port (libultraship). Native on
+# the RTX, opens on DP-1. 8BitDo native via SDL2 + the bundled gamecontrollerdb.
+# Managed by install_lighthouse. First launch auto-generates bk.o2r from the
+# baserom sitting next to the appimage (pass "-hack <slug>" to boot a romhack).
+
+BIN="{{ dg_lighthouse_bin }}"
+if [ ! -x "$BIN" ]; then
+  printf '%s\n' "ERROR: lighthouse.appimage missing at $BIN. Run: ansible-playbook install-lighthouse.yml" >&2
+  exit 1
+fi
+
+# Focus the main landscape 4K monitor (Hyprland >= 0.56 Lua IPC form).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_lighthouse_main_output }}" }))'); s.recv(256); s.close()
+PY
+
+# libultraship renders on OpenGL — pin the nvidia GLX (not the AMD iGPU).
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+# cwd holds the appimage, gamecontrollerdb.txt, the baserom and the generated
+# bk.o2r / lighthouse.cfg.json — LUS reads and writes them relative to it.
+cd "{{ dg_lighthouse_install_dir }}"
+exec "$BIN" "$@"

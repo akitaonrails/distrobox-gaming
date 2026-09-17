@@ -1,4 +1,4 @@
-# Sonic fan games: S3AIR, SMS Remake · Banjo: Recompiled
+# Sonic fan games: S3AIR, SMS Remake (Banjo-Kazooie moved to lighthouse.md)
 
 Three installs from the 2026-09-04 batch (`docs/dkc-recomp.md` came the same
 week — it's fan-port season).
@@ -31,14 +31,8 @@ exe inside). Launcher `bin/sonic-sms-remake`, Walker "Sonic SMS Remake".
 Sonic 2 SMS and Sonic 3 SMS remakes exist on the same site — drop their zips
 next to this one and clone the role data if wanted.
 
-## Banjo: Recompiled (`install_banjo_recomp`)
+## Banjo-Kazooie
 
-[BanjoRecomp/BanjoRecomp](https://github.com/BanjoRecomp/BanjoRecomp) —
-N64Recomp + RT64 static recomp of Banjo-Kazooie, the exact DK64 pattern:
-**official prebuilt Linux x64 release** (v1.0.2, sha256-pinned), ROM pre-seeded
-as `~/.config/BanjoRecompiled/bk.n64.us.1.0.z64` so the picker never appears.
-**ROM must be USA v1.0** — the goodset dump inside
-`ROMS_FINAL/n64/Banjo-Kazooie (USA).zip` (z64 sha1 `1fe16320…`); the EmuDeck
-"Rev A" is v1.1 and is rejected. `graphics.json` seeded Fullscreen + Vulkan.
-Verified: fullscreen DP-1 on the RTX via the deployed launcher. Launcher
-`bin/banjo-recomp`, Walker "Banjo-Kazooie · Recompiled".
+Moved to its own page — Banjo-Kazooie now runs on **Lighthouse**, HarbourMasters'
+libultraship PC port (the old BanjoRecomp recompilation was replaced). See
+[docs/lighthouse.md](lighthouse.md).

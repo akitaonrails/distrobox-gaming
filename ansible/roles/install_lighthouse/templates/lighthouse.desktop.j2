@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Banjo-Kazooie · Lighthouse (on {{ dg_box_name }})
+Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_lighthouse_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Banjo-Kazooie (N64) native PC port — HarbourMasters Lighthouse (libultraship) on the RTX.
+Categories=Game;
+Keywords=banjo;kazooie;n64;rare;lighthouse;harbourmasters;libultraship;
+StartupWMClass=Lighthouse;
+{{ ogm_metadata('gaming-lighthouse') }}

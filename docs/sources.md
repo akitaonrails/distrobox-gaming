@@ -20,7 +20,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | Render96ex | Super Mario 64 (HD, DynOS) | [Render96/Render96ex](https://github.com/Render96/Render96ex) · [doc](render96ex.md) |
 | GoldenEye 007 Recompiled | N64Recomp + RT64 native build | [cblock85/GoldenEye64Recomp](https://github.com/cblock85/GoldenEye64Recomp) · [doc](goldeneye-recomp.md) |
 | DK64 Recompiled | Donkey Kong 64 native recomp | [Rainchus/Donkey-Kong-64-Recompiled](https://github.com/Rainchus/Donkey-Kong-64-Recompiled) · [doc](dk64-recomp.md) |
-| Banjo-Kazooie Recompiled | Native recomp (prebuilt) | [BanjoRecomp/BanjoRecomp](https://github.com/BanjoRecomp/BanjoRecomp) |
+| Banjo-Kazooie (Lighthouse) | libultraship PC port (HarbourMasters) | [HarbourMasters/Lighthouse](https://github.com/HarbourMasters/Lighthouse) · [doc](lighthouse.md) |
 | Metroid Prime Hunters Recompiled | NDS recomp (last Linux build) | [mstan/MetroidPrimeHuntersRecomp](https://github.com/mstan/MetroidPrimeHuntersRecomp) · [doc](mph-recomp.md) |
 | Wave Race 64 Recompiled | RT64 recomp (Windows build/Wine) | [elliotttate/wave-race-64-recomp](https://github.com/elliotttate/wave-race-64-recomp) · [doc](waverace-recomp.md) |
 | Perfect Dark | N64 decomp PC port | [DabDavis/perfect-dark-dabs-mod](https://github.com/DabDavis/perfect-dark-dabs-mod) · [doc](perfect-dark.md) |
