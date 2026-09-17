@@ -9,6 +9,12 @@ ready-made **career-mode DBs** you can hot-swap, including a **Sandbox
 This page is the reference for swapping those DBs, editing prices directly, and
 **reverting** to the shipped state.
 
+> **Applied now (2026-09-16):** Sandbox (easy) mode is currently swapped into
+> **FM4 and FM2** — every car and upgrade costs 1 credit. The pre-swap Normal
+> DBs are backed up alongside the actives as `gamedb.slt.bak` (FM4
+> `Media/db/`, FM2 `Media/DB/`). To go back to normal prices, see
+> [Revert](#revert). (FM3 and FH have no Sandbox DB, so they were untouched.)
+
 > All paths below hang off the roms_heavy Xbox 360 dir. Set once:
 > ```sh
 > HEAVY="/mnt/terachad/Emulators/EmuDeck/roms_heavy/xbox360"   # = {{ dg_rom_heavy_root }}/xbox360
