@@ -1,0 +1,82 @@
+#!/usr/bin/env sh
+# esde-name-romhacks — de-collide ROM-hack titles in ES-DE gamelists.
+#
+# When ES-DE's scraper can't identify a ROM hack it drops the file in a
+# `no_match/` subfolder and (if you then match it by hand) stamps it with the
+# BASE game's name. The result: several hacks all show up as e.g. "Super Mario
+# World", indistinguishable in the UI. The hack's real identity only survives in
+# its filename — either a "(<NAME> ROM HACK)" tag or a "[<tool> hack ...]"
+# credit.
+#
+# This sweeps every gamelist, and for each game whose <path> is under a
+# `no_match/` dir whose filename carries a hack marker, appends that marker to
+# the <name> (e.g. "Super Mario World" -> "Super Mario World (Dinosaur Land)").
+# Idempotent: a descriptor already present in the name is left alone, so it is
+# safe to re-run after each new scrape. Each changed gamelist is backed up .bak.
+#
+# Run with ES-DE CLOSED (ES-DE rewrites its gamelists on exit and would clobber
+# the edit). Managed by the distrobox-gaming scripts_in_box role.
+set -eu
+
+GAMELISTS="${DG_ESDE_GAMELISTS:-$HOME/ES-DE/gamelists}"
+[ -d "$GAMELISTS" ] || { echo "esde-name-romhacks: no gamelists dir at $GAMELISTS" >&2; exit 1; }
+
+if pgrep -x es-de >/dev/null 2>&1 || pgrep -x emulationstation >/dev/null 2>&1; then
+  echo "esde-name-romhacks: close ES-DE first (it rewrites gamelists on exit)." >&2
+  exit 1
+fi
+
+python3 - "$GAMELISTS" <<'PY'
+import re, glob, os, sys, html
+GL = sys.argv[1]
+KEEP = {'DX','NES','HD','II','III','IV','V','VI','SA1','FX','GB'}
+
+def norm_words(s):
+    return " ".join(w if w.upper() in KEEP else w.capitalize() for w in s.split())
+
+def descriptor(fname):
+    stem = fname.rsplit('.', 1)[0]
+    m = re.search(r'\(([^()]*?)\s*ROM HACK\)', stem, re.I)
+    if m:
+        d = norm_words(m.group(1).strip())
+        return "(" + (d if d else "ROM Hack") + ")"
+    m = re.search(r'\[([^\[\]]*?)\bhack\b([^\[\]]*)\]', stem, re.I)
+    if m:
+        pre = re.sub(r'\b(by|the)\b.*$', '', m.group(1).strip(), flags=re.I).strip()
+        return "(" + (pre or "Hack") + " Hack)"
+    return None
+
+def already_has(desc, name):
+    words = [w for w in re.split(r'\s+', desc.strip("()").lower()) if w != 'hack']
+    return words and all(w in name.lower() for w in words)
+
+total = 0
+for f in sorted(glob.glob(f"{GL}/*/gamelist.xml")):
+    txt = open(f, encoding='utf-8', errors='ignore').read()
+    changes = []
+    def repl(m):
+        block = m.group(0)
+        pm = re.search(r"<path>(.*?)</path>", block, re.S)
+        nm = re.search(r"<name>(.*?)</name>", block, re.S)
+        if not pm or not nm or "/no_match/" not in pm.group(1).strip():
+            return block
+        d = descriptor(html.unescape(os.path.basename(pm.group(1).strip())))
+        if not d:
+            return block
+        old = nm.group(1).strip()
+        if already_has(d, old):
+            return block
+        new = f"{old} {d}"
+        changes.append((old, new))
+        return block.replace(f"<name>{nm.group(1)}</name>",
+                             f"<name>{html.escape(new, quote=False)}</name>", 1)
+    new = re.sub(r"<game>.*?</game>", repl, txt, flags=re.S)
+    if changes:
+        open(f + ".bak", "w", encoding='utf-8').write(txt)
+        open(f, "w", encoding='utf-8').write(new)
+        print(f"{os.path.basename(os.path.dirname(f))}:")
+        for old, nn in changes:
+            print(f"  {old!r} -> {nn!r}")
+            total += 1
+print(f"esde-name-romhacks: renamed {total} entr" + ("y" if total == 1 else "ies") + ".")
+PY

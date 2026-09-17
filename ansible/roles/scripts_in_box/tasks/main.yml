@@ -55,3 +55,9 @@
     src: xenia-unlock-xbla
     dest: "{{ dg_box_home }}/bin/xenia-unlock-xbla"
     mode: "0755"
+
+- name: Deploy ES-DE ROM-hack title de-collision helper
+  ansible.builtin.copy:
+    src: esde-name-romhacks
+    dest: "{{ dg_box_home }}/bin/esde-name-romhacks"
+    mode: "0755"
