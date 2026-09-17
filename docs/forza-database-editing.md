@@ -9,11 +9,13 @@ ready-made **career-mode DBs** you can hot-swap, including a **Sandbox
 This page is the reference for swapping those DBs, editing prices directly, and
 **reverting** to the shipped state.
 
-> **Applied now (2026-09-16):** Sandbox (easy) mode is currently swapped into
-> **FM4 and FM2** — every car and upgrade costs 1 credit. The pre-swap Normal
-> DBs are backed up alongside the actives as `gamedb.slt.bak` (FM4
-> `Media/db/`, FM2 `Media/DB/`). To go back to normal prices, see
-> [Revert](#revert). (FM3 and FH have no Sandbox DB, so they were untouched.)
+> **Applied now (2026-09-16):** Sandbox (easy) mode is swapped into **FM4, FM2
+> and FM3** — every **base** car and upgrade costs 1 credit. Pre-swap Normal DBs
+> are backed up alongside the actives as `gamedb.slt.bak` (FM4 `Media/db/`, FM2
+> & FM3 `Media/DB/`). To go back to normal prices, see [Revert](#revert).
+> FM4's **DLC** cars are also $1 (its DLC DBs were swapped); **FM3's DLC cars
+> are still normal-priced** — see the FM3 note below. FH (XE Mod) has no Sandbox
+> DB and is untouched.
 
 > All paths below hang off the roms_heavy Xbox 360 dir. Set once:
 > ```sh
@@ -40,6 +42,30 @@ FM2 and FM3 have the same PFP layout (`FM2 (Project Forza Plus Modded)`,
 `FM3 (Project Forza Plus Modded)`; note FM2/FM3 use `Media/DB/` with a capital
 DB). `FH (XE Mod)` is a separate Forza Horizon 1 mod with its own
 `media/db/gamedb.slt`.
+
+### FM3 note
+
+FM3's install originally had **no `_game_mode_dbs/`** — only its active DB. The
+four mode DBs were **staged from the local extracted PFP source** at
+`/mnt/terachad/Emulators/Project Forza Plus/_extracted/PFP3/Project Forza Plus 3/Game Mode DBs/`
+(the whole PFP2/3/4 + Update packs live under
+`Project Forza Plus/_extracted/`). FM3 now has the same swappable
+`_game_mode_dbs/{Normal,Hard,Sandbox,Vanilla} Mode/` layout as FM2/FM4.
+
+FM3 mode `gamedb.slt` md5s: Normal `eae89760369d1356b98f41ecfe4448c9`
+(= the shipped default), Sandbox `36b97d4452875729c67615a2fe75e4aa`
+(415 cars, all $1). Swap/revert exactly like FM4 but with the FM3 paths
+(`Media/DB/`).
+
+**FM3 DLC cars are not yet on Sandbox pricing.** Unlike FM4 (whose Xenia
+`00000002` content is a per-install staged copy), FM3's content
+`…/4D53084D/00000002` symlinks straight to the **shared** 9.2 GB PFP3 pack
+(`…/_extracted/PFP3/…/Disc 2 and DLCs/00000002`). To make DLC cars $1 too,
+either (a) overlay `_game_mode_dbs/Sandbox Mode/DLC DBs/.` onto that pack
+(PFP's documented method — reversible with `Normal Mode/DLC DBs`, but it
+mutates the shared pack), or (b) stage a per-install copy of the 9.2 GB content
+and re-point the symlink (FM4's approach, no shared-pack mutation). Left as a
+follow-up.
 
 ## The career/easy modes (FM4)
 
