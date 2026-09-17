@@ -10,12 +10,12 @@ This page is the reference for swapping those DBs, editing prices directly, and
 **reverting** to the shipped state.
 
 > **Applied now (2026-09-16):** Sandbox (easy) mode is swapped into **FM4, FM2
-> and FM3** — every **base** car and upgrade costs 1 credit. Pre-swap Normal DBs
-> are backed up alongside the actives as `gamedb.slt.bak` (FM4 `Media/db/`, FM2
-> & FM3 `Media/DB/`). To go back to normal prices, see [Revert](#revert).
-> FM4's **DLC** cars are also $1 (its DLC DBs were swapped); **FM3's DLC cars
-> are still normal-priced** — see the FM3 note below. FH (XE Mod) has no Sandbox
-> DB and is untouched.
+> and FM3** — every base car and upgrade costs 1 credit. Pre-swap Normal DBs are
+> backed up alongside the actives as `gamedb.slt.bak` (FM4 `Media/db/`, FM2 &
+> FM3 `Media/DB/`). **DLC cars are also $1 on FM4 and FM3** (their DLC patch DBs
+> were swapped in each game's per-install staged content copy); FM2 has no DLC
+> layer. FH (XE Mod) has no Sandbox DB and is untouched. To go back to normal
+> prices, see [Revert](#revert).
 
 > All paths below hang off the roms_heavy Xbox 360 dir. Set once:
 > ```sh
@@ -57,15 +57,24 @@ FM3 mode `gamedb.slt` md5s: Normal `eae89760369d1356b98f41ecfe4448c9`
 (415 cars, all $1). Swap/revert exactly like FM4 but with the FM3 paths
 (`Media/DB/`).
 
-**FM3 DLC cars are not yet on Sandbox pricing.** Unlike FM4 (whose Xenia
-`00000002` content is a per-install staged copy), FM3's content
-`…/4D53084D/00000002` symlinks straight to the **shared** 9.2 GB PFP3 pack
-(`…/_extracted/PFP3/…/Disc 2 and DLCs/00000002`). To make DLC cars $1 too,
-either (a) overlay `_game_mode_dbs/Sandbox Mode/DLC DBs/.` onto that pack
-(PFP's documented method — reversible with `Normal Mode/DLC DBs`, but it
-mutates the shared pack), or (b) stage a per-install copy of the 9.2 GB content
-and re-point the symlink (FM4's approach, no shared-pack mutation). Left as a
-follow-up.
+**FM3 DLC cars are also on Sandbox pricing** (done the clean FM4 way). FM3's
+Xenia content `…/4D53084D/00000002` originally symlinked straight to the
+**shared** 9.2 GB PFP3 pack (`…/_extracted/PFP3/…/Disc 2 and DLCs/00000002`).
+To avoid mutating that shared source, the 9.2 GB content was copied to a
+**per-install** dir, `FM3 (Project Forza Plus Modded)/_post_boot_to_content_4D53084D/00000002`,
+the Sandbox `DLC DBs/.` were overlaid onto it (the DLC `*_merge.slt` patches now
+read `BaseCost 1`), and the content symlink was re-pointed to that copy. The
+shared `_extracted/PFP3` pack is untouched.
+
+**Revert FM3 DLC** to normal prices — either restore the pristine patches into
+the staged copy, or point the symlink back at the shared pack:
+```sh
+XC="/mnt/data/distrobox/gaming/tools/xenia-manager/current/Emulators/Xenia Canary/content/0000000000000000/4D53084D"
+# option 1: restore Normal DLC prices in the staged copy
+cp -rf "$FM3/_game_mode_dbs/Normal Mode/DLC DBs/." "$FM3/_post_boot_to_content_4D53084D/00000002/"
+# option 2: point back at the untouched shared pack
+ln -sfn "/mnt/terachad/Emulators/Project Forza Plus/_extracted/PFP3/Project Forza Plus 3/Disc 2 and DLCs/00000002" "$XC/00000002"
+```
 
 ## The career/easy modes (FM4)
 
