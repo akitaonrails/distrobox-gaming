@@ -492,6 +492,7 @@ docs/                               # historical notes and focused docs
 
 Core setup & rebuild:
 
+- **[Sources & downloads](docs/sources.md)** — upstream repos/pages for every native port, recomp, decomp, fan game and ROM-hack tool, if you want to grab a build yourself
 - [Rebuild Runbook](docs/rebuild-runbook.md) — from-scratch rebuild, opt-in tags, standalone playbooks
 - [External Installers](docs/external-installers.md) — download inventory for the opt-in Windows/Wine games and tools
 - [ogm launcher integration](docs/ogm-launcher.md) — omarchy-games-menu catalog fragment, `ogm scan` hooks

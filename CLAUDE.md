@@ -19,6 +19,8 @@ Beyond the core emulators, a large set of **opt-in** roles (all `never`-tagged i
 
 See `docs/external-installers.md` for the download inventory and `docs/rebuild-runbook.md` for a from-scratch rebuild.
 
+`docs/sources.md` is the user-facing provenance list of every native port, recomp, decomp, fan game and ROM-hack tool. **Keep it current:** when you add or retarget such a role (a new upstream repo/page, or a changed fork), add or update its one-line row there.
+
 ## Commands
 
 All operations run from the `ansible/` directory:
