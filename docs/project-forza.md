@@ -142,7 +142,9 @@ base v1.2 zip directly.
 ## Four career modes
 
 Switch by **copying** (not moving) the chosen mode's `gamedb.slt` file into
-the game's `db/` folder.
+the game's `db/` folder. For the exact swap/revert commands, the SQLite
+schema, the price columns, and editing the economy directly (Sandbox is the
+"easy"/1-credit mode), see [forza-database-editing.md](forza-database-editing.md).
 
 | Mode | Behaviour |
 |---|---|

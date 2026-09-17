@@ -496,6 +496,7 @@ Core setup & rebuild:
 - [External Installers](docs/external-installers.md) — download inventory for the opt-in Windows/Wine games and tools
 - [ogm launcher integration](docs/ogm-launcher.md) — omarchy-games-menu catalog fragment, `ogm scan` hooks
 - [Unsupported / parked games](docs/unsupported-games.md) — games/mods we couldn't get working; the detailed trail lives in GitHub issues
+- [Forza database editing](docs/forza-database-editing.md) — edit FM4/FM2 car prices & economy in gamedb.slt; swap PFP career/easy (Sandbox) modes; revert
 - [Atari ST / Hatari](docs/atari-st.md) — focused installation, BIOS setup and mandatory validation
 
 - [Controller Hotkeys](docs/controller-hotkeys.md) · [Input Latency](docs/input-latency.md) · [Hyprland Gaming](docs/hyprland-gaming.md)
