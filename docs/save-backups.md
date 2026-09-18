@@ -26,6 +26,33 @@ It rsyncs every save set that has local data to `dg_backup_root/<name>/`. Sets
 with no data yet are skipped. Nothing is deleted from the backup, so it only
 accumulates — a deleted local save stays recoverable.
 
+## Scheduled weekly backup (systemd user timer)
+
+A **systemd user timer** runs the backup every **Tuesday at 23:00** (with a small
+randomized delay, `Persistent=true` so a missed run — machine off/asleep — fires
+at next login). Install/update it from the host:
+
+```sh
+scripts/install-save-backup-timer.sh            # install + enable
+scripts/install-save-backup-timer.sh --uninstall
+```
+
+It deploys `~/.local/bin/dg-save-backup` (an env-robust wrapper: absolute PATH,
+NAS-mount guard, `distrobox enter gaming -- backup-saves`) plus the
+`dg-save-backup.{service,timer}` user units, then enables the timer. Check /
+run / read it:
+
+```sh
+systemctl --user list-timers dg-save-backup.timer   # next run
+systemctl --user start dg-save-backup.service       # run now
+journalctl --user -u dg-save-backup.service -e       # logs
+```
+
+User timers fire while you're logged in; since it's a desktop that's normally
+the case, and `Persistent=true` covers the rest. To run even when logged out,
+`sudo loginctl enable-linger $USER`. The units live in
+`scripts/systemd/` in this repo, so a rebuild just re-runs the installer.
+
 ## Restore (after a from-scratch remount)
 
 ```sh

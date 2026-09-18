@@ -1,0 +1,12 @@
+[Unit]
+Description=Back up gaming distrobox emulator/PC-port saves to the NAS
+Documentation=file://%h/Projects/distrobox-gaming/docs/save-backups.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# Wrapper installed by scripts/install-save-backup-timer.sh
+ExecStart=%h/.local/bin/dg-save-backup
+Nice=10
+IOSchedulingClass=idle

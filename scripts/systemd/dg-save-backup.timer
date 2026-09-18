@@ -1,0 +1,10 @@
+[Unit]
+Description=Weekly gaming save backup (Tuesday 23:00)
+
+[Timer]
+OnCalendar=Tue *-*-* 23:00:00
+Persistent=true
+RandomizedDelaySec=120
+
+[Install]
+WantedBy=timers.target
