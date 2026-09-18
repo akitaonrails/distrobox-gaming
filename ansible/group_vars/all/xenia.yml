@@ -12,6 +12,15 @@ dg_xenia_dotnet_url: https://aka.ms/dotnet/10.0/windowsdesktop-runtime-win-x64.e
 dg_xenia_vcredist_url: https://aka.ms/vs/17/release/vc_redist.x64.exe
 dg_xenia_game_dir: "{{ dg_rom_heavy_root }}/xbox360"
 
+# Xenia Manager UI sizing on the 4K panel. The Manager is an Avalonia app under
+# Wine; its game-grid icon size is `zoom` in Config/config.json — bump it so the
+# icons are large/easy to click. `dg_xenia_wine_dpi` raises the Wine prefix DPI
+# (LogPixels); note Avalonia often ignores Wine's LogPixels for font scaling, so
+# the grid zoom is the reliable size control. Both are applied only when Xenia
+# Manager is CLOSED (it rewrites config.json / the prefix registry on exit).
+dg_xenia_grid_zoom: 2       # game-library grid icon zoom (config.json)
+dg_xenia_wine_dpi: 192      # prefix LogPixels (192 = 200%); 0 to leave default
+
 # Optimal Xenia Canary settings enforced on every per-game .config.toml
 # AND the root xenia-canary.config.toml (Xenia Manager's template for
 # newly-added games), so ES-DE launches and new games both inherit them.

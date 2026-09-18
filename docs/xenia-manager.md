@@ -130,6 +130,29 @@ Notes:
   **not** provide real online multiplayer or leaderboards (no actual Live;
   Xenia's netplay is separate and experimental).
 
+## UI sizing on the 4K panel
+
+Xenia Manager is an Avalonia app under Wine, and its default UI is tiny on a 4K
+display. Two knobs (both in `group_vars/all/xenia.yml`, applied by
+`install-xenia.yml` **only while Xenia Manager is closed** — it rewrites its
+config/registry on exit):
+
+- **`dg_xenia_grid_zoom`** (default `2`) — the game-library grid **icon zoom**
+  (`Config/config.json` → `ui.window.game_library.grid_view.zoom`). This is the
+  reliable size control; bigger icons are far easier to click.
+- **`dg_xenia_wine_dpi`** (default `192` = 200%) — the Wine prefix `LogPixels`
+  DPI. **Caveat:** Avalonia frequently *ignores* Wine's `LogPixels` for font
+  scaling, so this may not visibly enlarge the fonts; it's set as a sane HiDPI
+  baseline. If you need bigger fonts specifically, the in-app zoom slider + grid
+  zoom are the dependable path.
+
+Re-apply after changing either (Xenia Manager closed):
+
+```sh
+cd ansible
+ansible-playbook install-xenia.yml
+```
+
 ## Why `pacman -Sy` and not `-Syu`
 
 This role installs `wine` + `winetricks` with `pacman -Sy --needed` (sync

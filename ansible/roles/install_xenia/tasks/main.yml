@@ -267,6 +267,57 @@
   changed_when: "'xenia-optimal-changed 0' not in _xenia_optimal_config.stdout"
   when: dg_xenia_apply_optimal_config | bool
 
+# Xenia Manager UI sizing (readable on the 4K panel)
+
+- name: Set Xenia Manager game-grid icon zoom
+  # config.json is bind-mounted (plain-text edit on the controller). Xenia
+  # Manager rewrites it on exit, so only edit while it is CLOSED, else the
+  # change is clobbered. Idempotent; skips cleanly if config.json / the key
+  # doesn't exist yet (created on first Manager run).
+  ansible.builtin.shell:
+    cmd: |
+      python3 - <<'PY'
+      import json, os, subprocess
+      cfg = "{{ dg_xenia_manager_current }}/Config/config.json"
+      if not os.path.isfile(cfg):
+          print("xenia-zoom-no-config"); raise SystemExit
+      if subprocess.run(["pgrep", "-fi", "XeniaManager"], capture_output=True).returncode == 0:
+          print("xenia-zoom-skip-running"); raise SystemExit
+      d = json.load(open(cfg))
+      gv = (((d.get("ui") or {}).get("window") or {}).get("game_library") or {}).get("grid_view")
+      if gv is None:
+          print("xenia-zoom-no-key"); raise SystemExit
+      if gv.get("zoom") == {{ dg_xenia_grid_zoom }}:
+          print("xenia-zoom-ok"); raise SystemExit
+      gv["zoom"] = {{ dg_xenia_grid_zoom }}
+      json.dump(d, open(cfg, "w"), indent=2)
+      print("xenia-zoom-set")
+      PY
+  register: _xenia_zoom
+  changed_when: "'xenia-zoom-set' in _xenia_zoom.stdout"
+
+- name: Set Xenia Manager Wine prefix DPI (HiDPI UI)
+  # Raises LogPixels in the prefix registry via wine reg inside the box. Skips
+  # while Xenia Manager / Canary is running (wineserver would flush its own copy
+  # on exit). Note: Avalonia may ignore this for font scaling — see xenia.yml.
+  ansible.builtin.shell:
+    cmd: |
+      {{ dg_in_box }} sh -lc '
+        if pgrep -fi "XeniaManager|xenia_canary" >/dev/null 2>&1; then
+          echo "xenia-dpi-skip-running"; exit 0
+        fi
+        export WINEPREFIX="{{ dg_xenia_prefix }}"
+        want="{{ dg_xenia_wine_dpi }}"
+        hex=$(wine reg query "HKCU\Control Panel\Desktop" /v LogPixels 2>/dev/null | sed -n "s/.*REG_DWORD *0x0*\([0-9a-fA-F]\+\).*/\1/p")
+        cur=$(printf "%d" "0x${hex:-0}" 2>/dev/null || echo 0)
+        if [ "$cur" = "$want" ]; then echo "xenia-dpi-ok"; exit 0; fi
+        wine reg add "HKCU\Control Panel\Desktop" /v LogPixels /t REG_DWORD /d "$want" /f >/dev/null 2>&1
+        echo "xenia-dpi-set $want"
+      '
+  register: _xenia_dpi
+  changed_when: "'xenia-dpi-set' in _xenia_dpi.stdout"
+  when: dg_xenia_wine_dpi | int > 0
+
 # Wrapper script and desktop entry
 
 - name: Deploy Xenia Manager launcher wrapper
