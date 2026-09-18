@@ -1,0 +1,6 @@
+# Managed by the backup_saves role — do not edit by hand.
+# Save sets: <name><TAB><path relative to the box $HOME>.
+# Edit dg_save_sets in group_vars/all/backups.yml and re-run the role.
+{% for s in dg_save_sets %}
+{{ s.name }}{{ "\t" }}{{ s.src }}
+{% endfor %}

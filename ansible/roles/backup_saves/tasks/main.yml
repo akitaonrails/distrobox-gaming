@@ -1,0 +1,51 @@
+---
+# Deploys the save-data backup/restore tooling: renders the manifest of save
+# sets (from dg_save_sets) + the backup-root env into the box, deploys the
+# backup-saves / restore-saves helpers, and ensures the NAS backup root exists.
+# Optionally restores saves on a fresh setup (dg_restore_saves_on_setup=true).
+# See group_vars/all/backups.yml and docs/save-backups.md.
+
+- name: Ensure the NAS save-backup root exists
+  ansible.builtin.file:
+    path: "{{ dg_backup_root }}"
+    state: directory
+    mode: "0755"
+
+- name: Ensure the box config dir for the backup manifest exists
+  ansible.builtin.file:
+    path: "{{ dg_box_home }}/.config/distrobox-gaming"
+    state: directory
+    mode: "0755"
+
+- name: Render the save-set manifest
+  ansible.builtin.template:
+    src: save-manifest.tsv.j2
+    dest: "{{ dg_box_home }}/.config/distrobox-gaming/save-manifest.tsv"
+    mode: "0644"
+
+- name: Render the backup-root env
+  ansible.builtin.template:
+    src: backup.env.j2
+    dest: "{{ dg_box_home }}/.config/distrobox-gaming/backup.env"
+    mode: "0644"
+
+- name: Deploy the backup-saves / restore-saves helpers
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ dg_box_home }}/bin/{{ item }}"
+    mode: "0755"
+  loop:
+    - backup-saves
+    - restore-saves
+
+- name: Restore saves from the NAS backup (opt-in, fresh remount)
+  when: dg_restore_saves_on_setup | bool
+  ansible.builtin.command:
+    cmd: "{{ dg_in_box }} {{ dg_box_home }}/bin/restore-saves"
+  register: _restore_saves
+  changed_when: "'restored,' in _restore_saves.stdout"
+
+- name: Show restore result
+  when: dg_restore_saves_on_setup | bool
+  ansible.builtin.debug:
+    var: _restore_saves.stdout_lines

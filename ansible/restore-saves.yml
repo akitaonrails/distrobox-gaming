@@ -1,0 +1,13 @@
+---
+# Restore emulator + PC-port save data from the NAS backup onto the box.
+# Run after a from-scratch remount (ansible-playbook site.yml first).
+# Safe by default: restore-saves uses --ignore-existing, so saves already on
+# the box are never overwritten. Force with:  restore-saves --force
+- name: Restore save data from the NAS backup
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  vars:
+    dg_restore_saves_on_setup: true
+  roles:
+    - backup_saves

@@ -13,6 +13,7 @@
     - { role: link_storage,              tags: [configure, storage] }
     - { role: seed_configs,              tags: [configure, configs, reset_configs] }
     - { role: scripts_in_box,            tags: [configure, scripts] }
+    - { role: backup_saves,              tags: [configure, backup_saves] }
     # Opt-in roles: skipped by default, run only when the matching tag
     # is explicitly passed (e.g. --tags dlcs). These operate against
     # your specific NAS/ROM layout or make large downloads.

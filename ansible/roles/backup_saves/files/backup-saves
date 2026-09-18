@@ -1,0 +1,42 @@
+#!/usr/bin/env sh
+# backup-saves — mirror the box's emulator + PC-port save data to the NAS.
+#
+# Reads the manifest rendered by the backup_saves role (one `name<TAB>relpath`
+# line per save set) and rsyncs each existing directory to
+# $DG_BACKUP_ROOT/<name>/. A set with no local data yet is skipped. Nothing is
+# deleted from the backup, so it only ever accumulates. Run it from time to
+# time (with games closed is safest):
+#
+#   distrobox enter gaming -- backup-saves            # back up everything
+#   distrobox enter gaming -- backup-saves --dry-run  # show what would change
+#
+# Managed by the distrobox-gaming backup_saves role.
+set -eu
+
+CONF_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/distrobox-gaming"
+[ -f "$CONF_DIR/backup.env" ] && . "$CONF_DIR/backup.env"
+MANIFEST="${DG_SAVE_MANIFEST:-$CONF_DIR/save-manifest.tsv}"
+: "${DG_BACKUP_ROOT:?DG_BACKUP_ROOT not set (rendered into $CONF_DIR/backup.env by the backup_saves role)}"
+[ -f "$MANIFEST" ] || { echo "backup-saves: no manifest at $MANIFEST" >&2; exit 1; }
+
+DRY=""
+[ "${1:-}" = "--dry-run" ] && DRY="--dry-run"
+
+mkdir -p "$DG_BACKUP_ROOT" 2>/dev/null || {
+  echo "backup-saves: cannot reach backup root $DG_BACKUP_ROOT (NAS mounted?)" >&2; exit 1; }
+
+TAB="$(printf '\t')"
+n=0; saved=0; absent=0
+while IFS="$TAB" read -r name rel; do
+  case "$name" in ''|\#*) continue ;; esac
+  n=$((n + 1))
+  src="$HOME/$rel"
+  if [ ! -d "$src" ]; then
+    absent=$((absent + 1)); printf '  –  %s (no local data)\n' "$name"; continue
+  fi
+  mkdir -p "$DG_BACKUP_ROOT/$name"
+  rsync -a $DRY "$src/" "$DG_BACKUP_ROOT/$name/"
+  saved=$((saved + 1)); printf '  \342\234\223  %s\n' "$name"
+done < "$MANIFEST"
+
+echo "backup-saves: $saved backed up, $absent absent (of $n sets) -> $DG_BACKUP_ROOT${DRY:+  [dry-run]}"

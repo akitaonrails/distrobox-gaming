@@ -144,6 +144,19 @@ bind mount are untouched.
   ```
 
   Only pass the tags for games/features you have assets staged for.
+- **Restore save data (only if the box `$HOME` was lost).** A container
+  prune leaves the bind-mounted home — and therefore all saves —
+  untouched. But if you re-provisioned onto a *fresh* box home, pull the
+  saves back from the NAS backup after `site.yml`:
+
+  ```sh
+  ansible-playbook restore-saves.yml
+  ```
+
+  It's safe (never overwrites a save already present). See
+  [docs/save-backups.md](save-backups.md). Get in the habit of running
+  `distrobox enter gaming -- bash -lc '$HOME/bin/backup-saves'` periodically
+  so this backup is current.
 - **Standalone installer playbooks.** 30 `ansible/install-*.yml`
   playbooks exist outside `site.yml`, one role each, for the
   Windows/Wine games and tools (Xenia Manager, Azahar, Cheat Engine,

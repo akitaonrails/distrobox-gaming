@@ -21,6 +21,8 @@ See `docs/external-installers.md` for the download inventory and `docs/rebuild-r
 
 `docs/sources.md` is the user-facing provenance list of every native port, recomp, decomp, fan game and ROM-hack tool. **Keep it current:** when you add or retarget such a role (a new upstream repo/page, or a changed fork), add or update its one-line row there.
 
+Save data is backed up to / restored from the NAS by the `backup_saves` role (`bin/backup-saves`, `bin/restore-saves`), driven by the data-driven `dg_save_sets` list in `group_vars/all/backups.yml` (default backup root `dg_backup_root`). **Always register saves for anything new:** when you install a new emulator or game that stores save games / memory cards / save states / NAND user-saves, add its save directory (relative to the box `$HOME`) to `dg_save_sets` in the same commit. See `docs/save-backups.md`. Restore on a from-scratch remount with `ansible-playbook restore-saves.yml` (or `dg_restore_saves_on_setup=true`).
+
 ## Commands
 
 All operations run from the `ansible/` directory:

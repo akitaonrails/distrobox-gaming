@@ -1,0 +1,72 @@
+---
+# Save-data backup/restore configuration.
+#
+# `dg_backup_root` is where the box's emulator + PC-port save data is mirrored
+# on the NAS (one subdir per set, named by `name`). Override in
+# host_vars/localhost.yml if your NAS layout differs.
+#
+# `dg_save_sets` is the data-driven inventory of what to back up. Each entry:
+#   name : unique label -> becomes the backup subdir (no spaces)
+#   src  : path RELATIVE TO the box $HOME of a directory holding save data
+# The backup-saves / restore-saves helpers (role backup_saves) iterate this
+# list; a src that doesn't exist locally is silently skipped, so it's safe to
+# list a save dir a game only creates once you've played it.
+#
+# !!! When you install a NEW emulator or game, ADD its save path(s) here. !!!
+# (See docs/save-backups.md and the CLAUDE.md note.)
+
+dg_backup_root: "{{ dg_external_games_root }}/distrobox-gaming/backup/saves"
+
+# Restore is opt-in: set true (e.g. on a from-scratch remount) to have the
+# backup_saves role pull saves back from the NAS after deploying the tooling.
+# It uses --ignore-existing, so it never clobbers a save already on the box.
+dg_restore_saves_on_setup: false
+
+dg_save_sets:
+  # ---- Emulators (RetroArch + standalone) ----
+  - { name: retroarch-saves,      src: ".config/retroarch/saves" }
+  - { name: retroarch-states,     src: ".config/retroarch/states" }
+  - { name: pcsx2-memcards,       src: ".config/PCSX2/memcards" }
+  - { name: pcsx2-states,         src: ".config/PCSX2/sstates" }
+  - { name: duckstation-memcards, src: ".config/duckstation/memcards" }
+  - { name: duckstation-states,   src: ".config/duckstation/savestates" }
+  - { name: dolphin-gc,           src: ".local/share/dolphin-emu/GC" }
+  - { name: dolphin-wii,          src: ".local/share/dolphin-emu/Wii" }
+  - { name: dolphin-states,       src: ".local/share/dolphin-emu/StateSaves" }
+  - { name: flycast-vmu,          src: ".config/flycast/data" }
+  - { name: xemu,                 src: ".local/share/xemu" }
+  - { name: rpcs3-hdd0-home,      src: ".config/rpcs3/dev_hdd0/home" }
+  - { name: ppsspp-savedata,      src: ".config/ppsspp/PSP/SAVEDATA" }
+  - { name: ppsspp-states,        src: ".config/ppsspp/PSP/PPSSPP_STATE" }
+  - { name: azahar-sdmc,          src: ".local/share/azahar-emu/sdmc" }
+  - { name: azahar-nand,          src: ".local/share/azahar-emu/nand" }
+  - { name: melonds,              src: ".config/melonDS" }
+  - { name: eden-saves,           src: ".local/share/eden/nand/user/save" }
+  - { name: cemu,                 src: ".local/share/Cemu" }
+  - { name: shadps4-savedata,     src: ".local/share/shadPS4/savedata" }
+  - { name: supermodel-nvram,     src: ".supermodel/NVRAM" }
+  # Xenia: whole content tree (per-title 00000001 = savegames, plus installed
+  # TUs/DLC; the big FM DLC entries are symlinks and stay symlinks under -a).
+  - { name: xenia-content,        src: "tools/xenia-manager/current/Emulators/Xenia Canary/content" }
+
+  # ---- Native PC ports / recomps / decomps ----
+  - { name: soh-save,             src: "tools/ship-of-harkinian/current/Save" }
+  - { name: lighthouse-save,      src: "tools/lighthouse/current/Save" }
+  - { name: 2ship-save,           src: "tools/2ship2harkinian/current/Save" }
+  - { name: starship-save,        src: "tools/starship/current/Save" }
+  - { name: spaghettikart-save,   src: "tools/spaghettikart/current/Save" }
+  - { name: dk64-recomp,          src: ".config/DK64Recompiled" }
+  - { name: goldeneye-recomp,     src: ".config/GoldenRecomp" }
+  - { name: unleashed-recomp,     src: ".config/UnleashedRecomp" }
+  - { name: perfectdark,          src: ".local/share/perfectdark" }
+  - { name: dude-config,          src: ".config/dude" }
+  - { name: dude-data,            src: ".local/share/dude" }
+  - { name: prboom-config,        src: ".config/prboom-plus-rt" }
+  - { name: prboom-data,          src: ".local/share/prboom-plus-rt" }
+  - { name: banjo-recompiled,     src: ".config/BanjoRecompiled" }   # legacy BanjoRecomp saves (pre-Lighthouse)
+
+  # ---- Native fan games / remakes ----
+  - { name: sonic3air,            src: ".local/share/Sonic3AIR" }
+  - { name: starfox-enhanced,     src: ".local/share/StarFoxEnhanced" }
+  - { name: smw-remastered,       src: ".local/share/SuperMarioWorldRemastered" }
+  - { name: sorr-save,            src: "tools/sorr/game/savegame" }
