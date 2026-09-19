@@ -56,7 +56,8 @@ dg_aur_packages:
   # PKGBUILD had a URL mismatch; upstream has since corrected the build
   # (verified installing 2.7.274 successfully April 2026).
   - pcsx2-latest-bin
-  - rpcs3-bin
+  # rpcs3-bin removed — RPCS3 is now the repo-managed upstream AppImage
+  # (install_rpcs3, group_vars/all/rpcs3.yml). The AUR pkg went stale.
   - eden-bin
   - cemu-bin
   - melonds-bin

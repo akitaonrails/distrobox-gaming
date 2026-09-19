@@ -1,0 +1,16 @@
+---
+# Install / update the repo-managed RPCS3 AppImage (pinned upstream build).
+# Bump the pin vars in group_vars/all/rpcs3.yml, then run this.
+- name: Install RPCS3 (upstream AppImage) + launcher
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_rpcs3
+  post_tasks:
+    - name: Refresh desktop launchers + ES-DE for the new rpcs3 command
+      ansible.builtin.include_role:
+        name: "{{ item }}"
+      loop:
+        - desktop_apps
+        - configure_esde

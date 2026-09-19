@@ -50,7 +50,7 @@ dg_emulator_launchers:
 
   - name: gaming-rpcs3
     display_name: "RPCS3 (on {{ dg_box_name }})"
-    exec: rpcs3
+    exec: "{{ dg_rpcs3_launch }}"
     icon: rpcs3
     comment: "PlayStation 3 emulator"
     wm_class: rpcs3

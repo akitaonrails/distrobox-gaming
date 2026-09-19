@@ -1,0 +1,22 @@
+# RPCS3 — repo-managed upstream AppImage.
+#
+# The AUR `rpcs3-bin` maintainer went stale (stuck at 0.0.42.19734 since
+# 2026-08-12 while upstream ships new builds daily), so RPCS3 is now installed
+# straight from the official rolling AppImage, pinned by sha256 — bump the four
+# pin vars below to update. Config, firmware, dev_hdd0, saves and per-game
+# custom_configs all live in ~/.config/rpcs3 (unchanged from the AUR build), so
+# switching the binary needs no migration.
+#
+# Update flow: grab the latest from
+#   https://github.com/RPCS3/rpcs3-binaries-linux/releases
+# set the tag / name / version / sha256, then: ansible-playbook install-rpcs3.yml
+
+dg_rpcs3_release_tag: "build-9e86f165d1711b9429d48b0487e7bc5ba0cc9c6c"
+dg_rpcs3_version: "0.0.42-20024"
+dg_rpcs3_asset_name: "rpcs3-v0.0.42-20024-9e86f165_linux64.AppImage"
+dg_rpcs3_asset_url: "https://github.com/RPCS3/rpcs3-binaries-linux/releases/download/{{ dg_rpcs3_release_tag }}/{{ dg_rpcs3_asset_name }}"
+dg_rpcs3_asset_sha256: "22c0d6d0a8f1ff1453b501bf17b07e87fdc2a5a6f1522d6fdba3e9b120166d20"
+
+dg_rpcs3_install_dir: "{{ dg_box_home }}/tools/rpcs3"
+dg_rpcs3_appimage: "{{ dg_rpcs3_install_dir }}/rpcs3.AppImage"
+dg_rpcs3_launch: "{{ dg_box_home }}/bin/rpcs3-launch"

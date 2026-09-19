@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+# rpcs3-launch — run the repo-managed RPCS3 AppImage (pinned upstream build).
+# Config / firmware / dev_hdd0 / saves / custom_configs live in ~/.config/rpcs3.
+# Managed by the distrobox-gaming install_rpcs3 role.
+set -eu
+
+APPIMAGE="{{ dg_rpcs3_appimage }}"
+if [ ! -x "$APPIMAGE" ]; then
+  echo "rpcs3-launch: AppImage missing at $APPIMAGE — run: ansible-playbook install-rpcs3.yml" >&2
+  exit 1
+fi
+
+# RPCS3 renders on Vulkan — pin the nvidia ICD (not the AMD iGPU).
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD="${__NV_PRIME_RENDER_OFFLOAD:-1}"
+export __GLX_VENDOR_LIBRARY_NAME="${__GLX_VENDOR_LIBRARY_NAME:-nvidia}"
+
+exec "$APPIMAGE" "$@"

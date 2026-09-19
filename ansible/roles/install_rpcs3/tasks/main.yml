@@ -1,0 +1,41 @@
+---
+# RPCS3 as a repo-managed, sha256-pinned upstream AppImage (replaces the stale
+# AUR rpcs3-bin). See group_vars/all/rpcs3.yml and docs/ps3-library.md.
+
+- name: Ensure RPCS3 install + bin directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_rpcs3_install_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Download the pinned RPCS3 AppImage
+  ansible.builtin.get_url:
+    url: "{{ dg_rpcs3_asset_url }}"
+    dest: "{{ dg_rpcs3_appimage }}"
+    checksum: "sha256:{{ dg_rpcs3_asset_sha256 }}"
+    mode: "0755"
+
+- name: Deploy the rpcs3-launch wrapper
+  ansible.builtin.template:
+    src: rpcs3-launch.j2
+    dest: "{{ dg_rpcs3_launch }}"
+    mode: "0755"
+
+- name: Remove the superseded AUR rpcs3-bin if it's still installed
+  # Everything now points at the AppImage wrapper; the pacman-managed
+  # /usr/bin/rpcs3 (an older, frozen AUR build) is dead weight. -Rdd because
+  # nothing depends on it. Harmless no-op once it's gone.
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sh -lc
+    'pacman -Qq rpcs3-bin >/dev/null 2>&1 && sudo pacman -Rdd --noconfirm rpcs3-bin || echo not-installed'
+  register: _rpcs3_aur_remove
+  changed_when: "'removing rpcs3-bin' in _rpcs3_aur_remove.stdout or 'Removing' in _rpcs3_aur_remove.stdout"
+
+- name: Report RPCS3 install
+  ansible.builtin.debug:
+    msg: >-
+      RPCS3 {{ dg_rpcs3_version }} AppImage at {{ dg_rpcs3_appimage }};
+      launcher {{ dg_rpcs3_launch }}. Config in {{ dg_rpcs3_config_dir }}.

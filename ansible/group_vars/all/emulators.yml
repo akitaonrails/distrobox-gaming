@@ -378,7 +378,7 @@ dg_emulator_commands:
   - flycast
   - dolphin-emu
   - PPSSPPQt
-  - rpcs3
+  # rpcs3 verified via the install_rpcs3 AppImage (not a PATH command anymore)
   - shadps4
   - xemu
 

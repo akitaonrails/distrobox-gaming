@@ -101,7 +101,7 @@ dg_esde_systems:
     path: "{{ dg_emudeck_root }}/roms_heavy/ps3"
     extension: ".ps3 .PS3"
     commands:
-      - { label: "RPCS3 (Standalone)", cmd: "rpcs3 --no-gui %ROM%" }
+      - { label: "RPCS3 (Standalone)", cmd: "{{ dg_rpcs3_launch }} --no-gui %ROM%" }
     platform: ps3
     theme: ps3
 
