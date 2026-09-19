@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Midnight Club: Los Angeles (on {{ dg_box_name }})
+Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_mcla_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Midnight Club: Los Angeles (Xbox 360) — native x86-64 recompilation + Vulkan on the RTX.
+Categories=Game;
+Keywords=midnight;club;los;angeles;xbox360;recomp;rockstar;racing;
+StartupWMClass=midnightclubla;
+{{ ogm_metadata('gaming-midnightclubla') }}

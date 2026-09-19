@@ -70,3 +70,4 @@ dg_save_sets:
   - { name: starfox-enhanced,     src: ".local/share/StarFoxEnhanced" }
   - { name: smw-remastered,       src: ".local/share/SuperMarioWorldRemastered" }
   - { name: sorr-save,            src: "tools/sorr/game/savegame" }
+  - { name: midnightclub-la,      src: "tools/midnightclubla/midnightclubla/user-data" }

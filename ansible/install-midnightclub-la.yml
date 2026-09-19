@@ -1,0 +1,7 @@
+---
+- name: Install Midnight Club Los Angeles (Xbox 360 native port) + launcher
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_midnightclub_la

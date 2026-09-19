@@ -30,6 +30,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | PrBoom-Plus RT | Ray-traced Doom / Doom II | [tomboylover93/prboom-plus-rt](https://github.com/tomboylover93/prboom-plus-rt) · [doc](doom2-ray-traced.md) |
 | DUDE | Doom 3 (dhewm3 fork, GL3/Vulkan) | [Inkub0/dude](https://github.com/Inkub0/dude) · [doc](dude.md) |
 | Sonic Project '06 | Sonic 2006 fan remake (Wine) | [Project 06 (ChaosX)](https://lutris.net/games/project-06/) · [doc](sonic-p06.md) |
+| Midnight Club: Los Angeles | Xbox 360 native recompilation (rex; needs your USA disc) | [CrownParkComputing/Xbox360-Native-Ports](https://github.com/CrownParkComputing/Xbox360-Native-Ports) · [doc](midnightclub-la.md) |
 
 ## Native fan games & remakes
 

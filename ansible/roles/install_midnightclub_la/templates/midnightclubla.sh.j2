@@ -1,0 +1,32 @@
+#!/usr/bin/env sh
+set -eu
+# Midnight Club: Los Angeles — native Xbox 360 port (rex recompilation) launcher.
+# Native x86-64 + Vulkan on the RTX, opens on DP-1. 8BitDo works via SDL.
+# Managed by install_midnightclub_la. run.sh sets LD_LIBRARY_PATH to the port
+# dir and execs the tuned binary (per-title config in midnightclubla.toml).
+
+DIR="{{ dg_mcla_dir }}"
+if [ ! -x "$DIR/midnightclubla" ]; then
+  printf '%s\n' "ERROR: Midnight Club LA not installed at $DIR. Run: ansible-playbook install-midnightclub-la.yml" >&2
+  exit 1
+fi
+
+# Focus the main landscape 4K monitor (Hyprland >= 0.56 Lua IPC form).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_mcla_main_output }}" }))'); s.recv(256); s.close()
+PY
+
+# Native Vulkan renderer — pin the nvidia ICD (not the AMD iGPU).
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD="${__NV_PRIME_RENDER_OFFLOAD:-1}"
+export __GLX_VENDOR_LIBRARY_NAME="${__GLX_VENDOR_LIBRARY_NAME:-nvidia}"
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+cd "$DIR"
+exec ./run.sh "$@"

@@ -1,0 +1,35 @@
+# Midnight Club: Los Angeles — native Xbox 360 port.
+#
+# CrownParkComputing's "rex" recompilation (30,205 PowerPC functions rebuilt as
+# native x86-64 + a native Vulkan renderer), distributed as a launcher + the
+# title's checksums — NO game data. The user supplies their own MC:LA Complete
+# Edition (USA) disc (title 545407F8); tools/import_content.sh extracts it into
+# assets/ (bundled `rexiso` reads the XDVDFS .iso), verified against
+# content/content.sha256 (a region/rev mismatch warns but still runs).
+# Vulkan GPU required. See docs/midnightclub-la.md.
+
+dg_mcla_repo: CrownParkComputing/Xbox360-Native-Ports
+dg_mcla_release_tag: midnightclubla-v1
+dg_mcla_asset_name: midnightclubla-launcher-linux-x86_64.tar.zst
+dg_mcla_asset_url: "https://github.com/{{ dg_mcla_repo }}/releases/download/{{ dg_mcla_release_tag }}/{{ dg_mcla_asset_name }}"
+dg_mcla_asset_sha256: "39893253c5113fd8a5980f0d5968c49b89bef2f948814a12c97bd5d166412855"
+
+dg_mcla_root: "{{ dg_box_home }}/tools/midnightclubla"          # extract target
+dg_mcla_dir: "{{ dg_mcla_root }}/midnightclubla"               # launcher dir (has run.sh)
+dg_mcla_cache_dir: "{{ dg_box_home }}/cache/midnightclubla"
+dg_mcla_launcher: "{{ dg_box_home }}/bin/midnightclubla"
+dg_mcla_main_output: "DP-1"
+dg_mcla_revert: false
+
+# The user's own disc — the Complete Edition (USA) ISO already in the xbox360
+# tree. import_content.sh accepts a .iso / archive / extracted folder.
+dg_mcla_iso: "{{ dg_rom_heavy_root }}/xbox360/Midnight Club - Los Angeles - Complete Edition (USA, Europe).iso"
+
+# Box packages the launcher needs (zstd/tar to unpack, python3 + p7zip/unrar for
+# import, zenity only for the interactive picker — headless import skips it).
+dg_mcla_pacman_packages:
+  - zstd
+  - p7zip
+  - unrar
+  - python
+  - zenity
