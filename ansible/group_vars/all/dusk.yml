@@ -1,11 +1,12 @@
-# Dusk — open-source reimplementation of The Legend of Zelda:
-# Twilight Princess (GameCube).
+# Dusklight (formerly "Dusk") — open-source reimplementation of The
+# Legend of Zelda: Twilight Princess (GameCube).
 #
-# Upstream:  https://github.com/TwilitRealm/dusk
+# Upstream:  https://github.com/TwilitRealm/dusklight  (repo renamed
+#            from TwilitRealm/dusk with the v2.0.0 rebrand, 2026-09-19)
 # Site:      https://twilitrealm.dev/
 #
 # Distribution: per-platform binary releases on GitHub. The Linux
-# build ships as a single AppImage (Dusk-vX.Y.Z-linux-x86_64.AppImage),
+# build ships as a single AppImage (Dusklight-vX.Y.Z-linux-x86_64.AppImage),
 # so installation is just download + chmod + a wrapper script — no
 # extraction, no install prefix, no Wine.
 #
@@ -21,7 +22,7 @@
 # Latest-release endpoint — the role hits this to pick up new versions
 # automatically. Asset filename pattern matches the Linux AppImage
 # regardless of the version number embedded in it.
-dg_dusk_release_api: "https://api.github.com/repos/TwilitRealm/dusk/releases/latest"
+dg_dusk_release_api: "https://api.github.com/repos/TwilitRealm/dusklight/releases/latest"
 dg_dusk_asset_substring: "linux-x86_64.AppImage"
 
 # Install layout — single AppImage in tools/dusk/, wrapper at bin/dusk.

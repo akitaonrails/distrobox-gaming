@@ -1,6 +1,6 @@
 # Dusk — Twilight Princess reimplementation
 
-[Dusk](https://github.com/TwilitRealm/dusk) is an open-source
+[Dusk](https://github.com/TwilitRealm/dusklight) (formerly `dusk`) is an open-source
 reverse-engineered reimplementation of *The Legend of Zelda:
 Twilight Princess* (GameCube). Runs natively on Linux as a single
 AppImage, uses Vulkan (RTX 5090 + NVIDIA proprietary driver works
@@ -17,7 +17,7 @@ ansible-playbook install-dusk.yml
 
 ## What the playbook does
 
-1. Hits GitHub's latest-release API for `TwilitRealm/dusk`, picks
+1. Hits GitHub's latest-release API for `TwilitRealm/dusklight`, picks
    the Linux x86_64 AppImage asset.
 2. Downloads it to `tools/dusk/Dusk.AppImage` inside the box home.
 3. Deploys a `dusk` wrapper at `~/bin/dusk` (the box's `~/bin` is

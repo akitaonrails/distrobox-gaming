@@ -39,7 +39,7 @@ newer build. Acceptable for actively developed emulators.
 | What | Source | Role |
 |---|---|---|
 | shadPS4 + QtLauncher | GitHub API (`shadps4-emu/*` releases) | `refresh_shadps4` |
-| Dusk (Twilight Princess port) | GitHub API (`TwilitRealm/dusk` latest) | `install_dusk` |
+| Dusk (Twilight Princess port) | GitHub API (`TwilitRealm/dusklight` latest) | `install_dusk` |
 | Xenia Manager (+ Xenia Canary via XM) | GitHub API (`xenia-manager` latest) | `install_xenia` |
 | Unleashed Recomp app | GitHub API (`hedge-dev/UnleashedRecomp` latest) | `install_unleashed_recomp` |
 | WipEout Phantom Edition (Windows x64 binary, run under Wine) | github.com/wipeout-phantom-edition release (pinned + sha256; AUTO). Needs a WipEout **USA** PSX rip — this box's `psx/WipEout (USA).chd`, converted to multi-bin. See `docs/wipeout-pe.md`. | `install_wipeout_pe` / `dg_wipeout_pe_*` |
