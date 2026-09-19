@@ -1,0 +1,7 @@
+---
+- name: Install Road Rash 64 Recompiled (native N64 port) + launcher
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_roadrash64_recomp

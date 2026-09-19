@@ -207,6 +207,11 @@ dg_ogm_games:
     category: port
     sgdb_query: "Midnight Club: Los Angeles"
     github: "{{ dg_mcla_repo }}"
+  - desktop_id: gaming-roadrash64
+    id: roadrash64
+    category: recomp
+    sgdb_query: "Road Rash 64"
+    github: "{{ dg_rr64_repo }}"
   - desktop_id: gaming-goldeneye
     id: goldeneye
     category: recomp

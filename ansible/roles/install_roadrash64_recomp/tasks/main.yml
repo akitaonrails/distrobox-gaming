@@ -1,0 +1,120 @@
+---
+# Road Rash 64 Recompiled — native N64 recomp (linkssy2, v1.2.0 Linux AppImage).
+# See group_vars/all/roadrash64_recomp.yml and docs/roadrash64.md.
+
+- name: Revert Road Rash 64 Recompiled when requested
+  when: dg_rr64_revert | bool
+  block:
+    - name: Remove the Road Rash 64 launcher, desktop entry + install dir
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_rr64_launcher }}"
+        - "{{ dg_rr64_root }}"
+        - "{{ dg_desktop_render_dir }}/gaming-roadrash64.desktop"
+    - name: Refresh host launchers after removing Road Rash 64
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      changed_when: true
+    - name: Report Road Rash 64 reverted
+      ansible.builtin.debug:
+        msg: "Road Rash 64 Recompiled removed. Your ROM + {{ dg_rr64_config_dir }} are untouched."
+
+- name: Install Road Rash 64 Recompiled
+  when: not (dg_rr64_revert | bool)
+  block:
+    - name: Verify the Road Rash 64 (USA) ROM exists and is v1.0
+      ansible.builtin.shell: |
+        python3 - <<'PY'
+        import hashlib
+        d = bytearray(open(r'''{{ dg_rr64_rom }}''', 'rb').read())
+        m = bytes(d[:4])
+        if m == b'\x40\x12\x37\x80':      # .n64 little-endian -> z64
+            z = b''.join(bytes(d[i:i+4][::-1]) for i in range(0, len(d), 4))
+        elif m == b'\x37\x80\x40\x12':    # .v64 byte-swapped -> z64
+            for i in range(0, len(d) - 1, 2): d[i], d[i+1] = d[i+1], d[i]
+            z = bytes(d)
+        else:
+            z = bytes(d)
+        h = hashlib.sha1(z).hexdigest()
+        if h != "{{ dg_rr64_rom_sha1_z64 }}":
+            raise SystemExit("Road Rash 64 ROM is not USA v1.0 (normalized sha1 " + h + ")")
+        print("rom-ok " + h)
+      register: _rr64_rom
+      changed_when: false
+      failed_when: "'rom-ok' not in _rr64_rom.stdout"
+
+    - name: Create Road Rash 64 directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_rr64_root }}"
+        - "{{ dg_rr64_cache_dir }}"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Install Road Rash 64 runtime dependencies inside box
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} sudo pacman -S --needed --noconfirm
+        {{ dg_rr64_pacman_packages | join(' ') }}
+      register: _rr64_pacman
+      changed_when: "'installing' in _rr64_pacman.stdout or 'upgrading' in _rr64_pacman.stdout"
+
+    - name: Download the pinned Road Rash 64 Linux release
+      ansible.builtin.get_url:
+        url: "{{ dg_rr64_asset_url }}"
+        dest: "{{ dg_rr64_cache_dir }}/{{ dg_rr64_asset_name }}"
+        checksum: "sha256:{{ dg_rr64_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Extract the release (version-gated)
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          if [ -x "{{ dg_rr64_appimage }}" ] &&
+             grep -qx "{{ dg_rr64_release_tag }}" "{{ dg_rr64_root }}/.dg-installed-ref" 2>/dev/null; then
+            exit 0
+          fi
+          unzip -q -o "{{ dg_rr64_cache_dir }}/{{ dg_rr64_asset_name }}" -d "{{ dg_rr64_root }}"
+          chmod 0755 "{{ dg_rr64_appimage }}"
+          printf "%s\n" "{{ dg_rr64_release_tag }}" > "{{ dg_rr64_root }}/.dg-installed-ref"
+          echo rr64-extracted
+        '
+      register: _rr64_extract
+      changed_when: "'rr64-extracted' in _rr64_extract.stdout"
+
+    - name: Deploy the Road Rash 64 launcher
+      ansible.builtin.template:
+        src: roadrash64.sh.j2
+        dest: "{{ dg_rr64_launcher }}"
+        mode: "0755"
+
+    - name: Render the Road Rash 64 desktop entry
+      ansible.builtin.template:
+        src: roadrash64.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-roadrash64.desktop"
+        mode: "0644"
+
+    - name: Install the desktop file into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _rr64_host_launchers
+      changed_when: >-
+        'installed ' in _rr64_host_launchers.stdout or
+        'removed stale ' in _rr64_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Road Rash 64 Recompiled {{ dg_rr64_release_tag }} at {{ dg_rr64_root }};
+          launcher {{ dg_rr64_launcher }}. ROM auto-loaded via --auto-rom (no picker);
+          saves/config in {{ dg_rr64_config_dir }}. Custom music -> {{ dg_rr64_root }}/music/.
+          Revert: -e dg_rr64_revert=true.

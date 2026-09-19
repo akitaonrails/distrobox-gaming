@@ -36,6 +36,7 @@
     - { role: install_dkc_recomp,        tags: [dkc_recomp, never] }
     - { role: install_lighthouse,        tags: [lighthouse, banjo, never] }
     - { role: install_midnightclub_la,   tags: [midnightclub_la, never] }
+    - { role: install_roadrash64_recomp,  tags: [roadrash64, never] }
     - { role: install_perfect_dark,      tags: [perfect_dark, never] }
     - { role: install_project_reignition, tags: [project_reignition, never] }
     - { role: install_sonic3air,         tags: [sonic3air, never] }

@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Road Rash 64 · Recompiled (on {{ dg_box_name }})
+Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_rr64_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Road Rash 64 (N64) native recompilation — N64Recomp + RT64 (Vulkan), 60 FPS/widescreen, on the RTX.
+Categories=Game;
+Keywords=road;rash;n64;recomp;rt64;motorcycle;racing;
+StartupWMClass=RoadRash64Recompiled;
+{{ ogm_metadata('gaming-roadrash64') }}

@@ -71,3 +71,4 @@ dg_save_sets:
   - { name: smw-remastered,       src: ".local/share/SuperMarioWorldRemastered" }
   - { name: sorr-save,            src: "tools/sorr/game/savegame" }
   - { name: midnightclub-la,      src: "tools/midnightclubla/midnightclubla/user-data" }
+  - { name: roadrash64-recomp,    src: ".config/RoadRash64Recompiled" }
