@@ -1,0 +1,22 @@
+# xemu — repo-managed upstream AppImage (rolling dev/pre-release build).
+#
+# The AUR `xemu-bin` tracks tagged stable (0.8.136); the major DSP56300 audio
+# emulator (JIT) + Vulkan renderer improvements landed in xemu's rolling
+# "pre-release" development build first, so xemu is pinned to that AppImage by
+# sha256. Config, BIOS/flashrom/HDD/EEPROM and saves stay in ~/.config/xemu +
+# ~/.local/share/xemu (unchanged from the AUR build) — no migration.
+#
+# The bin/xemu wrapper (seed_configs/templates/xemu-launch.sh.j2) prefers this
+# AppImage over any /opt or /usr xemu, so ES-DE, the desktop launcher and direct
+# calls all use it. Update: grab a newer asset from the pre-release, set the name
+# + sha256 (+ version), then re-run: ansible-playbook install-xemu.yml
+#   https://github.com/xemu-project/xemu/releases  (tag: pre-release)
+
+dg_xemu_release_tag: "pre-release"
+dg_xemu_version: "0.8.136-49-gf9b14039e5"
+dg_xemu_asset_name: "xemu-0.8.136-49-gf9b14039e5-x86_64.AppImage"
+dg_xemu_asset_url: "https://github.com/xemu-project/xemu/releases/download/{{ dg_xemu_release_tag }}/{{ dg_xemu_asset_name }}"
+dg_xemu_asset_sha256: "71e1db56eb982ed2d43173ede657dcc8843d4788bf8a808cc9a7a7ac3e4ecb02"
+
+dg_xemu_install_dir: "{{ dg_box_home }}/tools/xemu-appimage"
+dg_xemu_appimage: "{{ dg_xemu_install_dir }}/xemu.AppImage"

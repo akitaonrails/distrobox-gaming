@@ -34,8 +34,10 @@ if [ -f "$XEMU_TOML" ]; then
 fi
 
 # Hand off to the real xemu binary. Skip $PATH lookup so we never
-# recurse into our own wrapper.
-for cand in /opt/xemu/bin/xemu /usr/bin/xemu /usr/local/bin/xemu; do
+# recurse into our own wrapper. The repo-managed AppImage (install_xemu,
+# a newer dev build than the AUR stable) is preferred; the /opt and /usr
+# paths remain as a fallback.
+for cand in "{{ dg_xemu_appimage }}" /opt/xemu/bin/xemu /usr/bin/xemu /usr/local/bin/xemu; do
   if [ -x "$cand" ]; then
     exec "$cand" "$@"
   fi

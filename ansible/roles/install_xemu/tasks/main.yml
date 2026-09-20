@@ -1,0 +1,41 @@
+---
+# xemu as a repo-managed, sha256-pinned upstream AppImage (rolling dev build,
+# ahead of the AUR stable). See group_vars/all/xemu.yml. The bin/xemu wrapper
+# (rendered by seed_configs) prefers this AppImage.
+
+- name: Ensure xemu AppImage + bin directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_xemu_install_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Download the pinned xemu AppImage (dev build)
+  ansible.builtin.get_url:
+    url: "{{ dg_xemu_asset_url }}"
+    dest: "{{ dg_xemu_appimage }}"
+    checksum: "sha256:{{ dg_xemu_asset_sha256 }}"
+    mode: "0755"
+
+- name: Remove the superseded AUR xemu-bin if it's still installed
+  # Everything routes through bin/xemu, which now prefers the AppImage; the
+  # pacman-managed /usr/bin/xemu (older stable) is dead weight. -Rdd because
+  # nothing depends on it.
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sh -lc
+    'pacman -Qq xemu-bin >/dev/null 2>&1 && sudo pacman -Rdd --noconfirm xemu-bin || echo not-installed'
+  register: _xemu_aur_remove
+  changed_when: "'Removing' in _xemu_aur_remove.stdout or 'removing xemu-bin' in _xemu_aur_remove.stdout"
+
+- name: Re-render the xemu launch wrapper so it targets the AppImage
+  ansible.builtin.include_role:
+    name: seed_configs
+    tasks_from: xemu.yml
+
+- name: Report xemu install
+  ansible.builtin.debug:
+    msg: >-
+      xemu {{ dg_xemu_version }} AppImage at {{ dg_xemu_appimage }} (via bin/xemu
+      wrapper). Config/BIOS/saves in {{ dg_xemu_config_dir }} + {{ dg_xemu_runtime_dir }}.

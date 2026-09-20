@@ -62,7 +62,8 @@ dg_aur_packages:
   - cemu-bin
   - melonds-bin
   - evsieve
-  - xemu-bin
+  # xemu-bin removed — xemu is now the repo-managed upstream AppImage
+  # (install_xemu, group_vars/all/xemu.yml; dev build ahead of AUR stable).
   # vita3k-bin: SKIPPED. Its AUR PKGBUILD fails to build (the nightly zip
   # dropped org.vita3k.vita3k.metainfo.xml, so package() errors out) —
   # verified failing on a from-scratch rebuild 2026-08-01. Not our bug.

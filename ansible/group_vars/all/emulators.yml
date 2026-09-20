@@ -380,7 +380,7 @@ dg_emulator_commands:
   - PPSSPPQt
   # rpcs3 verified via the install_rpcs3 AppImage (not a PATH command anymore)
   - shadps4
-  - xemu
+  # xemu verified via the install_xemu AppImage + bin/xemu wrapper
 
 # Dolphin controller config files to copy.
 dg_dolphin_configs:

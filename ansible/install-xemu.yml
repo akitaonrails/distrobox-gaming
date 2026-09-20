@@ -1,0 +1,9 @@
+---
+# Install / update the repo-managed xemu AppImage (rolling dev build).
+# Bump the pin vars in group_vars/all/xemu.yml, then run this.
+- name: Install xemu (upstream dev AppImage) + wrapper
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_xemu
