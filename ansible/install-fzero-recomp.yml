@@ -1,0 +1,7 @@
+---
+- name: Install F-Zero SNES Recompiled (native SNES port) + launcher
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_fzero_recomp

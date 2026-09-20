@@ -1,0 +1,42 @@
+#!/usr/bin/env sh
+set -eu
+# F-Zero SNES Recompiled launcher — mstan's native SNES recomp, opens on DP-1.
+# 8BitDo native via SDL. Managed by install_fzero_recomp.
+#
+# The ROM is passed as the first positional argument: resolve_rom() takes argv[1]
+# and returns before the launcher window is created, so the game boots straight
+# in with no GUI picker. The SDL host verifies the dump's sha256 itself and
+# auto-strips a 512-byte copier header.
+
+APPIMAGE="{{ dg_fzero_appimage }}"
+ROM="{{ dg_fzero_rom }}"
+if [ ! -x "$APPIMAGE" ]; then
+  printf '%s\n' "ERROR: F-Zero SNES Recompiled missing at $APPIMAGE. Run: ansible-playbook install-fzero-recomp.yml" >&2
+  exit 1
+fi
+if [ ! -f "$ROM" ]; then
+  printf '%s\n' "ERROR: F-Zero (USA) ROM missing at $ROM" >&2
+  exit 1
+fi
+
+# Focus the main landscape 4K monitor (Hyprland >= 0.56 Lua IPC form).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_fzero_main_output }}" }))'); s.recv(256); s.close()
+PY
+
+# The OpenGL shader path renders on the RTX (not the AMD iGPU); harmless for the
+# plain SDL path. This is a 2D SNES title, so no Vulkan ICD pin is needed.
+export __NV_PRIME_RENDER_OFFLOAD="${__NV_PRIME_RENDER_OFFLOAD:-1}"
+export __GLX_VENDOR_LIBRARY_NAME="${__GLX_VENDOR_LIBRARY_NAME:-nvidia}"
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+# Run from the install dir so config.ini, rom.cfg and saves/ land here (they are
+# written relative to the working directory) — keeps them stable and backed up.
+cd "{{ dg_fzero_root }}"
+exec "$APPIMAGE" "$ROM" "$@"

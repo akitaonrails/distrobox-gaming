@@ -1,0 +1,106 @@
+---
+# F-Zero SNES Recompiled — native SNES recomp (mstan, prebuilt Linux AppImage).
+# See group_vars/all/fzero_recomp.yml and docs/fzero-recomp.md.
+
+- name: Revert F-Zero SNES Recompiled when requested
+  when: dg_fzero_revert | bool
+  block:
+    - name: Remove the F-Zero launcher, desktop entry + install dir
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_fzero_launcher }}"
+        - "{{ dg_fzero_root }}"
+        - "{{ dg_desktop_render_dir }}/gaming-fzero.desktop"
+    - name: Refresh host launchers after removing F-Zero
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      changed_when: true
+    - name: Report F-Zero reverted
+      ansible.builtin.debug:
+        msg: "F-Zero SNES Recompiled removed. Your ROM is untouched (saves lived under {{ dg_fzero_root }}/saves)."
+
+- name: Install F-Zero SNES Recompiled
+  when: not (dg_fzero_revert | bool)
+  block:
+    - name: Verify the F-Zero (USA) ROM exists and is the expected revision
+      ansible.builtin.shell: |
+        python3 - <<'PY'
+        import hashlib
+        d = open(r'''{{ dg_fzero_rom }}''', 'rb').read()
+        # The recomp auto-strips a 512-byte copier header; match its logic so a
+        # headered .smc of the same revision also passes here.
+        if len(d) % 1024 == 512:
+            d = d[512:]
+        h = hashlib.sha256(d).hexdigest()
+        if h != "{{ dg_fzero_rom_sha256 }}":
+            raise SystemExit("F-Zero ROM is not the expected USA revision (headerless sha256 " + h + ")")
+        print("rom-ok " + h)
+      register: _fzero_rom
+      changed_when: false
+      failed_when: "'rom-ok' not in _fzero_rom.stdout"
+
+    - name: Create F-Zero directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_fzero_root }}"
+        - "{{ dg_fzero_cache_dir }}"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Install F-Zero runtime dependencies inside box
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} sudo pacman -S --needed --noconfirm
+        {{ dg_fzero_pacman_packages | join(' ') }}
+      register: _fzero_pacman
+      changed_when: "'installing' in _fzero_pacman.stdout or 'upgrading' in _fzero_pacman.stdout"
+
+    - name: Download the pinned F-Zero Linux AppImage
+      ansible.builtin.get_url:
+        url: "{{ dg_fzero_asset_url }}"
+        dest: "{{ dg_fzero_appimage }}"
+        checksum: "sha256:{{ dg_fzero_asset_sha256 }}"
+        mode: "0755"
+
+    - name: Record the installed release ref
+      ansible.builtin.copy:
+        dest: "{{ dg_fzero_root }}/.dg-installed-ref"
+        content: "{{ dg_fzero_release_tag }}\n"
+        mode: "0644"
+
+    - name: Deploy the F-Zero launcher
+      ansible.builtin.template:
+        src: fzero.sh.j2
+        dest: "{{ dg_fzero_launcher }}"
+        mode: "0755"
+
+    - name: Render the F-Zero desktop entry
+      ansible.builtin.template:
+        src: fzero.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-fzero.desktop"
+        mode: "0644"
+
+    - name: Install the desktop file into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _fzero_host_launchers
+      changed_when: >-
+        'installed ' in _fzero_host_launchers.stdout or
+        'removed stale ' in _fzero_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          F-Zero SNES Recompiled {{ dg_fzero_release_tag }} at {{ dg_fzero_root }};
+          launcher {{ dg_fzero_launcher }}. ROM passed as argv[1] (no picker);
+          config.ini + saves/ live under {{ dg_fzero_root }}. Widescreen, shaders,
+          save states + rewind are in-app. Revert: -e dg_fzero_revert=true.

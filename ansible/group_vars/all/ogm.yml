@@ -212,6 +212,11 @@ dg_ogm_games:
     category: recomp
     sgdb_query: "Road Rash 64"
     github: "{{ dg_rr64_repo }}"
+  - desktop_id: gaming-fzero
+    id: fzero
+    category: recomp
+    sgdb_query: "F-Zero"
+    github: "{{ dg_fzero_repo }}"
   - desktop_id: gaming-goldeneye
     id: goldeneye
     category: recomp

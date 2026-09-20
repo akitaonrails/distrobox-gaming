@@ -1,0 +1,40 @@
+---
+# F-Zero SNES Recompiled — mstan's static recompilation of the SNES F-Zero
+# into a native PC app (shared "snesrecomp" engine + "recomp-ui" launcher, the
+# same family as the DKC recomps). Unlike the DKC trilogy, upstream DOES ship
+# an official native Linux AppImage, so this is a prebuilt-release role (no
+# source build) — the DK64 / Road Rash pattern. Opt-in role install_fzero_recomp.
+# See docs/fzero-recomp.md.
+#
+# You supply your own F-Zero (USA) dump. The recomp is revision-strict: the SDL
+# host verifies the ROM against sha256 bf16c3c8… (No-Intro F-Zero (USA), 512 KiB
+# headerless LoROM, sha1 d3efd32b…) and auto-strips a 512-byte copier header, so
+# both .sfc and headered .smc dumps of that revision work.
+#
+# Skipping the launcher/picker: resolve_rom() in sdl_main.c takes the ROM as the
+# first positional argument (argv[1]) and returns before the launcher window is
+# ever created — so the wrapper simply passes the ROM path and the game boots
+# straight in, no GUI picker. Widescreen (16:9/21:9/32:9), high-refresh
+# presentation, shaders, save states and rewind are all in-app options.
+
+dg_fzero_repo: mstan/FZeroSNESRecomp
+dg_fzero_release_tag: v1.6.1
+dg_fzero_asset_name: "FZeroSNESRecomp-linux-1.6.1-x86_64.AppImage"
+dg_fzero_asset_url: "https://github.com/{{ dg_fzero_repo }}/releases/download/{{ dg_fzero_release_tag }}/{{ dg_fzero_asset_name }}"
+dg_fzero_asset_sha256: "acbcddcc87effe03b5c07edf465413cd3cdc210d9d07840bbe973e27fdb1e37f"
+
+dg_fzero_root: "{{ dg_box_home }}/tools/fzero-snes-recomp"
+dg_fzero_cache_dir: "{{ dg_box_home }}/cache/fzero-snes-recomp"
+dg_fzero_appimage: "{{ dg_fzero_root }}/FZeroSNESRecomp.AppImage"
+dg_fzero_launcher: "{{ dg_box_home }}/bin/fzero"
+dg_fzero_main_output: "DP-1"
+dg_fzero_revert: false
+
+# User's own dump — F-Zero (USA), No-Intro, 512 KiB headerless LoROM. The
+# curated ROMS_FINAL/snes/F-ZERO.smc copy is already headerless and matches the
+# recomp's baked-in sha256 exactly; passed to the AppImage as argv[1].
+dg_fzero_rom: "{{ dg_roms_final_root }}/snes/F-ZERO.smc"
+dg_fzero_rom_sha256: "bf16c3c867c58e2ab061c70de9295b6930d63f29f81cc986f5ecae03e0ad18d2"
+
+dg_fzero_pacman_packages:
+  - fuse2

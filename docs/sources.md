@@ -26,6 +26,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | Road Rash 64 Recompiled | N64 recompilation (native Linux AppImage) | [linkssy2/RoadRash64Recompiled](https://github.com/linkssy2/RoadRash64Recompiled) · [doc](roadrash64.md) |
 | Perfect Dark | N64 decomp PC port | [DabDavis/perfect-dark-dabs-mod](https://github.com/DabDavis/perfect-dark-dabs-mod) · [doc](perfect-dark.md) |
 | DKC 1 / 2 / 3 Recompiled | SNES recomp trilogy (source-built) | [elliotttate/DKC1Recomp](https://github.com/elliotttate/DKC1Recomp) · [2](https://github.com/elliotttate/DKC2Recomp) · [3](https://github.com/elliotttate/DKC3Recomp) · [doc](dkc-recomp.md) |
+| F-Zero SNES Recompiled | SNES recomp (native Linux AppImage), widescreen | [mstan/FZeroSNESRecomp](https://github.com/mstan/FZeroSNESRecomp) · [doc](fzero-recomp.md) |
 | Unleashed Recomp | Sonic Unleashed recompilation | [hedge-dev/UnleashedRecomp](https://github.com/hedge-dev/UnleashedRecomp) · [doc](unleashed-recomp.md) |
 | TriAevum | Zelda OoT 3D recomp (Wine) | [coccofresco/TriAevum](https://github.com/coccofresco/TriAevum) · [doc](triaevum.md) |
 | PrBoom-Plus RT | Ray-traced Doom / Doom II | [tomboylover93/prboom-plus-rt](https://github.com/tomboylover93/prboom-plus-rt) · [doc](doom2-ray-traced.md) |

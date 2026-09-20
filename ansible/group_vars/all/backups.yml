@@ -72,3 +72,4 @@ dg_save_sets:
   - { name: sorr-save,            src: "tools/sorr/game/savegame" }
   - { name: midnightclub-la,      src: "tools/midnightclubla/midnightclubla/user-data" }
   - { name: roadrash64-recomp,    src: ".config/RoadRash64Recompiled" }
+  - { name: fzero-recomp,         src: "tools/fzero-snes-recomp/saves" }   # SRAM + save states (cwd-relative, next to the AppImage)

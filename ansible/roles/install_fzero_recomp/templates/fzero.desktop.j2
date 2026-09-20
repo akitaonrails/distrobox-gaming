@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=F-Zero · Recompiled (on {{ dg_box_name }})
+Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_fzero_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=F-Zero (SNES) native recompilation — mstan's snesrecomp port, widescreen + high-refresh, on the RTX.
+Categories=Game;
+Keywords=f-zero;fzero;snes;recomp;racing;widescreen;
+StartupWMClass=FZeroSNESRecomp;
+{{ ogm_metadata('gaming-fzero') }}
