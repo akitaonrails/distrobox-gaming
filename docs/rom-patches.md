@@ -35,6 +35,21 @@ correct result.
 | **F-Zero: Vintage Velocity Ace (EN v3.0)** — F-Zero 99 course layouts + larger Mute City tracks. | same Maximum Velocity base (`8a08e29e…`). | `F-Zero - Vintage Velocity Ace (v3.0).gba` (`962f357d…`, expands to 8 MiB) |
 | **Super Metroid Redux (v1.5)** — large overhaul (map system, Project Base features, bugfixes). Main IPS only; the zip's optional add-on patches are not applied. | headerless No-Intro `Super Metroid (Japan, USA) (En,Ja).sfc` — `da957f0d…` (CRC `d63ed5f8`). | `Super Metroid Redux.sfc` (`0f4133f2…`, matches the author's prebuilt Redux ROM) |
 | **Return to Yoshi's Island — Demo 2 (Kaze Emanuar, N64)** — a **BPS** patch (NAS-staged `patch_src`), output into `roms_mid/n64` alongside the stock Mario ROMs. **HEAVY hack — emulator-picky** (see below). | `Super Mario 64 (USA) [!]` `.z64` — `9bef1128…` (read from the SM64 decomp-port baserom, the only verified copy on the box; never modified). | `Return to Yoshi's Island (Demo 2 v1.06).z64` (`4e91e237…`) |
+| **F-Zero Community Grand Prix P1/P2/P3 (CGP)** — 55 tracks (the 15 main, both BS leagues, 30 new), improved CPU, free boosting from lap 2, LEGEND difficulty. Three packs differing only in vehicle roster (see the group_vars comment); all three coexist. **MSU-1 audio** — see below. | headerless No-Intro `F-Zero (USA).sfc` — `d3efd32b…` (CRC `aa0e31de`), from `roms/snes/originals/` (the 1 MiB `roms/snes/F-Zero (USA).sfc` is a different dump — don't use it). | `F-Zero Community Grand Prix P1 (CGP).sfc` (`be5fc510…`), `…P2…` (`bf288290…`), `…P3…` (`b4dc5f38…`), each 2.5 MiB |
+
+### F-Zero CGP — MSU-1 audio sidecars
+
+The CGP packs ship MSU-1 CD-audio (61 `.pcm` tracks + a `.msu` marker per pack,
+~1.1 GB each; zips + extracted folders archived at
+`ROMS_FINAL/snes/romhack-patches/F-Zero CGP P*/`). MSU-1 emulators find audio
+**by ROM basename**, so the entries set `msu_src` + `msu_prefix` and the role
+**hardlinks** every sidecar next to the patched ROM, renamed from the pack
+prefix (`F-Zero CGP P1-7.pcm`) to the ROM basename
+(`F-Zero Community Grand Prix P1 (CGP)-7.pcm`). Hardlinks cost no extra space
+(same NAS filesystem) and survive either path being moved/deleted. Verified
+2026-09-22: RetroArch Snes9x reports `ROM+RAM+BAT+MSU-1` on the P1 ROM (music
+needs an MSU-1 core — bsnes/Snes9x; on other cores the game plays silent).
+Reverting (`dg_rom_patches_revert=true`) removes the sidecars too.
 
 The archives also ship JP/Europe patch variants; only the International (EN/US)
 patches are committed, matching the box's dumps. The two F-Zero hacks are kept as
@@ -78,4 +93,9 @@ untouched. After a run, rescan the GBA gamelist in ES-DE to pick up new entries.
    IPS vs BPS applier), optional `patch_src` (absolute path for a NAS-staged
    patch), `out` (path), `out_sha1`. Get `out_sha1` by applying the patch once
    and hashing the result.
-3. Run the playbook. The base and output are both hash-checked.
+3. **MSU-1 hacks (SNES CD-audio packs):** also set `msu_src` (directory with
+   the extracted pack) and `msu_prefix` (the pack's original file prefix). The
+   role hardlinks every `<prefix>.msu` / `<prefix>-*.pcm` beside the patched
+   ROM, renamed to the ROM's basename — MSU-1 pairs audio by filename, so if
+   you rename `out`, the sidecars follow automatically.
+4. Run the playbook. The base and output are both hash-checked.

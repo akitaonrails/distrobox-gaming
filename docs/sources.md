@@ -73,6 +73,7 @@ Patch files are **not** committed — grab them from the sites below.
 | Data-driven IPS/BPS patcher (role) | [doc: rom-patches.md](rom-patches.md) · [how-to: rom-hack-patching.md](rom-hack-patching.md) |
 | N64 Kaze hacks (e.g. Return to Yoshi's Island) | [RomHacking.com Discord / RHDC](https://www.romhacking.com/) |
 | SNES hacks (SMW, Zelda, Metroid, …) | [SMW Central](https://www.smwcentral.net/) · [RHDN](https://www.romhacking.net/) |
+| F-Zero Community Grand Prix P1/P2/P3 (SNES, MSU-1) | [RomHack Plaza](https://romhackplaza.org/romhacks/f-zero-community-grand-prix-cgp-super-nintendo-romhack) (guest-accessible via the Download modal's signed URLs; zips archived at `ROMS_FINAL/snes/romhack-patches/`) |
 | DKC GBA colour restoration (marc_max) | [RHDN](https://www.romhacking.net/) |
 | Naming hacks cleanly in ES-DE | [doc: esde-romhack-names.md](esde-romhack-names.md) |
 

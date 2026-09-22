@@ -12,6 +12,25 @@
       loop: "{{ dg_rom_patches }}"
       loop_control:
         label: "{{ item.name }}"
+    - name: Find MSU-1 sidecars linked beside patched ROMs
+      ansible.builtin.find:
+        paths: "{{ item.out | dirname }}"
+        patterns: "{{ (item.out | basename | splitext | first) }}.msu,{{ (item.out | basename | splitext | first) }}-*.pcm"
+      register: _rp_revert_msu
+      loop: "{{ dg_rom_patches }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: item.msu_src is defined
+    - name: Remove MSU-1 sidecars
+      ansible.builtin.file:
+        path: "{{ _msu_file.path }}"
+        state: absent
+      loop: >-
+        {{ _rp_revert_msu.results | default([])
+           | selectattr('files', 'defined') | map(attribute='files') | flatten }}
+      loop_control:
+        loop_var: _msu_file
+        label: "{{ _msu_file.path | basename }}"
     - name: Report ROM patches reverted
       ansible.builtin.debug:
         msg: >-

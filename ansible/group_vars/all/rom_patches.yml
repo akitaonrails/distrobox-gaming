@@ -75,3 +75,46 @@ dg_rom_patches:
     patch_src: "{{ dg_roms_final_root }}/n64/romhack-patches/RTYI Demo TWO 1.06.bps"
     out: "{{ dg_rom_mid_root }}/n64/Return to Yoshi's Island (Demo 2 v1.06).z64"
     out_sha1: "4e91e2375d4094ec5e04beeaa87b883de51dfcec"
+
+  # F-Zero Community Grand Prix (CGP, romhackplaza 2026) — 55 tracks: the 15
+  # main tracks, both BS leagues, and 30 new ones; improved CPU, free boosting
+  # from lap 2 (drains power), machine balance fixes, new LEGEND difficulty.
+  # Three packs, installed side by side; they differ only in the vehicle roster:
+  #   P1: Moon Shadow, Great Star, Dragon Bird, Death Anchor
+  #   P2: Blue Falcon, Golden Fox, Panzer Emerald, Black Bull
+  #   P3: White Cat, Red Gazelle, Wild Goose, Fire Stingray
+  # Base is the headerless No-Intro F-Zero (USA) dump (CRC aa0e31de). The packs
+  # ship MSU-1 audio: .msu/.pcm sidecars are hardlinked beside each ROM with
+  # the ROM's basename (MSU-1 matches by filename), so music needs an
+  # MSU-1-capable core (bsnes/Snes9x) — otherwise the game plays silent.
+  # NAS-staged patches+packs: ROMS_FINAL/snes/romhack-patches/F-Zero CGP P*/
+  # (zips kept pristine alongside the extracted folders).
+  - name: "F-Zero Community Grand Prix P1 (CGP)"
+    base: "{{ dg_rom_root }}/snes/originals/F-Zero (USA).sfc"
+    base_sha1: "d3efd32b68f1fe37a82db9d9929b7ca7cc1a3af4"
+    ips: "F-Zero CGP P1.ips"
+    patch_src: "{{ dg_roms_final_root }}/snes/romhack-patches/F-Zero CGP P1/F-Zero CGP P1.ips"
+    out: "{{ dg_rom_root }}/snes/F-Zero Community Grand Prix P1 (CGP).sfc"
+    out_sha1: "be5fc510e0c44da70e3b8449e33c15f0334dc40c"
+    msu_src: "{{ dg_roms_final_root }}/snes/romhack-patches/F-Zero CGP P1"
+    msu_prefix: "F-Zero CGP P1"
+
+  - name: "F-Zero Community Grand Prix P2 (CGP)"
+    base: "{{ dg_rom_root }}/snes/originals/F-Zero (USA).sfc"
+    base_sha1: "d3efd32b68f1fe37a82db9d9929b7ca7cc1a3af4"
+    ips: "F-Zero CGP P2.ips"
+    patch_src: "{{ dg_roms_final_root }}/snes/romhack-patches/F-Zero CGP P2/F-Zero CGP P2.ips"
+    out: "{{ dg_rom_root }}/snes/F-Zero Community Grand Prix P2 (CGP).sfc"
+    out_sha1: "bf288290e0cef9c2b9614a747b7fad496d58f3bc"
+    msu_src: "{{ dg_roms_final_root }}/snes/romhack-patches/F-Zero CGP P2"
+    msu_prefix: "F-Zero CGP P2"
+
+  - name: "F-Zero Community Grand Prix P3 (CGP)"
+    base: "{{ dg_rom_root }}/snes/originals/F-Zero (USA).sfc"
+    base_sha1: "d3efd32b68f1fe37a82db9d9929b7ca7cc1a3af4"
+    ips: "F-Zero CGP P3.ips"
+    patch_src: "{{ dg_roms_final_root }}/snes/romhack-patches/F-Zero CGP P3/F-Zero CGP P3.ips"
+    out: "{{ dg_rom_root }}/snes/F-Zero Community Grand Prix P3 (CGP).sfc"
+    out_sha1: "b4dc5f38de7d4cb18c15a1055b84d04d67628fa3"
+    msu_src: "{{ dg_roms_final_root }}/snes/romhack-patches/F-Zero CGP P3"
+    msu_prefix: "F-Zero CGP P3"

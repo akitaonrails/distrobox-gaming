@@ -67,3 +67,29 @@
       {{ 'up to date'
          if (_rp_out.stat.exists and _rp_out.stat.checksum == item.out_sha1)
          else 'patched now' }}).
+
+# Optional MSU-1 audio sidecars (SNES MSU-1 hacks such as F-Zero CGP). MSU-1
+# emulators find the audio by ROM basename, so every sidecar is hardlinked next
+# to the patched ROM with the entry's msu_prefix swapped for the out basename
+# (hardlinks: same NAS filesystem, zero extra space, either copy survives the
+# other being moved or deleted).
+- name: "{{ item.name }} — find MSU-1 sidecar files"
+  ansible.builtin.find:
+    paths: "{{ item.msu_src }}"
+    patterns: "{{ item.msu_prefix }}.msu,{{ item.msu_prefix }}-*.pcm"
+  register: _rp_msu
+  when: item.msu_src is defined
+
+- name: "{{ item.name }} — hardlink MSU-1 sidecars beside the patched ROM"
+  ansible.builtin.file:
+    src: "{{ _msu_file.path }}"
+    dest: >-
+      {{ (item.out | dirname) ~ '/'
+         ~ (_msu_file.path | basename
+            | replace(item.msu_prefix, item.out | basename | splitext | first)) }}
+    state: hard
+  loop: "{{ _rp_msu.files }}"
+  loop_control:
+    loop_var: _msu_file
+    label: "{{ _msu_file.path | basename }}"
+  when: item.msu_src is defined
