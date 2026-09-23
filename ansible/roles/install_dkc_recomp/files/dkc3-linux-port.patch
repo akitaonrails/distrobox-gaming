@@ -12,3 +12,49 @@ index e121a20..1ce8c83 100644
      target_link_libraries(dkc3_snesrecomp_sdl PRIVATE
          ${SNESRECOMP_RUNNER_LIBRARIES}
          SDL2::SDL2)
+diff --git a/runner/desktop_input.c b/runner/desktop_input.c
+index 02f8cc0..8aa2b42 100644
+--- a/runner/desktop_input.c
++++ b/runner/desktop_input.c
+@@ -38,6 +38,19 @@ static bool GamepadBindingPressed(const Dkc3GamepadState *gamepad,
+                                   int binding, int16_t deadzone,
+                                   uint8_t trigger_threshold) {
+   if (!gamepad || binding <= 0) return false;
++  if (RECOMP_LAUNCHER_PAD_IS_BUTTON_COMBO(binding)) {
++    /* distrobox-gaming: evaluate 2+ button chords. The launcher UI can encode
++     * combos, but stock runtime input ignored them (they fell through to the
++     * axis check and returned false). Every button in the mask must be held. */
++    uint32_t mask = (uint32_t)RECOMP_LAUNCHER_PAD_BUTTON_COMBO_MASK(binding);
++    for (int code = 0; code < 32; code++) {
++      if ((mask & (1u << code)) &&
++          !GamepadBindingPressed(gamepad, RECOMP_LAUNCHER_PAD_BUTTON(code),
++                                 deadzone, trigger_threshold))
++        return false;
++    }
++    return true;
++  }
+   if (RECOMP_LAUNCHER_PAD_IS_BUTTON(binding)) {
+     uint32_t mask = 0;
+     switch (RECOMP_LAUNCHER_PAD_BUTTON_CODE(binding)) {
+diff --git a/runner/desktop_launcher.c b/runner/desktop_launcher.c
+index e9f0a32..f596754 100644
+--- a/runner/desktop_launcher.c
++++ b/runner/desktop_launcher.c
+@@ -231,7 +231,7 @@ void Dkc3LauncherSettingsLoad(RecompLauncherCSettings *settings) {
+       } else if (sscanf(key, "AssistPad%d", &binding) == 1 &&
+                  binding >= 0 &&
+                  binding < RECOMP_LAUNCHER_MAX_ASSIST_BINDINGS) {
+-        settings->assist_pad_bind[binding] = ClampInt(value, 0, 255);
++        settings->assist_pad_bind[binding] = ClampInt(value, 0, 4095); /* distrobox-gaming: keep combo encodings (1000+mask) loadable */
+       }
+     }
+   }
+@@ -303,7 +303,7 @@ bool Dkc3LauncherSettingsSave(const RecompLauncherCSettings *settings) {
+   for (int action = 0; ok && action < kDkc3AssistCount; action++) {
+     ok = fprintf(file, "AssistKey%d=%d\nAssistPad%d=%d\n",
+                  action, ClampInt(settings->assist_key_bind[action], 0, 512),
+-                 action, ClampInt(settings->assist_pad_bind[action], 0, 255)) >
++                 action, ClampInt(settings->assist_pad_bind[action], 0, 4095)) >
+          0;
+   }
+   if (fclose(file) != 0) ok = false;

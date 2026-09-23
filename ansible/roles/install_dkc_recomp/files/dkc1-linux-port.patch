@@ -116,3 +116,41 @@ index c737ad0..3d58c4a 100644
    /* A native macOS fullscreen Space constrains SDL to the panel's inset safe
     * area (3949x2464 on the target 4112x2658 MacBook display). Set this before
     * the Cocoa video backend initializes so FULLSCREEN_DESKTOP uses the full
+diff --git a/runner/desktop_input.c b/runner/desktop_input.c
+index c37d321..105cc01 100644
+--- a/runner/desktop_input.c
++++ b/runner/desktop_input.c
+@@ -38,6 +38,14 @@ static bool GamepadBindingPressed(const Dkc1GamepadState *gamepad,
+                                   int binding, int16_t deadzone,
+                                   uint8_t trigger_threshold) {
+   if (!gamepad || binding <= 0) return false;
++  if (DKC1_PAD_IS_CHORD(binding)) {
++    return GamepadBindingPressed(gamepad,
++                                 DKC1_PAD_BUTTON(DKC1_PAD_CHORD_MOD(binding)),
++                                 deadzone, trigger_threshold) &&
++           GamepadBindingPressed(gamepad,
++                                 DKC1_PAD_BUTTON(DKC1_PAD_CHORD_BTN(binding)),
++                                 deadzone, trigger_threshold);
++  }
+   if (DKC1_PAD_IS_BUTTON(binding)) {
+     uint32_t mask = 0;
+     switch (DKC1_PAD_BUTTON_CODE(binding)) {
+diff --git a/runner/desktop_input.h b/runner/desktop_input.h
+index 5bbafa8..ad60112 100644
+--- a/runner/desktop_input.h
++++ b/runner/desktop_input.h
+@@ -14,6 +14,14 @@
+ #define DKC1_PAD_AXIS_CODE(v) (((v) - 100) / 2)
+ #define DKC1_PAD_AXIS_POSITIVE(v) (((v) - 100) & 1)
+ 
++/* Chord binding (distrobox-gaming): both pad buttons must be held. Encoded
++ * above the single button/axis ranges; arguments are raw
++ * SDL_GameControllerButton codes (e.g. SDL_CONTROLLER_BUTTON_BACK). */
++#define DKC1_PAD_CHORD(mod_code, btn_code) (1000 + (mod_code) * 32 + (btn_code))
++#define DKC1_PAD_IS_CHORD(v) ((v) >= 1000)
++#define DKC1_PAD_CHORD_MOD(v) (((v) - 1000) / 32)
++#define DKC1_PAD_CHORD_BTN(v) (((v) - 1000) % 32)
++
+ typedef struct Dkc1Controls {
+   int source[2]; /* None, Keyboard, Gamepad, Keyboard + Gamepad */
+   int deadzone[2];

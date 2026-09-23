@@ -50,3 +50,25 @@ note the launcher persists its config BESIDE THE EXECUTABLE, not the cwd.
 "Skip launcher on boot" available; DKC1's extras live in host menus/keys
 (F7 pause, F8 step). Update = bump `ref`
 in `dg_dkc_games` (checkout is ref-gated; the build re-runs).
+
+## Saves, save states, and pad chords
+
+All three keep the game's built-in saves (cartridge SRAM, e.g. Candy's in
+DKC1) under their user dirs, and all three have **host save states** —
+with **Select+L1 = quicksave** and **Select+R1 = quickload** chords, plus
+**LT = rewind** and **RT = fast-forward**:
+
+- **DKC1** (older SDL host): F11/F12 quicksave/load, 5 slots. The assist layer
+  (rewind/FF/state) is gated behind a macOS-only menu toggle, so our
+  `linux_stubs.c` enables it and binds the chords; the chord encoding itself
+  (`DKC1_PAD_CHORD`) is our addition in `dkc1-linux-port.patch`.
+- **DKC2/DKC3** (newer launcher host): F5/F9 save/load state, in-game overlay
+  (Start+Select) with an Assist Tools page. Upstream *encodes* pad combos in
+  the UI but never evaluated them at runtime, and launcher.cfg clamped
+  `AssistPad*` values to 255 — both fixed in our `dkc2/dkc3-linux-port.patch`.
+  The role seeds `launcher.cfg` with `AssistTools=1`, `AssistPad2=1528`
+  (Select+L1), `AssistPad3=2040` (Select+R1) via lineinfile (user edits to
+  other keys are preserved).
+
+The chord buttons still pass through to the game as normal inputs (Select/L/R),
+which is harmless in gameplay.

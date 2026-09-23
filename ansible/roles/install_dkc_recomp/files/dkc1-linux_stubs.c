@@ -126,6 +126,16 @@ void Dkc1MacLoadControls(Dkc1Controls *c) {
   c->assist_keys[1] = SDL_SCANCODE_TAB;
   c->assist_pads[0] = DKC1_PAD_AXIS(SDL_CONTROLLER_AXIS_TRIGGERLEFT, 1);
   c->assist_pads[1] = DKC1_PAD_AXIS(SDL_CONTROLLER_AXIS_TRIGGERRIGHT, 1);
+  /* distrobox-gaming: upstream defaults leave assist_enabled=0 (the toggle
+   * lives in the macOS pause menu, which Linux has no equivalent of), gating
+   * off ALL pad assist bindings — rewind/FF on the triggers included. Enable
+   * it here, and bind save/load state to Select+L1 / Select+R1 chords
+   * (DKC1_PAD_CHORD is our addition from dkc1-linux-port.patch). */
+  c->assist_enabled = 1;
+  c->assist_pads[2] = DKC1_PAD_CHORD(SDL_CONTROLLER_BUTTON_BACK,
+                                     SDL_CONTROLLER_BUTTON_LEFTSHOULDER);
+  c->assist_pads[3] = DKC1_PAD_CHORD(SDL_CONTROLLER_BUTTON_BACK,
+                                     SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
 }
 int Dkc1MacEditControls(Dkc1Controls *controls) { (void)controls; return 0; }
 

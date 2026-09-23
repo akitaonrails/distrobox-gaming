@@ -113,6 +113,28 @@
       loop_control:
         label: "{{ item.name }}"
 
+    # Assist layer (rewind/fast-forward/save-state/load-state) defaults to OFF
+    # upstream and its pad bindings are empty; the overlay UI is the only
+    # upstream toggle. Seed AssistTools=1 + Select+L1/Select+R1 combo chords
+    # for save/load state (encodings 1000+(1<<Back|1<<L1/R1) = 1528/2040;
+    # combo runtime eval + cfg values >255 need our *-linux-port.patch).
+    # lineinfile: idempotent, preserves in-launcher edits to other keys.
+    - name: Ensure each assist key in the launcher config
+      ansible.builtin.lineinfile:
+        path: "{{ item.0.src_dir }}/build/linux/launcher.cfg"
+        line: "{{ item.1.key }}={{ item.1.value }}"
+        regexp: "^{{ item.1.key }}="
+        create: true
+        mode: "0644"
+      loop: "{{ (dg_dkc_games | rejectattr('key', 'equalto', 'dkc1') | list) | product(_assist_cfg) | list }}"
+      loop_control:
+        label: "{{ item.0.key }} {{ item.1.key }}"
+      vars:
+        _assist_cfg:
+          - { key: AssistTools, value: "1" }
+          - { key: AssistPad2, value: "1528" }
+          - { key: AssistPad3, value: "2040" }
+
     - name: Deploy the launchers
       ansible.builtin.template:
         src: dkc-launch.sh.j2
