@@ -12,6 +12,15 @@ category = {{ game.category | to_json }}
 {% if game.github is defined -%}
 github = {{ game.github | to_json }}
 {% endif -%}
+{% if game.web_url is defined -%}
+web_url = {{ game.web_url | to_json }}
+{% endif -%}
+{% if game.update_url is defined -%}
+update_url = {{ game.update_url | to_json }}
+{% endif -%}
+{% if game.update_regex is defined -%}
+update_regex = {{ game.update_regex | to_json }}
+{% endif -%}
 {% if game.sgdb_query is defined -%}
 sgdb_query = {{ game.sgdb_query | to_json }}
 {% endif %}

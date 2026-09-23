@@ -12,6 +12,10 @@ Desktop entries carry ogm (omarchy-games-menu) discovery metadata as
 `ansible/templates/ogm-desktop-entry.j2` macro (`with context`) and calls it
 with its rendered stem, which emits the keys from `group_vars/all/ogm.yml`
 (`dg_ogm_games`) — add a new game there, never restate metadata in templates.
+Every new or updated game install MUST keep its `dg_ogm_games` entry current:
+`github` for GitHub-backed projects, otherwise `web_url`/`update_regex` for
+web-page update badges where a pollable page exists (see the field docs in
+`ogm.yml` and `docs/ogm-launcher.md`; verify regexes against the live page).
 The opt-in `ogm_catalog` role (tag `ogm`) renders the same data to a
 `catalog.d` fallback fragment. See `docs/ogm-launcher.md`.
 Focused setup notes are in `docs/`. The native macOS baseline is a separate

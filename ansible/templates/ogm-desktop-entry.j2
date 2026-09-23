@@ -25,6 +25,12 @@ X-OGM-Managed=true
 X-OGM-Category={{ _e.category }}
 {% if _e.github is defined and _e.github %}X-OGM-GitHub={{ _e.github }}
 {% endif -%}
+{%- if _e.web_url is defined and _e.web_url %}X-OGM-WebURL={{ _e.web_url }}
+{% endif -%}
+{%- if _e.update_url is defined and _e.update_url %}X-OGM-UpdateURL={{ _e.update_url }}
+{% endif -%}
+{%- if _e.update_regex is defined and _e.update_regex %}X-OGM-UpdateRegex={{ _e.update_regex }}
+{% endif -%}
 {%- if _e.sgdb_query is defined and _e.sgdb_query %}X-OGM-SGDBQuery={{ _e.sgdb_query }}
 {% endif -%}
 {%- endif -%}

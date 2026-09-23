@@ -31,7 +31,22 @@ X-OGM-GitHub=HarbourMasters/Shipwright
 | `X-OGM-Managed` | yes | `true` — the marker; without it ogm ignores the entry |
 | `X-OGM-Category` | yes | one of `port`, `decomp`, `recomp`, `fangame`, `wine`, `arcade`, `emulator`, `tool`, `custom` |
 | `X-OGM-GitHub` | optional | `owner/repo` — enables release/update checks |
+| `X-OGM-WebURL` | optional | canonical project/download page — informational link; for games **without** `X-OGM-GitHub` it also becomes the update-poll target |
+| `X-OGM-UpdateURL` | optional | page ogm polls for changes — defaults to `X-OGM-WebURL` when omitted |
+| `X-OGM-UpdateRegex` | optional | Rust regex, capture group 1 = version string in the raw HTML; without it ogm falls back to ETag/content-hash fingerprinting (badge without version text) |
 | `X-OGM-SGDBQuery` | optional | SteamGridDB search name for cover art |
+
+Update-badge convention: a game gets its update signal from **either**
+`X-OGM-GitHub` (GitHub Releases API) **or** `X-OGM-WebURL`/`UpdateURL`
+(web-page polling), never both — `UpdateURL` defaults to `WebURL`, so a
+WebURL on a GitHub-backed game would be double-polled. Set `web_url` only
+where a real, pollable page exists: fan-game project pages (itch.io,
+GameJolt, blog), or a frequently-updated fan patch page for retail games
+(e.g. RSF for Richard Burns Rally). Games distributed only via Google
+Drive/MediaFire/YouTube (DKLR, Sonic P-06) get no keys — a dynamic page
+fingerprint would badge permanently. Verify every `update_regex` against
+the live page (`curl -sL <url> | grep -oP '<pattern>'`) and keep it
+backslash-free (`\` is an escape in desktop-entry values).
 
 ### How the keys get there
 
@@ -77,6 +92,9 @@ desktop_id = "gaming-ship-of-harkinian"
 category = "port"
 github = "HarbourMasters/Shipwright"
 ```
+
+The fragment also carries `web_url` / `update_url` / `update_regex` when set,
+mirroring the desktop keys.
 
 ## Running it
 

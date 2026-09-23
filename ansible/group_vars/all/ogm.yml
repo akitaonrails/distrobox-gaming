@@ -32,6 +32,19 @@
 #   managed      set false for the explicit opt-out — emits X-OGM-Managed=false
 #                so ogm excludes the entry even if its legacy filename glob
 #                matches (e.g. gaming-steam). Omit for normal entries.
+#   web_url      canonical project/download page (X-OGM-WebURL) — for games
+#                with NO github key, so ogm can poll the page for update
+#                badges (baseline fingerprint first, badge on change). Do NOT
+#                set on github-backed games: the GitHub Releases API already
+#                covers their update signal and UpdateURL defaults to WebURL,
+#                so they'd be polled twice.
+#   update_url   page to poll (X-OGM-UpdateURL) — omit to poll web_url.
+#   update_regex Rust regex, capture group 1 = version string on the raw HTML
+#                page (X-OGM-UpdateRegex). Only after verifying against the
+#                live page (curl | grep -oP). No backslashes — desktop-entry
+#                values treat '\' as an escape. Without it ogm falls back to
+#                ETag/content-hash fingerprinting (badge without version text).
+#                Prefer no regex over a brittle one on JS-heavy pages.
 
 dg_ogm_enabled: true
 dg_ogm_catalog_path: "{{ ansible_env.HOME }}/.config/ogm/catalog.d/distrobox-gaming.toml"
@@ -255,21 +268,40 @@ dg_ogm_games:
     sgdb_query: "Super Mario World"
     github: "{{ dg_smw_remastered_repo }}"
   # itch.io / GameJolt / blog-distributed fan games — no GitHub repo recorded
-  # anywhere in the repo, so no github key.
+  # anywhere in the repo, so no github key. web_url gives ogm web-page update
+  # polling instead (fingerprint mode unless an update_regex is verified).
+  # itch upload titles carry the version; verified against the live page
+  # 2026-09-23 (captures 1.00.92 from "MMX Regenesis 1.00.92 Linux.x86_64").
   - { desktop_id: gaming-mmx-regenesis, id: mmx-regenesis, category: fangame,
-      sgdb_query: "Mega Man X" }
+      sgdb_query: "Mega Man X",
+      web_url: "https://mmxregenesis.itch.io/mega-man-x-regenesis",
+      update_regex: "MMX Regenesis ([0-9]+([.][0-9]+)+) Linux" }
+  # DKLR is Google Drive-only (kasquez) — no pollable project page, so no
+  # web_url (a Drive page fingerprint changes per session = false badges).
   - { desktop_id: gaming-dklr, id: dklr, category: fangame,
       sgdb_query: "Donkey Kong Land" }
+  # GameJolt page is a JS app shell — fingerprint mode (no version in raw HTML).
   - { desktop_id: gaming-project-reignition, id: project-reignition, category: fangame,
-      sgdb_query: "Sonic and the Secret Rings" }
+      sgdb_query: "Sonic and the Secret Rings",
+      web_url: "https://gamejolt.com/games/project_reignition/1082591" }
+  # P-06 is distributed via ChaosX's YouTube video descriptions (MediaFire) —
+  # no pollable project page, so no web_url.
   - { desktop_id: gaming-sonic-p06, id: sonic-p06, category: fangame,
       sgdb_query: "Sonic the Hedgehog (2006)" }
+  # Blogspot homepage: new release = new post = fingerprint change. No version
+  # string in the raw HTML (widget-rendered), so no regex.
   - { desktop_id: gaming-sonic-sms-remake, id: sonic-sms-remake, category: fangame,
-      sgdb_query: "Sonic the Hedgehog (8-bit)" }
+      sgdb_query: "Sonic the Hedgehog (8-bit)",
+      web_url: "https://sonic-sms-remake.blogspot.com/" }
+  # itch page; upload filename has no version — fingerprint mode.
   - { desktop_id: gaming-openbor-sor-troubles-in-japan, id: openbor-sor-troubles-in-japan,
-      category: fangame, sgdb_query: "Streets of Rage" }
+      category: fangame, sgdb_query: "Streets of Rage",
+      web_url: "https://berlioz91.itch.io/streets-of-rage-troubles-in-japan" }
+  # v5.2 is the final/abandoned Bombergames release — informational link only;
+  # the archive.org page is static, so polling it never badges.
   - { desktop_id: streets-of-rage-remake, id: streets-of-rage-remake, category: fangame,
-      sgdb_query: "Streets of Rage Remake" }
+      sgdb_query: "Streets of Rage Remake",
+      web_url: "https://archive.org/details/sorrv-52-rev-550_202401" }
 
   # ── Windows games under Wine ─────────────────────────────────────
   # Names come from dg_pc_racing_games; the rendered desktop Name= carries a
@@ -309,6 +341,9 @@ dg_ogm_games:
     name: "{{ dg_pc_racing_games | selectattr('slug', 'eq', 'outrun-2006') | map(attribute='name') | first }}"
     category: wine
     sgdb_query: "OutRun 2006: Coast 2 Coast"
+    # The game is retail (no updates), but the installer layers emoose's
+    # OutRun2006Tweaks on top — badge on the tweak pack's GitHub releases.
+    github: "emoose/OutRun2006Tweaks"
   - desktop_id: pc-prince-of-persia-sot
     id: prince-of-persia-sot
     name: "{{ dg_pc_racing_games | selectattr('slug', 'eq', 'prince-of-persia-sot') | map(attribute='name') | first }}"
@@ -319,6 +354,11 @@ dg_ogm_games:
     name: "{{ dg_pc_racing_games | selectattr('slug', 'eq', 'richard-burns-rally') | map(attribute='name') | first }}"
     category: wine
     sgdb_query: "Richard Burns Rally"
+    # RSF (rallysimfans.hu) updates frequently; the page links the current
+    # pack torrent as rsf_installer_files_V<ver>.torrent — regex verified
+    # 2026-09-23, first match captures the current version (4.11).
+    web_url: "https://rallysimfans.hu"
+    update_regex: "rsf_installer_files_V([0-9]+([.][0-9]+)+)"
   - desktop_id: pc-sega-rally-revo
     id: sega-rally-revo
     name: "{{ dg_pc_racing_games | selectattr('slug', 'eq', 'sega-rally-revo') | map(attribute='name') | first }}"
