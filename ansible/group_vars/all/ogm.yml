@@ -245,6 +245,11 @@ dg_ogm_games:
     category: recomp
     sgdb_query: "Wave Race 64"
     github: "{{ dg_wr64_zip_url | regex_replace('^https://(api\\.)?github\\.com/(repos/)?([^/]+/[^/]+?)(\\.git)?(/.*)?$', '\\3') }}"
+  - desktop_id: gaming-pilotwings-recomp
+    id: pilotwings-recomp
+    category: recomp
+    sgdb_query: "Pilotwings 64"
+    github: "{{ dg_pw64_tarball_url | regex_replace('^https://(api\\.)?github\\.com/(repos/)?([^/]+/[^/]+?)(\\.git)?(/.*)?$', '\\3') }}"
   - desktop_id: gaming-unleashed-recomp
     id: unleashed-recomp
     category: recomp

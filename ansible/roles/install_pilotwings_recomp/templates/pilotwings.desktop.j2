@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Pilotwings 64 · Recompiled ({{ dg_box_name }})
+Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_pw64_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Pilotwings 64: Recompiled — N64Recomp + RT64 native PC port (Vulkan) on the RTX
+Categories=Game;
+Keywords=pilotwings;n64;recomp;rt64;
+StartupWMClass=Pilotwings64Recomp;
+{{ ogm_metadata('gaming-pilotwings-recomp') }}

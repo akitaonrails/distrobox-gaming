@@ -1,0 +1,30 @@
+---
+# Pilotwings 64: Recompiled (danielgomesvieira2000/pilotwings-64-recomp) — an
+# N64Recomp + N64ModernRuntime + RT64 static recomp PC port of Pilotwings 64.
+# Opt-in role install_pilotwings_recomp. See docs/pilotwings-recomp.md.
+#
+# Unlike Wave Race 64 Recompiled, upstream ships a native Linux x86-64 build
+# (RT64 renders through Vulkan directly), so no Wine — we hash-pin the release
+# tarball on the NAS and run it natively on the RTX.
+
+dg_pw64_version: "0.1.1"
+dg_pw64_tarball_url: "https://github.com/danielgomesvieira2000/pilotwings-64-recomp/releases/download/v{{ dg_pw64_version }}/Pilotwings64Recomp-{{ dg_pw64_version }}-linux-x86_64.tar.gz"
+dg_pw64_tarball_sha256: "b4849feb348f68918daaaefd226cb1824f4512eaf5140095e28e765807749492"
+
+dg_pw64_root: "{{ dg_roms_final_root }}/PC/pilotwings-recomp"
+dg_pw64_tarball: "{{ dg_pw64_root }}/Pilotwings64Recomp-{{ dg_pw64_version }}-linux-x86_64.tar.gz"
+dg_pw64_install_dir: "{{ dg_box_home }}/tools/pilotwings-recomp"
+dg_pw64_exe: Pilotwings64Recomp
+
+# ROM: Pilotwings 64 (USA) ONLY (cart PW, region E, rev 0, z64 sha1
+# ec771aedf54ee1b214c25404fb4ec51cfd43191a). The box's dump is the byte-swapped
+# .n64; the role converts it to a big-endian .z64 and `--identify` verifies it.
+dg_pw64_rom_src: "{{ dg_rom_mid_root }}/n64/Pilotwings 64 (USA).n64"
+dg_pw64_rom_z64: "{{ dg_pw64_root }}/Pilotwings 64 (USA).z64"
+dg_pw64_rom_sha1: "ec771aedf54ee1b214c25404fb4ec51cfd43191a"
+
+dg_pw64_launcher: "{{ dg_box_home }}/bin/pilotwings-recomp"
+dg_pw64_nvidia_icd: /usr/share/vulkan/icd.d/nvidia_icd.json
+# Arch runtime deps (from README-LINUX.txt in the tarball).
+dg_pw64_packages: [sdl2, vulkan-icd-loader, gtk3, freetype2]
+dg_pw64_revert: false

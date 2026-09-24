@@ -23,6 +23,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | Banjo-Kazooie (Lighthouse) | libultraship PC port (HarbourMasters) | [HarbourMasters/Lighthouse](https://github.com/HarbourMasters/Lighthouse) · [doc](lighthouse.md) |
 | Metroid Prime Hunters Recompiled | NDS recomp (last Linux build) | [mstan/MetroidPrimeHuntersRecomp](https://github.com/mstan/MetroidPrimeHuntersRecomp) · [doc](mph-recomp.md) |
 | Wave Race 64 Recompiled | RT64 recomp (Windows build/Wine) | [elliotttate/wave-race-64-recomp](https://github.com/elliotttate/wave-race-64-recomp) · [doc](waverace-recomp.md) |
+| Pilotwings 64: Recompiled | N64Recomp + RT64 native Linux build | [danielgomesvieira2000/pilotwings-64-recomp](https://github.com/danielgomesvieira2000/pilotwings-64-recomp) · [doc](pilotwings-recomp.md) |
 | Road Rash 64 Recompiled | N64 recompilation (native Linux AppImage) | [linkssy2/RoadRash64Recompiled](https://github.com/linkssy2/RoadRash64Recompiled) · [doc](roadrash64.md) |
 | Perfect Dark | N64 decomp PC port | [DabDavis/perfect-dark-dabs-mod](https://github.com/DabDavis/perfect-dark-dabs-mod) · [doc](perfect-dark.md) |
 | DKC 1 / 2 / 3 Recompiled | SNES recomp trilogy (source-built) | [elliotttate/DKC1Recomp](https://github.com/elliotttate/DKC1Recomp) · [2](https://github.com/elliotttate/DKC2Recomp) · [3](https://github.com/elliotttate/DKC3Recomp) · [doc](dkc-recomp.md) |

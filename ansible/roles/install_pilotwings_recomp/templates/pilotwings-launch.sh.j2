@@ -1,0 +1,37 @@
+#!/usr/bin/env sh
+# Pilotwings 64: Recompiled launcher — prebuilt native Linux RT64 build,
+# Vulkan on the RTX. Managed by install_pilotwings_recomp.
+set -eu
+
+install_dir="{{ dg_pw64_install_dir }}"
+exe="{{ dg_pw64_exe }}"
+rom="{{ dg_pw64_rom_z64 }}"
+
+if [ ! -x "$install_dir/$exe" ]; then
+  printf '%s\n' "ERROR: Pilotwings 64 recomp not installed ($install_dir/$exe)." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-pilotwings-recomp.yml" >&2
+  exit 1
+fi
+
+# RT64 renders through Vulkan — pin the nvidia ICD + GLX vendor so it renders
+# on the RTX, not the AMD iGPU.
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-{{ dg_pw64_nvidia_icd }}}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+# All games open on the main landscape 4K monitor (DP-1).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b"/dispatch focusmonitor DP-1"); s.recv(64); s.close()
+PY
+
+# Pass the verified ROM as argv to skip the launcher's ROM picker
+# (usage: Pilotwings64Recomp <rom.z64>).
+cd "$install_dir"
+exec "./$exe" "$rom" "$@"

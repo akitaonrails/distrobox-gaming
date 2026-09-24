@@ -1,0 +1,113 @@
+---
+# Pilotwings 64: Recompiled — prebuilt native Linux RT64 build on the RTX.
+# See group_vars/all/pilotwings_recomp.yml and docs/pilotwings-recomp.md.
+
+- name: Revert Pilotwings 64 recomp when requested
+  when: dg_pw64_revert | bool
+  block:
+    - name: Remove the launcher + install dir
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_pw64_launcher }}"
+        - "{{ dg_pw64_install_dir }}"
+    - name: Report reverted
+      ansible.builtin.debug:
+        msg: "Pilotwings 64 recomp removed. The NAS tarball + z64 ROM are kept."
+
+- name: Install Pilotwings 64 recomp
+  when: not (dg_pw64_revert | bool)
+  block:
+    - name: Verify the Pilotwings 64 (USA) ROM exists
+      ansible.builtin.stat:
+        path: "{{ dg_pw64_rom_src }}"
+      register: _pw64_rom
+      failed_when: not _pw64_rom.stat.exists
+
+    - name: Install runtime packages
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} sudo pacman -S --needed --noconfirm {{ dg_pw64_packages | join(' ') }}
+      register: _pw64_pac
+      changed_when: "'installing' in _pw64_pac.stdout or 'upgrading' in _pw64_pac.stdout"
+
+    - name: Ensure the NAS release dir exists
+      ansible.builtin.file:
+        path: "{{ dg_pw64_root }}"
+        state: directory
+        mode: "0755"
+
+    - name: Download the prebuilt Linux build (hash-pinned)
+      ansible.builtin.get_url:
+        url: "{{ dg_pw64_tarball_url }}"
+        dest: "{{ dg_pw64_tarball }}"
+        checksum: "sha256:{{ dg_pw64_tarball_sha256 }}"
+        mode: "0644"
+
+    - name: Extract the build (once)
+      ansible.builtin.shell: |
+        set -eu
+        inst="{{ dg_pw64_install_dir }}"
+        [ -f "$inst/{{ dg_pw64_exe }}" ] && exit 0
+        mkdir -p "$inst"
+        tar -xzf "{{ dg_pw64_tarball }}" -C "$inst" --strip-components=1
+        echo pw64-extracted
+      register: _pw64_extract
+      changed_when: "'pw64-extracted' in _pw64_extract.stdout"
+
+    - name: Convert the ROM to a big-endian z64 + verify sha1 (creates once)
+      ansible.builtin.shell: |
+        python3 - <<'PY'
+        import hashlib
+        src = "{{ dg_pw64_rom_src }}"; dst = "{{ dg_pw64_rom_z64 }}"
+        d = open(src, 'rb').read(); m = d[:4]
+        if m == b'\x80\x37\x12\x40': z = d
+        elif m == b'\x37\x80\x40\x12':
+            b = bytearray(d); b[0::2], b[1::2] = d[1::2], d[0::2]; z = bytes(b)
+        elif m == b'\x40\x12\x37\x80':
+            b = bytearray(len(d))
+            for i in range(0, len(d) & ~3, 4): b[i:i+4] = d[i:i+4][::-1]
+            z = bytes(b)
+        else: raise SystemExit("unknown ROM byte order: " + m.hex())
+        # sanity: 8 MiB Pilotwings 64
+        if len(z) != 8 * 1024 * 1024: raise SystemExit("unexpected ROM size: %d" % len(z))
+        h = hashlib.sha1(z).hexdigest()
+        if h != "{{ dg_pw64_rom_sha1 }}": raise SystemExit("ROM sha1 mismatch: got " + h)
+        open(dst, 'wb').write(z); print("z64 ok (sha1 %s)" % h)
+        PY
+      args:
+        creates: "{{ dg_pw64_rom_z64 }}"
+
+    - name: Verify the dump against the port's pinned target
+      ansible.builtin.shell: |
+        "{{ dg_pw64_install_dir }}/{{ dg_pw64_exe }}" --identify "{{ dg_pw64_rom_z64 }}"
+      register: _pw64_identify
+      changed_when: false
+      failed_when: "'matches the pinned target' not in _pw64_identify.stdout"
+
+    - name: Deploy the launcher
+      ansible.builtin.template:
+        src: pilotwings-launch.sh.j2
+        dest: "{{ dg_pw64_launcher }}"
+        mode: "0755"
+
+    - name: Render + install the desktop entry
+      ansible.builtin.template:
+        src: pilotwings.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-pilotwings-recomp.desktop"
+        mode: "0644"
+
+    - name: Install the desktop entry into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _pw64_host
+      changed_when: "'installed ' in _pw64_host.stdout or 'removed stale ' in _pw64_host.stdout"
+
+    - name: Report
+      ansible.builtin.debug:
+        msg:
+          - "Pilotwings 64: Recompiled {{ dg_pw64_version }} at {{ dg_pw64_install_dir }}; launcher {{ dg_pw64_launcher }} (Walker: Pilotwings 64 · Recompiled)."
+          - "Native Linux RT64 build on Vulkan/RTX (VK_ICD pinned nvidia). ROM verified against the port's pinned target (USA rev 0). Gamepad + keyboard supported. Revert: -e dg_pw64_revert=true."

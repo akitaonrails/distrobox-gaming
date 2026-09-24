@@ -1,0 +1,7 @@
+---
+- name: Install Pilotwings 64 Recompiled (prebuilt native Linux RT64 build)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_pilotwings_recomp
