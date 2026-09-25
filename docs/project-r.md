@@ -14,8 +14,9 @@ Neither game is playable without original assets. Both come from the
 `assets/` beside it):
 
 - **Rush: The Rock** — `sfrushrk.chd` hard-drive dump + the four audio ROMs
-  (`audio.u62/u61/u53/u49`; a zip containing them is accepted — our MAME
-  `sfrushrk` zip qualifies). Optionally `sfrush.chd` adds the white car color.
+  (`audio.u62/u61/u53/u49`; the role unpacks the pack's `audio.zip` in place,
+  and the zip itself is also accepted). Optionally `sfrush.chd` adds the white
+  car color.
 - **Rush 2049** — `sf2049se.chd` (Special Edition) or `sf2049te`/`sf2049tea`
   (Tournament Edition) hard-drive dump.
 

@@ -55,6 +55,18 @@
       register: _projectr_assets
       changed_when: "'projectr-assets-extracted' in _projectr_assets.stdout"
 
+    - name: Unpack the Rush The Rock audio ROMs beside the CHD
+      # ProjectR accepts the audio.zip directly, but the four loose files are
+      # nicer for the file dialog (and reusable by MAME).
+      ansible.builtin.shell: |
+        set -eu
+        d="{{ dg_projectr_assets_dir }}/San Francisco Rush - The Rock"
+        [ -f "$d/audio.u62" ] && exit 0
+        unzip -o "$d/audio.zip" -d "$d" >/dev/null
+        echo projectr-audio-unpacked
+      register: _projectr_audio
+      changed_when: "'projectr-audio-unpacked' in _projectr_audio.stdout"
+
     - name: Install the AppImage into the box (version-gated)
       ansible.builtin.shell: |
         set -eu
