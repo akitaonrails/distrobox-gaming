@@ -33,11 +33,11 @@ dg_ridge_racer_winebus_registry:
   - { name: Enable SDL, value: 1 }
   - { name: Map Controllers, value: 1 }
 
-# Pinned Wanszai PC release. 1.1.0 ships PC / X360 / XSX variants; we use PC.
-dg_ridge_racer_version: "1.1.0"
+# Pinned Wanszai PC release. 1.1.1 ships PC / X360 / XSX variants; we use PC.
+dg_ridge_racer_version: "1.1.1"
 dg_ridge_racer_url: "https://github.com/wanszai/Ridge-Racer-Collection/releases/download/{{ dg_ridge_racer_version }}/RidgeRacerCollectionPC_{{ dg_ridge_racer_version }}.zip"
 dg_ridge_racer_archive: "{{ dg_ridge_racer_cache_dir }}/RidgeRacerCollectionPC_{{ dg_ridge_racer_version }}.zip"
-dg_ridge_racer_checksum: "sha256:0c120e8bc66853433285ff1184fd3d2cf93650827d167939709e669109d269d8"
+dg_ridge_racer_checksum: "sha256:893c24fe8ad75cd7d70a86c5644b7e48a6c201f2c1cdc96dc44bf9a83597e3f6"
 dg_ridge_racer_release_dir: "{{ dg_ridge_racer_root }}/releases/ridge-racer-{{ dg_ridge_racer_version }}"
 # The archive's top-level folder is literally "Ridge Racer Collection".
 dg_ridge_racer_release_subdir: "Ridge Racer Collection"

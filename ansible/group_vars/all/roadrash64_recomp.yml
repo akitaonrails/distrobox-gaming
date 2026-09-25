@@ -1,6 +1,6 @@
 # Road Rash 64 Recompiled — native N64 recompilation (linkssy2, N64Recomp +
 # N64ModernRuntime/RT64), with 60 FPS, MAX LOD, widescreen, custom music.
-# The v1.2.0 Linux build (CalenCyr's native contribution) ships as an AppImage;
+# The v1.3.1 Linux build (CalenCyr's native contribution) ships as an AppImage;
 # the user supplies their own Road Rash 64 USA v1.0 ROM. See docs/roadrash64.md.
 #
 # The recomp accepts --auto-rom <path>: it validates the dump against the game's
@@ -8,10 +8,10 @@
 # and auto-starts — so the launcher's ROM picker never appears. Vulkan/RTX.
 
 dg_rr64_repo: linkssy2/RoadRash64Recompiled
-dg_rr64_release_tag: v1.2.0
-dg_rr64_asset_name: RoadRash64Recompiled-v1.2.0-Linux-Experimental.zip
+dg_rr64_release_tag: v1.3.1
+dg_rr64_asset_name: RoadRash64Recompiled-v1.3.1-Rev2-Linux-Experimental.zip
 dg_rr64_asset_url: "https://github.com/{{ dg_rr64_repo }}/releases/download/{{ dg_rr64_release_tag }}/{{ dg_rr64_asset_name }}"
-dg_rr64_asset_sha256: "778eacf5cdcf28291eecc7f4b4f04f466490404148ba04fb7a76f3000f35c0e5"
+dg_rr64_asset_sha256: "8814bfac6f9377475c98630c44acb2107f0ad1fa9ebeeeb8481139dc26780a71"
 
 dg_rr64_root: "{{ dg_box_home }}/tools/roadrash64-recomp"
 dg_rr64_cache_dir: "{{ dg_box_home }}/cache/roadrash64-recomp"

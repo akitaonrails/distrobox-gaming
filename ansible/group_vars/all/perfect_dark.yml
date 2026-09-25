@@ -13,11 +13,11 @@
 # (dg_pd_archive_source) and reused on rebuilds; get_url only downloads if it's
 # missing/corrupt (and refuses a newer build until the sha is bumped).
 dg_pd_repo: DabDavis/perfect-dark-dabs-mod
-dg_pd_release_tag: v3.4.0
+dg_pd_release_tag: v3.8.0
 dg_pd_asset_name: pd-dabs-mod-x86_64-linux.tar.gz
 dg_pd_asset_url: "https://github.com/{{ dg_pd_repo }}/releases/download/{{ dg_pd_release_tag }}/{{ dg_pd_asset_name }}"
-dg_pd_asset_sha256: d3fe89db18da641d3e788aab7cb48c4e4b402bd22b0ed8b86740cad6dec2de98
-dg_pd_build_ref: "dabs-mod v3.4.0 (2026-09-12)"   # provenance of the pinned sha256, informational
+dg_pd_asset_sha256: da8a20f5692073b218fffa1827c425faa3a987e1b4a178a48a4fc4f228b89f8b
+dg_pd_build_ref: "dabs-mod v3.8.0 (2026-09-25)"   # provenance of the pinned sha256, informational
 dg_pd_archive_source: "{{ dg_roms_final_root }}/PC/perfect-dark-port/{{ dg_pd_asset_name }}"
 
 dg_pd_root: "{{ dg_box_home }}/tools/perfect-dark"    # pd.x86_64 + data/

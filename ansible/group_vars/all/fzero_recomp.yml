@@ -18,10 +18,10 @@
 # presentation, shaders, save states and rewind are all in-app options.
 
 dg_fzero_repo: mstan/FZeroSNESRecomp
-dg_fzero_release_tag: v1.6.1
-dg_fzero_asset_name: "FZeroSNESRecomp-linux-1.6.1-x86_64.AppImage"
+dg_fzero_release_tag: v1.8.3
+dg_fzero_asset_name: "FZeroSNESRecomp-linux-1.8.3-x86_64.AppImage"
 dg_fzero_asset_url: "https://github.com/{{ dg_fzero_repo }}/releases/download/{{ dg_fzero_release_tag }}/{{ dg_fzero_asset_name }}"
-dg_fzero_asset_sha256: "acbcddcc87effe03b5c07edf465413cd3cdc210d9d07840bbe973e27fdb1e37f"
+dg_fzero_asset_sha256: "2ac0438d7637d664a4aa0fd364c9d0604e5ac24dbec19db5e8cbfc3db7c82087"
 
 dg_fzero_root: "{{ dg_box_home }}/tools/fzero-snes-recomp"
 dg_fzero_cache_dir: "{{ dg_box_home }}/cache/fzero-snes-recomp"

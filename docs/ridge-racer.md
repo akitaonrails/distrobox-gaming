@@ -12,7 +12,7 @@ booting** — DXVK renders D3D11 on the RTX 5090 at 4K, ROM set accepted.
   Up to 4K, wheels + FFB, free online multiplayer, cross-play with the Xbox
   builds. Ships **no ROMs**.
 - The GitHub repo is info-only in the browser; the actual build is the
-  `RidgeRacerCollectionPC_1.1.0.zip` **release asset** (there are X360 / XSX
+  `RidgeRacerCollectionPC_1.1.1.zip` **release asset** (there are X360 / XSX
   variants too). We saw an empty release once — that was a GitHub 503, not a
   missing build.
 

@@ -31,12 +31,12 @@ dg_sega_rally_winebus_registry:
   - { name: Enable SDL, value: 1 }
   - { name: Map Controllers, value: 1 }
 
-# Pinned Wanszai PC release. 1.0.0a is the current PC build; the repo
+# Pinned Wanszai PC release. 1.0.0c is the current PC build; the repo
 # also ships X360/XboxSX variants we don't use.
-dg_sega_rally_version: "1.0.0a"
-dg_sega_rally_url: "https://github.com/wanszai/Sega-Rally-Championship-PC-Xbox360-Series-X-/releases/download/1.0.0a/PC-SegaRally1.0.0a.zip"
-dg_sega_rally_archive: "{{ dg_sega_rally_cache_dir }}/PC-SegaRally1.0.0a.zip"
-dg_sega_rally_checksum: "sha256:873339b92dc2fb9f6b57fbe4d94302f567c8d15262990fe51102499ecebae75e"
+dg_sega_rally_version: "1.0.0c"
+dg_sega_rally_url: "https://github.com/wanszai/Sega-Rally-Championship-PC-Xbox360-Series-X-/releases/download/{{ dg_sega_rally_version }}/PC-SegaRally{{ dg_sega_rally_version }}.zip"
+dg_sega_rally_archive: "{{ dg_sega_rally_cache_dir }}/PC-SegaRally{{ dg_sega_rally_version }}.zip"
+dg_sega_rally_checksum: "sha256:8ebaddf03000003096a884493e4fdb0384f5010f07cd1728588aa96c6c38ea58"
 dg_sega_rally_release_dir: "{{ dg_sega_rally_root }}/releases/sega-rally-{{ dg_sega_rally_version }}"
 # The archive's top-level folder is literally "Sega Rally".
 dg_sega_rally_release_subdir: "Sega Rally"

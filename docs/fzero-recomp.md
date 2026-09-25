@@ -27,7 +27,7 @@ which the `backup_saves` role captures).
 
 ## How it works
 
-- Downloads the pinned `FZeroSNESRecomp-linux-1.6.1-x86_64.AppImage` (sha256 in
+- Downloads the pinned `FZeroSNESRecomp-linux-1.8.3-x86_64.AppImage` (sha256 in
   `group_vars/all/fzero_recomp.yml`) to `tools/fzero-snes-recomp/`.
 - The role verifies your ROM is the expected F-Zero (USA) revision (headerless
   sha256 `bf16c3c8…`, sha1 `d3efd32b…`), matching the host's own check, and
