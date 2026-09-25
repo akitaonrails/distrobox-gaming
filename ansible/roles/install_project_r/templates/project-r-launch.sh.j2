@@ -1,0 +1,33 @@
+#!/usr/bin/env sh
+# ProjectR launcher — native Vulkan port of SF Rush: The Rock + SF Rush 2049
+# (arcade) on the RTX. Managed by install_project_r.
+# Direct boot: project-r --rtr (The Rock) / project-r --2049 (Rush 2049).
+set -eu
+
+appimage="{{ dg_projectr_appimage }}"
+
+if [ ! -x "$appimage" ]; then
+  printf '%s\n' "ERROR: ProjectR not installed ($appimage)." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-project-r.yml" >&2
+  exit 1
+fi
+
+# Vulkan — pin the nvidia ICD + GLX vendor so it renders on the RTX, not the
+# AMD iGPU.
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-{{ dg_projectr_nvidia_icd }}}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+# All games open on the main landscape 4K monitor (DP-1).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b"/dispatch focusmonitor DP-1"); s.recv(64); s.close()
+PY
+
+exec "$appimage" "$@"

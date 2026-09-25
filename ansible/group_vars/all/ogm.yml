@@ -173,6 +173,13 @@ dg_ogm_games:
     category: port
     sgdb_query: "F-Zero X"
     github: "{{ dg_gdiffuser_repo }}"
+  # Native Vulkan port of the SF Rush: The Rock + SF Rush 2049 arcades. No
+  # GitHub — t3hd0gg.com only. The Download section's first AppImage href is
+  # always the current version (verified 2026-09-25: captures 0.7.1).
+  - { desktop_id: gaming-project-r, id: project-r, category: port,
+      sgdb_query: "San Francisco Rush 2049",
+      web_url: "https://t3hd0gg.com/project-r/",
+      update_regex: "project-r-([0-9]+([.][0-9]+)+)-linux-x86_64[.]AppImage" }
 
   # ── Decompilations ───────────────────────────────────────────────
   - desktop_id: gaming-render96ex

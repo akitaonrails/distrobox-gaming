@@ -1,0 +1,100 @@
+---
+# ProjectR — native Vulkan port of SF Rush: The Rock + SF Rush 2049 (arcade).
+# Prebuilt AppImage, hash-pinned on the NAS. See group_vars/all/project_r.yml
+# and docs/project-r.md.
+
+- name: Revert ProjectR when requested
+  when: dg_projectr_revert | bool
+  block:
+    - name: Remove the launcher + install dir
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_projectr_launcher }}"
+        - "{{ dg_projectr_install_dir }}"
+    - name: Report reverted
+      ansible.builtin.debug:
+        msg: "ProjectR removed. The NAS AppImage + assets are kept at {{ dg_projectr_root }}."
+
+- name: Install ProjectR
+  when: not (dg_projectr_revert | bool)
+  block:
+    - name: Ensure host + box packages (7z to extract, fuse2 to run AppImages)
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} sudo pacman -S --needed --noconfirm {{ dg_projectr_packages | join(' ') }}
+      register: _projectr_pac
+      changed_when: "'installing' in _projectr_pac.stdout or 'upgrading' in _projectr_pac.stdout"
+
+    - name: Ensure the NAS dir exists
+      ansible.builtin.file:
+        path: "{{ dg_projectr_root }}"
+        state: directory
+        mode: "0755"
+
+    - name: Download the pinned ProjectR AppImage to the NAS
+      ansible.builtin.get_url:
+        url: "{{ dg_projectr_asset_url }}"
+        dest: "{{ dg_projectr_appimage_nas }}"
+        checksum: "sha256:{{ dg_projectr_asset_sha256 }}"
+        mode: "0755"
+
+    - name: Download the pinned asset pack (CHDs + audio ROMs) to the NAS
+      ansible.builtin.get_url:
+        url: "{{ dg_projectr_assets_url }}"
+        dest: "{{ dg_projectr_assets_7z }}"
+        checksum: "sha1:{{ dg_projectr_assets_7z_sha1 }}"
+        mode: "0644"
+
+    - name: Extract the asset pack on the NAS (once)
+      ansible.builtin.shell: |
+        set -eu
+        [ -d "{{ dg_projectr_assets_dir }}" ] && exit 0
+        7z x -y "-o{{ dg_projectr_root }}" "{{ dg_projectr_assets_7z }}" >/dev/null
+        echo projectr-assets-extracted
+      register: _projectr_assets
+      changed_when: "'projectr-assets-extracted' in _projectr_assets.stdout"
+
+    - name: Install the AppImage into the box (version-gated)
+      ansible.builtin.shell: |
+        set -eu
+        inst="{{ dg_projectr_install_dir }}"
+        if [ -f "$inst/.dg-installed-ref" ] &&
+           grep -qx "{{ dg_projectr_version }}" "$inst/.dg-installed-ref" &&
+           [ -x "{{ dg_projectr_appimage }}" ]; then
+          exit 0
+        fi
+        mkdir -p "$inst"
+        cp "{{ dg_projectr_appimage_nas }}" "{{ dg_projectr_appimage }}"
+        chmod 0755 "{{ dg_projectr_appimage }}"
+        printf '%s\n' "{{ dg_projectr_version }}" > "$inst/.dg-installed-ref"
+        echo projectr-installed
+      register: _projectr_install
+      changed_when: "'projectr-installed' in _projectr_install.stdout"
+
+    - name: Deploy the launcher
+      ansible.builtin.template:
+        src: project-r-launch.sh.j2
+        dest: "{{ dg_projectr_launcher }}"
+        mode: "0755"
+
+    - name: Render + install the desktop entry
+      ansible.builtin.template:
+        src: project-r.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-project-r.desktop"
+        mode: "0644"
+
+    - name: Install the desktop entry into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _projectr_host
+      changed_when: "'installed ' in _projectr_host.stdout or 'removed stale ' in _projectr_host.stdout"
+
+    - name: Report
+      ansible.builtin.debug:
+        msg:
+          - "ProjectR {{ dg_projectr_version }} at {{ dg_projectr_install_dir }}; launcher {{ dg_projectr_launcher }} (Walker: ProjectR · SF Rush)."
+          - "One-time setup per game (gamepad only — no keyboard/mouse support yet): main menu > set up each game, point at the assets under {{ dg_projectr_assets_dir }} (Rush The Rock: sfrushrk.chd + audio ROMs zip; Rush 2049: sf2049se.chd). Direct boot: project-r --rtr / --2049. Revert: -e dg_projectr_revert=true."

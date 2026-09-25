@@ -1,0 +1,32 @@
+---
+# ProjectR (t3hd0gg.com) — a native Vulkan port of the arcade games San
+# Francisco Rush: The Rock (sfrushrk) and San Francisco Rush 2049 (sf2049se/te).
+# No GitHub repo; the AppImage + asset pack are hash-pinned on the NAS.
+# Opt-in role install_project_r. See docs/project-r.md.
+#
+# Assets: ProjectR needs the original arcade hard-drive dumps (CHD) — The Rock
+# also needs its four audio ROMs (a zip with them is accepted). Both come from
+# the "Project R Assets" pack on archive.org, extracted once to the NAS so the
+# one-time in-game setup can point at them (and MAME could reuse the CHDs).
+
+dg_projectr_version: "0.7.1"
+dg_projectr_asset_name: "project-r-{{ dg_projectr_version }}-linux-x86_64.AppImage"
+dg_projectr_asset_url: "https://t3hd0gg.com/project-r/{{ dg_projectr_version }}/{{ dg_projectr_asset_name }}"
+dg_projectr_asset_sha256: "5f9318e637110422fa22adbefb0fad1d3c1c451be37d3736581fa24622ccb9a0"
+
+dg_projectr_root: "{{ dg_roms_final_root }}/PC/project-r"
+dg_projectr_appimage_nas: "{{ dg_projectr_root }}/{{ dg_projectr_asset_name }}"
+dg_projectr_install_dir: "{{ dg_box_home }}/tools/project-r"
+dg_projectr_appimage: "{{ dg_projectr_install_dir }}/ProjectR.AppImage"
+dg_projectr_launcher: "{{ dg_box_home }}/bin/project-r"
+
+# archive.org "Project R Assets" pack (v0.6.0 assets; valid for 0.7.1).
+dg_projectr_assets_url: "https://archive.org/download/project-r-assets-v-0.6.0.7z/ProjectR_Assets.7z"
+dg_projectr_assets_7z: "{{ dg_projectr_root }}/ProjectR_Assets.7z"
+dg_projectr_assets_7z_sha1: "0890e9b2f46e882e88e7f7027fd7bcdf6f659e69"
+dg_projectr_assets_dir: "{{ dg_projectr_root }}/ProjectR_Assets/assets"
+
+dg_projectr_nvidia_icd: /usr/share/vulkan/icd.d/nvidia_icd.json
+dg_projectr_main_output: "DP-1"
+dg_projectr_packages: [fuse2]
+dg_projectr_revert: false

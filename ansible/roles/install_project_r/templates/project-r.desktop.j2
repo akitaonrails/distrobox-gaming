@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=ProjectR · SF Rush ({{ dg_box_name }})
+Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_projectr_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=ProjectR — native Vulkan port of SF Rush: The Rock + SF Rush 2049 (arcade)
+Categories=Game;
+Keywords=san;francisco;rush;2049;arcade;port;
+StartupWMClass=ProjectR;
+{{ ogm_metadata('gaming-project-r') }}

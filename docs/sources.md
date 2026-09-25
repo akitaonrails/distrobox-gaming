@@ -32,6 +32,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | TriAevum | Zelda OoT 3D recomp (Wine) | [coccofresco/TriAevum](https://github.com/coccofresco/TriAevum) · [doc](triaevum.md) |
 | PrBoom-Plus RT | Ray-traced Doom / Doom II | [tomboylover93/prboom-plus-rt](https://github.com/tomboylover93/prboom-plus-rt) · [doc](doom2-ray-traced.md) |
 | DUDE | Doom 3 (dhewm3 fork, GL3/Vulkan) | [Inkub0/dude](https://github.com/Inkub0/dude) · [doc](dude.md) |
+| ProjectR | SF Rush: The Rock + SF Rush 2049 arcade native port (Vulkan) | [t3hd0gg.com/project-r](https://t3hd0gg.com/project-r/) · [doc](project-r.md) |
 | Sonic Project '06 | Sonic 2006 fan remake (Wine) | [Project 06 (ChaosX)](https://lutris.net/games/project-06/) · [doc](sonic-p06.md) |
 | Midnight Club: Los Angeles | Xbox 360 native recompilation (rex; needs your USA disc) | [CrownParkComputing/Xbox360-Native-Ports](https://github.com/CrownParkComputing/Xbox360-Native-Ports) · [doc](midnightclub-la.md) |
 
