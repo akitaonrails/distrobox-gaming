@@ -1,0 +1,62 @@
+---
+# DriveClub shader autopatcher + widescreen patch wiring (PS4 / shadPS4).
+# See group_vars/all/driveclub.yml and docs/driveclub.md.
+
+- name: Revert DriveClub shader patch tooling when requested
+  when: dg_driveclub_revert | bool
+  block:
+    - name: Remove the DriveClub shader-patch wrapper + patcher
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_driveclub_launcher }}"
+        - "{{ dg_driveclub_patcher }}"
+    - name: Report DriveClub tooling reverted
+      ansible.builtin.debug:
+        msg: >-
+          DriveClub shader-patch tool removed. The managed patch XML, patch/ shader
+          and CUSA00003.json are untouched (set patch_shaders=false by hand to disable).
+
+- name: Install DriveClub shader patch tooling
+  when: not (dg_driveclub_revert | bool)
+  block:
+    - name: Ensure the shadPS4 shader dir + bin exist
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_driveclub_shader_dir }}"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Stage the DriveClub shader autopatcher into shadPS4's shader dir
+      ansible.builtin.copy:
+        src: driveclub_shader_autopatcher.py
+        dest: "{{ dg_driveclub_patcher }}"
+        mode: "0644"
+
+    - name: Deploy the driveclub-shader-patch wrapper
+      ansible.builtin.template:
+        src: driveclub-shader-patch.sh.j2
+        dest: "{{ dg_driveclub_launcher }}"
+        mode: "0755"
+
+    # Re-seed shadPS4 per-game configs + the (now v1.0.1) Driveclub patch XML via
+    # the existing plumbing: deploys the updated patches/Driveclub.xml +
+    # CUSA00003.xml symlink and refreshes CUSA00003.json (patch_shaders: true).
+    # Respects the "is shadPS4 running" guard inside that task file.
+    - name: Re-seed shadPS4 configs + DriveClub patch XML
+      ansible.builtin.include_role:
+        name: seed_configs
+        tasks_from: shadps4.yml
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          DriveClub shader patch tooling installed. Patch XML (40 patches incl.
+          widescreen/resolution) at patches/CUSA00003.xml; patch_shaders armed in
+          {{ dg_driveclub_custom_config }}. Generate the shader fix with:
+          `driveclub-shader-patch dump` (play to main menu, quit) then
+          `driveclub-shader-patch`. shadPS4 then loads the fix from
+          {{ dg_driveclub_patch_out_dir }}. See docs/driveclub.md.

@@ -1,0 +1,35 @@
+---
+# DriveClub (PS4, shadPS4) shader autopatcher + widescreen/resolution patches.
+#
+# DriveClub's de-interleave post-process compute shader hardcodes the 960x540
+# half-res buffer dimensions (SPIR-V constants 960 & 540), so shadPS4's
+# resolution / widescreen memory patches render a broken, interleaved image —
+# the "[DEPTH BUG]" the patch notes warn about. The community shader autopatcher
+# (mediafire "Driveclub shader autopatcher v1.0.1", by illusion/kalaposfos et al)
+# rewrites that one dumped shader to query the real render-target size via
+# OpImageQuerySize, fixing those patches.
+#
+# What's reproducible here (opt-in role install_driveclub_shader_patch):
+#   - The expanded memory-patch set ships as the managed shadPS4 patch XML
+#     (seed_configs/files/shadPS4/Driveclub.xml -> patches/CUSA00003.xml), so the
+#     resolution/widescreen/60fps patches appear in shadPS4's Cheats/Patches
+#     panel (all default-off; toggle the one you want).
+#   - patch_shaders is already true in the CUSA00003 per-game config
+#     (seed_configs/templates/CUSA00003.json.j2) — shadPS4 then loads the fixed
+#     shader from <shader>/patch/.
+#   - The patcher tool + `bin/driveclub-shader-patch` wrapper are installed so
+#     generating the fixed shader is one command after a one-time dump run.
+#
+# The shader DUMP itself is GPU/driver/build-specific and must be generated
+# locally by running DriveClub once with shader dumping on (see docs/driveclub.md)
+# — it cannot be pre-baked into the repo.
+
+dg_driveclub_title_id: CUSA00003
+dg_driveclub_shader_dir: "{{ dg_box_home }}/.local/share/shadPS4/shader"
+dg_driveclub_dumps_dir: "{{ dg_driveclub_shader_dir }}/dumps"
+dg_driveclub_patch_out_dir: "{{ dg_driveclub_shader_dir }}/patch"
+dg_driveclub_patcher: "{{ dg_driveclub_shader_dir }}/driveclub_shader_autopatcher.py"
+dg_driveclub_launcher: "{{ dg_box_home }}/bin/driveclub-shader-patch"
+dg_driveclub_custom_config: "{{ dg_box_home }}/.local/share/shadPS4/custom_configs/{{ dg_driveclub_title_id }}.json"
+dg_driveclub_eboot: "{{ dg_ps4_rom_root }}/{{ dg_driveclub_title_id }}/eboot.bin"
+dg_driveclub_revert: false

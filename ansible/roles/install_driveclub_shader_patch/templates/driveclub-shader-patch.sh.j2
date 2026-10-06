@@ -1,0 +1,78 @@
+#!/usr/bin/env sh
+set -eu
+# driveclub-shader-patch — reproduce the DriveClub (PS4/shadPS4) de-interleave
+# shader fix so the widescreen / high-internal-resolution memory patches render
+# correctly (they otherwise show the "[DEPTH BUG]" interleaved image).
+# Managed by install_driveclub_shader_patch. See docs/driveclub.md.
+#
+# Two steps — the dump is GPU/driver/build-specific so it must be made locally:
+#
+#   driveclub-shader-patch dump    # one-time: arm dumping + launch DriveClub.
+#                                  #   Play to the MAIN MENU, then quit.
+#   driveclub-shader-patch         # patch: fix the dumped shader + arm patch_shaders.
+#
+# shadPS4 loads the fixed shader from <shader>/patch/ when the per-game config has
+# "patch_shaders": true (already set in CUSA00003.json).
+
+SHADER_DIR="{{ dg_driveclub_shader_dir }}"
+DUMPS_DIR="{{ dg_driveclub_dumps_dir }}"
+PATCH_OUT="{{ dg_driveclub_patch_out_dir }}"
+PATCHER="{{ dg_driveclub_patcher }}"
+CFG="{{ dg_driveclub_custom_config }}"
+EBOOT="{{ dg_driveclub_eboot }}"
+
+# Flip a GPU-section bool in the per-game JSON without disturbing other keys.
+set_gpu_bool() { # <key> <true|false>
+  python3 - "$CFG" "$1" "$2" <<'PY'
+import json, os, sys
+path, key, val = sys.argv[1], sys.argv[2], sys.argv[3] == "true"
+cfg = {}
+if os.path.exists(path):
+    try: cfg = json.load(open(path))
+    except Exception: cfg = {}
+cfg.setdefault("GPU", {})[key] = val
+json.dump(cfg, open(path, "w"), indent=2)
+print("set GPU.%s=%s in %s" % (key, val, os.path.basename(path)))
+PY
+}
+
+cmd="${1:-patch}"
+case "$cmd" in
+  dump)
+    [ -f "$EBOOT" ] || { printf 'ERROR: DriveClub eboot not found: %s\n' "$EBOOT" >&2; exit 1; }
+    printf '[driveclub] clearing old shader dumps: %s\n' "$DUMPS_DIR"
+    rm -rf "$DUMPS_DIR"
+    set_gpu_bool dump_shaders true
+    set_gpu_bool patch_shaders false
+    cat <<EOF
+
+  Dumping is armed. In the shadPS4 window that opens:
+    * (one-time) Settings > Experimental: turn OFF "Enable Shader Cache"
+    * Let DriveClub reach the MAIN MENU, then quit the game.
+  Then run:  driveclub-shader-patch
+
+EOF
+    exec "$HOME/bin/shadps4-launch" "$EBOOT"
+    ;;
+  patch)
+    if [ ! -d "$DUMPS_DIR" ] || ! ls "$DUMPS_DIR"/*.spv >/dev/null 2>&1; then
+      printf 'ERROR: no shader dumps in %s\n' "$DUMPS_DIR" >&2
+      printf 'Run "driveclub-shader-patch dump" first, play to the main menu, quit, then re-run.\n' >&2
+      exit 1
+    fi
+    # The patcher anchors on its own dir: finds <shader>/dumps, writes <shader>/patch.
+    python3 "$PATCHER"
+    rc=$?
+    if [ "$rc" -eq 0 ] && ls "$PATCH_OUT"/*.spv >/dev/null 2>&1; then
+      set_gpu_bool patch_shaders true
+      set_gpu_bool dump_shaders false
+      printf '\n[driveclub] patched shader installed in %s; patch_shaders armed.\n' "$PATCH_OUT"
+      printf '[driveclub] Enable a resolution/widescreen patch in shadPS4 Cheats/Patches, then play.\n'
+    fi
+    exit "$rc"
+    ;;
+  *)
+    printf 'usage: %s [dump|patch]\n' "$(basename "$0")" >&2
+    exit 2
+    ;;
+esac

@@ -7,30 +7,276 @@
         <ID>CUSA00093</ID>
         <ID>CUSA00879</ID>
     </TitleID>
-    <Metadata Title="Driveclub"
-              Name="60 FPS with deltatime"
-              Note="Patch version 2.0 features deltatime. This can break some things in the game; if that is an issue, use the fixed tickrate patch instead."
-              Author="illusion, u/Charlie_Muggins"
-              PatchVer="2.0"
-              AppVer="01.28"
-              AppElf="eboot.bin"
-              isEnabled="false">
+    <Metadata Title="Driveclub" Name="60 FPS with deltatime" Note="Patch version 2.0 features deltatime. this version will break some things in the game, if that is an issue for you, use the other 60 FPS patch." Author="illusion, u/Charlie_Muggins" PatchVer="2.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
         <PatchList>
             <Line Type="bytes" Address="0x01184800" Value="b801000000"/>
             <Line Type="bytes" Address="0x01184725" Value="48b001"/>
             <Line Type="bytes" Address="0x00a6306e" Value="9090"/>
         </PatchList>
     </Metadata>
-    <Metadata Title="Driveclub"
-              Name="60 FPS with fixed tickrate"
-              Note="Alternative 60 FPS patch using the engine's builtin path."
-              Author="kalaposfos"
-              PatchVer="1.0"
-              AppVer="01.28"
-              AppElf="eboot.bin"
-              isEnabled="false">
+    <Metadata Title="Driveclub" Name="60 FPS with fixed tickrate" Note="Enables 60 FPS with the engine's builtin way to do it, making this version work with features that break with the other 60 FPS patch enabled." Author="kalaposfos" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
         <PatchList>
             <Line Type="bytes" Address="0x01762801" Value="67"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="Resolution patch (2560x1080)" Note="Original for the PS4 made by u/Charlie_Muggins, extended by kalaposfos to work on shadPS4 too" Author="u/Charlie_Muggins, kalaposfos" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0xB29978" Value="26B41740"/>
+            <Line Type="bytes" Address="0x00b54c1b" Value="000a0000"/>
+            <Line Type="bytes" Address="0x00b54c21" Value="38040000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="Resolution patch (3840x1080)" Note="Original for the PS4 made by u/Charlie_Muggins, extended by kalaposfos to work on shadPS4 too" Author="u/Charlie_Muggins, kalaposfos" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0xB29978" Value="398e6340"/>
+            <Line Type="bytes" Address="0x00b54c1b" Value="000f0000"/>
+            <Line Type="bytes" Address="0x00b54c21" Value="38040000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="Resolution patch (1920x1200) (16:10)" Note="Original for the PS4 made by u/Charlie_Muggins, extended by kalaposfos to work on shadPS4 too. Disclaimer: Aspect ratios narrower than 16:9 will crop the menu." Author="u/Charlie_Muggins, kalaposfos" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0xB29978" Value="cdcccc3f"/>
+            <Line Type="bytes" Address="0x00b54c1b" Value="80070000"/>
+            <Line Type="bytes" Address="0x00b54c21" Value="b0040000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="Reset Disable" Note="Disables reset to track timer" Author="ZipperedRain" PatchVer="2.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="00FD4149" Value="90909090909090"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="Barrier Disable" Note="Disables track barriers" Author="ZipperedRain" PatchVer="2.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="00D75063" Value="909090909090"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="Disable Photomode Free Camera Collision" Note="Disables car collision when using free camera, allowing you to look inside any car." Author="TonySSS" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0xD59E02" Value="9090"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="Disable Photomode Processing" Note="Disables photomode processing." Author="TonySSS" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x9BDD65" Value="9090"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="Run without sysmodules" Note="Spoofs an error return for a stubbed font function.\nThe game will have no text and will take longer to boot." Author="kalaposfos" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x00bb2f63" Value="9090"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="mac memory allocation workaround" Note="Required for the game to boot on Mac. Works on other platforms too, but won't have any real effect there." Author="kalaposfos, squidbus" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x00b49247" Value="48b80000000080000000"/>
+            <Line Type="bytes" Address="0x00b4925a" Value="48be0000000080000000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="Disable motion blur and depth of field" Note="They share the same shader, disabling one disables the other" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x00a109f3" Value="31c090"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="Memory for up to 1440p" Note="ENABLE ONLY ONE MEMORY PATCH! Set Additional DMem to 3000 MB" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x00968a20" Value="e9dbf4ce00"/>
+            <Line Type="bytes" Address="0x00a7af07" Value="e934d0bd00"/>
+            <Line Type="bytes" Address="0x01657f40" Value="48b80000008001000000e9c12f42ff"/>
+            <Line Type="bytes" Address="0x01657f00" Value="4883ec08e8270b31ff4883c408483d00008020750c48b80000008000000000eb12483d0000000b750a48b80000002000000000c3"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="Memory for up to 4K" Note="ENABLE ONLY ONE MEMORY PATCH! Set Additional DMem to 5000 MB" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x00968a20" Value="e93bf5ce00"/>
+            <Line Type="bytes" Address="0x00a7af07" Value="e994d0bd00"/>
+            <Line Type="bytes" Address="0x01657fa0" Value="48b8000000c001000000e9612f42ff"/>
+            <Line Type="bytes" Address="0x01657f60" Value="4883ec08e8c70a31ff4883c408483d00008020750c48b8000000c000000000eb12483d0000000b750a48b80000004000000000c3"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="Memory for up to 8K" Note="ENABLE ONLY ONE MEMORY PATCH! Set Additional DMem to 12000 MB" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x00968a20" Value="e99bf5ce00"/>
+            <Line Type="bytes" Address="0x00a7af07" Value="e9f4d0bd00"/>
+            <Line Type="bytes" Address="0x01658000" Value="48b80000000003000000e9012f42ff"/>
+            <Line Type="bytes" Address="0x01657fc0" Value="4883ec08e8670a31ff4883c408483d00008020750c48b80000000002000000eb12483d0000000b750a48b80000008000000000c3"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="FOV fix for wide resolutions" Note="For wide and ultrawide resolutions only" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x016efac4" Value="0000283f"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="720p 32:9 [2560x720] Internal + Output resolution" Note="2560x720 internal render and output resolution - 1 843 200 pixels (0.89x 1080p)" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x00b29978" Value="398e6340"/>
+            <Line Type="bytes" Address="0x00b54c1b" Value="000a0000"/>
+            <Line Type="bytes" Address="0x00b54c21" Value="d0020000"/>
+            <Line Type="bytes" Address="0x016d0544" Value="000a0000"/>
+            <Line Type="bytes" Address="0x016d0554" Value="d0020000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="1080p 21:9 [2560x1080] Internal + Output resolution [DEPTH BUG]" Note="2560x1080 internal render and output resolution - 2 764 800 pixels (1.33x 1080p) - WARNING introduces a depth rendering bug" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x00b29978" Value="26b41740"/>
+            <Line Type="bytes" Address="0x00b54c1b" Value="000a0000"/>
+            <Line Type="bytes" Address="0x00b54c21" Value="38040000"/>
+            <Line Type="bytes" Address="0x016d0544" Value="000a0000"/>
+            <Line Type="bytes" Address="0x016d0554" Value="38040000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="1080p 32:10 [3440x1080] Internal + Output resolution [DEPTH BUG]" Note="3440x1080 internal render and output resolution - 3 715 200 pixels (1.79x 1080p) - WARNING introduces a depth rendering bug" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x00b29978" Value="13da4b40"/>
+            <Line Type="bytes" Address="0x00b54c1b" Value="700d0000"/>
+            <Line Type="bytes" Address="0x00b54c21" Value="38040000"/>
+            <Line Type="bytes" Address="0x016d0544" Value="700d0000"/>
+            <Line Type="bytes" Address="0x016d0554" Value="38040000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="1080p 32:9 [3840x1080] Internal + Output resolution [DEPTH BUG]" Note="3840x1080 internal render and output resolution - 4 147 200 pixels (2.00x 1080p) - WARNING introduces a depth rendering bug" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x00b29978" Value="398e6340"/>
+            <Line Type="bytes" Address="0x00b54c1b" Value="000f0000"/>
+            <Line Type="bytes" Address="0x00b54c21" Value="38040000"/>
+            <Line Type="bytes" Address="0x016d0544" Value="000f0000"/>
+            <Line Type="bytes" Address="0x016d0554" Value="38040000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="1080p 48:9 [5760x1080] Internal + Output resolution [DEPTH BUG]" Note="5760x1080 internal render and output resolution - 6 220 800 pixels (3.00x 1080p) - WARNING introduces a depth rendering bug" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x00b29978" Value="abaaaa40"/>
+            <Line Type="bytes" Address="0x00b54c1b" Value="80160000"/>
+            <Line Type="bytes" Address="0x00b54c21" Value="38040000"/>
+            <Line Type="bytes" Address="0x016d0544" Value="80160000"/>
+            <Line Type="bytes" Address="0x016d0554" Value="38040000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="1080p 64:9 [7680x1080] Internal + Output resolution [DEPTH BUG]" Note="7680x1080 internal render and output resolution - 8 294 400 pixels (4.00x 1080p) - WARNING introduces a depth rendering bug" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x00b29978" Value="398ee340"/>
+            <Line Type="bytes" Address="0x00b54c1b" Value="001e0000"/>
+            <Line Type="bytes" Address="0x00b54c21" Value="38040000"/>
+            <Line Type="bytes" Address="0x016d0544" Value="001e0000"/>
+            <Line Type="bytes" Address="0x016d0554" Value="38040000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="1440p 21:9 [3440x1440] Internal + Output resolution [DEPTH BUG]" Note="3440x1440 internal render and output resolution - 4 953 600 pixels (2.39x 1080p) - WARNING introduces a depth rendering bug" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x00b29978" Value="8ee31840"/>
+            <Line Type="bytes" Address="0x00b54c1b" Value="700d0000"/>
+            <Line Type="bytes" Address="0x00b54c21" Value="a0050000"/>
+            <Line Type="bytes" Address="0x016d0544" Value="700d0000"/>
+            <Line Type="bytes" Address="0x016d0554" Value="a0050000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="1440p 32:9 [5120x1440] Internal + Output resolution [DEPTH BUG]" Note="5120x1440 internal render and output resolution - 7 372 800 pixels (3.56x 1080p) - WARNING introduces a depth rendering bug" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x00b29978" Value="398e6340"/>
+            <Line Type="bytes" Address="0x00b54c1b" Value="00140000"/>
+            <Line Type="bytes" Address="0x00b54c21" Value="a0050000"/>
+            <Line Type="bytes" Address="0x016d0544" Value="00140000"/>
+            <Line Type="bytes" Address="0x016d0554" Value="a0050000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="2160p 21:9 [5120x2160] Internal + Output resolution [DEPTH BUG]" Note="5120x2160 internal render and output resolution - 11 059 200 pixels (5.33x 1080p) - WARNING introduces a depth rendering bug" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x00b29978" Value="26b41740"/>
+            <Line Type="bytes" Address="0x00b54c1b" Value="00140000"/>
+            <Line Type="bytes" Address="0x00b54c21" Value="70080000"/>
+            <Line Type="bytes" Address="0x016d0544" Value="00140000"/>
+            <Line Type="bytes" Address="0x016d0554" Value="70080000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="2160p 32:9 [7680x2160] Internal + Output resolution [DEPTH BUG]" Note="7680x2160 internal render and output resolution - 16 588 800 pixels (8.00x 1080p) - WARNING introduces a depth rendering bug" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x00b29978" Value="398e6340"/>
+            <Line Type="bytes" Address="0x00b54c1b" Value="001e0000"/>
+            <Line Type="bytes" Address="0x00b54c21" Value="70080000"/>
+            <Line Type="bytes" Address="0x016d0544" Value="001e0000"/>
+            <Line Type="bytes" Address="0x016d0554" Value="70080000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="720p [1280x720] Internal resolution" Note="1280x720 internal render resolution - 921 600 pixels (0.44x 1080p)" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x016d0544" Value="00050000"/>
+            <Line Type="bytes" Address="0x016d0554" Value="d0020000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="720p [1280x720] Output resolution" Note="1280x720 output resolution - 921 600 pixels (0.44x 1080p)" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x00b54c1b" Value="00050000"/>
+            <Line Type="bytes" Address="0x00b54c21" Value="d0020000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="1440p [2560x1440] Internal resolution [DEPTH BUG]" Note="2560x1440 internal render resolution - 3 686 400 pixels (1.78x 1080p) - WARNING introduces a depth rendering bug" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x016d0544" Value="000a0000"/>
+            <Line Type="bytes" Address="0x016d0554" Value="a0050000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="1440p [2560x1440] Output resolution" Note="2560x1440 output resolution - 3 686 400 pixels (1.78x 1080p)" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x00b54c1b" Value="000a0000"/>
+            <Line Type="bytes" Address="0x00b54c21" Value="a0050000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="1800p [3200x1800] Internal resolution [DEPTH BUG]" Note="3200x1800 internal render resolution - 5 760 000 pixels (2.78x 1080p) - WARNING introduces a depth rendering bug" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x016d0544" Value="800c0000"/>
+            <Line Type="bytes" Address="0x016d0554" Value="08070000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="1800p [3200x1800] Output resolution" Note="3200x1800 output resolution - 5 760 000 pixels (2.78x 1080p)" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x00b54c1b" Value="800c0000"/>
+            <Line Type="bytes" Address="0x00b54c21" Value="08070000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="4K [3840x2160] Internal resolution [DEPTH BUG]" Note="3840x2160 internal render resolution - 8 294 400 pixels (4.00x 1080p) - WARNING introduces a depth rendering bug" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x016d0544" Value="000f0000"/>
+            <Line Type="bytes" Address="0x016d0554" Value="70080000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="4K [3840x2160] Output resolution" Note="3840x2160 output resolution - 8 294 400 pixels (4.00x 1080p)" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x00b54c1b" Value="000f0000"/>
+            <Line Type="bytes" Address="0x00b54c21" Value="70080000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="4K [4096x2304] Internal resolution [DEPTH BUG]" Note="4096x2304 internal render resolution - 9 437 184 pixels (4.55x 1080p) - WARNING introduces a depth rendering bug" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x016d0544" Value="00100000"/>
+            <Line Type="bytes" Address="0x016d0554" Value="00090000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="4K [4096x2304] Output resolution" Note="4096x2304 output resolution - 9 437 184 pixels (4.55x 1080p)" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x00b54c1b" Value="00100000"/>
+            <Line Type="bytes" Address="0x00b54c21" Value="00090000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="5K [5120x2880] Internal resolution [DEPTH BUG]" Note="5120x2880 internal render resolution - 14 745 600 pixels (7.11x 1080p) - WARNING introduces a depth rendering bug" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x016d0544" Value="00140000"/>
+            <Line Type="bytes" Address="0x016d0554" Value="400b0000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="5K [5120x2880] Output resolution" Note="5120x2880 output resolution - 14 745 600 pixels (7.11x 1080p)" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x00b54c1b" Value="00140000"/>
+            <Line Type="bytes" Address="0x00b54c21" Value="400b0000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="8K [7680x4320] Internal resolution [DEPTH BUG]" Note="7680x4320 internal render resolution - 33 177 600 pixels (16.00x 1080p) - WARNING introduces a depth rendering bug" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x016d0544" Value="001e0000"/>
+            <Line Type="bytes" Address="0x016d0554" Value="e0100000"/>
+        </PatchList>
+    </Metadata>
+    <Metadata Title="Driveclub" Name="8K [7680x4320] Output resolution" Note="7680x4320 output resolution - 33 177 600 pixels (16.00x 1080p)" Author="Kravickas" PatchVer="1.0" AppVer="01.28" AppElf="eboot.bin" isEnabled="false">
+        <PatchList>
+            <Line Type="bytes" Address="0x00b54c1b" Value="001e0000"/>
+            <Line Type="bytes" Address="0x00b54c21" Value="e0100000"/>
         </PatchList>
     </Metadata>
 </Patch>

@@ -1,0 +1,7 @@
+---
+- name: Install DriveClub shader autopatcher + widescreen patch wiring (shadPS4)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_driveclub_shader_patch
