@@ -1,0 +1,39 @@
+---
+# Sonic and the Fallen Star (Stardrop, stardropsmh.github.io) — acclaimed
+# classic-Sonic fan game built in Clickteam Fusion 2.5 (Modules/*.mfx +
+# mmfs2.dll + mmf2d3d9.dll = the Fusion 2.5 standalone runtime). WINDOWS-only
+# build (no Linux export) → wine-11.8 with the established recipe (UseEGL=N GLX
+# pin + WineBus SDL for the 8BitDo), presented fullscreen via gamescope integer
+# scaling — the same path as StarDrop's other Fusion game Moon Facility and the
+# rest of the Clickteam fangames. The `--framerate-limit 60` cap is REQUIRED:
+# Clickteam games run at gamescope's 240 Hz under Wine (their own limiter does
+# not engage), which double-fires "button held" conditions (dialogs advancing
+# twice per press); 60 fps is lossless for these 2D games. D3D9 on wined3d.
+# Opt-in role install_sonic_fallen_star. See docs/sonic-fan-pack.md.
+#
+# Source: the user's downloaded zip on the NAS (exe + .dat + Modules/ inside a
+# version-named subdir). Download is a Google Drive link off the project page
+# (no releases API) — bump dg_fs_version + dg_fs_zip (+ dg_fs_subdir) on upgrades.
+
+dg_fs_version: "1.1.1-edit4"
+dg_fs_zip: "{{ dg_roms_final_root }}/PC/Sonic and the Fallen Star (V1.1.1 Edit 4).zip"
+
+dg_fs_install_dir: "{{ dg_box_home }}/Games/sonic-fallen-star"
+# The zip wraps everything in this version-named folder; the exe + .dat +
+# Modules/ must stay together, so the game root is this subdir.
+dg_fs_subdir: "Sonic and the Fallen Star (V1.1.1 Edit 4)"
+dg_fs_gamedir: "{{ dg_fs_install_dir }}/{{ dg_fs_subdir }}"
+dg_fs_exe: "Sonic and the Fallen Star.exe"
+dg_fs_bin: "{{ dg_box_home }}/bin/sonic-fallen-star"
+dg_fs_prefix: "{{ dg_box_home }}/wineprefixes/sonic-fallen-star"
+dg_fs_wine_bin_dir: "{{ dg_pc_racing_wine_runner_root }}/wine-11.8/usr/bin"
+dg_fs_gamescope_args: "-W 3840 -H 2160 -S integer -f --framerate-limit 60"
+
+dg_fs_winebus_registry:
+  - { name: DisableHidraw, value: 1 }
+  - { name: DisableInput, value: 1 }
+  - { name: "Enable SDL", value: 1 }
+  - { name: "Map Controllers", value: 1 }
+
+dg_fs_main_output: "DP-1"
+dg_fs_revert: false

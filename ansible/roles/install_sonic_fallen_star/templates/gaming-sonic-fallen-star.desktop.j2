@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Sonic and the Fallen Star (on {{ dg_box_name }})
+Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_fs_bin }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Acclaimed classic-Sonic fan game (Clickteam Fusion 2.5, under Wine) — Stardrop.
+Categories=Game;
+Keywords=sonic;fallen star;stardrop;fan game;clickteam;fusion;
+StartupWMClass=Sonic and the Fallen Star.exe;
+{{ ogm_metadata('gaming-sonic-fallen-star') }}

@@ -1,4 +1,4 @@
-# Sonic fan games: S3AIR, SMS Remake, Sonic XG, Sonic Galactic, Sonic Overture, Sonic Legends, Rush Rerun, Dimensions, Moon Facility (Banjo-Kazooie moved to lighthouse.md)
+# Sonic fan games: S3AIR, SMS Remake, Sonic XG, Sonic Galactic, Sonic Overture, Sonic Legends, Rush Rerun, Dimensions, Moon Facility, Fallen Star (Banjo-Kazooie moved to lighthouse.md)
 
 Three installs from the 2026-09-04 batch (`docs/dkc-recomp.md` came the same
 week — it's fan-port season).
@@ -154,6 +154,22 @@ gamescope integer-scaled fullscreen). Source = the user's NAS zip
 `Sonic and The Moon Facility (Final 2)/` folder, exe
 `Sonic and The Moon Facility.exe`). ogm fingerprints the GameJolt page.
 Launcher `bin/moon-facility`, Walker "Sonic and the Moon Facility".
+
+## Sonic and the Fallen Star (`install_sonic_fallen_star`)
+
+[Sonic and the Fallen Star](https://stardropsmh.github.io/sonic-and-the-fallen-star/)
+— StarDrop's acclaimed classic-Sonic fan game (SAGE 2022), the same dev and
+engine as Moon Facility: **Clickteam Fusion 2.5** (`mmf2d3d9.dll`, `.mfx`
+modules). We install the **V1.1.1 Edit 4** community build. **Windows-only** →
+wine-11.8, same recipe as the other Clickteam games (UseEGL=N GLX pin, WineBus
+SDL for the 8BitDo, **gamescope integer-scaled fullscreen capped at 60 fps** via
+`dg_fs_gamescope_args` — the cap stops the Fusion runtime's 240 Hz held-button
+double-fire). Source = the user's NAS zip
+(`ROMS_FINAL/PC/Sonic and the Fallen Star (V1.1.1 Edit 4).zip`; a version-named
+top-level folder holds `Sonic and the Fallen Star.exe` + `.dat` + `Modules/`).
+Bump `dg_fs_version` + `_zip` (+ `_subdir`) on new builds; ogm fingerprints the
+project page. Launcher `bin/sonic-fallen-star`, Walker "Sonic and the Fallen
+Star". Install: `ansible-playbook install-sonic-fallen-star.yml`.
 
 ## Banjo-Kazooie
 

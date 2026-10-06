@@ -1,0 +1,7 @@
+---
+- name: Install Sonic and the Fallen Star (Clickteam Fusion fan game, under Wine)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_sonic_fallen_star

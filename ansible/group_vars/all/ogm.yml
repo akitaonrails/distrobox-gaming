@@ -355,6 +355,11 @@ dg_ogm_games:
   - { desktop_id: gaming-sonic-overture, id: sonic-overture, category: fangame,
       sgdb_query: "Sonic Overture",
       web_url: "https://sonic-overture-team.itch.io/sonic-overture-2023-demo" }
+  # Sonic and the Fallen Star (Clickteam Fusion 2.5) — Windows-only under Wine.
+  # Project page links a Google Drive download — fingerprint mode.
+  - { desktop_id: gaming-sonic-fallen-star, id: sonic-fallen-star, category: fangame,
+      sgdb_query: "Sonic and the Fallen Star",
+      web_url: "https://stardropsmh.github.io/sonic-and-the-fallen-star/" }
   # Sonic Legends Trial (GameMaker Studio 2, ULTRA RING) — Windows-only under
   # Wine. itch page; fingerprint mode.
   - { desktop_id: gaming-sonic-legends, id: sonic-legends, category: fangame,
