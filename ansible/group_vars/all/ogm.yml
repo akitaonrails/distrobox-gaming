@@ -237,6 +237,11 @@ dg_ogm_games:
     category: recomp
     sgdb_query: "F-Zero"
     github: "{{ dg_fzero_repo }}"
+  - desktop_id: gaming-sm64ds-port
+    id: sm64ds-port
+    category: port
+    sgdb_query: "Super Mario 64 DS"
+    web_url: "https://tangos.dev/"
   - desktop_id: gaming-goldeneye
     id: goldeneye
     category: recomp

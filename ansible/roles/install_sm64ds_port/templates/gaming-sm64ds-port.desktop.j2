@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Super Mario 64 DS · PC Port (on {{ dg_box_name }})
+Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_sm64ds_bin }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Super Mario 64 DS decompilation PC port (tangos.dev) via Proton — needs your own SM64 DS .nds dump.
+Categories=Game;
+Keywords=mario;super mario 64;sm64;ds;nintendo ds;port;decomp;tangos;proton;
+StartupWMClass=steam_app_0;
+{{ ogm_metadata('gaming-sm64ds-port') }}

@@ -74,3 +74,4 @@ dg_save_sets:
   - { name: roadrash64-recomp,    src: ".config/RoadRash64Recompiled" }
   - { name: fzero-recomp,         src: "tools/fzero-snes-recomp/saves" }   # SRAM + save states (cwd-relative, next to the AppImage)
   - { name: sonic-fallen-star,    src: "Games/sonic-fallen-star/Sonic and the Fallen Star (V1.1.1 Edit 4)/Data" }  # Clickteam Fusion saves live next to the exe (re-extracted on rebuild)
+  - { name: sm64ds-port,          src: "Games/sm64ds-port/save" }          # SM64 DS port cartridge save + save states (re-extracted gamedir on rebuild)

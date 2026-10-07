@@ -1,0 +1,41 @@
+---
+# Super Mario 64 DS — PC port (tangos.dev, "sm64ds-port", repo tangosdev/
+# sm64ds-decomp). A decompilation-based native build of SM64 DS (real game
+# code: physics, camera, every level via level-select, minigames, 4-player
+# versus netplay). It ships NO game data — the port reads the user's own SM64 DS
+# `.nds` dump and unpacks the game's filesystem on first launch.
+#
+# WINDOWS-only build; the project ships NO native Linux binary (its README and
+# download manifest both say linux: unavailable, and the PC-port CI only link-
+# checks ROM-free smoke targets on windows-latest). The OFFICIAL Linux path
+# (tangos.dev/downloads "On Linux") is their helper kit `sm64ds-port-linux.tar.gz`
+# = launch.sh + extract_assets.py (by diemitchell):
+#   * extract_assets.py (stdlib-only python3, NO ndspy/pip) unpacks the dump into
+#     extracted/dsd/files/ + build/assets/{files,handles,nitrofs}.* and assembles
+#     build/assets/romdata.bin (hash-checked) — the PowerShell extractor the
+#     Windows launcher uses does not run under Wine/Proton, this is its port.
+#   * launch.sh auto-detects the Proton that Steam is configured to use (GE-Proton
+#     / proton-cachyos are in the box's compatibilitytools.d) and runs
+#     SM64DSLauncher.exe through `proton run`, falling back to system Wine.
+# Proton (not bare wine-11.8) is required: the launcher is self-contained .NET and
+# the game is D3D11 — the Proton stack (its .NET + DXVK) is what makes both work.
+# Verified GE-Proton11-1 booting the game on DP-1/RTX.
+#
+# Opt-in role install_sm64ds_port. See docs/sm64ds-port.md. We vendor the two kit
+# files (roles/install_sm64ds_port/files/) pinned; the Windows port itself comes
+# from the user's NAS zip.
+
+dg_sm64ds_version: "0.5.6"
+dg_sm64ds_zip: "{{ dg_roms_final_root }}/PC/sm64ds-port-0.5.6.zip"
+
+dg_sm64ds_install_dir: "{{ dg_box_home }}/Games/sm64ds-port"
+dg_sm64ds_game_exe: "walk_window.exe"
+dg_sm64ds_launcher_exe: "SM64DSLauncher.exe"
+dg_sm64ds_rom_dir: "{{ dg_sm64ds_install_dir }}/PLACE YOUR ROM HERE"
+# The port validates the dump against known revisions; the EU (En,Fr,De,Es,It)
+# release is accepted (README: EU and NA both work). Symlinked into the ROM dir.
+dg_sm64ds_rom_src: "{{ dg_roms_final_root }}/nds/Super Mario 64 DS (Europe) (En,Fr,De,Es,It).nds"
+
+dg_sm64ds_bin: "{{ dg_box_home }}/bin/sm64ds-port"
+dg_sm64ds_main_output: "DP-1"
+dg_sm64ds_revert: false

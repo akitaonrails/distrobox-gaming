@@ -1,0 +1,7 @@
+---
+- name: Install Super Mario 64 DS PC port (D3D11 under Wine + DXVK)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_sm64ds_port

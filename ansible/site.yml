@@ -102,6 +102,7 @@
     - { role: install_parallel_launcher, tags: [parallel_launcher, never] }
     - { role: install_triaevum,          tags: [triaevum, never] }
     - { role: install_waverace_recomp,   tags: [waverace_recomp, never] }
+    - { role: install_sm64ds_port,       tags: [sm64ds_port, never] }
     - { role: install_project_r,         tags: [project_r, never] }
     - { role: install_pilotwings_recomp, tags: [pilotwings_recomp, never] }
     - { role: install_cbfd_recomp,       tags: [cbfd_recomp, never] }

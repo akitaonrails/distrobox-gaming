@@ -1,0 +1,144 @@
+---
+# Super Mario 64 DS PC port — Windows build run through Proton via the port's
+# official Linux helper kit (launch.sh + extract_assets.py). No native Linux
+# build exists. See group_vars/all/sm64ds_port.yml and docs/sm64ds-port.md.
+
+- name: Revert SM64 DS port when requested
+  when: dg_sm64ds_revert | bool
+  block:
+    - name: Remove the SM64 DS launcher, install dir + desktop entry
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_sm64ds_bin }}"
+        - "{{ dg_sm64ds_install_dir }}"
+        - "{{ dg_desktop_render_dir }}/gaming-sm64ds-port.desktop"
+    - name: Refresh host launchers after removing SM64 DS port
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      changed_when: true
+    - name: Report SM64 DS port reverted
+      ansible.builtin.debug:
+        msg: "SM64 DS port removed (incl. its Proton .compatdata). The NAS zip + your .nds are untouched."
+
+- name: Install SM64 DS port
+  when: not (dg_sm64ds_revert | bool)
+  block:
+    - name: Verify the NAS zip exists
+      ansible.builtin.stat:
+        path: "{{ dg_sm64ds_zip }}"
+      register: _sm64ds_zip
+      failed_when: not _sm64ds_zip.stat.exists
+
+    - name: Verify the SM64 DS ROM exists
+      ansible.builtin.stat:
+        path: "{{ dg_sm64ds_rom_src }}"
+      register: _sm64ds_rom
+      failed_when: not _sm64ds_rom.stat.exists
+
+    - name: Create directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_sm64ds_install_dir }}"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Extract the Windows port (once)
+      # The zip uses Windows backslash separators; unzip creates the dirs
+      # correctly but exits 1 ("warning"), so accept rc 0/1 and fail on >=2.
+      ansible.builtin.shell: |
+        set -u
+        [ -f "{{ dg_sm64ds_install_dir }}/{{ dg_sm64ds_game_exe }}" ] && exit 0
+        unzip -oq "{{ dg_sm64ds_zip }}" -d "{{ dg_sm64ds_install_dir }}"
+        rc=$?
+        [ "$rc" -le 1 ] || exit "$rc"
+        echo extracted-sm64ds
+      register: _sm64ds_extract
+      changed_when: "'extracted-sm64ds' in _sm64ds_extract.stdout"
+
+    - name: Install the official Linux kit (launch.sh + extract_assets.py) next to the exe
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ dg_sm64ds_install_dir }}/{{ item.src }}"
+        mode: "{{ item.mode }}"
+      loop:
+        - { src: "launch.sh", mode: "0755" }
+        - { src: "extract_assets.py", mode: "0644" }
+
+    - name: Ensure the ROM drop folder exists
+      ansible.builtin.file:
+        path: "{{ dg_sm64ds_rom_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Link the user's SM64 DS dump into "PLACE YOUR ROM HERE"
+      ansible.builtin.file:
+        src: "{{ dg_sm64ds_rom_src }}"
+        dest: "{{ dg_sm64ds_rom_dir }}/{{ dg_sm64ds_rom_src | basename }}"
+        state: link
+        force: true
+
+    - name: Unpack the game data from the dump (official extractor; validates the ROM)
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc 'cd "{{ dg_sm64ds_install_dir }}" && python3 extract_assets.py --ensure-current'
+      register: _sm64ds_assets
+      changed_when: "'Decompressing' in _sm64ds_assets.stdout or 'romdata.bin verified' in _sm64ds_assets.stdout"
+      failed_when: _sm64ds_assets.rc != 0
+
+    - name: Turn off the launcher's crash telemetry + auto-update (we pin the build)
+      ansible.builtin.shell: |
+        python3 - <<'PY'
+        import json, os
+        p = r'''{{ dg_sm64ds_install_dir }}/settings.json'''
+        cfg = {}
+        if os.path.exists(p):
+            try: cfg = json.load(open(p))
+            except Exception: cfg = {}
+        changed = False
+        for k, v in {"SendCrashReports": False, "AutoUpdate": False}.items():
+            if cfg.get(k) != v:
+                cfg[k] = v; changed = True
+        if changed or not os.path.exists(p):
+            json.dump(cfg, open(p, "w"), indent=2)
+            print("settings-written")
+        else:
+            print("settings-ok")
+      register: _sm64ds_settings
+      changed_when: "'settings-written' in _sm64ds_settings.stdout"
+
+    - name: Deploy the launcher
+      ansible.builtin.template:
+        src: sm64ds-port.sh.j2
+        dest: "{{ dg_sm64ds_bin }}"
+        mode: "0755"
+
+    - name: Render the desktop entry
+      ansible.builtin.template:
+        src: gaming-sm64ds-port.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-sm64ds-port.desktop"
+        mode: "0644"
+
+    - name: Install the desktop entry into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _sm64ds_host_launchers
+      changed_when: >-
+        'installed ' in _sm64ds_host_launchers.stdout or
+        'removed stale ' in _sm64ds_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Super Mario 64 DS port {{ dg_sm64ds_version }} at {{ dg_sm64ds_install_dir }};
+          launcher {{ dg_sm64ds_bin }} runs the official launch.sh (auto-detected
+          Proton, e.g. GE-Proton) on {{ dg_sm64ds_main_output }}. Game data already
+          unpacked from your .nds. Revert: -e dg_sm64ds_revert=true.

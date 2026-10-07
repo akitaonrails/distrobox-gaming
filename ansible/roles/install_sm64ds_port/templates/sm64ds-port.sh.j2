@@ -1,0 +1,34 @@
+#!/usr/bin/env sh
+set -eu
+# Super Mario 64 DS PC port launcher — the port's Windows build run through
+# Proton via its official Linux helper launch.sh (auto-detects the Steam Proton,
+# e.g. GE-Proton; falls back to system Wine). Managed by install_sm64ds_port.
+# launch.sh re-checks/unpacks the game data (extract_assets.py) then starts
+# SM64DSLauncher.exe. 8BitDo works as an XInput pad through Proton.
+
+GAMEDIR="{{ dg_sm64ds_install_dir }}"
+if [ ! -x "$GAMEDIR/launch.sh" ] || [ ! -f "$GAMEDIR/{{ dg_sm64ds_game_exe }}" ]; then
+  printf '%s\n' "ERROR: SM64 DS port not installed in $GAMEDIR." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-sm64ds-port.yml" >&2
+  exit 1
+fi
+
+# Focus the main landscape 4K monitor (Hyprland >= 0.56 Lua IPC form).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_sm64ds_main_output }}" }))'); s.recv(256); s.close()
+PY
+
+# D3D11 via Proton's DXVK on the RTX only — never the AMD iGPU (= black screen).
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export DXVK_FILTER_DEVICE_NAME="${DXVK_FILTER_DEVICE_NAME:-NVIDIA}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+
+cd "$GAMEDIR"
+exec ./launch.sh "$@"
