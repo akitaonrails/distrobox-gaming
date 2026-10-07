@@ -190,6 +190,43 @@ bind mount are untouched.
   `install-xenia.yml` with the manager closed. Details in
   `docs/xenia-manager.md` ("UI sizing on the 4K panel").
 
+## Updating the box
+
+Routine maintenance. `update-gaming` covers pacman + AUR + RetroArch, but the
+emulators we moved off AUR onto upstream binaries are **not** in it — they are
+managed by their own roles, so update them explicitly:
+
+```sh
+# 1. System + AUR + RetroArch cores/assets (inside the box)
+distrobox enter gaming -- ~/bin/update-gaming          # add --skip-cores --skip-assets for a quick pkg-only pass
+
+# 2. Catch AUR soname breakage + Xenia Wine-DPI drift (host). Rebuild anything
+#    it flags from source with makepkg -srci (NOT yay -S).
+scripts/check-box-sonames.sh
+
+# 3. sha256-PINNED emulator AppImages — report-only; update-gaming never touches
+#    these. If OUTDATED, bump the pin (asset name + version + sha256 from the
+#    GitHub asset digest) in ansible/group_vars/all/<emu>.yml and re-run the role.
+scripts/check-emulator-updates.sh                      # rpcs3, xemu
+cd ansible && ansible-playbook install-rpcs3.yml       # when rpcs3 is outdated
+cd ansible && ansible-playbook install-xemu.yml        # when xemu is outdated
+
+# 4. SELF-UPDATING emulators — their roles always fetch the latest upstream
+#    release, so just re-run them (close the shadPS4 GUI / Xenia Manager first).
+cd ansible && ansible-playbook refresh-shadps4.yml     # latest shadPS4 Pre-release (+ QtLauncher)
+cd ansible && ansible-playbook install-xenia.yml       # latest Xenia Manager
+```
+
+Note: `refresh-shadps4.yml` bundles the shadPS4 config seed, whose "is shadPS4
+running" guard can false-trip on the refresh's own AppImage probe — the binary
+still updates; the guard refuses *before* editing `config.toml`, so nothing is
+left half-written. Re-run `reset-configs.yml --tags configs` while idle if you
+want the config re-seeded.
+
+Game ports / recomps / mods pinned by release tag are a **separate** per-game
+concern (the periodic "ports update sweep"), not part of routine box
+maintenance — bump those deliberately, one game at a time.
+
 ## Safety
 
 Do not run cleanup commands against ROM, BIOS, save, firmware, or game-data

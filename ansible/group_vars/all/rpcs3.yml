@@ -11,11 +11,11 @@
 #   https://github.com/RPCS3/rpcs3-binaries-linux/releases
 # set the tag / name / version / sha256, then: ansible-playbook install-rpcs3.yml
 
-dg_rpcs3_release_tag: "build-9e86f165d1711b9429d48b0487e7bc5ba0cc9c6c"
-dg_rpcs3_version: "0.0.42-20024"
-dg_rpcs3_asset_name: "rpcs3-v0.0.42-20024-9e86f165_linux64.AppImage"
+dg_rpcs3_release_tag: "build-55a3aff337fe2823676c31f2bf44b3dbc39de9fc"
+dg_rpcs3_version: "0.0.43-20237"
+dg_rpcs3_asset_name: "rpcs3-v0.0.43-20237-55a3aff3_linux64.AppImage"
 dg_rpcs3_asset_url: "https://github.com/RPCS3/rpcs3-binaries-linux/releases/download/{{ dg_rpcs3_release_tag }}/{{ dg_rpcs3_asset_name }}"
-dg_rpcs3_asset_sha256: "22c0d6d0a8f1ff1453b501bf17b07e87fdc2a5a6f1522d6fdba3e9b120166d20"
+dg_rpcs3_asset_sha256: "b596cd28050e484555049dcfe298d17e878800346b5ccd3e2cb2c9740d1ac28e"
 
 dg_rpcs3_install_dir: "{{ dg_box_home }}/tools/rpcs3"
 dg_rpcs3_appimage: "{{ dg_rpcs3_install_dir }}/rpcs3.AppImage"
