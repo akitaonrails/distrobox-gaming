@@ -1,0 +1,7 @@
+---
+- name: Install Wind Waker HD Recompiled (native Wii U recomp, built from your dump)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_wwhd_recomp

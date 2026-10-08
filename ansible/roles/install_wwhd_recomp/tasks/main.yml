@@ -1,0 +1,128 @@
+---
+# Wind Waker HD Recompiled — native Linux recomp; first run builds the game from
+# the user's Wii U dump. See group_vars/all/wwhd_recomp.yml and docs/wwhd-recomp.md.
+
+- name: Revert Wind Waker HD Recomp when requested
+  when: dg_wwhd_revert | bool
+  block:
+    - name: Remove the WWHD launcher, install dir + desktop entry
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_wwhd_launcher }}"
+        - "{{ dg_wwhd_root }}"
+        - "{{ dg_desktop_render_dir }}/gaming-wwhd-recomp.desktop"
+    - name: Refresh host launchers after removing WWHD
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      changed_when: true
+    - name: Report WWHD reverted
+      ansible.builtin.debug:
+        msg: >-
+          Wind Waker HD Recomp removed (incl. data/save — back it up with
+          bin/backup-saves first). Your Wii U dump is untouched.
+
+- name: Install Wind Waker HD Recomp
+  when: not (dg_wwhd_revert | bool)
+  block:
+    - name: Verify the Wii U game folder exists (code/content/meta)
+      ansible.builtin.stat:
+        path: "{{ dg_wwhd_game_dir }}/{{ item }}"
+      register: _wwhd_gamedir
+      failed_when: not _wwhd_gamedir.stat.exists
+      loop: [code, content, meta]
+      loop_control:
+        label: "{{ dg_wwhd_game_dir }}/{{ item }}"
+
+    - name: Create WWHD directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_wwhd_root }}"
+        - "{{ dg_wwhd_cache_dir }}"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Download the pinned WWHD Linux release
+      ansible.builtin.get_url:
+        url: "{{ dg_wwhd_asset_url }}"
+        dest: "{{ dg_wwhd_cache_dir }}/{{ dg_wwhd_asset_name }}"
+        checksum: "sha256:{{ dg_wwhd_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Extract + flatten the release (version-gated; keeps data/)
+      # Flatten the version-named top dir into dg_wwhd_root so the binary +
+      # tools/ + portable.txt sit beside the persistent data/ folder. data/ is
+      # not in the zip, so a version re-extract never wipes saves.
+      ansible.builtin.shell: |
+        set -eu
+        if grep -qx "{{ dg_wwhd_release_tag }}" "{{ dg_wwhd_root }}/.dg-installed-ref" 2>/dev/null; then
+          exit 0
+        fi
+        tmp="$(mktemp -d "{{ dg_wwhd_cache_dir }}/x.XXXXXX")"
+        unzip -q -o "{{ dg_wwhd_cache_dir }}/{{ dg_wwhd_asset_name }}" -d "$tmp"
+        cp -a "$tmp/{{ dg_wwhd_asset_subdir }}/." "{{ dg_wwhd_root }}/"
+        rm -rf "$tmp"
+        chmod +x "{{ dg_wwhd_front_bin }}" "{{ dg_wwhd_root }}/tools/setup-in-terminal.sh" 2>/dev/null || true
+        printf "%s\n" "{{ dg_wwhd_release_tag }}" > "{{ dg_wwhd_root }}/.dg-installed-ref"
+        echo wwhd-extracted
+      register: _wwhd_extract
+      changed_when: "'wwhd-extracted' in _wwhd_extract.stdout"
+
+    - name: Build the game from the dump (official setup; downloads zig once, recompiles)
+      # Idempotent: skip when the built binary exists and install.json already
+      # records this release. The build uses the extracted USA folder in place.
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          cd "{{ dg_wwhd_root }}"
+          if [ -x "{{ dg_wwhd_built_bin }}" ] && \
+             grep -q "\"{{ dg_wwhd_release_tag }}\"" "{{ dg_wwhd_data_dir }}/install.json" 2>/dev/null; then
+            echo wwhd-build-current
+            exit 0
+          fi
+          python3 tools/installer/setup.py --yes \
+            --game-dir "{{ dg_wwhd_game_dir }}" \
+            --data-dir "{{ dg_wwhd_data_dir }}" \
+            --no-launch --no-shortcuts --jobs {{ dg_wwhd_build_jobs }}
+          echo wwhd-built
+        '
+      register: _wwhd_build
+      changed_when: "'wwhd-built' in _wwhd_build.stdout"
+      failed_when: _wwhd_build.rc != 0
+
+    - name: Deploy the WWHD launcher
+      ansible.builtin.template:
+        src: wind-waker-hd.sh.j2
+        dest: "{{ dg_wwhd_launcher }}"
+        mode: "0755"
+
+    - name: Render the WWHD desktop entry
+      ansible.builtin.template:
+        src: gaming-wwhd-recomp.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-wwhd-recomp.desktop"
+        mode: "0644"
+
+    - name: Install the desktop entry into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _wwhd_host_launchers
+      changed_when: >-
+        'installed ' in _wwhd_host_launchers.stdout or
+        'removed stale ' in _wwhd_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Wind Waker HD Recomp {{ dg_wwhd_release_tag }} at {{ dg_wwhd_root }};
+          launcher {{ dg_wwhd_launcher }} (Vulkan on {{ dg_wwhd_main_output }},
+          native SDL3 gamepad). Game built from {{ dg_wwhd_game_dir }} (in place);
+          saves in {{ dg_wwhd_data_dir }}/save. Revert: -e dg_wwhd_revert=true.

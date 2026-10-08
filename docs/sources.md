@@ -35,6 +35,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | F-Zero SNES Recompiled | SNES recomp (native Linux AppImage), widescreen | [mstan/FZeroSNESRecomp](https://github.com/mstan/FZeroSNESRecomp) · [doc](fzero-recomp.md) |
 | Super Mario 64 DS PC port | SM64 DS decompilation PC port (Windows build via Proton; needs your .nds) | [tangosdev/sm64ds-decomp](https://github.com/tangosdev/sm64ds-decomp) · [doc](sm64ds-port.md) |
 | Unleashed Recomp | Sonic Unleashed recompilation | [hedge-dev/UnleashedRecomp](https://github.com/hedge-dev/UnleashedRecomp) · [doc](unleashed-recomp.md) |
+| Wind Waker HD Recompiled | Zelda WWHD (Wii U) static recomp, native Linux (Vulkan); builds from your dump | [ZeldaWWHDRecomp/ZeldaWWHDRecomp](https://github.com/ZeldaWWHDRecomp/ZeldaWWHDRecomp) · [doc](wwhd-recomp.md) |
 | TriAevum | Zelda OoT 3D recomp (Wine) | [coccofresco/TriAevum](https://github.com/coccofresco/TriAevum) · [doc](triaevum.md) |
 | PrBoom-Plus RT | Ray-traced Doom / Doom II | [tomboylover93/prboom-plus-rt](https://github.com/tomboylover93/prboom-plus-rt) · [doc](doom2-ray-traced.md) |
 | DUDE | Doom 3 (dhewm3 fork, GL3/Vulkan) | [Inkub0/dude](https://github.com/Inkub0/dude) · [doc](dude.md) |

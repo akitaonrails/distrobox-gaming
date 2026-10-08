@@ -1,0 +1,33 @@
+#!/usr/bin/env sh
+set -eu
+# Wind Waker HD Recompiled launcher — native static recomp (Vulkan), opens on
+# DP-1. Managed by install_wwhd_recomp. The front `wind-waker-hd` binary reads
+# data/install.json and launches the built data/bin/wwhd with the recorded
+# --game (the user's Wii U dump, used in place) and --save. 8BitDo via SDL3.
+
+ROOT="{{ dg_wwhd_root }}"
+if [ ! -x "$ROOT/wind-waker-hd" ] || [ ! -x "{{ dg_wwhd_built_bin }}" ]; then
+  printf '%s\n' "ERROR: Wind Waker HD Recomp not built ($ROOT)." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-wwhd-recomp.yml" >&2
+  exit 1
+fi
+
+# Focus the main landscape 4K monitor (Hyprland >= 0.56 Lua IPC form).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_wwhd_main_output }}" }))'); s.recv(256); s.close()
+PY
+
+# GX2 graphics render on Vulkan — pin the nvidia ICD (not the AMD iGPU).
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+cd "$ROOT"
+exec ./wind-waker-hd "$@"

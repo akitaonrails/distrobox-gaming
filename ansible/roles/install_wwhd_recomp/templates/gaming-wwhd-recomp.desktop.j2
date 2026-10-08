@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Wind Waker HD · Recompiled (on {{ dg_box_name }})
+Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_wwhd_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=The Legend of Zelda: The Wind Waker HD — native Wii U static recompilation (Vulkan, built from your own dump).
+Categories=Game;
+Keywords=zelda;wind waker;wwhd;wii u;recomp;recompilation;nintendo;
+StartupWMClass=wwhd;
+{{ ogm_metadata('gaming-wwhd-recomp') }}

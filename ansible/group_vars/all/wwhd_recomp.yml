@@ -1,0 +1,45 @@
+---
+# The Legend of Zelda: The Wind Waker HD — native PC port / static recompilation
+# of the Wii U (USA) version (ZeldaWWHDRecomp/ZeldaWWHDRecomp). PowerPC → C AOT,
+# Cafe OS reimplemented natively, GX2 graphics on Vulkan — no Cemu, no GPU
+# command emulation. Official NATIVE Linux x86_64 release (a zip), Vulkan on the
+# RTX, native SDL3 gamepad (8BitDo). Opt-in role install_wwhd_recomp.
+# See docs/wwhd-recomp.md.
+#
+# The release ships NO game code (legal): the first run BUILDS the game locally
+# from the user's own Wii U dump using a bundled SDK + a pinned zig toolchain it
+# downloads (sha256-checked, ~53 MB, once). We drive that headlessly at install
+# time via the setup's non-interactive CLI:
+#   python3 tools/installer/setup.py --yes --game-dir <extracted USA folder> \
+#       --data-dir <root>/data --no-launch --no-shortcuts --jobs N
+# The USA extracted code/content/meta folder is used IN PLACE (not copied); a
+# .wua / .wux also work but the extracted folder needs no keys. Everything built
+# (data/bin/wwhd, saves, settings, shader cache, the zig toolchain) stays under
+# <root>/data (portable.txt in the release keeps it local). The front binary
+# `wind-waker-hd` reads data/install.json and launches data/bin/wwhd with the
+# recorded --game / --save. Verified v0.2.7 building + booting under Vulkan on
+# DP-1/RTX (translate 78 files, compile 80 in ~31 s).
+
+dg_wwhd_repo: ZeldaWWHDRecomp/ZeldaWWHDRecomp
+dg_wwhd_release_tag: v0.2.7
+dg_wwhd_asset_name: "WindWakerHD-v0.2.7-linux-x86_64.zip"
+dg_wwhd_asset_url: "https://github.com/{{ dg_wwhd_repo }}/releases/download/{{ dg_wwhd_release_tag }}/{{ dg_wwhd_asset_name }}"
+dg_wwhd_asset_sha256: "a94fd9bbab979d079f3450454699f6b5289c80ef61eca19504766044d5db9230"
+# The zip wraps everything in this version-named dir; the role flattens it into
+# dg_wwhd_root so data/ sits beside the binary and survives a version re-extract.
+dg_wwhd_asset_subdir: "WindWakerHD-v0.2.7-linux-x86_64"
+
+dg_wwhd_root: "{{ dg_box_home }}/tools/wwhd-recomp"
+dg_wwhd_cache_dir: "{{ dg_box_home }}/cache/wwhd-recomp"
+dg_wwhd_data_dir: "{{ dg_wwhd_root }}/data"
+dg_wwhd_front_bin: "{{ dg_wwhd_root }}/wind-waker-hd"
+dg_wwhd_built_bin: "{{ dg_wwhd_data_dir }}/bin/wwhd"
+dg_wwhd_launcher: "{{ dg_box_home }}/bin/wind-waker-hd-recomp"
+
+# User's own Wii U dump — the extracted USA code/content/meta folder (no keys
+# needed). Override for a .wua (--archive) or .wux (--image + keys) elsewhere.
+dg_wwhd_game_dir: "{{ dg_roms_final_root }}/wiiu/The Legend of Zelda The Wind Waker HD (USA)"
+
+dg_wwhd_build_jobs: 16
+dg_wwhd_main_output: "DP-1"
+dg_wwhd_revert: false

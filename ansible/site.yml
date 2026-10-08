@@ -113,6 +113,7 @@
     - { role: install_mph_recomp,        tags: [mph_recomp, never] }
     - { role: install_dklr,              tags: [dklr, never] }
     - { role: install_unleashed_recomp,  tags: [unleashed_recomp, never] }
+    - { role: install_wwhd_recomp,       tags: [wwhd_recomp, never] }
     - { role: install_smm2_levels,   tags: [smm2_levels, never] }
     - { role: install_rom_patches,       tags: [rom_patches, dkc_gba_restoration, ffoae, never] }
     - { role: install_7th_heaven,        tags: [seven_heaven, "7th_heaven", materiaforge, ffvii_7th_heaven, never] }
