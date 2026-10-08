@@ -15,7 +15,11 @@
 # !!! When you install a NEW emulator or game, ADD its save path(s) here. !!!
 # (See docs/save-backups.md and the CLAUDE.md note.)
 
-dg_backup_root: "{{ dg_external_games_root }}/distrobox-gaming/backup/saves"
+# Parent for save backups on the QNAP CHAD share (moved 2026-10-07 off the
+# degraded Synology pool; the restic machine repos live beside it).
+dg_save_backup_nas_root: /mnt/chad/GIGACHAD/restic
+
+dg_backup_root: "{{ dg_save_backup_nas_root }}/dg-save"
 
 # Restore is opt-in: set true (e.g. on a from-scratch remount) to have the
 # backup_saves role pull saves back from the NAS after deploying the tooling.

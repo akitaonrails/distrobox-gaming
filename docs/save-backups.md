@@ -9,9 +9,13 @@ the NAS and restores them on demand.
 
 ## Where it goes
 
-`dg_backup_root` (default **`/mnt/terachad/Emulators/distrobox-gaming/backup/saves`**,
-= `{{ dg_external_games_root }}/distrobox-gaming/backup/saves`) — one subdirectory
-per save set. Override in `host_vars/localhost.yml` if your NAS differs.
+`dg_backup_root` (default **`/mnt/chad/GIGACHAD/restic/dg-save`** on the QNAP,
+= `{{ dg_save_backup_nas_root }}/dg-save`; moved off the degraded Synology
+2026-10-07) — one subdirectory per save set. Override in
+`host_vars/localhost.yml` if your NAS differs. The old Synology copy remains
+at `/mnt/terachad/Emulators/distrobox-gaming/backup/saves` until that pool is
+retired. The helper rsyncs with `--no-g` because the NAS squash maps every
+writer to a fixed uid:gid, so group preservation only ever fails.
 
 ## Back up (run from time to time)
 

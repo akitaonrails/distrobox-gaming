@@ -35,7 +35,9 @@ while IFS="$TAB" read -r name rel; do
     absent=$((absent + 1)); printf '  –  %s (no local data)\n' "$name"; continue
   fi
   mkdir -p "$DG_BACKUP_ROOT/$name"
-  rsync -a $DRY "$src/" "$DG_BACKUP_ROOT/$name/"
+  # --no-g: the NAS squash maps every writer to a fixed uid:gid, so chgrp to
+  # the box's group always fails with EPERM (rsync exit 23) for no gain.
+  rsync -a --no-g $DRY "$src/" "$DG_BACKUP_ROOT/$name/"
   saved=$((saved + 1)); printf '  \342\234\223  %s\n' "$name"
 done < "$MANIFEST"
 
