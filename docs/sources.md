@@ -51,6 +51,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | Sonic 2 (2013) | RSDKv4 decomp + Sonic 2 Mania | [RSDKModding/RSDKv4-Decompilation](https://github.com/RSDKModding/RSDKv4-Decompilation) · [doc](sonic2-2013.md) |
 | Sonic SMS Remake | Master System Sonic remake (Wine) | [The Creative Araya](https://sonic-sms-remake.blogspot.com/) · [doc](sonic-fan-pack.md) |
 | Sonic and the Fallen Star | Classic-Sonic fan game, Clickteam Fusion (Wine) | [Stardrop](https://stardropsmh.github.io/sonic-and-the-fallen-star/) · [doc](sonic-fan-pack.md) |
+| Sonic Classic (Rev 03.5) | Classic-Sonic fan game, Clickteam MMF2 (Wine) | fan game (no official page) · [doc](sonic-fan-pack.md) |
 | Project Reignition | Secret Rings fan remake (Godot) | [GameJolt](https://gamejolt.com/games/project_reignition/1082591) · [doc](project-reignition.md) |
 | Mega Man X Regenesis | Godot 4 fan game | [itch.io](https://mmxregenesis.itch.io/mega-man-x-regenesis) · [doc](mmx-regenesis.md) |
 | Star Fox Enhanced | SNES Star Fox port (UltraStarFox) | [kandowontu/starfox-enhanced](https://github.com/kandowontu/starfox-enhanced) · [doc](starfox-enhanced.md) |

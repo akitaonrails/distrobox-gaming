@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Sonic Classic (on {{ dg_box_name }})
+Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_sclassic_bin }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Classic-Sonic fan game (Clickteam MMF2, under Wine) — Rev 03.5, widescreen.
+Categories=Game;
+Keywords=sonic;classic;fan game;clickteam;mmf2;widescreen;
+StartupWMClass=SClassicWS.exe;
+{{ ogm_metadata('gaming-sonic-classic') }}

@@ -1,0 +1,124 @@
+---
+# Sonic Classic — Clickteam MMF2 Windows fan game under Wine (no Linux build).
+# See group_vars/all/sonic_classic.yml and docs/sonic-fan-pack.md. Modeled on
+# install_sonic_fallen_star.
+
+- name: Revert Sonic Classic when requested
+  when: dg_sclassic_revert | bool
+  block:
+    - name: Remove the Sonic Classic launcher, install dir, prefix + desktop entry
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_sclassic_bin }}"
+        - "{{ dg_sclassic_install_dir }}"
+        - "{{ dg_sclassic_prefix }}"
+        - "{{ dg_desktop_render_dir }}/gaming-sonic-classic.desktop"
+    - name: Refresh host launchers after removing Sonic Classic
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      changed_when: true
+    - name: Report Sonic Classic reverted
+      ansible.builtin.debug:
+        msg: "Sonic Classic removed. The NAS rar is untouched (loose ringdata.sav progress is lost with the install dir)."
+
+- name: Install Sonic Classic
+  when: not (dg_sclassic_revert | bool)
+  block:
+    - name: Verify the NAS rar exists
+      ansible.builtin.stat:
+        path: "{{ dg_sclassic_rar }}"
+      register: _sclassic_rar
+      failed_when: not _sclassic_rar.stat.exists
+
+    - name: Create directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_sclassic_install_dir }}"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Extract the game from the rar (once; 7z handles rar)
+      ansible.builtin.shell: |
+        set -eu
+        [ -f "{{ dg_sclassic_gamedir }}/{{ dg_sclassic_exe }}" ] && exit 0
+        {{ dg_in_box }} 7z x -y -o"{{ dg_sclassic_install_dir }}" "{{ dg_sclassic_rar }}" >/dev/null
+        echo extracted-sclassic
+      register: _sclassic_extract
+      changed_when: "'extracted-sclassic' in _sclassic_extract.stdout"
+
+    - name: Initialize the Wine prefix
+      ansible.builtin.shell: |
+        {{ dg_in_box }} bash -c '
+          set -eu
+          [ -d "{{ dg_sclassic_prefix }}/drive_c" ] && exit 0
+          export WINEPREFIX="{{ dg_sclassic_prefix }}"
+          "{{ dg_sclassic_wine_bin_dir }}/wineboot" -i >/dev/null 2>&1 || true
+          "{{ dg_sclassic_wine_bin_dir }}/wineserver" -w || true
+          echo prefix-created
+        '
+      register: _sclassic_prefix
+      changed_when: "'prefix-created' in _sclassic_prefix.stdout"
+
+    - name: Force the GLX OpenGL backend (wine 11 EGL -> iGPU regression)
+      ansible.builtin.shell: |
+        {{ dg_in_box }} bash -c '
+          export WINEPREFIX="{{ dg_sclassic_prefix }}"
+          W="{{ dg_sclassic_wine_bin_dir }}"
+          "$W/wine" reg query "HKCU\\Software\\Wine\\X11 Driver" /v UseEGL 2>/dev/null | grep -q N && exit 0
+          "$W/wine" reg add "HKCU\\Software\\Wine\\X11 Driver" /v UseEGL /d N /f >/dev/null
+          "$W/wineserver" -w || true
+          echo egl-pinned
+        '
+      register: _sclassic_egl
+      changed_when: "'egl-pinned' in _sclassic_egl.stdout"
+
+    - name: Route controllers through SDL (winebus) so the 8BitDo reaches the game
+      ansible.builtin.shell: |
+        {{ dg_in_box }} bash -c '
+          export WINEPREFIX="{{ dg_sclassic_prefix }}"
+          W="{{ dg_sclassic_wine_bin_dir }}"
+          "$W/wine" reg add "HKCU\\Software\\Wine\\WineBus" /v "{{ item.name }}" /t REG_DWORD /d {{ item.value }} /f >/dev/null
+          "$W/wineserver" -w || true
+        '
+      loop: "{{ dg_sclassic_winebus_registry }}"
+      loop_control:
+        label: "{{ item.name }}={{ item.value }}"
+      changed_when: true
+
+    - name: Deploy the launcher
+      ansible.builtin.template:
+        src: sonic-classic.sh.j2
+        dest: "{{ dg_sclassic_bin }}"
+        mode: "0755"
+
+    - name: Render the desktop entry
+      ansible.builtin.template:
+        src: gaming-sonic-classic.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-sonic-classic.desktop"
+        mode: "0644"
+
+    - name: Install the desktop entry into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _sclassic_host_launchers
+      changed_when: >-
+        'installed ' in _sclassic_host_launchers.stdout or
+        'removed stale ' in _sclassic_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Sonic Classic {{ dg_sclassic_version }} under wine-11.8 at
+          {{ dg_sclassic_gamedir }}; launcher {{ dg_sclassic_bin }} (gamescope
+          integer fullscreen @60, 8BitDo via WineBus SDL). Progress saves to
+          ringdata.sav next to the exe. Revert: -e dg_sclassic_revert=true.

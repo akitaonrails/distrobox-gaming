@@ -1,4 +1,4 @@
-# Sonic fan games: S3AIR, SMS Remake, Sonic XG, Sonic Galactic, Sonic Overture, Sonic Legends, Rush Rerun, Dimensions, Moon Facility, Fallen Star (Banjo-Kazooie moved to lighthouse.md)
+# Sonic fan games: S3AIR, SMS Remake, Sonic XG, Sonic Galactic, Sonic Overture, Sonic Legends, Rush Rerun, Dimensions, Moon Facility, Fallen Star, Sonic Classic (Banjo-Kazooie moved to lighthouse.md)
 
 Three installs from the 2026-09-04 batch (`docs/dkc-recomp.md` came the same
 week — it's fan-port season).
@@ -170,6 +170,25 @@ top-level folder holds `Sonic and the Fallen Star.exe` + `.dat` + `Modules/`).
 Bump `dg_fs_version` + `_zip` (+ `_subdir`) on new builds; ogm fingerprints the
 project page. Launcher `bin/sonic-fallen-star`, Walker "Sonic and the Fallen
 Star". Install: `ansible-playbook install-sonic-fallen-star.yml`.
+
+## Sonic Classic (`install_sonic_classic`)
+
+**Sonic Classic** (Rev 03.5 FULL) — a long-running classic-Sonic fan game in
+**Clickteam MMF2** (same engine family as Fallen Star / Moon Facility; single
+self-contained `SClassicWS.exe` + external `BG_Music/`, `Ghosts/`, and a loose
+`ringdata.sav`). **Windows-only** → wine-11.8, same recipe (UseEGL=N GLX pin,
+WineBus SDL for the 8BitDo, **gamescope integer-scaled fullscreen capped at
+60 fps** via `dg_sclassic_gamescope_args`). Source = the user's NAS rar
+(`ROMS_FINAL/PC/S_Classic1Rev03.5_FULL.rar`, extracted with 7z into a
+`S_Classic1Rev03_FULL/` subdir). ogm fingerprints the install (no releases API).
+Launcher `bin/sonic-classic`, Walker "Sonic Classic". Install:
+`ansible-playbook install-sonic-classic.yml`.
+
+**Saves:** progress is a loose `ringdata.sav` (+ time-attack `Ghosts/`) next to
+the exe — MMF2 writes to the app dir. `backup-saves` mirrors directories only,
+so this is **not** in `dg_save_sets`; the rar ships a default `ringdata.sav`, so
+a from-scratch rebuild resets progress. Copy `ringdata.sav` + `Ghosts/` aside by
+hand to keep a run across a rebuild.
 
 ## Banjo-Kazooie
 

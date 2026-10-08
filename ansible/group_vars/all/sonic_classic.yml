@@ -1,0 +1,42 @@
+---
+# Sonic Classic (Rev 03.5 FULL) — a long-running classic-Sonic fan game built in
+# Clickteam Multimedia Fusion 2 (mmfs2.dll, mmf2d3d8/d3d9.dll, DirectDraw — same
+# engine family as Sonic and the Fallen Star / Moon Facility). Single
+# self-contained SClassicWS.exe ("WS" = widescreen) + external BG_Music/,
+# Ghosts/ and a loose ringdata.sav next to it. WINDOWS-only → wine-11.8 with the
+# established Clickteam recipe (UseEGL=N GLX pin + WineBus SDL for the 8BitDo),
+# presented fullscreen via gamescope integer scaling capped at 60 fps (Clickteam
+# games run at gamescope's 240 Hz under Wine and double-fire held buttons
+# without the cap; 60 is lossless for these 2D games). Opt-in role
+# install_sonic_classic. See docs/sonic-fan-pack.md.
+#
+# Source: the user's downloaded rar on the NAS (extracted with 7z; the archive
+# wraps everything in a version-named subdir). SAVES: the game keeps progress in
+# a loose `ringdata.sav` + time-attack `Ghosts/` NEXT TO THE EXE (MMF2 writes to
+# the app dir); the rar ships a default ringdata.sav, so a from-scratch rebuild
+# re-extracts the default and resets progress. backup-saves mirrors directories
+# only, so this loose-file save is NOT in dg_save_sets — copy ringdata.sav +
+# Ghosts/ aside by hand if you want to keep a run across a rebuild.
+
+dg_sclassic_version: "rev03.5-full"
+dg_sclassic_rar: "{{ dg_roms_final_root }}/PC/S_Classic1Rev03.5_FULL.rar"
+
+dg_sclassic_install_dir: "{{ dg_box_home }}/Games/sonic-classic"
+# The rar wraps everything in this top-level folder; exe + BG_Music/ + Ghosts/ +
+# ringdata.sav must stay together, so the game root is this subdir.
+dg_sclassic_subdir: "S_Classic1Rev03_FULL"
+dg_sclassic_gamedir: "{{ dg_sclassic_install_dir }}/{{ dg_sclassic_subdir }}"
+dg_sclassic_exe: "SClassicWS.exe"
+dg_sclassic_bin: "{{ dg_box_home }}/bin/sonic-classic"
+dg_sclassic_prefix: "{{ dg_box_home }}/wineprefixes/sonic-classic"
+dg_sclassic_wine_bin_dir: "{{ dg_pc_racing_wine_runner_root }}/wine-11.8/usr/bin"
+dg_sclassic_gamescope_args: "-W 3840 -H 2160 -S integer -f --framerate-limit 60"
+
+dg_sclassic_winebus_registry:
+  - { name: DisableHidraw, value: 1 }
+  - { name: DisableInput, value: 1 }
+  - { name: "Enable SDL", value: 1 }
+  - { name: "Map Controllers", value: 1 }
+
+dg_sclassic_main_output: "DP-1"
+dg_sclassic_revert: false

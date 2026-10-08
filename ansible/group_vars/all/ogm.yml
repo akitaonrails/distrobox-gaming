@@ -370,6 +370,10 @@ dg_ogm_games:
   - { desktop_id: gaming-sonic-fallen-star, id: sonic-fallen-star, category: fangame,
       sgdb_query: "Sonic and the Fallen Star",
       web_url: "https://stardropsmh.github.io/sonic-and-the-fallen-star/" }
+  # Sonic Classic (Rev 03.5, Clickteam MMF2) — Windows-only under Wine. Long-
+  # running fan game, no official releases API — fingerprint mode.
+  - { desktop_id: gaming-sonic-classic, id: sonic-classic, category: fangame,
+      sgdb_query: "Sonic Classic" }
   # Sonic Legends Trial (GameMaker Studio 2, ULTRA RING) — Windows-only under
   # Wine. itch page; fingerprint mode.
   - { desktop_id: gaming-sonic-legends, id: sonic-legends, category: fangame,
