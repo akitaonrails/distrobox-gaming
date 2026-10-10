@@ -136,3 +136,18 @@ dg_rom_patches:
     out: "{{ dg_rom_root }}/nes/Somari.nes"
     out_sha1: "2b8ad733d7db788dd24325607686459fb9d38710"
     backup: true
+
+  # Castlevania: The Holy Relics (Optomon, romhacking.net/hacks/3759, 2017) —
+  # complete overhaul of CV1: all-new stages, graphics, music, sub-weapons and
+  # relics. Per the author (optovania.com) it patches the Castlevania PRG1 ROM
+  # — our Castlevania (USA) (Rev 1).nes. Installed ALONGSIDE the untouched
+  # original (descriptive filename, ES-DE picks it up as a second entry).
+  # User's zip: ROMS_FINAL/PC/romhacks/Castlevania_The_Holy_Relics.zip;
+  # NAS-staged patch: ROMS_FINAL/nes/romhack-patches/.
+  - name: "Castlevania - The Holy Relics (CV1 hack)"
+    base: "{{ dg_rom_root }}/nes/Castlevania (USA) (Rev 1).nes"
+    base_sha1: "2d1dcd857b19067395acd2d671a510d503effe28"
+    ips: "Castlevania_The_Holy_Relics.ips"
+    patch_src: "{{ dg_roms_final_root }}/nes/romhack-patches/Castlevania_The_Holy_Relics.ips"
+    out: "{{ dg_rom_root }}/nes/Castlevania (USA) (Rev 1) - The Holy Relics.nes"
+    out_sha1: "7ac40468f02bb4571b4f13d1cb40eb49181ac22e"
