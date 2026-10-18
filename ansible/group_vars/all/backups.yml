@@ -62,7 +62,7 @@ dg_save_sets:
   - { name: starship-save,        src: "tools/starship/current/Save" }
   - { name: spaghettikart-save,   src: "tools/spaghettikart/current/Save" }
   - { name: dk64-recomp,          src: ".config/DK64Recompiled" }
-  - { name: goldeneye-recomp,     src: ".config/GoldenRecomp" }
+  - { name: project-midas,       src: ".local/share/ProjectMidas" }
   - { name: unleashed-recomp,     src: ".config/UnleashedRecomp" }
   - { name: perfectdark,          src: ".local/share/perfectdark" }
   - { name: dude-config,          src: ".config/dude" }

@@ -32,6 +32,7 @@
     - { role: install_nebula,            tags: [nebula, never] }
     - { role: install_dekui,             tags: [dekui, never] }
     - { role: install_fukami,            tags: [fukami, never] }
+    - { role: install_project_midas,     tags: [project_midas, goldeneye, never] }
     - { role: install_m2emulator,        tags: [m2emulator, never] }
     - { role: install_model1,            tags: [model1, never] }
     - { role: install_sega_rally,        tags: [sega_rally, never] }

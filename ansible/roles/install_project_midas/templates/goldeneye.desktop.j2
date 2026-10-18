@@ -1,0 +1,11 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=GoldenEye 007 · Project Midas
+Exec={{ dg_midas_launcher }}
+Terminal=false
+Type=Application
+Icon=input-gaming
+Comment=GoldenEye 007 native PC port from the N64 decompilation.
+Categories=Game;
+Keywords=goldeneye;007;n64;midas;bond;
+{{ ogm_metadata('gaming-goldeneye') }}

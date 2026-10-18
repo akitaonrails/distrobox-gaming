@@ -1,0 +1,49 @@
+---
+# GoldenEye 007 via Project Midas — native PC port built from the N64
+# decompilation (murkantor/Project-Midas, the successor of the parked
+# goldeneye-native and of our retired cblock85/GoldenEye64Recomp install).
+# The Linux build is a 32-bit i386 executable with SDL2 bundled; it dlopens
+# 32-bit libpulse for audio against the host PipeWire pulse socket.
+# Managed by install_project_midas. Needs the user's own stock NTSC-U
+# GoldenEye cart (content-checked: z64/v64/n64 byte orders accepted).
+# See docs/project-midas.md.
+
+dg_midas_repo: danisandoval/Project-Midas
+dg_midas_version: "1.0.1"
+dg_midas_asset_name: "ProjectMidas-v{{ dg_midas_version }}-linux.7z"
+dg_midas_asset_url: "https://github.com/{{ dg_midas_repo }}/releases/download/v{{ dg_midas_version }}/{{ dg_midas_asset_name }}"
+dg_midas_asset_sha256: 5e143fe5b0affb20c0223fe3dfeeea293ce5f1db881ef003f65404f3d67675f8
+
+# The good NTSC-U dump is the v64 (byteswapped) original; Midas reads v64 by
+# content. The non-originals roms_mid/n64 copy is a bad dump (different hash)
+# and the game rejects bad carts at startup — don't point this at it.
+dg_midas_rom: "{{ dg_rom_mid_root }}/n64/originals/007 - GoldenEye (USA).n64"
+
+# p7zip extracts the .7z release (and drops the exec bit — the role restores
+# it); lib32-libpulse lets the bundled 32-bit SDL2 reach the host PipeWire.
+dg_midas_packages: [p7zip, lib32-libpulse]
+
+dg_midas_cache_dir: "{{ dg_box_home }}/cache/project-midas"
+dg_midas_release_dir: "{{ dg_box_home }}/tools/project-midas/releases/{{ dg_midas_version }}"
+dg_midas_app_dir: "{{ dg_midas_release_dir }}/linux"
+dg_midas_launcher: "{{ dg_box_home }}/bin/goldeneye-midas"
+# Stable user data (Data/ with saves+profiles, midas.ini, controller layouts)
+# shared across releases via symlinks from each versioned release dir.
+dg_midas_user_dir: "{{ dg_box_home }}/.local/share/ProjectMidas"
+
+# One-time baseline: 4K borderless, real widescreen, 4x MSAA, 16x anisotropy,
+# project-default 120 fps cap with vsync pacing (maxfps=-1 would be authentic
+# N64 60), mouse look with smart lock, rumble on. Later in-game menu changes
+# are preserved by the marker; delete the marker to re-apply.
+dg_midas_initial_settings:
+  - { section: display, option: window_width, value: '3840' }
+  - { section: display, option: window_height, value: '2160' }
+  - { section: display, option: fullscreen, value: fullscreen }
+  - { section: display, option: widescreen, value: '1' }
+  - { section: display, option: msaa, value: '4' }
+  - { section: display, option: anisotropy, value: '16' }
+  - { section: display, option: maxfps, value: '120' }
+  - { section: display, option: vsync, value: '1' }
+  - { section: input, option: mouse, value: '1' }
+  - { section: input, option: smart_mouse_lock, value: '1' }
+  - { section: input, option: rumble, value: '1' }

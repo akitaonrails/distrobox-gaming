@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+# GoldenEye 007 · Project Midas — runs inside the gaming distrobox, where the
+# 32-bit i386 runtime and lib32-libpulse live. Paths are shared with the host.
+set -eu
+exec distrobox-enter -n {{ dg_box_name }} -- sh -c 'cd "{{ dg_midas_app_dir }}" && exec ./ProjectMidas --rom-file "{{ dg_midas_rom }}" "$@"' goldeneye-midas "$@"

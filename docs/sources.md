@@ -18,10 +18,10 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | DekUI | Single-screen Majora's Mask 3D via a custom Azahar build | [tgacquin/mm3d-dekui](https://github.com/tgacquin/mm3d-dekui) · [doc](dekui-mm3d.md) |
 | Nebula | Super Mario Galaxy Wii recompilation (Windows-only runtime; Linux blocked at NAND preflight) | [keepvaibin/nebula](https://github.com/keepvaibin/nebula) · [doc](nebula-galaxy.md) |
 | Fukami | Ridge Racer V static recompilation | [danisandoval/fukami](https://github.com/danisandoval/fukami) · [doc](fukami-rrv.md) |
+| Project Midas | GoldenEye 007 native PC port from the N64 decompilation (replaced the cblock85 recomp 2026-10-18) | [murkantor/Project-Midas](https://github.com/murkantor/Project-Midas) · [doc](project-midas.md) |
 | Starship | Star Fox 64 PC port | [HarbourMasters/Starship](https://github.com/HarbourMasters/Starship) · [doc](starship.md) |
 | SpaghettiKart | Mario Kart 64 PC port | [HarbourMasters/SpaghettiKart](https://github.com/HarbourMasters/SpaghettiKart) · [doc](spaghettikart.md) |
 | Render96ex | Super Mario 64 (HD, DynOS) | [Render96/Render96ex](https://github.com/Render96/Render96ex) · [doc](render96ex.md) |
-| GoldenEye 007 Recompiled | N64Recomp + RT64 native build | [cblock85/GoldenEye64Recomp](https://github.com/cblock85/GoldenEye64Recomp) · [doc](goldeneye-recomp.md) |
 | DK64 Recompiled | Donkey Kong 64 native recomp | [Rainchus/Donkey-Kong-64-Recompiled](https://github.com/Rainchus/Donkey-Kong-64-Recompiled) · [doc](dk64-recomp.md) |
 | Banjo-Kazooie (Lighthouse) | libultraship PC port (HarbourMasters) | [HarbourMasters/Lighthouse](https://github.com/HarbourMasters/Lighthouse) · [doc](lighthouse.md) |
 | Metroid Prime Hunters Recompiled | NDS recomp (last Linux build) | [mstan/MetroidPrimeHuntersRecomp](https://github.com/mstan/MetroidPrimeHuntersRecomp) · [doc](mph-recomp.md) |

@@ -300,9 +300,9 @@ dg_ogm_games:
     github: "{{ dg_wwhd_repo }}"
   - desktop_id: gaming-goldeneye
     id: goldeneye
-    category: recomp
+    category: port
     sgdb_query: "GoldenEye 007"
-    github: "{{ dg_ge64_repo | regex_replace('^https://(api\\.)?github\\.com/(repos/)?([^/]+/[^/]+?)(\\.git)?(/.*)?$', '\\3') }}"
+    github: "{{ dg_midas_repo }}"
   - desktop_id: gaming-mph-recomp
     id: mph-recomp
     category: recomp

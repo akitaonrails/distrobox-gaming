@@ -1,0 +1,145 @@
+---
+- name: Install Midas runtime packages in the box
+  ansible.builtin.command:
+    argv: "{{ ['distrobox-enter', '-n', dg_box_name, '--', 'sudo', 'pacman', '-S', '--noconfirm', '--needed'] + dg_midas_packages }}"
+  register: _midas_box_packages
+  changed_when: "'nothing to do' not in _midas_box_packages.stdout"
+
+- name: Check the GoldenEye cart exists
+  ansible.builtin.stat:
+    path: "{{ dg_midas_rom }}"
+  register: _midas_rom
+
+- name: Require the stock NTSC-U GoldenEye cart
+  ansible.builtin.assert:
+    that: _midas_rom.stat.isreg is defined and _midas_rom.stat.isreg
+    fail_msg: >-
+      Set dg_midas_rom to the owned stock GoldenEye 007 (USA) cart image
+      (z64/v64/n64 byte order, 12582912 bytes). The roms_mid/n64 non-originals
+      copy is a bad dump — use the originals/ one.
+
+- name: Create Midas cache, release, user-data and launcher directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_midas_cache_dir }}"
+    - "{{ dg_midas_release_dir }}"
+    - "{{ dg_midas_user_dir }}"
+    - "{{ dg_midas_user_dir }}/Data"
+    - "{{ dg_box_home }}/bin"
+
+- name: Download the pinned Midas Linux release
+  ansible.builtin.get_url:
+    url: "{{ dg_midas_asset_url }}"
+    dest: "{{ dg_midas_cache_dir }}/{{ dg_midas_asset_name }}"
+    checksum: "sha256:{{ dg_midas_asset_sha256 }}"
+    mode: "0644"
+
+- name: Extract Midas into its versioned release directory
+  ansible.builtin.command:
+    argv:
+      - distrobox-enter
+      - -n
+      - "{{ dg_box_name }}"
+      - --
+      - 7z
+      - x
+      - -y
+      - "-o{{ dg_midas_release_dir }}"
+      - "{{ dg_midas_cache_dir }}/{{ dg_midas_asset_name }}"
+    creates: "{{ dg_midas_app_dir }}/ProjectMidas"
+
+- name: Restore the executable bit the 7z container drops
+  ansible.builtin.file:
+    path: "{{ dg_midas_app_dir }}/ProjectMidas"
+    mode: "0755"
+
+- name: Seed stable user Data from the release Data on first install
+  ansible.builtin.command:
+    argv:
+      - cp
+      - -an
+      - "{{ dg_midas_app_dir }}/Data/."
+      - "{{ dg_midas_user_dir }}/Data/"
+  when: not (dg_midas_user_dir ~ '/Data/README.txt') is exists
+
+- name: Check whether release Data is already the stable link
+  ansible.builtin.stat:
+    path: "{{ dg_midas_app_dir }}/Data"
+  register: _midas_release_data
+
+- name: Remove the extracted release-local Data directory
+  ansible.builtin.file:
+    path: "{{ dg_midas_app_dir }}/Data"
+    state: absent
+  when: not (_midas_release_data.stat.islnk | default(false))
+
+- name: Link release-local Data at the stable user Data
+  ansible.builtin.file:
+    path: "{{ dg_midas_app_dir }}/Data"
+    src: "{{ dg_midas_user_dir }}/Data"
+    state: link
+
+- name: Keep midas.ini and controller layouts stable across releases
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    src: "{{ item.src }}"
+    state: link
+    force: true
+  loop:
+    - { path: "{{ dg_midas_app_dir }}/midas.ini", src: "{{ dg_midas_user_dir }}/midas.ini" }
+    - { path: "{{ dg_midas_app_dir }}/gamecontrolleruser.txt", src: "{{ dg_midas_user_dir }}/gamecontrolleruser.txt" }
+
+- name: Check whether the initial Midas baseline was applied
+  ansible.builtin.stat:
+    path: "{{ dg_midas_user_dir }}/.dg-initial-settings"
+  register: _midas_settings_marker
+
+- name: Seed the Midas settings file if the game has not created it
+  ansible.builtin.copy:
+    content: ""
+    dest: "{{ dg_midas_user_dir }}/midas.ini"
+    force: false
+    mode: "0644"
+
+- name: Set Midas's initial 4K-class graphics and input baseline
+  community.general.ini_file:
+    path: "{{ dg_midas_user_dir }}/midas.ini"
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+  loop: "{{ dg_midas_initial_settings }}"
+  when: not _midas_settings_marker.stat.exists
+
+- name: Record that Midas's initial baseline was applied
+  ansible.builtin.file:
+    path: "{{ dg_midas_user_dir }}/.dg-initial-settings"
+    state: touch
+    mode: "0644"
+  when: not _midas_settings_marker.stat.exists
+
+- name: Install Midas launcher
+  ansible.builtin.template:
+    src: goldeneye.sh.j2
+    dest: "{{ dg_midas_launcher }}"
+    mode: "0755"
+
+- name: Render GoldenEye desktop entry
+  ansible.builtin.template:
+    src: goldeneye.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-goldeneye.desktop"
+    mode: "0644"
+
+- name: Install Midas host desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _midas_host_launchers
+  changed_when: >-
+    'installed ' in _midas_host_launchers.stdout or
+    'removed stale ' in _midas_host_launchers.stdout
