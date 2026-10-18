@@ -1,0 +1,130 @@
+---
+- name: Verify the extracted FM4 Europe Game of the Year game tree
+  ansible.builtin.stat:
+    path: "{{ dg_fm4_recomp_game_root }}/{{ item.key }}"
+    checksum_algorithm: sha256
+  loop: "{{ lookup('ansible.builtin.dict', dg_fm4_recomp_xex_sha256, wantlist=true) }}"
+  loop_control:
+    label: "{{ item.key }}"
+  register: _fm4_xex_files
+
+- name: Require the pinned Europe GOTY XEX files
+  ansible.builtin.assert:
+    that: >-
+      _fm4_xex_files.results
+      | selectattr('stat.checksum', 'defined')
+      | selectattr('stat.checksum', 'equalto', item.value | lower)
+      | list | length == 1
+    fail_msg: >-
+      FM4 Recompiled requires the Europe Game of the Year Disc 1 tree with the
+      pinned XEX hashes ({{ item.key }}). USA / Essentials dumps are not the
+      validated build. Set dg_fm4_recomp_game_root to the correct extracted
+      tree (see docs/fm4-recomp.md).
+  loop: "{{ lookup('ansible.builtin.dict', dg_fm4_recomp_xex_sha256, wantlist=true) }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: Require the configured Proton build
+  ansible.builtin.stat:
+    path: "{{ dg_fm4_recomp_proton }}"
+  register: _fm4_proton
+- ansible.builtin.assert:
+    that: _fm4_proton.stat.exec is defined and _fm4_proton.stat.exec
+    fail_msg: >-
+      FM4 needs GE-Proton (vkd3d-proton for the D3D12 ROV path). Install it
+      under ~/.steam/steam/compatibilitytools.d/ or override
+      dg_fm4_recomp_proton.
+
+- name: Create FM4 Recompiled directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_fm4_recomp_install_dir }}"
+    - "{{ dg_fm4_recomp_release_dir }}"
+    - "{{ dg_fm4_recomp_cache_dir }}"
+    - "{{ dg_fm4_recomp_user_dir }}"
+    - "{{ dg_fm4_recomp_user_dir }}/cache"
+    - "{{ dg_box_home }}/bin"
+
+- name: Download the pinned FM4 Recompiled player build
+  ansible.builtin.get_url:
+    url: "{{ dg_fm4_recomp_asset_url }}"
+    dest: "{{ dg_fm4_recomp_cache_dir }}/{{ dg_fm4_recomp_asset_name }}"
+    checksum: "sha256:{{ dg_fm4_recomp_asset_sha256 }}"
+    mode: "0644"
+
+- name: Extract the player build into its versioned release directory
+  ansible.builtin.unarchive:
+    src: "{{ dg_fm4_recomp_cache_dir }}/{{ dg_fm4_recomp_asset_name }}"
+    dest: "{{ dg_fm4_recomp_release_dir }}"
+    remote_src: true
+    creates: "{{ dg_fm4_recomp_release_dir }}/fm4.exe"
+
+# The zip ships empty game/ and disc2-content/ directories; replace them with
+# links to the canonical trees (the exe resolves its roots from these args, so
+# they must be links, not copies).
+- name: Check whether release-local game and disc2-content are already links
+  ansible.builtin.stat:
+    path: "{{ dg_fm4_recomp_release_dir }}/{{ item }}"
+  loop: [game, disc2-content]
+  register: _fm4_release_links
+
+- name: Remove the zip-shipped placeholder directories
+  ansible.builtin.file:
+    path: "{{ dg_fm4_recomp_release_dir }}/{{ item.item }}"
+    state: absent
+  when: not (item.stat.islnk | default(false))
+  loop: "{{ _fm4_release_links.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: Link the game tree into the release
+  ansible.builtin.file:
+    path: "{{ dg_fm4_recomp_release_dir }}/game"
+    src: "{{ dg_fm4_recomp_game_root }}"
+    state: link
+
+- name: Link stable user data into the release
+  ansible.builtin.file:
+    path: "{{ dg_fm4_recomp_release_dir }}/user"
+    src: "{{ dg_fm4_recomp_user_dir }}"
+    state: link
+
+- name: Link the Disc 2 content directory when it is staged
+  ansible.builtin.file:
+    path: "{{ dg_fm4_recomp_release_dir }}/disc2-content"
+    src: "{{ dg_fm4_recomp_disc2_content_dir }}"
+    state: link
+  when: "{{ lookup('ansible.builtin.fileglob', dg_fm4_recomp_disc2_content_dir ~ '/*', wantlist=true) | length > 0 }}"
+
+- name: Note when Disc 2 content is not staged
+  ansible.builtin.debug:
+    msg: >-
+      Disc 2 marketplace-content packages not found under
+      {{ dg_fm4_recomp_disc2_content_dir }} — the game runs without them.
+
+- name: Install FM4 Recompiled launcher
+  ansible.builtin.template:
+    src: fm4-recomp.sh.j2
+    dest: "{{ dg_fm4_recomp_launcher }}"
+    mode: "0755"
+
+- name: Render FM4 Recompiled desktop entry
+  ansible.builtin.template:
+    src: fm4-recomp.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-fm4-recomp.desktop"
+    mode: "0644"
+
+- name: Install FM4 Recompiled host desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}
+"
+  register: _fm4_host_launchers
+  changed_when: >-
+    'installed ' in _fm4_host_launchers.stdout or
+    'removed stale ' in _fm4_host_launchers.stdout

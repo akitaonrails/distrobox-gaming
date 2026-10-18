@@ -1,0 +1,40 @@
+---
+# Forza Motorsport 4 Recompiled — experimental static recompilation of the
+# Xbox 360 FM4 (Alexbeav/fm4-recomp, ReXGlue). Windows x64 player build run
+# through GE-Proton (D3D12 ROV path needs vkd3d-proton, not plain Wine).
+# Requires the user's own extracted FM4 Europe Game of the Year Disc 1 tree
+# (title ID 4D530910); the three XEX files are sha256-verified. Optional Disc 2
+# marketplace-content packages are validated and installed by the game at
+# startup from disc2-content/. See docs/fm4-recomp.md.
+
+dg_fm4_recomp_repo: Alexbeav/fm4-recomp
+dg_fm4_recomp_version: 0.1.0-alpha.2
+dg_fm4_recomp_asset_name: "fm4-recomp-{{ dg_fm4_recomp_version }}-win-x64.zip"
+dg_fm4_recomp_asset_url: "https://github.com/{{ dg_fm4_recomp_repo }}/releases/download/v{{ dg_fm4_recomp_version }}/{{ dg_fm4_recomp_asset_name }}"
+dg_fm4_recomp_asset_sha256: b4564292c3c137475de2b05974cb3cd1ba98a9ecd28434f46e3da3bf98f0f02a
+
+# Complete extracted Europe Game of the Year Disc 1 (default.xex + facades +
+# full Media tree). USA and Essentials dumps have different XEX hashes and are
+# rejected — the role asserts the pinned hashes below.
+dg_fm4_recomp_game_root: "{{ dg_roms_final_root }}/PC/FM4-Recomp-EU-GOTY"
+dg_fm4_recomp_xex_sha256:
+  default.xex: b34dfb88978819cccda6dafd755e7139970a58fbf6707dfbcba06846857f52bd
+  XMediaFacade_default.xex: 2e82a8d08a59e79f4d68e68b744c2872855bfdd583eb39ad0a9c54e5b3fa1492
+  SpeechFacade_default.xex: 49d506a2f8556836943d8bab3a50b6cd3877524500509ef462fb6e9802f2f4bf
+
+# The four marketplace-content packages extracted from the user's Disc 2
+# (Content Install Disc). Optional: the role links the directory only when it
+# exists; the game validates title ID/content type and installs at startup.
+dg_fm4_recomp_disc2_content_dir: "{{ dg_roms_final_root }}/PC/FM4-Recomp-disc2-content"
+
+dg_fm4_recomp_install_dir: "{{ dg_box_home }}/tools/fm4-recomp"
+dg_fm4_recomp_release_dir: "{{ dg_fm4_recomp_install_dir }}/releases/{{ dg_fm4_recomp_version }}"
+dg_fm4_recomp_cache_dir: "{{ dg_box_home }}/cache/fm4-recomp"
+dg_fm4_recomp_user_dir: "{{ dg_box_home }}/.local/share/fm4-recomp"
+dg_fm4_recomp_launcher: "{{ dg_box_home }}/bin/fm4-recomp"
+
+# GE-Proton through Steam's compatibilitytools.d, like Azimuth (vkd3d-proton
+# for the D3D12 ROV path; plain Wine's vkd3d is not sufficient).
+dg_fm4_recomp_proton: "{{ ansible_facts.env.HOME }}/.steam/steam/compatibilitytools.d/GE-Proton11-1/proton"
+dg_fm4_recomp_steam_root: "{{ ansible_facts.env.HOME }}/.steam/steam"
+dg_fm4_recomp_compatdata: "{{ dg_fm4_recomp_install_dir }}/.compatdata"
