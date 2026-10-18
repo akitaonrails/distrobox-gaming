@@ -28,6 +28,10 @@ Checked on 2026-10-18 — **none of the local dumps match**:
   extracted and hashed; all three XEXs differ.
 - `Project Forza Plus/Forza Motorsport 4 (Europe) (v3).zip` — a *modded* PFP
   archive, not a stock dump.
+- `ROMS_FINAL/ps4/Forza.Motorsport.4.PAL.XBOX360-COMPLEX/` — the **original**
+  PAL release (NFO date 10-2011); unpacked and XEX-hashed 2026-10-18, all
+  three hashes differ (`default.xex` `6a7e9ae5…`). Valid PAL original for
+  Xenia, wrong build for the recomp.
 
 To unblock: obtain **redump `Forza Motorsport 4 (Europe) (Rev 1) (Racing Game
 of the Year Edition)`** — the 2012 GOTY re-release, NOT the 2011 "normal"
