@@ -107,6 +107,19 @@ an appropriate controller-to-keyboard mapping. Check that the installed launcher
 can see the connected pad, test actual input when feasible, and state clearly
 when input could not be verified. Document the controller policy with the game.
 
+## Documentation & Inventory Updates
+
+Every new game install (and every patch, move, or removal of a game) must land
+with its documentation and inventory in the same change — an install without
+its inventory edit is incomplete. Concretely: a `docs/<game>.md` page (or an
+update to the existing one), a row in `docs/sources.md` and the matching
+section of `docs/external-installers.md` whenever an external artifact is
+fetched or staged, a current `dg_ogm_games` entry in
+`ansible/group_vars/all/ogm.yml`, and, when a required dump moves, an update to
+the `dg_*` path variable or `docs/setup-assets.md` that references it. When
+asked to install something that is already present and documented, verify the
+inventory still matches reality instead of skipping the check.
+
 ## Coding Style & Naming Conventions
 
 Use YAML with two-space indentation. Prefix project variables with `dg_`.
