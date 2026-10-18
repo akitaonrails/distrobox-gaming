@@ -29,10 +29,17 @@ Checked on 2026-10-18 — **none of the local dumps match**:
 - `Project Forza Plus/Forza Motorsport 4 (Europe) (v3).zip` — a *modded* PFP
   archive, not a stock dump.
 
-To unblock: obtain the EU GOTY Disc 1 dump, extract it with `extract-xiso -x`
-into `ROMS_FINAL/PC/FM4-Recomp-EU-GOTY` (or point
+To unblock: obtain **redump `Forza Motorsport 4 (Europe) (Rev 1) (Racing Game
+of the Year Edition)`** — the 2012 GOTY re-release, NOT the 2011 "normal"
+Europe original (Limited Edition Racing Bundle), not Essentials, not USA.
+Disc 1 (Play Disc) is redump disc 88560 (media ID 42C67824 is in the mastering
+ring): ISO SHA-1 `3002a984c00ba6ca179ca177a917900f0c2c16c5`, MD5
+`90ff7a4c1cd7237bb455fc6aeb4081a6` (8,738,846,720 bytes). The matching
+Disc 2 (Content Install Disc) is the same edition (redump disc 89490) —
+prefer it over the local USA Disc 2 for the content packages. Extract Disc 1
+with `extract-xiso -x` into `ROMS_FINAL/PC/FM4-Recomp-EU-GOTY` (or point
 `dg_fm4_recomp_game_root` at it), then run the playbook. The role verifies the
-hashes before touching anything else.
+three XEX hashes before touching anything else.
 
 ## Layout once installed
 
