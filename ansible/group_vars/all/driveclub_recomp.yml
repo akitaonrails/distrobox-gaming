@@ -1,15 +1,17 @@
 ---
 # Windows-only DriveClub Recomp; separate from the working CUSA00003 shadPS4 setup.
 dg_dcr_repo: OverkillLabs3/driveclub-recomp
-dg_dcr_version: 0.2.1
+dg_dcr_version: 0.2.3
 dg_dcr_archive: "{{ dg_roms_final_root }}/PC/driveclub-recomp-{{ dg_dcr_version }}-win64.zip"
-dg_dcr_archive_sha256: b92c664a6ab552ea36280391aa41ae3f294d89d6da5fffee107861a7265bc503
+dg_dcr_archive_sha256: ffb32fa418e0f85e1727695bf23890d8d02356711679cafa94bf492b50c83004
 dg_dcr_install_dir: "{{ dg_box_home }}/tools/driveclub-recomp"
 dg_dcr_launcher: "{{ dg_box_home }}/bin/driveclub-recomp"
 dg_dcr_source_root: "{{ dg_roms_final_root }}/ps4/DriveClub (CUSA00093) - v1.28"
 dg_dcr_base_dir: "{{ dg_dcr_source_root }}/dump/base-1.00"
 dg_dcr_update_dir: "{{ dg_dcr_source_root }}/dump/update-1.28"
-dg_dcr_unlock_dlc: true
+# Off since 0.2.2: upstream turned it off for everyone after the Nissan R34
+# livery-template gap caused race-start crashes; keep aligned with upstream.
+dg_dcr_unlock_dlc: false
 dg_dcr_show_fps: true
 dg_dcr_default_patches:
   - 60 FPS with deltatime

@@ -1,7 +1,7 @@
 # DriveClub Recomp
 
 [OverkillLabs3/driveclub-recomp](https://github.com/OverkillLabs3/driveclub-recomp)
-v0.2.1 is staged as an optional Windows runtime alongside the working shadPS4
+v0.2.3 is staged as an optional Windows runtime alongside the working shadPS4
 Driveclub installation. The pinned release ZIP is stored under
 `dg_roms_final_root/PC/`; `install-driveclub-recomp.yml` extracts it to
 `dg_box_home/tools/driveclub-recomp` without copying or changing game data.
@@ -22,6 +22,21 @@ through GE-Proton11-1 prepared the executable, started `DriveClubGame.exe`,
 opened a `DRIVECLUB™` window, and logged the RTX 5090 Vulkan device. Gameplay,
 frame rate, rendering quality, saves, and controller input still need a
 hands-on check.
+
+**2026-10-18: crash after the intro, diagnosed and fixed.** The first
+hands-on run of v0.2.1 crashed right after the intro (guest NULL read at
+32 s, log in `logs/`). Upstream's 0.2.2/0.2.3 target exactly this class:
+0.2.2 turned **Unlock DLC content** off for everyone (its missing Nissan R34
+livery template caused race-start crashes; `dg_dcr_unlock_dlc` is now
+`false` to match) and fixed repacked-dump version handling; 0.2.3 replaced
+the event-start lock (#23/#24) and added device-lost self-healing. After the
+0.2.3 upgrade the intro passes cleanly (user-confirmed; 120 s smoke run with
+zero faults). Known still-open: event-start freezes in career time trials
+(#24) — if a race start freezes, it is that issue, not our setup.
+
+Since v0.2.3 the recomp also accepts the **European CUSA00003 v1.28** dump;
+the EU shadPS4 dump in this library could feed a second install if ever
+needed.
 
 The source path defaults to `dg_dcr_source_root`, derived from
 `dg_roms_final_root`. Override it in `host_vars/localhost.yml` if moving the
