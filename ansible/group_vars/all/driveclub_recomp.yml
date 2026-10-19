@@ -9,9 +9,12 @@ dg_dcr_launcher: "{{ dg_box_home }}/bin/driveclub-recomp"
 dg_dcr_source_root: "{{ dg_roms_final_root }}/ps4/DriveClub (CUSA00093) - v1.28"
 dg_dcr_base_dir: "{{ dg_dcr_source_root }}/dump/base-1.00"
 dg_dcr_update_dir: "{{ dg_dcr_source_root }}/dump/update-1.28"
-# Off since 0.2.2: upstream turned it off for everyone after the Nissan R34
-# livery-template gap caused race-start crashes; keep aligned with upstream.
-dg_dcr_unlock_dlc: false
+# On: tour events and DLC cars/bikes/decals are unlocked locally. 0.2.2 turned
+# it off for everyone after a Nissan R34 livery-template race-start crash —
+# root-caused and fixed in 0.2.2 ("only when their template exists"). With it
+# off, tour menu entries go permanently "downloading" (profile created under
+# 0.2.1's unlock-on default lists them; the stubbed network can't fetch them).
+dg_dcr_unlock_dlc: true
 dg_dcr_show_fps: true
 dg_dcr_default_patches:
   - 60 FPS with deltatime
