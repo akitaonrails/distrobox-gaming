@@ -1,0 +1,40 @@
+---
+# Virtua Fighter Recompiled — mr-finster's native PC port of the 1993 SEGA
+# arcade Virtua Fighter (Model 1 hardware). The NEC V60 program is statically
+# recompiled to native code at startup; the rest of the Model 1 board (TGP,
+# rasterizer, tile layers, sound, I/O) is reimplemented from MAME's work. It is
+# a genuine native Linux build — the "deck" tarball is a Steam Runtime "sniper"
+# x86-64 binary with bundled SDL3 — so this is a prebuilt-release role (no
+# source build, no Wine), the DK64 / Road Rash / F-Zero pattern. This SUPERSEDES
+# the Wine Wanszai VF frontend in install_model1 for actually playing VF.
+# Opt-in role install_vf1_recomp. See docs/vf1-recomp.md.
+#
+# You supply your own MAME "vf" romset (vf.zip). It is already on the NAS at
+# roms_rare/model1/vf.zip — the same set the Wine install_model1 frontend uses —
+# so the role symlinks it into the gamedir's roms/ rather than copying 14 MB to
+# the NVMe, and never writes to the shared romset dir. The optional model1io.zip
+# BIOS is not present and not needed (the recomp reimplements the I/O board).
+#
+# The binary is x86-64 PIE with RUNPATH $ORIGIN/lib (bundled libSDL3.so.0); the
+# only system deps are zlib + the Vulkan loader, both already in the box.
+
+dg_vf1_repo: mr-finster/vf1-recomp
+dg_vf1_release_tag: v1.4.0
+dg_vf1_asset_name: "VirtuaFighterRecomp-deck.tar.gz"
+dg_vf1_asset_url: "https://github.com/{{ dg_vf1_repo }}/releases/download/{{ dg_vf1_release_tag }}/{{ dg_vf1_asset_name }}"
+dg_vf1_asset_sha256: "a560efa7d98dffed53e7594ec6ed61665b0a4153a34f71dd66bdb2d62b0e1e80"
+
+dg_vf1_root: "{{ dg_box_home }}/tools/vf1-recomp"
+dg_vf1_cache_dir: "{{ dg_box_home }}/cache/vf1-recomp"
+# The tarball unpacks a VirtuaFighter/ folder; the game runs from inside it so
+# its portable.txt keeps settings/rankings/saves (data/) local to the folder.
+dg_vf1_gamedir: "{{ dg_vf1_root }}/VirtuaFighter"
+dg_vf1_bin: "{{ dg_vf1_gamedir }}/vf"
+dg_vf1_save_dir: "{{ dg_vf1_gamedir }}/data"
+dg_vf1_launcher: "{{ dg_box_home }}/bin/vf1"
+dg_vf1_main_output: "DP-1"
+dg_vf1_revert: false
+
+# User's own MAME "vf" set, shared with the Wine install_model1 frontend.
+dg_vf1_rom_src: "{{ dg_rom_rare_root }}/model1/vf.zip"
+dg_vf1_rom_sha256: "ff288457909e0ceae6879e4d3332fd846e3f0bd53b693e24d9b666f832558b6c"

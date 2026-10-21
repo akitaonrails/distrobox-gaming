@@ -1,0 +1,44 @@
+#!/usr/bin/env sh
+set -eu
+# Virtua Fighter Recompiled launcher — mr-finster's native Model 1 VF recomp,
+# opens on DP-1. 8BitDo native via the bundled SDL3. Managed by
+# install_vf1_recomp.
+#
+# The game runs from its own folder so portable.txt keeps settings, rankings and
+# saves in data/ next to the binary. The vf.zip romset is a symlink in roms/
+# (pointed at the NAS set), so no ROM path needs to be passed.
+
+GAMEDIR="{{ dg_vf1_gamedir }}"
+BIN="{{ dg_vf1_bin }}"
+if [ ! -x "$BIN" ]; then
+  printf '%s\n' "ERROR: Virtua Fighter Recompiled missing at $BIN." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-vf1-recomp.yml" >&2
+  exit 1
+fi
+if [ ! -e "$GAMEDIR/roms/vf.zip" ]; then
+  printf '%s\n' "ERROR: vf.zip romset missing at $GAMEDIR/roms/vf.zip" >&2
+  exit 1
+fi
+
+# Focus the main landscape 4K monitor (Hyprland >= 0.56 Lua IPC form).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_vf1_main_output }}" }))'); s.recv(256); s.close()
+PY
+
+# The 3D renderer defaults to Auto (Vulkan) — pin the nvidia ICD so it runs on
+# the RTX, not the AMD iGPU.
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+# Run from the gamedir: $ORIGIN/lib picks up the bundled SDL3 and portable.txt
+# keeps all state here.
+cd "$GAMEDIR"
+exec ./vf "$@"

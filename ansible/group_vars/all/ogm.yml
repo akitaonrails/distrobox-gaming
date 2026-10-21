@@ -247,6 +247,11 @@ dg_ogm_games:
     category: recomp
     sgdb_query: "F-Zero"
     github: "{{ dg_fzero_repo }}"
+  - desktop_id: gaming-vf1
+    id: vf1
+    category: recomp
+    sgdb_query: "Virtua Fighter"
+    github: "{{ dg_vf1_repo }}"
   - desktop_id: gaming-gow3-pc
     id: gow3-pc
     category: port

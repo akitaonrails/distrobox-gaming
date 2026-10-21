@@ -1,0 +1,124 @@
+---
+# Virtua Fighter Recompiled — native Model 1 VF recomp (mr-finster, prebuilt
+# Linux "deck" tarball). See group_vars/all/vf1_recomp.yml and docs/vf1-recomp.md.
+
+- name: Revert Virtua Fighter Recompiled when requested
+  when: dg_vf1_revert | bool
+  block:
+    - name: Remove the VF launcher, desktop entry + install dir
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_vf1_launcher }}"
+        - "{{ dg_vf1_root }}"
+        - "{{ dg_desktop_render_dir }}/gaming-vf1.desktop"
+    - name: Refresh host launchers after removing VF
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      changed_when: true
+    - name: Report VF reverted
+      ansible.builtin.debug:
+        msg: "Virtua Fighter Recompiled removed. Your vf.zip on the NAS is untouched (saves lived under {{ dg_vf1_save_dir }}, captured by backup_saves)."
+
+- name: Install Virtua Fighter Recompiled
+  when: not (dg_vf1_revert | bool)
+  block:
+    - name: Verify the MAME "vf" romset exists and is the expected set
+      ansible.builtin.shell: |
+        python3 - <<'PY'
+        import hashlib
+        h = hashlib.sha256(open(r'''{{ dg_vf1_rom_src }}''', 'rb').read()).hexdigest()
+        if h != "{{ dg_vf1_rom_sha256 }}":
+            raise SystemExit("vf.zip is not the expected MAME set (sha256 " + h + ")")
+        print("rom-ok " + h)
+      register: _vf1_rom
+      changed_when: false
+      failed_when: "'rom-ok' not in _vf1_rom.stdout"
+
+    - name: Create VF directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_vf1_root }}"
+        - "{{ dg_vf1_cache_dir }}"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Download the pinned VF Recompiled Linux release
+      ansible.builtin.get_url:
+        url: "{{ dg_vf1_asset_url }}"
+        dest: "{{ dg_vf1_cache_dir }}/{{ dg_vf1_asset_name }}"
+        checksum: "sha256:{{ dg_vf1_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Extract the release (version-gated; extracts over the top so data/ saves survive upgrades)
+      ansible.builtin.shell: |
+        set -eu
+        root="{{ dg_vf1_root }}"
+        if [ -x "{{ dg_vf1_bin }}" ] && grep -qx "{{ dg_vf1_release_tag }}" "$root/.dg-installed-ref" 2>/dev/null; then
+          exit 0
+        fi
+        tar xzf "{{ dg_vf1_cache_dir }}/{{ dg_vf1_asset_name }}" -C "$root"
+        chmod 0755 "{{ dg_vf1_bin }}"
+        printf '%s\n' "{{ dg_vf1_release_tag }}" > "$root/.dg-installed-ref"
+        printf '%s\n' "installed-vf1"
+      register: _vf1_extract
+      changed_when: "'installed-vf1' in _vf1_extract.stdout"
+
+    - name: Assert the binary links inside the box
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} sh -c 'ldd "{{ dg_vf1_bin }}" | grep -c "not found" || true'
+      register: _vf1_ldd
+      changed_when: false
+      failed_when: (_vf1_ldd.stdout | trim) != "0"
+
+    - name: Symlink the NAS vf.zip into the gamedir roms/ (no NVMe copy, no writes to the shared set)
+      ansible.builtin.file:
+        src: "{{ dg_vf1_rom_src }}"
+        dest: "{{ dg_vf1_gamedir }}/roms/vf.zip"
+        state: link
+        force: true
+        follow: false
+
+    - name: Keep all state inside the install folder (portable mode)
+      ansible.builtin.copy:
+        dest: "{{ dg_vf1_gamedir }}/portable.txt"
+        content: "Managed by install_vf1_recomp: keep settings, rankings and saves in this folder.\n"
+        mode: "0644"
+        force: false
+
+    - name: Deploy the VF launcher
+      ansible.builtin.template:
+        src: vf1.sh.j2
+        dest: "{{ dg_vf1_launcher }}"
+        mode: "0755"
+
+    - name: Render the VF desktop entry
+      ansible.builtin.template:
+        src: vf1.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-vf1.desktop"
+        mode: "0644"
+
+    - name: Install the desktop file into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _vf1_host_launchers
+      changed_when: >-
+        'installed ' in _vf1_host_launchers.stdout or
+        'removed stale ' in _vf1_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Virtua Fighter Recompiled {{ dg_vf1_release_tag }} at {{ dg_vf1_gamedir }};
+          launcher {{ dg_vf1_launcher }}. vf.zip symlinked from the NAS; settings +
+          rankings + saves stay in data/ (portable). 3D on the RTX via Vulkan.
+          Revert: -e dg_vf1_revert=true.

@@ -1,0 +1,7 @@
+---
+- name: Install Virtua Fighter Recompiled (native Model 1 VF recomp) + launcher
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_vf1_recomp
