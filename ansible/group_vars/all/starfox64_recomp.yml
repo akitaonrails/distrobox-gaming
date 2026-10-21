@@ -1,0 +1,37 @@
+---
+# Star Fox 64: Recompiled — sonicdcer's N64Recomp + RT64 static recompilation of
+# Star Fox 64, the "Recompiled" sibling to HarbourMasters' Starship (libultraship
+# decomp port). It ships an official native Linux x64 release, so this is a
+# prebuilt-release role (no source build) — the DK64 / GoldenEye recomp pattern.
+# RT64 renders on Vulkan on the RTX. Built-in widescreen/ultrawide + high
+# framerate + a mod menu, so this SUPERSEDES the retired Starship libultraship
+# port for playing Star Fox 64. Opt-in role install_starfox64_recomp.
+# See docs/starfox64-recomp.md.
+#
+# You supply the US v1.1 (Rev A) ROM — the same dump Starship used, already on
+# the NAS. The recomp stores the validated ROM in its app folder as
+# <rom-id>.z64; the role pre-seeds that byte-identical file (converting the NAS
+# dump to BE z64 + verifying the sha1), so the first-run picker is skipped and
+# it boots straight into the game.
+
+dg_sf64_repo: sonicdcer/Starfox64Recomp
+dg_sf64_version: "1.0.3"
+dg_sf64_asset_name: "Starfox64Recompiled-v1.0.3-Linux-X64-Release.zip"
+dg_sf64_asset_url: "https://github.com/{{ dg_sf64_repo }}/releases/download/{{ dg_sf64_version }}/{{ dg_sf64_asset_name }}"
+dg_sf64_asset_sha256: "e74932bd0edb6186a015dabaa87b6b24af3d3b5511ff3b0293a2c3331840cdf0"
+
+dg_sf64_root: "{{ dg_box_home }}/tools/starfox64-recomp"      # Starfox64Recompiled + assets/ + recompcontrollerdb.txt
+dg_sf64_cache_dir: "{{ dg_box_home }}/cache/starfox64-recomp"
+dg_sf64_bin: "{{ dg_sf64_root }}/Starfox64Recompiled"
+dg_sf64_launcher: "{{ dg_box_home }}/bin/starfox64-recomp"
+# The app anchors config + saves to ~/.config/Starfox64Recompiled (its exe name).
+dg_sf64_config_dir: "{{ dg_box_home }}/.config/Starfox64Recompiled"
+# The picker stores the validated ROM here as <rom-id>.z64; pre-seeding this
+# byte-identical file (BE z64, sha1 below) skips the first-run picker entirely.
+dg_sf64_rom_stored: "{{ dg_sf64_config_dir }}/sf64.n64.us.1.1.z64"
+dg_sf64_main_output: "DP-1"
+dg_sf64_revert: false
+
+# The user's US v1.1 (Rev A) ROM, shared with the retired Starship port.
+dg_sf64_rom_src: "{{ dg_rom_mid_root }}/n64/Star Fox 64 (USA) (Rev A).n64"
+dg_sf64_rom_sha1_z64: "09f0d105f476b00efa5303a3ebc42e60a7753b7a"

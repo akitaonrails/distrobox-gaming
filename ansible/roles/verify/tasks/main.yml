@@ -294,7 +294,7 @@
     - { name: SpaghettiKart, payload: "{{ dg_spaghettikart_install_dir }}/mk64.o2r", wrapper: "{{ dg_spaghettikart_bin }}" }
     - { name: Ship of Harkinian, payload: "{{ dg_ship_of_harkinian_install_dir }}/soh.appimage", wrapper: "{{ dg_ship_of_harkinian_bin }}" }
     - { name: 2Ship2Harkinian, payload: "{{ dg_two_ship2harkinian_install_dir }}/{{ dg_two_ship2harkinian_appimage_name }}", wrapper: "{{ dg_two_ship2harkinian_bin }}" }
-    - { name: Starship, payload: "{{ dg_starship_install_dir }}/{{ dg_starship_appimage_name }}", wrapper: "{{ dg_starship_bin }}" }
+    - { name: Star Fox 64 Recompiled, payload: "{{ dg_sf64_bin }}", wrapper: "{{ dg_sf64_launcher }}" }
     - { name: 7th Heaven, payload: "{{ dg_7th_heaven_current }}", wrapper: "{{ dg_7th_heaven_bin }}" }
     - { name: Steam trainers, payload: "{{ dg_steam_trainers_config }}", wrapper: "{{ dg_steam_trainers_wrapper_bin }}" }
   loop_control:

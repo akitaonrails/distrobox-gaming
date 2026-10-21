@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Star Fox 64 · Recompiled (on {{ dg_box_name }})
+Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_sf64_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Star Fox 64 (N64) native recompilation — N64Recomp + RT64 (Vulkan) on the RTX, widescreen.
+Categories=Game;
+Keywords=star fox;starfox;sf64;lylat;n64;recomp;rt64;
+StartupWMClass=Starfox64Recompiled;
+{{ ogm_metadata('gaming-starfox64-recomp') }}

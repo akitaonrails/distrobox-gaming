@@ -120,11 +120,11 @@ dg_ogm_games:
     category: port
     sgdb_query: "The Legend of Zelda: Majora's Mask"
     github: "{{ dg_two_ship2harkinian_asset_url | regex_replace('^https://(api\\.)?github\\.com/(repos/)?([^/]+/[^/]+?)(\\.git)?(/.*)?$', '\\3') }}"
-  - desktop_id: gaming-starship
-    id: starship
-    category: port
+  - desktop_id: gaming-starfox64-recomp
+    id: starfox64-recomp
+    category: recomp
     sgdb_query: "Star Fox 64"
-    github: "{{ dg_starship_asset_url | regex_replace('^https://(api\\.)?github\\.com/(repos/)?([^/]+/[^/]+?)(\\.git)?(/.*)?$', '\\3') }}"
+    github: "{{ dg_sf64_repo }}"
   - desktop_id: gaming-spaghettikart
     id: spaghettikart
     category: port

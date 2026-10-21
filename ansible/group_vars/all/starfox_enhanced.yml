@@ -2,7 +2,7 @@
 # Star Fox Enhanced — kandowontu's SDL source port of the SNES Star Fox (1993),
 # built on the open-source UltraStarFox codebase. 20-480 FPS, widescreen, HUD
 # editor, GPU/software renderers, MSU-1 orchestral music, native controller
-# rumble. NOT the N64 Starship port — different game (SNES vs N64), both coexist.
+# rumble. NOT the N64 Star Fox 64 Recompiled port — different game (SNES vs N64), both coexist.
 # Opt-in role install_starfox_enhanced. See docs/starfox-enhanced.md.
 #
 # Since v0.0.3 upstream ships official release binaries INCLUDING a native

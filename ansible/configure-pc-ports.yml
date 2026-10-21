@@ -32,13 +32,6 @@
         dg_pc_port_json_path: "{{ dg_two_ship2harkinian_install_dir }}/2ship2harkinian.json"
         dg_pc_port_json_defaults: "{{ dg_pc_port_window_fullscreen }}"
 
-    - name: Configure Starship
-      ansible.builtin.include_role:
-        name: seed_pc_port_json
-      vars:
-        dg_pc_port_json_path: "{{ dg_starship_install_dir }}/starship.cfg.json"
-        dg_pc_port_json_defaults: "{{ dg_pc_port_window_fullscreen }}"
-
     - name: Configure SpaghettiKart
       ansible.builtin.include_role:
         name: seed_pc_port_json

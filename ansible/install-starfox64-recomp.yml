@@ -1,0 +1,7 @@
+---
+- name: Install Star Fox 64 Recompiled (N64Recomp + RT64 native recomp) + launcher
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_starfox64_recomp

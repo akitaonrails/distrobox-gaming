@@ -22,7 +22,7 @@ the upstream release is deleted.
 | Ship of Harkinian + OoT Reloaded HD | github.com/HarbourMasters/Shipwright, GhostlyDark/OoT-Reloaded-SoH | `install_ship_of_harkinian` |
 | 2Ship2Harkinian + MM Reloaded HD | HarbourMasters/2ship2harkinian, GhostlyDark/MM-Reloaded-2S2H | `install_2ship2harkinian` |
 | SpaghettiKart + MK64 Reloaded HD | HarbourMasters/SpaghettiKart, GhostlyDark/MK64-Reloaded | `install_spaghettikart` |
-| Starship (Star Fox 64) | HarbourMasters/Starship releases | `install_starship` |
+| Star Fox 64 Recompiled | sonicdcer/Starfox64Recomp releases (native Linux) | `install_starfox64_recomp` |
 | MGSM2Fix, MGSHDFix, MGS2/MGS3 Bugfix Compilations | github.com/nuggslet + ShizCalev releases | `metal_gear_master_collection` |
 | Eden Cheats Manager | github.com/ChrisA95G/eden-cheats-manager releases | `install_eden_cheats_manager` |
 | lib32-nvidia-utils (32-bit driver extract) | archive.archlinux.org (version-matched to host driver) | `bootstrap_packages` / `dg_nvidia_lib32_*` |

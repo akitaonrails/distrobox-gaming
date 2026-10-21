@@ -1,0 +1,150 @@
+---
+# Star Fox 64: Recompiled — sonicdcer's N64Recomp + RT64 static recomp
+# (prebuilt native Linux release). See group_vars/all/starfox64_recomp.yml and
+# docs/starfox64-recomp.md. Supersedes the retired Starship libultraship port.
+
+- name: Revert Star Fox 64 Recompiled when requested
+  when: dg_sf64_revert | bool
+  block:
+    - name: Remove the SF64 launcher, desktop entry + install dir (config/saves kept)
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_sf64_launcher }}"
+        - "{{ dg_sf64_root }}"
+        - "{{ dg_desktop_render_dir }}/gaming-starfox64-recomp.desktop"
+    - name: Refresh host launchers after removing SF64
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      changed_when: true
+    - name: Report SF64 reverted
+      ansible.builtin.debug:
+        msg: "Star Fox 64 Recompiled removed. {{ dg_sf64_config_dir }} (config + saves) and your NAS ROM are untouched."
+
+- name: Install Star Fox 64 Recompiled
+  when: not (dg_sf64_revert | bool)
+  block:
+    - name: Verify the Star Fox 64 (Rev A) source ROM exists
+      ansible.builtin.stat:
+        path: "{{ dg_sf64_rom_src }}"
+      register: _sf64_rom
+      failed_when: not _sf64_rom.stat.exists
+
+    - name: Create SF64 directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_sf64_cache_dir }}"
+        - "{{ dg_sf64_root }}"
+        - "{{ dg_sf64_config_dir }}"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Download the pinned SF64 Recompiled Linux release
+      ansible.builtin.get_url:
+        url: "{{ dg_sf64_asset_url }}"
+        dest: "{{ dg_sf64_cache_dir }}/{{ dg_sf64_asset_name }}"
+        checksum: "sha256:{{ dg_sf64_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Extract the release (zip wraps a tar.gz; version-gated, over the top)
+      ansible.builtin.shell: |
+        set -eu
+        root="{{ dg_sf64_root }}"
+        if [ -x "{{ dg_sf64_bin }}" ] && grep -qx "{{ dg_sf64_version }}" "$root/.dg-installed-ref" 2>/dev/null; then
+          exit 0
+        fi
+        tmp="$(mktemp -d)"
+        unzip -oq "{{ dg_sf64_cache_dir }}/{{ dg_sf64_asset_name }}" -d "$tmp"
+        tar xzf "$tmp"/*.tar.gz -C "$root"
+        rm -rf "$tmp"
+        chmod 0755 "{{ dg_sf64_bin }}"
+        printf '%s\n' "{{ dg_sf64_version }}" > "$root/.dg-installed-ref"
+        printf '%s\n' "installed-sf64"
+      register: _sf64_extract
+      changed_when: "'installed-sf64' in _sf64_extract.stdout"
+
+    - name: Assert the binary links inside the box
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} sh -c 'ldd "{{ dg_sf64_bin }}" | grep -c "not found" || true'
+      register: _sf64_ldd
+      changed_when: false
+      failed_when: (_sf64_ldd.stdout | trim) != "0"
+
+    - name: Seed the stored ROM (byteswap to z64 + verify sha1) so the first-run picker is skipped
+      ansible.builtin.shell: |
+        python3 - <<'PY'
+        import hashlib
+        src = "{{ dg_sf64_rom_src }}"; dst = "{{ dg_sf64_rom_stored }}"
+        d = bytearray(open(src, 'rb').read()); m = bytes(d[:4])
+        if m == b'\x80\x37\x12\x40':
+            z = bytes(d)                                         # z64 (BE)
+        elif m == b'\x37\x80\x40\x12':                           # v64 (byteswapped)
+            for i in range(0, len(d) - 1, 2): d[i], d[i+1] = d[i+1], d[i]
+            z = bytes(d)
+        elif m == b'\x40\x12\x37\x80':                           # n64 (LE words)
+            z = b''.join(d[i:i+4][::-1] for i in range(0, len(d), 4))
+        else:
+            raise SystemExit("unknown ROM byte order: " + m.hex())
+        h = hashlib.sha1(z).hexdigest()
+        if h != "{{ dg_sf64_rom_sha1_z64 }}": raise SystemExit("ROM sha1 mismatch: got " + h)
+        open(dst, 'wb').write(z); print("stored ROM ok (" + h + ")")
+        PY
+      args:
+        creates: "{{ dg_sf64_rom_stored }}"
+
+    - name: Seed graphics.json (Vulkan on the RTX + fullscreen; first install only, in-game changes preserved)
+      ansible.builtin.copy:
+        content: |
+          {
+              "api_option": "Vulkan",
+              "ar_option": "Expand",
+              "developer_mode": false,
+              "ds_option": 1,
+              "hpfb_option": "Auto",
+              "hr_option": "Clamp16x9",
+              "msaa_option": "MSAA2X",
+              "res_option": "Auto",
+              "rr_manual_value": 60,
+              "rr_option": "Display",
+              "wm_option": "Fullscreen"
+          }
+        dest: "{{ dg_sf64_config_dir }}/graphics.json"
+        mode: "0644"
+        force: false
+
+    - name: Deploy the SF64 launcher
+      ansible.builtin.template:
+        src: starfox64-recomp.sh.j2
+        dest: "{{ dg_sf64_launcher }}"
+        mode: "0755"
+
+    - name: Render the SF64 desktop entry
+      ansible.builtin.template:
+        src: starfox64-recomp.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-starfox64-recomp.desktop"
+        mode: "0644"
+
+    - name: Install the SF64 desktop file into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _sf64_host_launchers
+      changed_when: >-
+        'installed ' in _sf64_host_launchers.stdout or
+        'removed stale ' in _sf64_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Star Fox 64 Recompiled {{ dg_sf64_version }} at {{ dg_sf64_root }}; launcher
+          {{ dg_sf64_launcher }}. RT64 Vulkan on the RTX, DP-1. ROM pre-seeded
+          (Rev A, {{ dg_sf64_rom_src }}) so it boots straight into the game. 8BitDo
+          via recompcontrollerdb.txt. Revert: -e dg_sf64_revert=true.

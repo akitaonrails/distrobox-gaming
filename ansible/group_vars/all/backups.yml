@@ -59,7 +59,7 @@ dg_save_sets:
   - { name: soh-save,             src: "tools/ship-of-harkinian/current/Save" }
   - { name: lighthouse-save,      src: "tools/lighthouse/current/Save" }
   - { name: 2ship-save,           src: "tools/2ship2harkinian/current/Save" }
-  - { name: starship-save,        src: "tools/starship/current/Save" }
+  - { name: starfox64-recomp,     src: ".config/Starfox64Recompiled/saves" }  # Star Fox 64 Recompiled EEPROM saves (N64Recomp app folder; ROM/install re-derived on rebuild)
   - { name: spaghettikart-save,   src: "tools/spaghettikart/current/Save" }
   - { name: dk64-recomp,          src: ".config/DK64Recompiled" }
   - { name: project-midas,       src: ".local/share/ProjectMidas" }
