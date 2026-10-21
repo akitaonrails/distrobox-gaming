@@ -1,0 +1,41 @@
+---
+# Super Mario All-Stars Recompiled — TanookiStudios' native PC port (recomp) of
+# the SNES Super Mario All-Stars, built on their "retcomm" framework. It ships
+# an official native Linux build (OpenGL / X11, bundled SDL3), so this is a
+# prebuilt-release role (no source build, no Wine) — the DK64 / Road Rash /
+# F-Zero / VF pattern. Opt-in role install_smas_recomp. See docs/smas-recomp.md.
+#
+# You supply your own ROM. The recomp hard-requires the 2010 **25th Anniversary**
+# USA ROM (sha256 411c7036…), NOT the 1993 cartridge — the two are different
+# dumps and the 1993 one is rejected. That ROM only exists as the SNES Virtual
+# Console title inside the 2010 "Super Mario All-Stars: Limited Edition" Wii
+# disc: its audio samples were swapped for pointers into a separate sample pack,
+# so a plain SNES dump will not match. We recovered the exact ROM from the
+# user's own Wii disc with vcromclaim's hcs LZH8 decoder + BRR sample restore
+# (see docs/smas-recomp.md "Recovering the ROM") and staged it on the NAS.
+
+dg_smas_repo: TanookiStudios/SuperMarioAllStarsRecomp
+dg_smas_release_tag: v0.2.0
+dg_smas_asset_name: "SuperMarioAllStars-Linux.tar.gz"
+dg_smas_asset_url: "https://github.com/{{ dg_smas_repo }}/releases/download/{{ dg_smas_release_tag }}/{{ dg_smas_asset_name }}"
+dg_smas_asset_sha256: "28d9981bb40d26aa80715758128e596134300cab66c10a19ceece0a352c2bdc0"
+
+dg_smas_root: "{{ dg_box_home }}/tools/smas-recomp"
+dg_smas_cache_dir: "{{ dg_box_home }}/cache/smas-recomp"
+# The tarball unpacks a SuperMarioAllStars-Linux/ folder; the game runs from
+# inside it and anchors its config + saves (config.ini, keybinds.ini, *.srm
+# battery saves, *.sav save states) to this exe dir — there is no separate save
+# subdir, so backup_saves captures the whole gamedir (see backups.yml).
+dg_smas_gamedir: "{{ dg_smas_root }}/SuperMarioAllStars-Linux"
+dg_smas_bin: "{{ dg_smas_gamedir }}/SuperMarioAllStars"
+dg_smas_launcher: "{{ dg_box_home }}/bin/smas"
+# Wayland app_id / X11 WM class the SDL3 window reports (verified at runtime).
+dg_smas_wmclass: "SuperMarioAllStars"
+dg_smas_main_output: "DP-1"
+dg_smas_revert: false
+
+# The user's own 25th-Anniversary USA ROM, recovered from the Wii disc and
+# staged on the NAS. Passed to the recomp as argv[1], which boots straight into
+# the game (a bare ROM arg skips the launcher GUI; --launcher would force it).
+dg_smas_rom: "{{ dg_rom_mid_root }}/snes/Super Mario All-Stars (USA) (25th Anniversary).sfc"
+dg_smas_rom_sha256: "411c7036750fbc79d60b84602414dbe713074de8204d3c4a5ad762679c103c61"

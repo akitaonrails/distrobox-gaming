@@ -1,0 +1,47 @@
+#!/usr/bin/env sh
+set -eu
+# Super Mario All-Stars Recompiled launcher — TanookiStudios' native SNES recomp,
+# opens on DP-1. 8BitDo native via the bundled SDL3. Managed by
+# install_smas_recomp.
+#
+# The 25th-Anniversary ROM is passed as argv[1]: a bare ROM arg boots straight
+# into the game (the launcher GUI is skipped unless --launcher is given). The
+# recomp anchors its config + saves to its own exe dir, so all state stays in
+# the gamedir next to the binary.
+
+GAMEDIR="{{ dg_smas_gamedir }}"
+BIN="{{ dg_smas_bin }}"
+ROM="{{ dg_smas_rom }}"
+
+if [ ! -x "$BIN" ]; then
+  printf '%s\n' "ERROR: Super Mario All-Stars Recompiled missing at $BIN." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-smas-recomp.yml" >&2
+  exit 1
+fi
+if [ ! -f "$ROM" ]; then
+  printf '%s\n' "ERROR: 25th-Anniversary ROM missing at $ROM" >&2
+  printf '%s\n' "See docs/smas-recomp.md to recover it from the Wii disc." >&2
+  exit 1
+fi
+
+# Focus the main landscape 4K monitor (Hyprland >= 0.56 Lua IPC form).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_smas_main_output }}" }))'); s.recv(256); s.close()
+PY
+
+# This is an OpenGL / X11 build (bundled SDL3 has no Wayland backend) — pin the
+# nvidia GLX vendor so the GL context runs on the RTX, not the AMD iGPU.
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_VIDEO_X11_WMCLASS="{{ dg_smas_wmclass }}"
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+# Run from the gamedir (relative assets/, mods/ + config/saves anchored here).
+cd "$GAMEDIR"
+exec ./SuperMarioAllStars "$ROM" "$@"

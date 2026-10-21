@@ -1,0 +1,117 @@
+---
+# Super Mario All-Stars Recompiled — TanookiStudios' native SNES recomp
+# (prebuilt Linux tarball, OpenGL/X11 + bundled SDL3). See
+# group_vars/all/smas_recomp.yml and docs/smas-recomp.md.
+
+- name: Revert Super Mario All-Stars Recompiled when requested
+  when: dg_smas_revert | bool
+  block:
+    - name: Remove the SMAS launcher, desktop entry + install dir
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_smas_launcher }}"
+        - "{{ dg_smas_root }}"
+        - "{{ dg_desktop_render_dir }}/gaming-smas.desktop"
+    - name: Refresh host launchers after removing SMAS
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      changed_when: true
+    - name: Report SMAS reverted
+      ansible.builtin.debug:
+        msg: "Super Mario All-Stars Recompiled removed. Your ROM on the NAS is untouched (note this removes the config + saves under {{ dg_smas_gamedir }}, which backup_saves captures)."
+
+- name: Install Super Mario All-Stars Recompiled
+  when: not (dg_smas_revert | bool)
+  block:
+    - name: Verify the 25th-Anniversary ROM exists and is the exact expected dump
+      ansible.builtin.shell: |
+        python3 - <<'PY'
+        import hashlib
+        h = hashlib.sha256(open(r'''{{ dg_smas_rom }}''', 'rb').read()).hexdigest()
+        if h != "{{ dg_smas_rom_sha256 }}":
+            raise SystemExit("ROM is not the 25th-Anniversary USA dump the recomp requires (sha256 " + h + "). See docs/smas-recomp.md to recover it from the Wii disc.")
+        print("rom-ok " + h)
+      register: _smas_rom
+      changed_when: false
+      failed_when: "'rom-ok' not in _smas_rom.stdout"
+
+    - name: Create SMAS directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_smas_root }}"
+        - "{{ dg_smas_cache_dir }}"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Download the pinned SMAS Recompiled Linux release
+      ansible.builtin.get_url:
+        url: "{{ dg_smas_asset_url }}"
+        dest: "{{ dg_smas_cache_dir }}/{{ dg_smas_asset_name }}"
+        checksum: "sha256:{{ dg_smas_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Extract the release (version-gated; extracts over the top so *.srm / *.sav saves survive upgrades)
+      ansible.builtin.shell: |
+        set -eu
+        root="{{ dg_smas_root }}"
+        gamedir="{{ dg_smas_gamedir }}"
+        if [ -x "{{ dg_smas_bin }}" ] && grep -qx "{{ dg_smas_release_tag }}" "$root/.dg-installed-ref" 2>/dev/null; then
+          exit 0
+        fi
+        tar xzf "{{ dg_smas_cache_dir }}/{{ dg_smas_asset_name }}" -C "$root"
+        chmod 0755 "{{ dg_smas_bin }}"
+        # Drop the upstream CI leftovers shipped in the tarball: test-rom.sfc is
+        # the audio-less 15d9a11e decode (the recomp rejects it), and rom.cfg
+        # points at it. We pass the real ROM as argv[1], so remove both plus the
+        # stray run logs. User *.srm / *.sav saves are never in the tarball.
+        rm -f "$gamedir/test-rom.sfc" "$gamedir/rom.cfg" \
+              "$gamedir/play.log" "$gamedir/run.log" "$gamedir/last_run_report.json"
+        printf '%s\n' "{{ dg_smas_release_tag }}" > "$root/.dg-installed-ref"
+        printf '%s\n' "installed-smas"
+      register: _smas_extract
+      changed_when: "'installed-smas' in _smas_extract.stdout"
+
+    - name: Assert the binary links inside the box
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} sh -c 'ldd "{{ dg_smas_bin }}" | grep -c "not found" || true'
+      register: _smas_ldd
+      changed_when: false
+      failed_when: (_smas_ldd.stdout | trim) != "0"
+
+    - name: Deploy the SMAS launcher
+      ansible.builtin.template:
+        src: smas.sh.j2
+        dest: "{{ dg_smas_launcher }}"
+        mode: "0755"
+
+    - name: Render the SMAS desktop entry
+      ansible.builtin.template:
+        src: smas.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-smas.desktop"
+        mode: "0644"
+
+    - name: Install the desktop file into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _smas_host_launchers
+      changed_when: >-
+        'installed ' in _smas_host_launchers.stdout or
+        'removed stale ' in _smas_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Super Mario All-Stars Recompiled {{ dg_smas_release_tag }} at {{ dg_smas_gamedir }};
+          launcher {{ dg_smas_launcher }}. Boots straight into the 25th-Anniversary
+          ROM (argv[1]); OpenGL on the RTX via GLX offload; 8BitDo native via the
+          bundled SDL3. Config + saves stay in the gamedir. Revert: -e dg_smas_revert=true.

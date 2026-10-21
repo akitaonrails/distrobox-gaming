@@ -84,3 +84,4 @@ dg_save_sets:
   - { name: sm64ds-port,          src: "Games/sm64ds-port/save" }          # SM64 DS port cartridge save + save states (re-extracted gamedir on rebuild)
   - { name: wwhd-recomp,          src: "tools/wwhd-recomp/data/save" }     # Wind Waker HD recomp saves + Picto Box pics (game rebuilt from dump on rebuild)
   - { name: vf1-recomp,           src: "tools/vf1-recomp/VirtuaFighter/data" }  # Virtua Fighter recomp settings/rankings/saves (portable mode; gamedir re-extracted on rebuild)
+  - { name: smas-recomp,          src: "tools/smas-recomp/SuperMarioAllStars-Linux" }  # SMAS recomp config.ini/keybinds.ini + *.srm battery + *.sav states (anchored to exe dir, no save subdir; binary/assets re-extracted on rebuild)

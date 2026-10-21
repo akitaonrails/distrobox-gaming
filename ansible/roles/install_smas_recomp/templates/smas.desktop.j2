@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Super Mario All-Stars · Recompiled (on {{ dg_box_name }})
+Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_smas_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Super Mario All-Stars (SNES, 25th Anniversary) native recompilation — TanookiStudios, OpenGL on the RTX.
+Categories=Game;
+Keywords=mario;all-stars;allstars;smas;snes;nintendo;recomp;platformer;
+StartupWMClass={{ dg_smas_wmclass }};
+{{ ogm_metadata('gaming-smas') }}

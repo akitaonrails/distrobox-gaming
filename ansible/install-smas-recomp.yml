@@ -1,0 +1,7 @@
+---
+- name: Install Super Mario All-Stars Recompiled (native SNES recomp) + launcher
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_smas_recomp

@@ -252,6 +252,11 @@ dg_ogm_games:
     category: recomp
     sgdb_query: "Virtua Fighter"
     github: "{{ dg_vf1_repo }}"
+  - desktop_id: gaming-smas
+    id: smas
+    category: recomp
+    sgdb_query: "Super Mario All-Stars"
+    github: "{{ dg_smas_repo }}"
   - desktop_id: gaming-gow3-pc
     id: gow3-pc
     category: port
