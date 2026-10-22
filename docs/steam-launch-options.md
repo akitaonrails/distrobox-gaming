@@ -8,6 +8,10 @@ the in-box Steam's `userdata/<id>/config/localconfig.vdf`, via
 and re-run. It is for standalone fixes that need no other install step — game
 mod roles keep their own launch options.
 
+The helper resolves `UserLocalConfigStore/Software/Valve/Steam/apps` by its
+parent keys, so options can be applied even when that block is empty or no
+game has been launched yet. Unrelated `apps` blocks are preserved.
+
 **Steam must be closed** when it runs: Steam rewrites `localconfig.vdf` on exit,
 so the role detects a running in-box Steam, **warns and skips** the write, and
 prints the options to set by hand meanwhile (Properties → Launch Options).
