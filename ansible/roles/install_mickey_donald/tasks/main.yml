@@ -1,0 +1,176 @@
+---
+- name: Check the three supported Genesis ROMs
+  ansible.builtin.stat:
+    path: "{{ item.src }}"
+    checksum_algorithm: sha256
+  loop: "{{ dg_mdc_roms }}"
+  register: _mdc_rom_checks
+
+- name: Require exact USA ROM revisions
+  ansible.builtin.assert:
+    that:
+      - item.stat.isreg | default(false)
+      - item.stat.checksum | default('') == item.item.sha256
+    fail_msg: "Wrong or missing Mickey and Donald ROM: {{ item.item.src }}"
+  loop: "{{ _mdc_rom_checks.results }}"
+
+- name: Create Mickey and Donald install, cache, ROM, prefix and launcher directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_mdc_cache_dir }}"
+    - "{{ dg_mdc_install_root }}"
+    - "{{ dg_mdc_game_dir }}/roms"
+    - "{{ dg_mdc_prefix }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Download the pinned Windows port release
+  ansible.builtin.get_url:
+    url: "{{ dg_mdc_archive_url }}"
+    dest: "{{ dg_mdc_cache_dir }}/{{ dg_mdc_archive_name }}"
+    checksum: "sha256:{{ dg_mdc_archive_sha256 }}"
+    mode: "0644"
+
+- name: Check installed Mickey and Donald version
+  ansible.builtin.stat:
+    path: "{{ dg_mdc_game_dir }}/.dg-installed-{{ dg_mdc_version }}"
+  register: _mdc_installed
+
+- name: Install the port without replacing settings or saves
+  ansible.builtin.unarchive:
+    src: "{{ dg_mdc_cache_dir }}/{{ dg_mdc_archive_name }}"
+    dest: "{{ dg_mdc_install_root }}"
+    remote_src: true
+  when: not _mdc_installed.stat.exists
+
+- name: Record the installed port version
+  ansible.builtin.file:
+    path: "{{ dg_mdc_game_dir }}/.dg-installed-{{ dg_mdc_version }}"
+    state: touch
+    mode: "0644"
+  when: not _mdc_installed.stat.exists
+
+- name: Link verified ROMs beside the port without copying them
+  ansible.builtin.file:
+    src: "{{ item.src }}"
+    dest: "{{ dg_mdc_game_dir }}/roms/{{ item.dest }}"
+    state: link
+  loop: "{{ dg_mdc_roms }}"
+
+- name: Seed 4K fullscreen, 16:9, VSync and native pad defaults once
+  ansible.builtin.template:
+    src: settings.ini.j2
+    dest: "{{ dg_mdc_game_dir }}/settings.ini"
+    mode: "0644"
+    force: false
+
+- name: Check dedicated Wine prefix
+  ansible.builtin.stat:
+    path: "{{ dg_mdc_prefix }}/system.reg"
+  register: _mdc_prefix
+
+- name: Initialize dedicated Wine prefix
+  ansible.builtin.command:
+    argv:
+      - distrobox
+      - enter
+      - "{{ dg_box_name }}"
+      - --
+      - env
+      - "WINEPREFIX={{ dg_mdc_prefix }}"
+      - wineboot
+      - -u
+  when: not _mdc_prefix.stat.exists
+
+- name: Check one-time Wine graphics and gamepad configuration
+  ansible.builtin.stat:
+    path: "{{ dg_mdc_prefix }}/.dg-wine-baseline"
+  register: _mdc_wine_baseline
+
+- name: Configure Wine GLX renderer and SDL controller mapping
+  when: not _mdc_wine_baseline.stat.exists
+  block:
+    - name: Pin Wine GLX to avoid the EGL wrong-GPU regression
+      ansible.builtin.command:
+        argv:
+          - distrobox
+          - enter
+          - "{{ dg_box_name }}"
+          - --
+          - env
+          - "WINEPREFIX={{ dg_mdc_prefix }}"
+          - wine
+          - reg
+          - add
+          - 'HKCU\Software\Wine\X11 Driver'
+          - /v
+          - UseEGL
+          - /d
+          - N
+          - /f
+
+    - name: Route controllers through WineBus SDL
+      ansible.builtin.command:
+        argv:
+          - distrobox
+          - enter
+          - "{{ dg_box_name }}"
+          - --
+          - env
+          - "WINEPREFIX={{ dg_mdc_prefix }}"
+          - wine
+          - reg
+          - add
+          - 'HKCU\Software\Wine\WineBus'
+          - /v
+          - "{{ item.name }}"
+          - /t
+          - REG_DWORD
+          - /d
+          - "{{ item.value }}"
+          - /f
+      loop: "{{ dg_mdc_winebus_registry }}"
+      loop_control:
+        label: "{{ item.name }}={{ item.value }}"
+
+    - name: Wait for Wine registry writes
+      ansible.builtin.command:
+        argv:
+          - distrobox
+          - enter
+          - "{{ dg_box_name }}"
+          - --
+          - env
+          - "WINEPREFIX={{ dg_mdc_prefix }}"
+          - wineserver
+          - -w
+      changed_when: false
+
+    - name: Record the Wine graphics and controller baseline
+      ansible.builtin.file:
+        path: "{{ dg_mdc_prefix }}/.dg-wine-baseline"
+        state: touch
+        mode: "0644"
+
+- name: Install Mickey and Donald launcher
+  ansible.builtin.template:
+    src: mickey-donald.sh.j2
+    dest: "{{ dg_mdc_launcher }}"
+    mode: "0755"
+
+- name: Render Mickey and Donald desktop entry
+  ansible.builtin.template:
+    src: gaming-mickey-donald.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-mickey-donald.desktop"
+    mode: "0644"
+
+- name: Install Mickey and Donald desktop entry on the host
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _mdc_host_launcher
+  changed_when: "'installed ' in _mdc_host_launcher.stdout or 'removed stale ' in _mdc_host_launcher.stdout"

@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+set -eu
+if [ ! -f "{{ dg_rsc2_install_dir }}/game/default.xbe" ]; then
+  printf '%s\n' 'RalliSport Challenge 2 game files are missing.' >&2
+  exit 1
+fi
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+cd "{{ dg_rsc2_install_dir }}"
+exec ./rsc2 "$@"

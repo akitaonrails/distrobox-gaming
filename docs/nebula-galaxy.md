@@ -7,3 +7,9 @@ The local image under `dg_emudeck_root/roms_heavy/wii/` is an NKit-compressed IS
 From `ansible/`, run `ansible-playbook install-nebula.yml` or `ansible-playbook site.yml --tags nebula`. Override `dg_nebula_game_image` or `dg_nebula_compile_jobs` in `host_vars/localhost.yml` if needed. The launcher appears as **Super Mario Galaxy · Nebula** and saves inside Nebula's dedicated Wine prefix. The role skips the expensive compilation when its pinned version is already installed.
 
 Nebula's [release requirements](https://github.com/keepvaibin/nebula/releases/tag/v1.0.0) are for Windows and Direct3D 12. On this host, the Wine launcher opens Nebula's settings but the game runtime currently stops during native NAND initialization with `ISFS result -102`. Proton did not get as far as the settings window. Nebula is installed for future compatibility testing but is **not playable here yet**. Dolphin remains the working route for Super Mario Galaxy.
+
+Rechecked 2026-10-22: `current.json` reports v1.0.0, all three compiled
+RMGE01 DLLs, `Nebula.exe`, `game.pak`, and the launcher are present. The
+focused Ansible playbook completed with `changed=0`; its download and compile
+steps were skipped. This confirms the install inventory, not a new gameplay
+test.

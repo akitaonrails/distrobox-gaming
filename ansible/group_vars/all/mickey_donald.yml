@@ -1,0 +1,29 @@
+---
+# Mickey & Donald Collection Windows PC port via the gaming box's Wine.
+dg_mdc_repo: Darhkfox/MickeyAndDonaldCollection
+dg_mdc_version: 1.1
+dg_mdc_archive_name: "Mickey-and-Donald-Collection-v{{ dg_mdc_version }}-win64.zip"
+dg_mdc_archive_url: "https://github.com/{{ dg_mdc_repo }}/releases/download/v{{ dg_mdc_version }}/{{ dg_mdc_archive_name }}"
+dg_mdc_archive_sha256: 5b9e425af6bab28fa57ad6bce341076266a4d074310e399b5ef2ea3d1c8f06a6
+dg_mdc_cache_dir: "{{ dg_box_home }}/cache/mickey_donald"
+dg_mdc_install_root: "{{ dg_box_home }}/Games/mickey-donald"
+dg_mdc_game_dir: "{{ dg_mdc_install_root }}/Mickey and Donald Collection"
+dg_mdc_prefix: "{{ dg_box_home }}/wineprefixes/mickey-donald"
+dg_mdc_launcher: "{{ dg_box_home }}/bin/mickey-donald-collection"
+dg_mdc_roms:
+  - src: "{{ dg_rom_root }}/genesis/Castle of Illusion Starring Mickey Mouse (USA, Europe).md"
+    sha256: 2d535ff7eda650a64a9093ba6fabf8d5ac87801b898a76b591db41a1c8e47c4f
+    dest: "Mickey Mouse - Castle of Illusion (U) [!].md"
+  - src: "{{ dg_roms_final_root }}/genesis/Quack Shot Starring Donald Duck.gen"
+    sha256: c3847fb9bfe5af8c57f6290d86ce3e596f7d59d7251da462e770257cf49d3776
+    dest: "Quack Shot Starring Donald Duck (JUE) (REV 00) [!].gen"
+  - src: "{{ dg_rom_root }}/genesis/World of Illusion Starring Mickey Mouse and Donald Duck (USA, Korea) (En).md"
+    sha256: 51e48f9ff8d94ddc9aa6f6d744b3227dc7c4d640ba827e8bfe240d1a31b8b498
+    dest: "World of Illusion Starring Mickey Mouse and Donald Duck (U) [!].md"
+dg_mdc_winebus_registry:
+  - { name: DisableHidraw, value: 1 }
+  - { name: DisableInput, value: 1 }
+  - { name: "Enable SDL", value: 1 }
+  - { name: "Map Controllers", value: 1 }
+dg_mdc_widescreen: 2  # 16:9 for the 4K display; all three games support it.
+dg_mdc_vsync: true

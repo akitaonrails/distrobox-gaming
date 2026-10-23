@@ -1,0 +1,7 @@
+---
+- name: Install Mickey and Donald Collection
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_mickey_donald

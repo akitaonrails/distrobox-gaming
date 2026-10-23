@@ -1,0 +1,11 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=RalliSport Challenge 2 · Recompiled
+Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_rsc2_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Native Xbox recompilation using the owned game disc.
+Categories=Game;
+Keywords=rallisport;challenge;rally;xbox;recomp;
+{{ ogm_metadata('gaming-rsc2') }}

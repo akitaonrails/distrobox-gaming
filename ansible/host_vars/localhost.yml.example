@@ -11,6 +11,8 @@
 # dg_external_games_root: /media/games
 # dg_emudeck_root: "{{ dg_external_games_root }}/EmuDeck"
 # dg_roms_final_root: "{{ dg_external_games_root }}/ROMS_FINAL"
+# 007: The World Is Not Enough (USA) revision 0, byte-swapped N64 dump.
+# dg_twine_rom_source: "{{ dg_roms_final_root }}/n64/007 - The World Is Not Enough (USA).n64"
 # dg_external_usb_games_root: /run/media/me/STEAM
 #
 # OpenSC2K optional installer: an Inno Setup RAR for SimCity 2000 Special
@@ -173,6 +175,14 @@
 # dg_rygt_game_dir: "{{ dg_ps4_rom_root }}/CUSA03220"  # decrypted GT Sport base + 1.69 backport
 # dg_rygt_font2_source: "{{ dg_box_home }}/.local/share/shadPS4/sys_fonts/font2"
 # dg_rygt_release_dir: "{{ dg_rom_rare_root }}/ps4-ports/rygt/releases/{{ dg_rygt_release_tag }}"
+# dg_rsc2_iso: "{{ dg_rom_heavy_root }}/xbox/RalliSport Challenge 2 (World) (En,Ja,Fr,De,Es,It).iso"
+# dg_rsc2_game_dir: "{{ dg_roms_final_root }}/xbox/RalliSport Challenge 2 (World) (extracted)"
+# dg_rsc2_scale: 6
+# dg_rsc2_fps_limit: 120
+# dg_mdc_roms:  # three exact Genesis dumps; defaults mix dg_rom_root and dg_roms_final_root
+#   - { src: "/path/to/Castle of Illusion USA.md", sha256: "...", dest: "Castle.md" }
+# dg_mdc_widescreen: 2  # 16:9; 4 selects 21:9 for the games that support it
+# dg_mdc_vsync: true
 # dg_azimuth_game_dir: "/path/to/Anthem_1.0.0.64_x64__8wekyb3d8bbwe"
 # dg_azimuth_proton: "/path/to/GE-Proton/proton"
 # dg_nebula_game_image: "/path/to/Super Mario Galaxy (USA) (En,Fr,Es).iso"  # RMGE01 revision 0; NKit accepted

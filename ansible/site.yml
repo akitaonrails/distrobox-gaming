@@ -28,6 +28,9 @@
     - { role: install_opencmr2,          tags: [opencmr2, never] }
     - { role: install_gow3_pc,           tags: [gow3_pc, never] }
     - { role: install_rygt,              tags: [rygt, never] }
+    - { role: install_rsc2,              tags: [rsc2, never] }
+    - { role: install_mickey_donald,     tags: [mickey_donald, never] }
+    - { role: install_twine,             tags: [twine, never] }
     - { role: install_azimuth,           tags: [azimuth, never] }
     - { role: install_nebula,            tags: [nebula, never] }
     - { role: install_dekui,             tags: [dekui, never] }

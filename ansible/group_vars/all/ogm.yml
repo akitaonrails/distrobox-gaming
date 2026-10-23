@@ -267,6 +267,21 @@ dg_ogm_games:
     category: port
     sgdb_query: "Gran Turismo Sport"
     github: "{{ dg_rygt_repo }}"
+  - desktop_id: gaming-rsc2
+    id: rsc2
+    category: recomp
+    sgdb_query: "RalliSport Challenge 2"
+    github: "{{ dg_rsc2_repo }}"
+  - desktop_id: gaming-twine-007
+    id: twine-007
+    category: recomp
+    sgdb_query: "007: The World Is Not Enough"
+    github: "{{ dg_twine_repo }}"
+  - desktop_id: gaming-mickey-donald
+    id: mickey-donald
+    category: port
+    sgdb_query: "Castle of Illusion Starring Mickey Mouse"
+    github: "{{ dg_mdc_repo }}"
   - desktop_id: gaming-azimuth-fh2
     id: azimuth-fh2
     category: port

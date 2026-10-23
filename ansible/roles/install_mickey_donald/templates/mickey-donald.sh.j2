@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+set -eu
+if [ ! -f "{{ dg_mdc_game_dir }}/DisneyClassics.exe" ]; then
+  printf '%s\n' 'Mickey and Donald Collection is missing.' >&2
+  exit 1
+fi
+export WINEPREFIX="{{ dg_mdc_prefix }}"
+export WINEDEBUG=-all
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+cd "{{ dg_mdc_game_dir }}"
+exec wine DisneyClassics.exe "$@"

@@ -1,0 +1,19 @@
+---
+# I Could Have Given You The World (007: The World Is Not Enough recompilation).
+dg_twine_repo: riseio/TWIPE_00Sheven
+dg_twine_release_tag: ICHGYTW_0.1.96
+dg_twine_asset_name: ICHGYTW-SteamDeck-x86_64.AppImage
+dg_twine_asset_url: "https://github.com/{{ dg_twine_repo }}/releases/download/{{ dg_twine_release_tag }}/{{ dg_twine_asset_name }}"
+dg_twine_asset_sha256: 6e4c3f12baa3cfe817bc13cb7cec39649925859b4d68f5b2fc17038f93786cef
+dg_twine_rom_source: "{{ dg_rom_mid_root }}/n64/007 - The World Is Not Enough (USA).n64"
+dg_twine_rom_source_sha256: 87942bce2b6aff1c7091673282bbdaa7cc3d5ead6e7f1e5f3ce507fa779aabeb
+dg_twine_rom_z64_sha256: 72e3e7b4ff1615bc17336d3d10e18aa9342898db063ace68922a47f5e46c48b1
+dg_twine_cache_dir: "{{ dg_box_home }}/cache/twine"
+dg_twine_install_dir: "{{ dg_box_home }}/Games/twine"
+dg_twine_appimage: "{{ dg_twine_install_dir }}/{{ dg_twine_asset_name }}"
+dg_twine_rom_z64: "{{ dg_twine_install_dir }}/007 - The World Is Not Enough (USA).z64"
+dg_twine_launcher: "{{ dg_box_home }}/bin/twine-007"
+dg_twine_graphics: "{{ dg_twine_install_dir }}/data/graphics.json"
+dg_twine_window_mode: Fullscreen
+dg_twine_msaa: MSAA4X
+dg_twine_refresh_mode: Display

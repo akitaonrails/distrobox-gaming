@@ -17,6 +17,8 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | 2 Ship 2 Harkinian | Majora's Mask PC port | [HarbourMasters/2ship2harkinian](https://github.com/HarbourMasters/2ship2harkinian) · [doc](2ship2harkinian.md) |
 | DekUI | Single-screen Majora's Mask 3D via a custom Azahar build | [tgacquin/mm3d-dekui](https://github.com/tgacquin/mm3d-dekui) · [doc](dekui-mm3d.md) |
 | Nebula | Super Mario Galaxy Wii recompilation (Windows-only runtime; Linux blocked at NAND preflight) | [keepvaibin/nebula](https://github.com/keepvaibin/nebula) · [doc](nebula-galaxy.md) |
+| RalliSport Challenge 2 Recompiled | Original Xbox native Linux recompilation | [Mortify7612/RallisportChallenge2-decomp](https://github.com/Mortify7612/RallisportChallenge2-decomp) · [doc](rsc2.md) |
+| I Could Have Given You The World | 007: The World Is Not Enough N64 native Linux recompilation | [riseio/TWIPE_00Sheven](https://github.com/riseio/TWIPE_00Sheven) · [doc](twine-007.md) |
 | Fukami | Ridge Racer V static recompilation | [danisandoval/fukami](https://github.com/danisandoval/fukami) · [doc](fukami-rrv.md) |
 | Project Midas | GoldenEye 007 native PC port from the N64 decompilation (replaced the cblock85 recomp 2026-10-18) | [murkantor/Project-Midas](https://github.com/murkantor/Project-Midas) · [doc](project-midas.md) |
 | FM4 Recompiled | Forza Motorsport 4 (Xbox 360) static recompilation via ReXGlue | [Alexbeav/fm4-recomp](https://github.com/Alexbeav/fm4-recomp) · [doc](fm4-recomp.md) |
@@ -56,6 +58,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | Sonic 3 A.I.R. | Sonic 3 & Knuckles remaster | [Eukaryot/sonic3air](https://github.com/Eukaryot/sonic3air) · [doc](sonic-fan-pack.md) |
 | Sonic 2 (2013) | RSDKv4 decomp + Sonic 2 Mania | [RSDKModding/RSDKv4-Decompilation](https://github.com/RSDKModding/RSDKv4-Decompilation) · [doc](sonic2-2013.md) |
 | Sonic SMS Remake | Master System Sonic remake (Wine) | [The Creative Araya](https://sonic-sms-remake.blogspot.com/) · [doc](sonic-fan-pack.md) |
+| Mickey & Donald Collection | Castle of Illusion, QuackShot and World of Illusion Windows port | [Darhkfox/MickeyAndDonaldCollection](https://github.com/Darhkfox/MickeyAndDonaldCollection) · [doc](mickey-donald-collection.md) |
 | Sonic and the Fallen Star | Classic-Sonic fan game, Clickteam Fusion (Wine) | [Stardrop](https://stardropsmh.github.io/sonic-and-the-fallen-star/) · [doc](sonic-fan-pack.md) |
 | Sonic Classic (Rev 03.5) | Classic-Sonic fan game, Clickteam MMF2 (Wine) | fan game (no official page) · [doc](sonic-fan-pack.md) |
 | Project Reignition | Secret Rings fan remake (Godot) | [GameJolt](https://gamejolt.com/games/project_reignition/1082591) · [doc](project-reignition.md) |

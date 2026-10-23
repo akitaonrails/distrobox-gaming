@@ -21,6 +21,10 @@ the upstream release is deleted.
 | Render96ex source + DynOS model pack + HD textures | github.com/Render96/* (git ref + release) | `install_render96ex` / `dg_render96ex_*` |
 | Ship of Harkinian + OoT Reloaded HD | github.com/HarbourMasters/Shipwright, GhostlyDark/OoT-Reloaded-SoH | `install_ship_of_harkinian` |
 | 2Ship2Harkinian + MM Reloaded HD | HarbourMasters/2ship2harkinian, GhostlyDark/MM-Reloaded-2S2H | `install_2ship2harkinian` |
+| Nebula setup + NKit CLI (Super Mario Galaxy recompilation) | github.com/keepvaibin/nebula v1.0.0 and github.com/Nanook/NKit v3.1.0; both SHA256-pinned. Needs the owned RMGE01 revision 0 Wii image. See [Nebula notes](nebula-galaxy.md). | `install_nebula` / `dg_nebula_*` |
+| RalliSport Challenge 2 native Linux recompilation | [Mortify7612/RallisportChallenge2-decomp](https://github.com/Mortify7612/RallisportChallenge2-decomp) v0.7.0, SHA256-pinned. Extracts the owned Xbox ISO with the box's `extract-xiso`; see [RSC2 notes](rsc2.md). | `install_rsc2` / `dg_rsc2_*` |
+| Mickey & Donald Collection Windows port | [Darhkfox/MickeyAndDonaldCollection](https://github.com/Darhkfox/MickeyAndDonaldCollection) v1.1 win64 ZIP, SHA256-pinned. Links three hash-verified Genesis ROMs; see [collection notes](mickey-donald-collection.md). | `install_mickey_donald` / `dg_mdc_*` |
+| I Could Have Given You The World Linux recompilation | [riseio/TWIPE_00Sheven](https://github.com/riseio/TWIPE_00Sheven) ICHGYTW_0.1.96 AppImage, SHA256-pinned. Normalizes the owned USA revision 0 ROM; see [007 notes](twine-007.md). | `install_twine` / `dg_twine_*` |
 | SpaghettiKart + MK64 Reloaded HD | HarbourMasters/SpaghettiKart, GhostlyDark/MK64-Reloaded | `install_spaghettikart` |
 | Star Fox 64 Recompiled | sonicdcer/Starfox64Recomp releases (native Linux) | `install_starfox64_recomp` |
 | MGSM2Fix, MGSHDFix, MGS2/MGS3 Bugfix Compilations | github.com/nuggslet + ShizCalev releases | `metal_gear_master_collection` |

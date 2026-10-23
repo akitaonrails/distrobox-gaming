@@ -1,0 +1,7 @@
+---
+- name: Install 007 The World Is Not Enough recompilation
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_twine

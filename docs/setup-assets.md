@@ -158,6 +158,32 @@ Xenia Manager auto-indexes `xbox360/`. See `docs/project-forza.md` for
 the PFP install flow — downloads are from the PFP author's Google
 Drive links (listed at the end of that doc).
 
+## Xbox (original) game assets
+
+RalliSport Challenge 2 Recompiled uses the owned Xbox ISO at `dg_rsc2_iso`
+(`dg_rom_heavy_root/xbox/` by default). The optional `install_rsc2` role
+extracts the game files into `dg_rsc2_game_dir` under `dg_roms_final_root/xbox/`
+and checks the NTSC `default.xbe` hash before linking that directory into its
+native Linux release. See [RSC2 setup](rsc2.md).
+
+## Genesis game assets
+
+Mickey & Donald Collection needs three Genesis ROMs with the exact Castle of
+Illusion, QuackShot Rev 0, and World of Illusion checksums in
+`dg_mdc_roms`. The defaults source two from `dg_rom_root/genesis/` and QuackShot
+from `dg_roms_final_root/genesis/`; the EmuDeck QuackShot Rev 1 dump is not
+compatible. The role links the ROMs and leaves the originals untouched. See
+[collection setup](mickey-donald-collection.md).
+
+## N64 007 game asset
+
+I Could Have Given You The World requires the USA revision 0 dump of
+`007 - The World Is Not Enough`. The tested byte-swapped source is
+`dg_twine_rom_source` under `dg_rom_mid_root/n64/`. `install_twine` verifies
+its SHA-256, writes a normalized big-endian copy beside the installed
+AppImage, and verifies that copy against upstream's exact required SHA-256.
+The original dump stays untouched. See [007 setup](twine-007.md).
+
 ## Xbox (original) BIOS
 
 **Variables:** `dg_xemu_bootrom_source`, `dg_xemu_flashrom_source`,

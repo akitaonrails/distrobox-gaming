@@ -1,0 +1,11 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Mickey & Donald Collection
+Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_mdc_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Castle of Illusion, QuackShot and World of Illusion PC port.
+Categories=Game;
+Keywords=mickey;donald;disney;castle of illusion;quackshot;world of illusion;genesis;
+{{ ogm_metadata('gaming-mickey-donald') }}

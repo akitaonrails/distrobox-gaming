@@ -1,0 +1,107 @@
+---
+- name: Check the owned N64 ROM
+  ansible.builtin.stat:
+    path: "{{ dg_twine_rom_source }}"
+    checksum_algorithm: sha256
+  register: _twine_source
+
+- name: Require the tested USA revision 0 dump
+  ansible.builtin.assert:
+    that:
+      - _twine_source.stat.isreg | default(false)
+      - _twine_source.stat.checksum == dg_twine_rom_source_sha256
+    fail_msg: Set dg_twine_rom_source and its SHA-256 to the tested USA revision 0 byte-swapped ROM.
+
+- name: Create 007 install, cache and launcher directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_twine_install_dir }}"
+    - "{{ dg_twine_cache_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Check normalized ROM
+  ansible.builtin.stat:
+    path: "{{ dg_twine_rom_z64 }}"
+    checksum_algorithm: sha256
+  register: _twine_normalized
+
+- name: Convert the byte-swapped ROM without altering the source
+  ansible.builtin.command:
+    argv:
+      - python3
+      - -c
+      - |
+        import pathlib, sys
+        source, output = map(pathlib.Path, sys.argv[1:])
+        data = source.read_bytes()
+        if data[:4] != bytes.fromhex('37804012'):
+            raise SystemExit('Expected a byte-swapped N64 ROM')
+        normalized = bytearray(len(data))
+        normalized[::2] = data[1::2]
+        normalized[1::2] = data[::2]
+        output.write_bytes(normalized)
+      - "{{ dg_twine_rom_source }}"
+      - "{{ dg_twine_rom_z64 }}"
+  when: not _twine_normalized.stat.isreg | default(false)
+
+- name: Verify the normalized ROM against the port's exact required hash
+  ansible.builtin.stat:
+    path: "{{ dg_twine_rom_z64 }}"
+    checksum_algorithm: sha256
+  register: _twine_normalized_verified
+
+- name: Require a supported ROM before installing the runtime
+  ansible.builtin.assert:
+    that: _twine_normalized_verified.stat.checksum == dg_twine_rom_z64_sha256
+    fail_msg: The normalized ROM does not match the port's supported USA revision 0 dump.
+
+- name: Download the SHA-256 pinned native Linux release
+  ansible.builtin.get_url:
+    url: "{{ dg_twine_asset_url }}"
+    dest: "{{ dg_twine_cache_dir }}/{{ dg_twine_asset_name }}"
+    checksum: "sha256:{{ dg_twine_asset_sha256 }}"
+    mode: "0644"
+
+- name: Install the native AppImage
+  ansible.builtin.copy:
+    src: "{{ dg_twine_cache_dir }}/{{ dg_twine_asset_name }}"
+    dest: "{{ dg_twine_appimage }}"
+    remote_src: true
+    mode: "0755"
+
+- name: Create persistent 007 data directory
+  ansible.builtin.file:
+    path: "{{ dg_twine_install_dir }}/data"
+    state: directory
+    mode: "0755"
+
+- name: Seed 4K fullscreen and high-refresh graphics settings once
+  ansible.builtin.template:
+    src: graphics.json.j2
+    dest: "{{ dg_twine_graphics }}"
+    mode: "0644"
+    force: false
+
+- name: Install 007 launcher
+  ansible.builtin.template:
+    src: twine.sh.j2
+    dest: "{{ dg_twine_launcher }}"
+    mode: "0755"
+
+- name: Render 007 desktop entry
+  ansible.builtin.template:
+    src: gaming-twine-007.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-twine-007.desktop"
+    mode: "0644"
+
+- name: Install 007 desktop entry on the host
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _twine_host_launcher
+  changed_when: "'installed ' in _twine_host_launcher.stdout or 'removed stale ' in _twine_host_launcher.stdout"

@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+set -eu
+if [ ! -f "{{ dg_twine_rom_z64 }}" ]; then
+  printf '%s\n' '007: The World Is Not Enough ROM is missing.' >&2
+  exit 1
+fi
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+cd "{{ dg_twine_install_dir }}"
+exec "{{ dg_twine_appimage }}" "$@"

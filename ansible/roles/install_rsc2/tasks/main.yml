@@ -1,0 +1,132 @@
+---
+- name: Check the owned RalliSport Challenge 2 disc
+  ansible.builtin.stat:
+    path: "{{ dg_rsc2_iso }}"
+  register: _rsc2_iso
+
+- name: Require the owned Xbox disc image
+  ansible.builtin.assert:
+    that: _rsc2_iso.stat.isreg | default(false)
+    fail_msg: Set dg_rsc2_iso to the owned RalliSport Challenge 2 Xbox ISO.
+
+- name: Check for extracted game data
+  ansible.builtin.stat:
+    path: "{{ dg_rsc2_game_dir }}/default.xbe"
+  register: _rsc2_xbe
+
+- name: Extract the Xbox disc when game data is absent
+  when: not _rsc2_xbe.stat.isreg | default(false)
+  block:
+    - name: Create extracted game directory
+      ansible.builtin.file:
+        path: "{{ dg_rsc2_game_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Extract game files with the box's extract-xiso
+      ansible.builtin.command:
+        argv:
+          - distrobox
+          - enter
+          - "{{ dg_box_name }}"
+          - --
+          - extract-xiso
+          - -q
+          - -x
+          - -d
+          - "{{ dg_rsc2_game_dir }}"
+          - "{{ dg_rsc2_iso }}"
+
+- name: Check extracted game layout and exact Xbox executable
+  ansible.builtin.stat:
+    path: "{{ dg_rsc2_game_dir }}/{{ item }}"
+    checksum_algorithm: sha256
+  loop:
+    - default.xbe
+    - Layer0/Cars.fa
+    - Layer1/MenuDVD.fa
+    - Media/ArialUni.Ttf
+  register: _rsc2_game_files
+
+- name: Require the supported NTSC game data
+  ansible.builtin.assert:
+    that:
+      - _rsc2_game_files.results | selectattr('stat.isreg', 'defined') | selectattr('stat.isreg') | list | length == 4
+      - _rsc2_game_files.results[0].stat.checksum == dg_rsc2_xbe_sha256
+    fail_msg: The extracted data does not match the tested NTSC RalliSport Challenge 2 disc.
+
+- name: Create RalliSport install, cache, settings, and launcher directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_rsc2_cache_dir }}"
+    - "{{ dg_rsc2_install_dir }}"
+    - "{{ dg_rsc2_settings | dirname }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Download the SHA-256 pinned Linux release
+  ansible.builtin.get_url:
+    url: "{{ dg_rsc2_archive_url }}"
+    dest: "{{ dg_rsc2_cache_dir }}/{{ dg_rsc2_archive_name }}"
+    checksum: "sha256:{{ dg_rsc2_archive_sha256 }}"
+    mode: "0644"
+
+- name: Check installed RalliSport release marker
+  ansible.builtin.stat:
+    path: "{{ dg_rsc2_install_dir }}/.dg-installed-{{ dg_rsc2_version }}"
+  register: _rsc2_installed
+
+- name: Install the native release without changing game data or settings
+  ansible.builtin.command:
+    argv:
+      - bsdtar
+      - -xf
+      - "{{ dg_rsc2_cache_dir }}/{{ dg_rsc2_archive_name }}"
+      - --strip-components
+      - '1'
+      - -C
+      - "{{ dg_rsc2_install_dir }}"
+  when: not _rsc2_installed.stat.exists
+
+- name: Record the installed RalliSport version
+  ansible.builtin.file:
+    path: "{{ dg_rsc2_install_dir }}/.dg-installed-{{ dg_rsc2_version }}"
+    state: touch
+    mode: "0644"
+  when: not _rsc2_installed.stat.exists
+
+- name: Link extracted game data without copying it again
+  ansible.builtin.file:
+    src: "{{ dg_rsc2_game_dir }}"
+    dest: "{{ dg_rsc2_install_dir }}/game"
+    state: link
+
+- name: Seed high-resolution RalliSport settings once
+  ansible.builtin.template:
+    src: settings.ini.j2
+    dest: "{{ dg_rsc2_settings }}"
+    mode: "0644"
+    force: false
+
+- name: Install RalliSport launcher
+  ansible.builtin.template:
+    src: rsc2.sh.j2
+    dest: "{{ dg_rsc2_launcher }}"
+    mode: "0755"
+
+- name: Render RalliSport desktop entry
+  ansible.builtin.template:
+    src: gaming-rsc2.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-rsc2.desktop"
+    mode: "0644"
+
+- name: Install RalliSport desktop entry on the host
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _rsc2_host_launcher
+  changed_when: "'installed ' in _rsc2_host_launcher.stdout or 'removed stale ' in _rsc2_host_launcher.stdout"

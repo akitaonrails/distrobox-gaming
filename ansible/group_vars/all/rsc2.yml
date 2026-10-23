@@ -1,0 +1,19 @@
+---
+# RalliSport Challenge 2 native Xbox recompilation.
+dg_rsc2_repo: Mortify7612/RallisportChallenge2-decomp
+dg_rsc2_version: 0.7.0
+dg_rsc2_archive_name: "rsc2-v{{ dg_rsc2_version }}-linux-x86_64.tar.gz"
+dg_rsc2_archive_url: "https://github.com/{{ dg_rsc2_repo }}/releases/download/v{{ dg_rsc2_version }}/{{ dg_rsc2_archive_name }}"
+dg_rsc2_archive_sha256: a702c096c2fd73000e00c688270e0c13ec3e83f67d3ef0761f16d7f4d254980d
+dg_rsc2_iso: "{{ dg_rom_heavy_root }}/xbox/RalliSport Challenge 2 (World) (En,Ja,Fr,De,Es,It).iso"
+dg_rsc2_game_dir: "{{ dg_roms_final_root }}/xbox/RalliSport Challenge 2 (World) (extracted)"
+dg_rsc2_xbe_sha256: cb8b27aed4423fbfcd72876f05e40823cb7a333983996623e38bfa1407d9601e
+dg_rsc2_cache_dir: "{{ dg_box_home }}/cache/rsc2"
+dg_rsc2_install_dir: "{{ dg_box_home }}/Games/rsc2"
+dg_rsc2_settings: "{{ dg_box_home }}/.config/rsc2/settings.ini"
+dg_rsc2_launcher: "{{ dg_box_home }}/bin/rsc2"
+dg_rsc2_scale: 6
+dg_rsc2_fps_limit: 120
+dg_rsc2_msaa: 4
+dg_rsc2_anisotropic: 16
+dg_rsc2_ambient_occlusion: true
