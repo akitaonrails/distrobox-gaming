@@ -7,6 +7,8 @@ of CannonBall-SE, itself based on the original
 [djyt/cannonball](https://github.com/djyt/cannonball). Opt-in role; migrated from
 plain CannonBall to the DX fork 2026-09-05.
 
+Release sweep 2026-10-23: upstream tag `1.04` is newer than our pinned commit, but the required Linux landscape/fullscreen patch fails to apply to `renderbase.cpp` and `rendersurface.cpp` at that tag. The installed build stays pinned until that patch is ported and tested.
+
 - **Distribution:** **built from source** (native Linux, CMake + SDL2 +
   TinyXML2, **OpenGL ES2 / EGL**) — no Linux release binary. Pinned to
   `dg_cannonball_ref`; the build pulls Mesen2 (scalers) and miniz via CMake

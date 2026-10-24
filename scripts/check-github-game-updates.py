@@ -2,11 +2,14 @@
 """Report new GitHub releases for the PC games in the rendered OGM catalog."""
 
 import os
+import json
 import re
 import shutil
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from collections import Counter
+from http.client import HTTPException
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -23,34 +26,51 @@ GAME_CATEGORIES = {"port", "decomp", "recomp", "fangame", "wine", "arcade"}
 # Games built from a moving Git ref, or installed by a latest-release role, are
 # still queried and shown as REVIEW rather than silently assumed current.
 PIN_VARS = {
+    "gaming-azimuth-fh2-infinity": ("azimuth.yml", "dg_azimuth_infinity_version"),
     "gaming-2ship2harkinian": ("2ship2harkinian.yml", "dg_two_ship2harkinian_version"),
     "gaming-banjotooie-recomp": ("banjotooie_recomp.yml", "dg_btooie_release_tag"),
     "gaming-beetle-recomp": ("beetle_recomp.yml", "dg_bar_version"),
     "gaming-cbfd-recomp": ("cbfd_recomp.yml", "dg_cbfd_version"),
+    "gaming-dekui-mm3d": ("dekui.yml", "dg_dekui_version"),
     "gaming-dk64-recomp": ("dk64_recomp.yml", "dg_dk64_version"),
     "gaming-dkr-r": ("dkr_recomp.yml", "dg_dkr_release_tag"),
+    "gaming-dude": ("dude.yml", "dg_dude_version"),
+    "gaming-driveclub-recomp": ("driveclub_recomp.yml", "dg_dcr_version"),
     "gaming-doom2-ray-traced": ("prboom_rt.yml", "dg_prboom_rt_version"),
     "gaming-ffvii-7th-heaven": ("7th_heaven.yml", "dg_7th_heaven_version"),
+    "gaming-fukami-rrv": ("fukami.yml", "dg_fukami_version"),
     "gaming-fzero": ("fzero_recomp.yml", "dg_fzero_release_tag"),
     "gaming-gdiffuser": ("gdiffuser.yml", "dg_gdiffuser_version"),
+    "gaming-goldeneye": ("project_midas.yml", "dg_midas_version"),
+    "gaming-gow3-pc": ("gow3_pc.yml", "dg_gow3_pc_release_tag"),
+    "gaming-gt4-recomp": ("gt4_recomp.yml", "dg_gt4r_version"),
     "gaming-lighthouse": ("lighthouse.yml", "dg_lighthouse_version"),
     "gaming-midnightclubla": ("midnightclub_la.yml", "dg_mcla_release_tag"),
+    "gaming-mickey-donald": ("mickey_donald.yml", "dg_mdc_version"),
     "gaming-mph-recomp": ("mph_recomp.yml", "dg_mph_version"),
+    "gaming-nebula-galaxy": ("nebula.yml", "dg_nebula_version"),
+    "gaming-opencmr2": ("opencmr2.yml", "dg_opencmr2_version"),
     "gaming-opensc2k": ("opensc2k.yml", "dg_opensc2k_version"),
     "gaming-perfect-dark": ("perfect_dark.yml", "dg_pd_release_tag"),
     "gaming-pilotwings-recomp": ("pilotwings_recomp.yml", "dg_pw64_version"),
     "gaming-roadrash64": ("roadrash64_recomp.yml", "dg_rr64_release_tag"),
+    "gaming-rsc2": ("rsc2.yml", "dg_rsc2_version"),
+    "gaming-rygt-gt-sport": ("rygt.yml", "dg_rygt_release_tag"),
     "gaming-ship-of-harkinian": ("ship_of_harkinian.yml", "dg_ship_of_harkinian_version"),
+    "gaming-smas": ("smas_recomp.yml", "dg_smas_release_tag"),
     "gaming-smb-remastered": ("smb_remastered.yml", "dg_smb_remastered_version"),
     "gaming-smw-remastered": ("smw_remastered.yml", "dg_smw_remastered_version"),
     "gaming-sonic3air": ("sonic3air.yml", "dg_s3air_version"),
     "gaming-spaghettikart": ("spaghettikart.yml", "dg_spaghettikart_version"),
     "gaming-starfox-enhanced": ("starfox_enhanced.yml", "dg_sfe_version"),
+    "gaming-starfox64-recomp": ("starfox64_recomp.yml", "dg_sf64_version"),
     "gaming-starship": ("starship.yml", "dg_starship_version"),
     "gaming-triaevum": ("triaevum.yml", "dg_triaevum_version"),
+    "gaming-twine-007": ("twine.yml", "dg_twine_release_tag"),
     "gaming-waverace-recomp": ("waverace_recomp.yml", "dg_wr64_release_tag"),
     "gaming-wipeout-pe": ("wipeout_pe.yml", "dg_wipeout_pe_version"),
     "gaming-wwhd-recomp": ("wwhd_recomp.yml", "dg_wwhd_release_tag"),
+    "gaming-vf1": ("vf1_recomp.yml", "dg_vf1_release_tag"),
     "ridge-racer": ("ridge_racer.yml", "dg_ridge_racer_version"),
     "sega-rally-hd": ("sega_rally.yml", "dg_sega_rally_version"),
     "virtua-fighter": ("model1.yml", "dg_model1_vf_version"),
@@ -62,6 +82,7 @@ TAG_PREFIXES = {
     "gaming-dkr-r": "Version",
     "gaming-midnightclubla": "midnightclubla-",
 }
+PRERELEASE_CHANNELS = {"gaming-rygt-gt-sport"}
 
 
 def catalog_games():
@@ -119,14 +140,29 @@ def github_token():
 
 
 def latest_release(repo, stem, pin, token):
-    url = f"https://api.github.com/repos/{repo}/releases?per_page=100"
-    headers = {"Accept": "application/vnd.github+json", "User-Agent": "distrobox-gaming-game-sweep"}
-    if token:
-        headers["Authorization"] = f"Bearer {token}"
-    with urlopen(Request(url, headers=headers), timeout=25) as response:
-        import json
-
-        releases = json.load(response)
+    releases = None
+    if shutil.which("gh"):
+        env = os.environ.copy()
+        env["MISE_QUIET"] = "1"
+        result = subprocess.run(
+            ["gh", "api", f"repos/{repo}/releases?per_page=100"],
+            capture_output=True, text=True, timeout=30, env=env,
+        )
+        if result.returncode == 0:
+            # Mise shims may prepend setup text; the API payload starts at '['.
+            payload_start = result.stdout.find("[")
+            if payload_start >= 0:
+                try:
+                    releases = json.loads(result.stdout[payload_start:])
+                except json.JSONDecodeError:
+                    pass
+    if releases is None:
+        url = f"https://api.github.com/repos/{repo}/releases?per_page=100"
+        headers = {"Accept": "application/vnd.github+json", "User-Agent": "distrobox-gaming-game-sweep"}
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+        with urlopen(Request(url, headers=headers), timeout=25) as response:
+            releases = json.load(response)
     if not isinstance(releases, list):
         raise ValueError(f"Unexpected GitHub response for {repo}")
     prefix = TAG_PREFIXES.get(stem, "")
@@ -137,6 +173,9 @@ def latest_release(repo, stem, pin, token):
     # stable pin. Keep it visible through GitHub, but compare like with like.
     if pin and not any(word in pin.lower() for word in ("nightly", "devel", "test")):
         matching = [r for r in matching if not any(word in r["tag_name"].lower() for word in ("nightly", "devel", "test"))]
+    # A stable installation should not silently switch to an alpha/RC build.
+    if pin and stem not in PRERELEASE_CHANNELS and not re.search(r"(?:alpha|beta|rc\d|pre(?:view|release))", pin, re.I):
+        matching = [r for r in matching if not r.get("prerelease")]
     return max(matching, key=lambda r: r.get("published_at") or "", default=None)
 
 
@@ -150,12 +189,13 @@ def main():
         print("No GitHub-backed PC games found in rendered desktop entries.", file=sys.stderr)
         return 2
     counts = Counter()
-    var_cache = {}
     token = github_token()
     print(f"GitHub PC game releases ({len(games)} catalog entries):")
-    for stem, repo in games:
+
+    def check_game(game):
+        stem, repo = game
         try:
-            pin = pinned_tag(stem, var_cache)
+            pin = pinned_tag(stem, {})
             release = latest_release(repo, stem, pin, token)
             if release is None:
                 status, detail = "NO_RELEASE", repo
@@ -168,13 +208,17 @@ def main():
                 else:
                     status, detail = "CANDIDATE", f"{pin} -> {tag}"
                 detail += f"  {release.get('html_url') or 'https://github.com/' + repo + '/releases'}"
-        except (HTTPError, URLError, TimeoutError, ValueError, KeyError) as exc:
+        except (HTTPError, URLError, HTTPException, OSError, TimeoutError, ValueError, KeyError) as exc:
             # Never format raw exceptions: urllib can include Authorization
             # header values in a malformed-header error.
             reason = f"HTTP {exc.code}" if isinstance(exc, HTTPError) else type(exc).__name__
             status, detail = "ERROR", f"{repo}: {reason}"
-        counts[status] += 1
-        print(f"  {status:10} {stem:30} {detail}", flush=True)
+        return stem, status, detail
+
+    with ThreadPoolExecutor(max_workers=5) as pool:
+        for stem, status, detail in pool.map(check_game, games):
+            counts[status] += 1
+            print(f"  {status:10} {stem:30} {detail}", flush=True)
     print("  " + ", ".join(f"{key.lower()}={counts[key]}" for key in ("CURRENT", "CANDIDATE", "REVIEW", "NO_RELEASE", "ERROR")))
     return 1 if counts["CANDIDATE"] or counts["REVIEW"] or counts["ERROR"] else 0
 

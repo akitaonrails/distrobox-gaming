@@ -9,6 +9,7 @@ dg_unleashed_recomp_force_reinstall: false
 dg_unleashed_recomp_root: "{{ dg_box_home }}/tools/unleashed-recomp"
 dg_unleashed_recomp_cache_dir: "{{ dg_unleashed_recomp_root }}/downloads"
 dg_unleashed_recomp_releases_dir: "{{ dg_unleashed_recomp_root }}/releases"
+dg_unleashed_recomp_installed_ref: "{{ dg_unleashed_recomp_root }}/.dg-installed-release"
 dg_unleashed_recomp_sources_dir: "{{ dg_unleashed_recomp_root }}/sources"
 dg_unleashed_recomp_extracted_game_dir: "{{ dg_unleashed_recomp_sources_dir }}/game-files"
 dg_unleashed_recomp_extracted_title_update_dir: "{{ dg_unleashed_recomp_sources_dir }}/title-update-files"

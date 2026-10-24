@@ -1,5 +1,7 @@
 # Dusk — Twilight Princess reimplementation
 
+Release sweep 2026-10-23: the latest Linux AppImage is [v2.0.3](https://github.com/TwilitRealm/dusklight/releases/tag/v2.0.3), SHA256 `87ec251963c984ad2b3ac075281431d2221db2297dc19f2ab5daad92e969fc06`. The role keeps the owned Twilight Princess image and user files while refreshing the executable.
+
 [Dusk](https://github.com/TwilitRealm/dusklight) (formerly `dusk`) is an open-source
 reverse-engineered reimplementation of *The Legend of Zelda:
 Twilight Princess* (GameCube). Runs natively on Linux as a single

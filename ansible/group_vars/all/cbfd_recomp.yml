@@ -7,9 +7,9 @@
 # directly), so no Wine — we hash-pin the release tarball on the NAS and run
 # it natively on the RTX.
 
-dg_cbfd_version: "0.1.4"
+dg_cbfd_version: "0.1.6"
 dg_cbfd_tarball_url: "https://github.com/sciaschi/CBFD-Recompiled/releases/download/V{{ dg_cbfd_version }}/ConkerRecompiled-V{{ dg_cbfd_version }}-Linux.tar.gz"
-dg_cbfd_tarball_sha256: "ec1437a3cf3488c53891c36239c247c8aacb19568512a7b306a28a681c86e4e6"
+dg_cbfd_tarball_sha256: "4fc3b53bf422385c11eadea14415445ca5c72dd32795a22ce200c5713368a422"
 
 dg_cbfd_root: "{{ dg_roms_final_root }}/PC/cbfd-recomp"
 dg_cbfd_tarball: "{{ dg_cbfd_root }}/ConkerRecompiled-V{{ dg_cbfd_version }}-Linux.tar.gz"

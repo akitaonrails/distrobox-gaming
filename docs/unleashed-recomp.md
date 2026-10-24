@@ -1,5 +1,7 @@
 # Unleashed Recompiled
 
+Release sweep 2026-10-23: upstream's latest Flatpak is [v1.0.3](https://github.com/hedge-dev/UnleashedRecomp/releases/tag/v1.0.3). The role now records the installed release tag and reinstalls the bundle when that tag changes, preserving Flatpak user data and the staged game files.
+
 Unleashed Recompiled is a native Linux Flatpak port of the Xbox 360 version of
 Sonic Unleashed. It is not a Wine/Xenia setup. The upstream app includes its
 own installer and validation flow, so Ansible installs the Flatpak and stages

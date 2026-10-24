@@ -1,5 +1,7 @@
 # God of War III Remastered PC port
 
+The Linux AppImage is pinned to [windows-v2.7.0](https://github.com/FelipePrado0/gow3_pc/releases/tag/windows-v2.7.0) (`spartanport-x86_64.AppImage`, SHA256-verified). Existing launcher settings and game files are preserved by the update.
+
 The optional `install_gow3_pc` role installs [FelipePrado0/gow3_pc](https://github.com/FelipePrado0/gow3_pc)'s experimental Linux AppImage alongside shadPS4. It uses the existing PS4 game folder directly and does not copy or alter the dump. The tested local dump is CUSA01623, app version 01.00; upstream lists 01.00 and 01.02 as tested. The upstream Linux instructions specifically mention 01.02, so verify gameplay on this machine before assuming the 01.00 build is fully supported.
 
 From `ansible/`, run `ansible-playbook install-gow3-pc.yml` or `ansible-playbook site.yml --tags gow3_pc`. Override `dg_gow3_pc_game_dir` in `host_vars/localhost.yml` when the game root differs; it must contain `eboot.bin`, `sce_module/` and `sce_sys/`. The launcher passes this path through `GOW3_GAME_DIR` for first-run setup. Select the same game folder in the graphical launcher if it already has a saved setting. The port writes saves, settings and shader cache under `~/.local/share/gow3` and launcher preferences under `~/.config/gow3-launcher` inside the box.

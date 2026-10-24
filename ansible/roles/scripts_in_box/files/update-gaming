@@ -6,10 +6,10 @@
 # core info files, controller profiles, cheats, databases, shaders, overlays.
 #
 # Run from INSIDE the container:
-#   distrobox enter gaming -- ~/bin/update-gaming
+#   distrobox enter gaming -- sh -lc '~/bin/update-gaming'
 #
 # Or from the host:
-#   distrobox enter gaming -- "$HOME/bin/update-gaming"
+#   distrobox enter gaming -- sh -lc '~/bin/update-gaming'
 #
 # Options:
 #   --dry-run     Show what would be updated without changing anything

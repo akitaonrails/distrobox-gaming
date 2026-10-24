@@ -18,7 +18,7 @@
   register: _ship_of_harkinian_pacman
   changed_when: "'installing' in _ship_of_harkinian_pacman.stdout or 'upgrading' in _ship_of_harkinian_pacman.stdout"
 
-- name: Download pinned Ship of Harkinian release ZIP
+- name: Download pinned Ship of Harkinian AppImage
   ansible.builtin.get_url:
     url: "{{ dg_ship_of_harkinian_asset_url }}"
     dest: "{{ dg_ship_of_harkinian_cache_dir }}/{{ dg_ship_of_harkinian_asset_name }}"
@@ -42,10 +42,8 @@
         exit 0
       fi
 
-      rm -rf "{{ dg_ship_of_harkinian_install_dir }}"
       mkdir -p "{{ dg_ship_of_harkinian_install_dir }}"
-      unzip -q "{{ dg_ship_of_harkinian_cache_dir }}/{{ dg_ship_of_harkinian_asset_name }}" -d "{{ dg_ship_of_harkinian_install_dir }}"
-      chmod 0755 "{{ dg_ship_of_harkinian_install_dir }}/soh.appimage"
+      install -m 0755 "{{ dg_ship_of_harkinian_cache_dir }}/{{ dg_ship_of_harkinian_asset_name }}" "{{ dg_ship_of_harkinian_install_dir }}/soh.appimage"
       printf "%s\n" "{{ dg_ship_of_harkinian_install_id }}" > "{{ dg_ship_of_harkinian_install_dir }}/.dg-installed-ref"
       printf "%s\n" "installed-ship-of-harkinian {{ dg_ship_of_harkinian_install_dir }}"
     '

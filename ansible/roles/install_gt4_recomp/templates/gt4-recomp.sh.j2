@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+set -eu
+session="{{ dg_gt4r_root }}/data/sessions/default"
+mkdir -p "$session"
+export WINEPREFIX="{{ dg_gt4r_prefix }}"
+export WINEDEBUG=-all
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+export GT4_INPUT=sdl
+export GT4_RENDERER=donor
+export GT4_FORCE_480P=1
+export GT4_FORCE_WIDESCREEN=1
+export GT4_FULLSCREEN=1
+export GT4_OUTPUT_SIZE="{{ dg_gt4r_output_size }}"
+export GT4_PRESENT_MODE=fifo
+export GT4_MONITOR='{{ dg_gt4r_monitor }}'
+cd "{{ dg_gt4r_release }}/game"
+exec wine ./gt4vulkan.exe "{{ dg_gt4r_elf }}" --ntsc --disc "{{ dg_gt4r_iso }}" --memcard "$session/card.ps2" --misses "$session/misses.txt" --window "$@"

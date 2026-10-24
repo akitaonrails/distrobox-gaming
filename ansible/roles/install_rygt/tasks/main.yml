@@ -47,6 +47,24 @@
       - "{{ dg_rygt_release_dir }}"
     creates: "{{ dg_rygt_release_dir }}/RyGT.exe"
 
+- name: Check the previous RyGT user directory
+  ansible.builtin.stat:
+    path: "{{ dg_rygt_previous_user_dir }}"
+  register: _rygt_previous_user
+
+- name: Bring existing saves and settings into the new release
+  ansible.builtin.command:
+    argv:
+      - rsync
+      - -a
+      - --ignore-existing
+      - --itemize-changes
+      - "{{ dg_rygt_previous_user_dir }}/"
+      - "{{ dg_rygt_release_dir }}/user/"
+  register: _rygt_user_sync
+  changed_when: _rygt_user_sync.stdout | length > 0
+  when: _rygt_previous_user.stat.isdir | default(false)
+
 - name: Stage owned PS4 fonts for RyGT converter
   ansible.builtin.copy:
     src: "{{ dg_rygt_font2_source }}/"
@@ -81,6 +99,10 @@
 - name: Convert GT Sport once in the dedicated Wine prefix
   ansible.builtin.command:
     argv:
+      - timeout
+      - --signal=TERM
+      - --kill-after=10s
+      - 120s
       - distrobox
       - enter
       - "{{ dg_box_name }}"
@@ -93,6 +115,22 @@
       - --setup
     chdir: "{{ dg_rygt_release_dir }}"
     creates: "{{ dg_rygt_release_dir }}/GTSport.exe"
+  register: _rygt_setup
+  # Newer prereleases keep the launcher open after writing the converted game.
+  failed_when: _rygt_setup.rc not in [0, 124]
+
+- name: Verify the converted RyGT executable and linked game files
+  ansible.builtin.stat:
+    path: "{{ dg_rygt_release_dir }}/{{ item }}"
+  loop:
+    - GTSport.exe
+    - app0/gt00.vol
+    - app0/gt.idx
+  register: _rygt_converted_files
+
+- name: Require complete RyGT setup output
+  ansible.builtin.assert:
+    that: _rygt_converted_files.results | selectattr('stat.isreg', 'defined') | selectattr('stat.isreg') | list | length == 3
 
 - name: Repair the converter's unsupported NAS junction and seed title metadata
   ansible.builtin.command:

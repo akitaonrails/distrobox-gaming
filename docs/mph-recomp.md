@@ -5,9 +5,11 @@ a native **recompilation** of the Nintendo DS *Metroid Prime Hunters* (built on
 `ndsrecomp`), running as a real executable instead of emulating the hardware.
 Opt-in role; installed 2026-08-14.
 
-- **Form:** prebuilt **Linux AppImage** (`v0.5.0-alpha`, ~55 MB) — no build, no
+- **Form:** prebuilt **Linux AppImage** (`v0.7.3-alpha`) — no build, no
   deps beyond `libfuse2` (already on the box). Renderer is **OpenGL 4.3
   compute**; input is **native SDL** (gamepad works out of the box).
+
+Release sweep 2026-10-23: `v0.7.8-alpha` has Windows and source archives but no Linux binary. The working Linux AppImage stays at `v0.7.3-alpha` pending a tested Linux build or Wine migration.
 - **Ships no game data.** It boots BIOS-less using the built-in **FreeBIOS +
   generated firmware**, so no DS BIOS/firmware dump is needed.
 

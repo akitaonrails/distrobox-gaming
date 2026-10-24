@@ -6,6 +6,8 @@
 # See docs/dude.md.
 
 dg_dude_repo: "https://github.com/Inkub0/dude.git"
+dg_dude_version: v0.9.6
+dg_dude_ref: 1948b4e2bef25b55621f0569b72fb3525ed7713a
 dg_dude_src: "{{ dg_box_home }}/tools/dude-src"
 dg_dude_build: "{{ dg_dude_src }}/build"
 dg_dude_vulkan: true                 # build the Vulkan 1.4 backend (RTX 5090)

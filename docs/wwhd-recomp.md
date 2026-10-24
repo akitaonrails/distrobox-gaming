@@ -27,7 +27,7 @@ dump is untouched).
 
 ## How it works
 
-- Downloads the pinned `WindWakerHD-v0.2.7-linux-x86_64.zip` (sha256 in
+- Downloads the pinned `WindWakerHD-v0.4.0-linux-x86_64.zip` (sha256 in
   `group_vars/all/wwhd_recomp.yml`) and flattens it into `tools/wwhd-recomp/`
   (so the binary + `tools/` + `portable.txt` sit beside the persistent `data/`;
   a version re-extract never wipes saves).

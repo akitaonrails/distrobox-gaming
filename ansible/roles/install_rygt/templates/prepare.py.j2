@@ -31,7 +31,7 @@ elif mode == "after":
     output = release / "app0/sce_sys"
     source = game / "sce_sys"
     if output.is_symlink():
-        if output.resolve() != source.resolve():
+        if output.resolve() not in {source.resolve(), (overlay / "sce_sys").resolve()}:
             raise SystemExit("refusing to replace unexpected sce_sys symlink")
         output.unlink()
         output.mkdir()

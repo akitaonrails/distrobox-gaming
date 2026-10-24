@@ -8,7 +8,7 @@
 # GoldenEye cart (content-checked: z64/v64/n64 byte orders accepted).
 # See docs/project-midas.md.
 
-dg_midas_repo: danisandoval/Project-Midas
+dg_midas_repo: murkantor/Project-Midas
 dg_midas_version: "1.0.1"
 dg_midas_asset_name: "ProjectMidas-v{{ dg_midas_version }}-linux.7z"
 dg_midas_asset_url: "https://github.com/{{ dg_midas_repo }}/releases/download/v{{ dg_midas_version }}/{{ dg_midas_asset_name }}"

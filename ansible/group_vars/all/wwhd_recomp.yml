@@ -21,13 +21,13 @@
 # DP-1/RTX (translate 78 files, compile 80 in ~31 s).
 
 dg_wwhd_repo: ZeldaWWHDRecomp/ZeldaWWHDRecomp
-dg_wwhd_release_tag: v0.2.7
-dg_wwhd_asset_name: "WindWakerHD-v0.2.7-linux-x86_64.zip"
+dg_wwhd_release_tag: v0.4.0
+dg_wwhd_asset_name: "WindWakerHD-v0.4.0-linux-x86_64.zip"
 dg_wwhd_asset_url: "https://github.com/{{ dg_wwhd_repo }}/releases/download/{{ dg_wwhd_release_tag }}/{{ dg_wwhd_asset_name }}"
-dg_wwhd_asset_sha256: "a94fd9bbab979d079f3450454699f6b5289c80ef61eca19504766044d5db9230"
+dg_wwhd_asset_sha256: "7d636b7e60f5adff6f9d0afb152d3d0a4c13ba92d7651c28f4bf8151c66592bc"
 # The zip wraps everything in this version-named dir; the role flattens it into
 # dg_wwhd_root so data/ sits beside the binary and survives a version re-extract.
-dg_wwhd_asset_subdir: "WindWakerHD-v0.2.7-linux-x86_64"
+dg_wwhd_asset_subdir: "WindWakerHD-v0.4.0-linux-x86_64"
 
 dg_wwhd_root: "{{ dg_box_home }}/tools/wwhd-recomp"
 dg_wwhd_cache_dir: "{{ dg_box_home }}/cache/wwhd-recomp"

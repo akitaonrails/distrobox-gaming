@@ -29,7 +29,7 @@ cd ansible
 ansible-playbook install-dk64-recomp.yml
 ```
 
-Pins release `1.0.2` (`DK64Recompiled-Linux-X64-Release-1-0-2.zip`, sha256-checked;
+Pins release `1.0.3` (`DK64Recompiled-Linux-X64-Release-1-0-3.zip`, sha256-checked;
 the zip wraps a `DK64Recompiled.tar.gz` → `DK64Recompiled` + `assets/` +
 `recompcontrollerdb.txt`) into `tools/dk64-recomp/`, seeds the ROM, seeds
 `graphics.json` to **Fullscreen + Vulkan** (first install only — in-game
@@ -45,5 +45,6 @@ the Hyprland Lua `eval` API. **8BitDo** works natively (SDL2 +
 
 ## Status
 
-**Working** 2026-09-02 — v1.0.2 launches straight into the game, fullscreen on
+**Working** 2026-09-02 — v1.0.2 launched straight into the game, fullscreen on
 DP-1 at 2560×1440, RT64 on `NVIDIA GeForce RTX 5090`.
+Updated to v1.0.3 on 2026-10-23; gameplay after the update still needs a check.

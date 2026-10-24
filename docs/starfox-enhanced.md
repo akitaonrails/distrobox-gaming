@@ -46,6 +46,6 @@ enhanced graphics and medium model smoothing. The existing render scale is
 already the maximum 4× supported by this installed release; its rumble setting
 is preserved.
 
-Updating: bump `dg_sfe_version` + `dg_sfe_asset_sha256` (from the release
+Updated to `v0.0.8.8.1` on 2026-10-23. Updating: bump `dg_sfe_version` + `dg_sfe_asset_sha256` (from the release
 `SHA256SUMS.txt`), stage the new zip on the NAS, re-run (extract is
 version-gated). Revert: `-e dg_sfe_revert=true`.

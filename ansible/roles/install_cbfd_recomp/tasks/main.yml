@@ -44,13 +44,14 @@
         checksum: "sha256:{{ dg_cbfd_tarball_sha256 }}"
         mode: "0644"
 
-    - name: Extract the build (once)
+    - name: Extract the pinned build when its version changes
       ansible.builtin.shell: |
         set -eu
         inst="{{ dg_cbfd_install_dir }}"
-        [ -f "$inst/{{ dg_cbfd_exe }}" ] && exit 0
+        [ -x "$inst/{{ dg_cbfd_exe }}" ] && grep -qx "{{ dg_cbfd_version }}" "$inst/.dg-installed-ref" 2>/dev/null && exit 0
         mkdir -p "$inst"
         tar -xzf "{{ dg_cbfd_tarball }}" -C "$inst" --strip-components=1
+        printf '%s\n' "{{ dg_cbfd_version }}" > "$inst/.dg-installed-ref"
         echo cbfd-extracted
       register: _cbfd_extract
       changed_when: "'cbfd-extracted' in _cbfd_extract.stdout"

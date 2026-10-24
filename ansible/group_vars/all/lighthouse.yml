@@ -6,10 +6,10 @@
 # Needs the user's own Banjo-Kazooie (USA) v1.0 ROM. See docs/lighthouse.md.
 
 dg_lighthouse_repo: HarbourMasters/Lighthouse
-dg_lighthouse_version: "1.1.0"
-dg_lighthouse_asset_name: Lighthouse-Hatteras-Alfa-Linux.zip
+dg_lighthouse_version: "1.2.0"
+dg_lighthouse_asset_name: lighthouse.appimage
 dg_lighthouse_asset_url: "https://github.com/{{ dg_lighthouse_repo }}/releases/download/{{ dg_lighthouse_version }}/{{ dg_lighthouse_asset_name }}"
-dg_lighthouse_asset_sha256: 0ed81123ab142e711854c95921c1e37b2e75dd4a3966fa0382f65da7c775986d
+dg_lighthouse_asset_sha256: 6998f1e0c645df64fcff9857fcaffdfdf96435d0d7550d5fbd8500974db190b4
 
 dg_lighthouse_root: "{{ dg_box_home }}/tools/lighthouse"
 dg_lighthouse_install_dir: "{{ dg_lighthouse_root }}/current"   # appimage + gamecontrollerdb + baserom + generated bk.o2r

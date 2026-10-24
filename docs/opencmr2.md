@@ -1,5 +1,7 @@
 # OpenCMR2
 
+The native Linux build is pinned to [v1.6.0](https://github.com/pablocpas/OpenCMR2/releases/tag/v1.6.0), which smooths scenery draw distance and fixes object blending. The archive is SHA256-verified and updates the executable without replacing user settings.
+
 Run `ansible-playbook install-opencmr2.yml` from `ansible/` to install the
 native Linux port alongside the existing Colin McRae Rally 2.0 Wine setup.
 The optional `site.yml --tags opencmr2` path does the same. The original Wine

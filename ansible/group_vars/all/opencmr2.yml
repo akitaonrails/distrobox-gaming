@@ -2,10 +2,10 @@
 # Native CMR2 port. Use the untouched US game data: the Wine install has a WRC
 # mod that replaces car geometry, which has not been verified with OpenCMR2.
 dg_opencmr2_repo: pablocpas/OpenCMR2
-dg_opencmr2_version: v1.1.2
+dg_opencmr2_version: v1.6.0
 dg_opencmr2_archive_name: OpenCMR2-Linux-x86_64.tar.gz
 dg_opencmr2_archive_url: "https://github.com/{{ dg_opencmr2_repo }}/releases/download/{{ dg_opencmr2_version }}/{{ dg_opencmr2_archive_name }}"
-dg_opencmr2_archive_sha256: 7a19bf10035b74cba1eed720f5a83d2a6e5e2d9081f6cb55d83ff173094b540c
+dg_opencmr2_archive_sha256: a96dd48151c7f03e84ec951b5f8fa0579650e862e164c769edfff146b3d20582
 dg_opencmr2_root: "{{ dg_box_home }}/tools/opencmr2"
 dg_opencmr2_cache_dir: "{{ dg_box_home }}/cache/opencmr2"
 dg_opencmr2_install_dir: "{{ dg_opencmr2_root }}/OpenCMR2-Linux-x86_64"

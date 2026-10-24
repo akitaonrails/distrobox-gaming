@@ -3,7 +3,10 @@
 [sciaschi/CBFD-Recompiled](https://github.com/sciaschi/CBFD-Recompiled) is an
 **N64Recomp + N64ModernRuntime + RT64 static recomp** PC port of Conker's Bad
 Fur Day (US), built from the [mkst/conker](https://github.com/mkst/conker)
-decompilation. Opt-in role; installed 2026-09-28 at `V0.1.4`.
+decompilation. Opt-in role; updated 2026-10-23 to `V0.1.6` (save states,
+achievements, graphics and crash fixes). The role now checks an installed
+version marker before extracting a newer build; config and saves stay in
+`dg_cbfd_config_dir`.
 
 ## Native Linux (like Pilotwings, unlike Wave Race)
 
@@ -46,8 +49,7 @@ nvidia and focuses DP-1. Settings, saves and loaded ROM versions live in
 `~/.config/ConkerRecompiled` inside the box.
 
 Verified 2026-09-28 on the box: RTX 5090 Vulkan device detected, 8BitDo
-controller picked up via SDL, ROM imported and the game booted. Known upstream
-Linux caveat at V0.1.4: upstream tested Linux only under WSL with software
-Vulkan, so real-driver quirks are possible (none seen in the smoke test).
+controller picked up via SDL, ROM imported and the game booted at V0.1.4.
+The V0.1.6 update still needs a hands-on game check.
 Default keyboard: WASD = stick, Space = A, Left Shift = B, Q = Z, E/R = L/R,
 Enter = Start, arrows = C buttons, IJKL = D-pad — remappable in Controls.

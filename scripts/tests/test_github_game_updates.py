@@ -24,7 +24,7 @@ class GithubGameUpdatesTests(unittest.TestCase):
     def test_templated_pin_resolves_from_group_vars(self):
         self.assertEqual(
             GAME_UPDATES.pinned_tag("gaming-banjotooie-recomp", {}),
-            "v0.1.0-alpha.3",
+            "v0.1.0-alpha.4.3",
         )
 
     def test_stable_pin_ignores_nightly_and_unrelated_release_streams(self):
@@ -33,7 +33,7 @@ class GithubGameUpdatesTests(unittest.TestCase):
             {"tag_name": "midnightclubla-nightly", "published_at": "2026-10-11T00:00:00Z"},
             {"tag_name": "midnightclubla-v2", "published_at": "2026-10-10T00:00:00Z"},
         ]
-        with patch.object(GAME_UPDATES, "urlopen", return_value=io.BytesIO(json.dumps(releases).encode())):
+        with patch.object(GAME_UPDATES.shutil, "which", return_value=None), patch.object(GAME_UPDATES, "urlopen", return_value=io.BytesIO(json.dumps(releases).encode())):
             release = GAME_UPDATES.latest_release(
                 "CrownParkComputing/Xbox360-Native-Ports",
                 "gaming-midnightclubla",
@@ -41,6 +41,15 @@ class GithubGameUpdatesTests(unittest.TestCase):
                 None,
             )
         self.assertEqual(release["tag_name"], "midnightclubla-v2")
+
+    def test_stable_pin_ignores_release_candidates(self):
+        releases = [
+            {"tag_name": "v1.3.0-rc3", "published_at": "2026-10-23T00:00:00Z", "prerelease": True},
+            {"tag_name": "v1.2.3", "published_at": "2026-10-22T00:00:00Z", "prerelease": False},
+        ]
+        with patch.object(GAME_UPDATES.shutil, "which", return_value=None), patch.object(GAME_UPDATES, "urlopen", return_value=io.BytesIO(json.dumps(releases).encode())):
+            release = GAME_UPDATES.latest_release("moesuito/gt4-staticrecomp", "gaming-gt4-recomp", "1.2.3", None)
+        self.assertEqual(release["tag_name"], "v1.2.3")
 
     def test_gh_shim_output_is_not_used_as_token(self):
         fake = subprocess.CompletedProcess(
@@ -50,6 +59,18 @@ class GithubGameUpdatesTests(unittest.TestCase):
             GAME_UPDATES.shutil, "which", return_value="/usr/bin/gh"
         ), patch.object(GAME_UPDATES.subprocess, "run", return_value=fake):
             self.assertEqual(GAME_UPDATES.github_token(), "gho_example123")
+
+    def test_gh_api_handles_mise_shim_preamble(self):
+        fake = subprocess.CompletedProcess(
+            ["gh", "api"], 0,
+            'mise setup text\n[{"tag_name":"v1.2.3","published_at":"2026-10-23T00:00:00Z"}]\n',
+            "",
+        )
+        with patch.object(GAME_UPDATES.shutil, "which", return_value="/usr/bin/gh"), patch.object(
+            GAME_UPDATES.subprocess, "run", return_value=fake
+        ):
+            release = GAME_UPDATES.latest_release("example/game", "gaming-gt4-recomp", "1.2.3", None)
+        self.assertEqual(release["tag_name"], "v1.2.3")
 
     def test_request_errors_do_not_print_authorization_headers(self):
         output = io.StringIO()

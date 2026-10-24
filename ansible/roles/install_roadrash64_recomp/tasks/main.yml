@@ -80,8 +80,9 @@
              grep -qx "{{ dg_rr64_release_tag }}" "{{ dg_rr64_root }}/.dg-installed-ref" 2>/dev/null; then
             exit 0
           fi
-          unzip -q -o "{{ dg_rr64_cache_dir }}/{{ dg_rr64_asset_name }}" -d "{{ dg_rr64_root }}"
-          chmod 0755 "{{ dg_rr64_appimage }}"
+          unzip -p "{{ dg_rr64_cache_dir }}/{{ dg_rr64_asset_name }}" "{{ dg_rr64_asset_subdir }}/RoadRash64Recompiled-x86_64.AppImage" > "{{ dg_rr64_appimage }}.new"
+          chmod 0755 "{{ dg_rr64_appimage }}.new"
+          mv -f "{{ dg_rr64_appimage }}.new" "{{ dg_rr64_appimage }}"
           printf "%s\n" "{{ dg_rr64_release_tag }}" > "{{ dg_rr64_root }}/.dg-installed-ref"
           echo rr64-extracted
         '

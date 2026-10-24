@@ -1,13 +1,15 @@
 ---
 # Gran Turismo Sport CUSA03220, RyGT Windows port through Wine.
 dg_rygt_repo: mlgprorektm8/RyGT
-dg_rygt_release_tag: gt-sport-2026-10-15
-dg_rygt_asset_name: GTSport-Ryty-shadGT-2026-10-15.zip
+dg_rygt_release_tag: gt-sport-2026-10-22
+dg_rygt_asset_name: GTSport-Ryty-shadGT-2026-10-22-prerelease.zip
 dg_rygt_asset_url: "https://github.com/{{ dg_rygt_repo }}/releases/download/{{ dg_rygt_release_tag }}/{{ dg_rygt_asset_name }}"
-dg_rygt_asset_sha256: 92cae53a1b92c805e6ad169e08aecdf40a9a74755f2ea217d560828b8b8b5bcf
+dg_rygt_asset_sha256: 299a3aa1dfbe48924c2b046427f40cc7fab15f5f36a270a083a6914ccffd57a5
 dg_rygt_cache_dir: "{{ dg_box_home }}/cache/rygt"
 dg_rygt_game_dir: "{{ dg_ps4_rom_root }}/CUSA03220"
 dg_rygt_release_dir: "{{ dg_rom_rare_root }}/ps4-ports/rygt/releases/{{ dg_rygt_release_tag }}"
+dg_rygt_previous_release_tag: gt-sport-2026-10-15
+dg_rygt_previous_user_dir: "{{ dg_rom_rare_root }}/ps4-ports/rygt/releases/{{ dg_rygt_previous_release_tag }}/user"
 dg_rygt_update_overlay: "{{ dg_rygt_release_dir }}/update-1.69-backport"
 dg_rygt_font_source: "{{ dg_rygt_release_dir }}/.dg-font-source"
 dg_rygt_font2_source: "{{ dg_box_home }}/.local/share/shadPS4/sys_fonts/font2"

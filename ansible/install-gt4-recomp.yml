@@ -1,0 +1,7 @@
+---
+- name: Install Gran Turismo 4 static recompilation
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_gt4_recomp

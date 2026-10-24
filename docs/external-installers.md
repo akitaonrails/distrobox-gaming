@@ -15,14 +15,30 @@ the upstream release is deleted.
 
 | What | Source | Role / var prefix |
 |---|---|---|
-| MateriaForge (7th Heaven installer) | github.com/dotaxis/MateriaForge-rs releases | `install_7th_heaven` / `dg_7th_heaven_release_*` |
+| OpenCMR2 v1.6.0 | [pablocpas/OpenCMR2](https://github.com/pablocpas/OpenCMR2/releases/tag/v1.6.0) Linux tarball, SHA256-pinned | `install_opencmr2` / `dg_opencmr2_*` |
+| RyGT GT Sport 2026-10-22 prerelease | [mlgprorektm8/RyGT](https://github.com/mlgprorektm8/RyGT/releases/tag/gt-sport-2026-10-22) Windows ZIP, SHA256-pinned | `install_rygt` / `dg_rygt_*` |
+| God of War III SpartanPort v2.7.0 | [FelipePrado0/gow3_pc](https://github.com/FelipePrado0/gow3_pc/releases/tag/windows-v2.7.0) Linux AppImage, SHA256-pinned | `install_gow3_pc` / `dg_gow3_pc_*` |
+| DekUI v1.0.0 | [tgacquin/mm3d-dekui](https://github.com/tgacquin/mm3d-dekui/releases/tag/v1.0.0) Linux tarball, SHA256-pinned | `install_dekui` / `dg_dekui_*` |
+| ForzaInfinity v0.4.5 | [anarqz/ForzaInfinity-POC](https://github.com/anarqz/ForzaInfinity-POC/releases/tag/v0.4.5) ZIP, SHA256-pinned on NAS | `install_azimuth` / `dg_azimuth_infinity_*` |
+| MateriaForge v0.5.0 (7th Heaven installer) | [dotaxis/MateriaForge-rs](https://github.com/dotaxis/MateriaForge-rs/releases/tag/0.5.0) ZIP, SHA256-pinned | `install_7th_heaven` / `dg_7th_heaven_release_*` |
+| DUDE v0.9.6 source | [Inkub0/dude](https://github.com/Inkub0/dude/releases/tag/v0.9.6) exact git commit; native build | `install_dude` / `dg_dude_*` |
+| DKR-R v1.0.8 | [ThatGuyMcd/DKR-R](https://github.com/ThatGuyMcd/DKR-R/releases/tag/Version1.0.8) Linux AppImage, SHA256-pinned | `install_dkr_recomp` / `dg_dkr_*` |
+| Road Rash 64 Recompiled v1.4.8 | [linkssy2/RoadRash64Recompiled](https://github.com/linkssy2/RoadRash64Recompiled/releases/tag/v1.4.8) experimental Linux ZIP, SHA256-pinned | `install_roadrash64_recomp` / `dg_rr64_*` |
+| Lighthouse v1.2.0 | [HarbourMasters/Lighthouse](https://github.com/HarbourMasters/Lighthouse/releases/tag/1.2.0) Linux AppImage, SHA256-pinned | `install_lighthouse` / `dg_lighthouse_*` |
+| Perfect Dark v3.15.1 | [DabDavis/perfect-dark-dabs-mod](https://github.com/DabDavis/perfect-dark-dabs-mod/releases/tag/v3.15.1) Linux tarball, SHA256-pinned | `install_perfect_dark` / `dg_pd_*` |
+| Star Fox Enhanced v0.0.8.8.1 | [kandowontu2/starfox-enhanced](https://github.com/kandowontu2/starfox-enhanced/releases/tag/v0.0.8.8.1) Linux ZIP, SHA256-pinned | `install_starfox_enhanced` / `dg_sfe_*` |
+| Wind Waker HD Recompiled v0.4.0 | [ZeldaWWHDRecomp release](https://github.com/ZeldaWWHDRecomp/ZeldaWWHDRecomp/releases/tag/v0.4.0) Linux ZIP, SHA256-pinned | `install_wwhd_recomp` / `dg_wwhd_*` |
 | HedgeModManager | github.com/hedge-dev/HedgeModManager releases | `install_hedgemodmanager` / `dg_hmm_*` |
 | Xidi (DirectInput→XInput wrapper) | github.com/samuelgr/Xidi releases | `install_pc_racing` / `dg_pc_racing_xidi_*` |
 | Render96ex source + DynOS model pack + HD textures | github.com/Render96/* (git ref + release) | `install_render96ex` / `dg_render96ex_*` |
-| Ship of Harkinian + OoT Reloaded HD | github.com/HarbourMasters/Shipwright, GhostlyDark/OoT-Reloaded-SoH | `install_ship_of_harkinian` |
+| Ship of Harkinian v9.3.1 AppImage + OoT Reloaded HD | [Shipwright release](https://github.com/HarbourMasters/Shipwright/releases/tag/9.3.1), GhostlyDark/OoT-Reloaded-SoH; SHA256-pinned | `install_ship_of_harkinian` |
 | 2Ship2Harkinian + MM Reloaded HD | HarbourMasters/2ship2harkinian, GhostlyDark/MM-Reloaded-2S2H | `install_2ship2harkinian` |
-| Nebula setup + NKit CLI (Super Mario Galaxy recompilation) | github.com/keepvaibin/nebula v1.0.0 and github.com/Nanook/NKit v3.1.0; both SHA256-pinned. Needs the owned RMGE01 revision 0 Wii image. See [Nebula notes](nebula-galaxy.md). | `install_nebula` / `dg_nebula_*` |
+| Nebula setup + NKit CLI (Super Mario Galaxy recompilation) | github.com/keepvaibin/nebula v1.0.1 and github.com/Nanook/NKit v3.1.0; both SHA256-pinned. Needs the owned RMGE01 revision 0 Wii image. See [Nebula notes](nebula-galaxy.md). | `install_nebula` / `dg_nebula_*` |
 | RalliSport Challenge 2 native Linux recompilation | [Mortify7612/RallisportChallenge2-decomp](https://github.com/Mortify7612/RallisportChallenge2-decomp) v0.7.0, SHA256-pinned. Extracts the owned Xbox ISO with the box's `extract-xiso`; see [RSC2 notes](rsc2.md). | `install_rsc2` / `dg_rsc2_*` |
+| GT4 static recompilation and GS renderer | [moesuito/gt4-staticrecomp](https://github.com/moesuito/gt4-staticrecomp/releases/tag/v1.2.3) v1.2.3 NSIS installer and [moesuito/gt4recomp-gs](https://github.com/moesuito/gt4recomp-gs/releases/tag/gt4gs-v1.2.1) v1.2.1 ZIP, both SHA256-pinned. The Rust disc helper uses an exact upstream git commit. See [GT4 notes](gt4-recomp.md). | `install_gt4_recomp` / `dg_gt4r_*` |
+| Conker's Bad Fur Day Recompiled v0.1.6 | [sciaschi/CBFD-Recompiled](https://github.com/sciaschi/CBFD-Recompiled/releases/tag/V0.1.6) Linux tarball, SHA256-pinned | `install_cbfd_recomp` / `dg_cbfd_*` |
+| Donkey Kong 64 Recompiled v1.0.3 | [Rainchus/Donkey-Kong-64-Recompiled](https://github.com/Rainchus/Donkey-Kong-64-Recompiled/releases/tag/v1.0.3) Linux x64 ZIP, SHA256-pinned | `install_dk64_recomp` / `dg_dk64_*` |
+| Banjo-Tooie Recompiled Alpha 4.3 | [some-scurvy-dog release](https://github.com/some-scurvy-dog/banjo-tooie-scurvy-dog-port/releases/tag/v0.1.0-alpha.4.3) Windows ZIP, SHA256-pinned | `install_banjotooie_recomp` / `dg_btooie_*` |
 | Mickey & Donald Collection Windows port | [Darhkfox/MickeyAndDonaldCollection](https://github.com/Darhkfox/MickeyAndDonaldCollection) v1.1 win64 ZIP, SHA256-pinned. Links three hash-verified Genesis ROMs; see [collection notes](mickey-donald-collection.md). | `install_mickey_donald` / `dg_mdc_*` |
 | I Could Have Given You The World Linux recompilation | [riseio/TWIPE_00Sheven](https://github.com/riseio/TWIPE_00Sheven) ICHGYTW_0.1.96 AppImage, SHA256-pinned. Normalizes the owned USA revision 0 ROM; see [007 notes](twine-007.md). | `install_twine` / `dg_twine_*` |
 | SpaghettiKart + MK64 Reloaded HD | HarbourMasters/SpaghettiKart, GhostlyDark/MK64-Reloaded | `install_spaghettikart` |
@@ -43,7 +59,7 @@ newer build. Acceptable for actively developed emulators.
 | What | Source | Role |
 |---|---|---|
 | shadPS4 + QtLauncher | GitHub API (`shadps4-emu/*` releases) | `refresh_shadps4` |
-| Dusk (Twilight Princess port) | GitHub API (`TwilitRealm/dusklight` latest) | `install_dusk` |
+| Dusk (Twilight Princess port) | [TwilitRealm/dusklight](https://github.com/TwilitRealm/dusklight/releases/tag/v2.0.3) v2.0.3 Linux AppImage as of 2026-10-23; role follows the latest release | `install_dusk` |
 | Xenia Manager (+ Xenia Canary via XM) | GitHub API (`xenia-manager` latest) | `install_xenia` |
 | Unleashed Recomp app | GitHub API (`hedge-dev/UnleashedRecomp` latest) | `install_unleashed_recomp` |
 | WipEout Phantom Edition (Windows x64 binary, run under Wine) | github.com/wipeout-phantom-edition release (pinned + sha256; AUTO). Needs a WipEout **USA** PSX rip — this box's `psx/WipEout (USA).chd`, converted to multi-bin. See `docs/wipeout-pe.md`. | `install_wipeout_pe` / `dg_wipeout_pe_*` |
@@ -79,6 +95,7 @@ with guidance if absent.
 | Cheat Engine Windows installer (`CheatEngine76.exe`, for Proton prefixes) | cheatengine.org/downloads.php | `dg_cheatengine_win_installer` |
 | libretro cheat DB (GT2 widescreen) | `git clone github.com/libretro/libretro-database` | `dg_libretro_cheats_dir` |
 | GT4 HD HUD/UI + Spec II + Enthusia packs | GTPlanet threads (links in [setup-assets.md](setup-assets.md)) | `dg_pcsx2_ps2_root` layout |
+| DriveClub Recomp v0.3.1 Windows ZIP (SHA256-pinned) | [OverkillLabs3 release](https://github.com/OverkillLabs3/driveclub-recomp/releases/tag/v0.3.1) | `dg_dcr_archive` under `dg_roms_final_root/PC/`; `install_driveclub_recomp` |
 | Dolphin/Azahar HD texture pack zips (8 packs) | per-pack community threads (see [hd-textures.md](hd-textures.md)) | `dg_hd_dolphin_archive_root`, `dg_hd_azahar_archive_root` |
 | Project Forza Plus (FM2/3/4 mods) | author's Google Drive (links in [project-forza.md](project-forza.md)) | `dg_rom_heavy_root/xbox360/` |
 | PS3 update PKGs | nopaystation / ps3.aldostools.org (helper: `install_dlcs/files/check_ps3_updates.py`) | `dg_ps3_dlc_source` |

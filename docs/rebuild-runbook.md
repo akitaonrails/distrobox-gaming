@@ -211,7 +211,7 @@ managed by their own roles, so update them explicitly:
 
 ```sh
 # 1. System + AUR + RetroArch cores/assets (inside the box)
-distrobox enter gaming -- ~/bin/update-gaming          # add --skip-cores --skip-assets for a quick pkg-only pass
+distrobox enter gaming -- sh -lc '~/bin/update-gaming'  # add --skip-cores --skip-assets inside the quoted command for a quick pkg-only pass
 
 # 2. Catch AUR soname breakage + Xenia Wine-DPI drift (host). Rebuild anything
 #    it flags from source with makepkg -srci (NOT yay -S).

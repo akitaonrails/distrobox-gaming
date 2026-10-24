@@ -1,0 +1,8 @@
+[package]
+name = "dg-gt4-recomp-prepare"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+gt4l-disc = { git = "https://github.com/moesuito/gt4-staticrecomp", rev = "b64aa2d7d9192032295cc7b6bc7a508110482954", package = "gt4l-disc" }

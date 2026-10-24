@@ -1,0 +1,176 @@
+---
+- name: Check the owned GT4 retail ISO
+  ansible.builtin.stat:
+    path: "{{ dg_gt4r_iso }}"
+    checksum_algorithm: sha256
+  register: _gt4r_iso
+
+- name: Require the verified USA retail image
+  ansible.builtin.assert:
+    that:
+      - _gt4r_iso.stat.isreg | default(false)
+      - _gt4r_iso.stat.checksum | default('') == dg_gt4r_iso_sha256
+    fail_msg: "GT4 retail SCUS-97328 ISO missing or changed: {{ dg_gt4r_iso }}"
+
+- name: Create GT4 cache, data, prefix and launcher directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_gt4r_cache }}"
+    - "{{ dg_gt4r_root }}/releases"
+    - "{{ dg_gt4r_root }}/data/prepared"
+    - "{{ dg_gt4r_root }}/data/sessions"
+    - "{{ dg_gt4r_prefix }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Download pinned GT4 release and GS renderer
+  ansible.builtin.get_url:
+    url: "{{ item.url }}"
+    dest: "{{ dg_gt4r_cache }}/{{ item.name }}"
+    checksum: "sha256:{{ item.sha256 }}"
+    mode: "0644"
+  loop:
+    - { url: "{{ dg_gt4r_installer_url }}", name: "{{ dg_gt4r_installer_name }}", sha256: "{{ dg_gt4r_installer_sha256 }}" }
+    - { url: "{{ dg_gt4r_gs_url }}", name: "{{ dg_gt4r_gs_name }}", sha256: "{{ dg_gt4r_gs_sha256 }}" }
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Check installed GT4 release
+  ansible.builtin.stat:
+    path: "{{ dg_gt4r_release }}/game/gt4vulkan.exe"
+  register: _gt4r_release
+
+- name: Extract the Windows release and GS renderer atomically
+  ansible.builtin.command:
+    argv:
+      - python3
+      - "{{ dg_project_root }}/scripts/gt4-recomp-extract.py"
+      - "{{ dg_gt4r_cache }}/{{ dg_gt4r_installer_name }}"
+      - "{{ dg_gt4r_cache }}/{{ dg_gt4r_gs_name }}"
+      - "{{ dg_gt4r_release }}"
+  when: not _gt4r_release.stat.exists
+
+- name: Check reconstructed GT4 executable
+  ansible.builtin.stat:
+    path: "{{ dg_gt4r_elf }}"
+    checksum_algorithm: sha256
+  register: _gt4r_elf
+
+- name: Prepare the pinned executable from the owned disc
+  when: _gt4r_elf.stat.checksum | default('') != dg_gt4r_elf_sha256
+  block:
+    - name: Build the upstream-disc-based reconstruction helper
+      ansible.builtin.command:
+        argv:
+          - cargo
+          - build
+          - --release
+          - --locked
+          - --manifest-path
+          - "{{ dg_project_root }}/scripts/gt4-recomp-prepare/Cargo.toml"
+        creates: "{{ dg_project_root }}/scripts/gt4-recomp-prepare/target/release/dg-gt4-recomp-prepare"
+
+    - name: Verify game code and reconstruct the executable
+      ansible.builtin.command:
+        argv:
+          - "{{ dg_project_root }}/scripts/gt4-recomp-prepare/target/release/dg-gt4-recomp-prepare"
+          - "{{ dg_gt4r_iso }}"
+          - "{{ dg_gt4r_elf }}"
+
+    - name: Verify reconstructed executable against upstream pin
+      ansible.builtin.stat:
+        path: "{{ dg_gt4r_elf }}"
+        checksum_algorithm: sha256
+      register: _gt4r_prepared
+
+    - name: Require exact upstream executable
+      ansible.builtin.assert:
+        that:
+          - _gt4r_prepared.stat.checksum == dg_gt4r_elf_sha256
+
+    - name: Remove temporary Cargo build output
+      ansible.builtin.file:
+        path: "{{ dg_project_root }}/scripts/gt4-recomp-prepare/target"
+        state: absent
+
+- name: Check dedicated Wine prefix
+  ansible.builtin.stat:
+    path: "{{ dg_gt4r_prefix }}/system.reg"
+  register: _gt4r_prefix
+
+- name: Initialize dedicated Wine prefix
+  ansible.builtin.command:
+    argv: [distrobox, enter, "{{ dg_box_name }}", --, env, "WINEPREFIX={{ dg_gt4r_prefix }}", wineboot, -u]
+  when: not _gt4r_prefix.stat.exists
+
+- name: Create renderer data directory in the Wine user profile
+  ansible.builtin.file:
+    path: "{{ dg_gt4r_prefix }}/drive_c/users/{{ ansible_facts.user_id }}/AppData/Local/GT4Recomp/gt4-gs"
+    state: directory
+    mode: "0755"
+
+- name: Check Wine controller configuration
+  ansible.builtin.stat:
+    path: "{{ dg_gt4r_prefix }}/.dg-winebus-sdl"
+  register: _gt4r_winebus
+
+- name: Configure SDL gamepad mapping for Wine
+  when: not _gt4r_winebus.stat.exists
+  block:
+    - name: Set WineBus gamepad keys
+      ansible.builtin.command:
+        argv:
+          - distrobox
+          - enter
+          - "{{ dg_box_name }}"
+          - --
+          - env
+          - "WINEPREFIX={{ dg_gt4r_prefix }}"
+          - wine
+          - reg
+          - add
+          - 'HKCU\Software\Wine\WineBus'
+          - /v
+          - "{{ item.name }}"
+          - /t
+          - REG_DWORD
+          - /d
+          - "{{ item.value }}"
+          - /f
+      loop: "{{ dg_gt4r_winebus_registry }}"
+      loop_control:
+        label: "{{ item.name }}={{ item.value }}"
+
+    - name: Wait for Wine registry writes
+      ansible.builtin.command:
+        argv: [distrobox, enter, "{{ dg_box_name }}", --, env, "WINEPREFIX={{ dg_gt4r_prefix }}", wineserver, -w]
+      changed_when: false
+
+    - name: Record controller configuration
+      ansible.builtin.file:
+        path: "{{ dg_gt4r_prefix }}/.dg-winebus-sdl"
+        state: touch
+        mode: "0644"
+
+- name: Install GT4 direct Vulkan launcher
+  ansible.builtin.template:
+    src: gt4-recomp.sh.j2
+    dest: "{{ dg_gt4r_launcher }}"
+    mode: "0755"
+
+- name: Render GT4 desktop entry
+  ansible.builtin.template:
+    src: gaming-gt4-recomp.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-gt4-recomp.desktop"
+    mode: "0644"
+
+- name: Install desktop entry on the host
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _gt4r_host_launcher
+  changed_when: "'installed ' in _gt4r_host_launcher.stdout or 'removed stale ' in _gt4r_host_launcher.stdout"

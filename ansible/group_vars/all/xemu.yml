@@ -1,6 +1,6 @@
 # xemu — repo-managed upstream AppImage (rolling dev/pre-release build).
 #
-# The AUR `xemu-bin` tracks tagged stable (0.8.136); the major DSP56300 audio
+# The AUR `xemu-bin` tracks tagged stable; the major DSP56300 audio
 # emulator (JIT) + Vulkan renderer improvements landed in xemu's rolling
 # "pre-release" development build first, so xemu is pinned to that AppImage by
 # sha256. Config, BIOS/flashrom/HDD/EEPROM and saves stay in ~/.config/xemu +
@@ -13,10 +13,10 @@
 #   https://github.com/xemu-project/xemu/releases  (tag: pre-release)
 
 dg_xemu_release_tag: "pre-release"
-dg_xemu_version: "0.8.136-53-g478b4f4961"
-dg_xemu_asset_name: "xemu-0.8.136-53-g478b4f4961-x86_64.AppImage"
+dg_xemu_version: "0.8.139-2-g25e1ee2fd5"
+dg_xemu_asset_name: "xemu-0.8.139-2-g25e1ee2fd5-x86_64.AppImage"
 dg_xemu_asset_url: "https://github.com/xemu-project/xemu/releases/download/{{ dg_xemu_release_tag }}/{{ dg_xemu_asset_name }}"
-dg_xemu_asset_sha256: "8fa17b62e55566ddf7d814892708e754100d209c85b713e863e40ee8e706a6e8"
+dg_xemu_asset_sha256: "44d33f7e905149c8028a6f8eb693a4fb3a4aeb4313c2208c7adb1d63d11f5d7a"
 
 dg_xemu_install_dir: "{{ dg_box_home }}/tools/xemu-appimage"
 dg_xemu_appimage: "{{ dg_xemu_install_dir }}/xemu.AppImage"

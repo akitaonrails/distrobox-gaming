@@ -18,8 +18,15 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | DekUI | Single-screen Majora's Mask 3D via a custom Azahar build | [tgacquin/mm3d-dekui](https://github.com/tgacquin/mm3d-dekui) · [doc](dekui-mm3d.md) |
 | Nebula | Super Mario Galaxy Wii recompilation (Windows-only runtime; Linux blocked at NAND preflight) | [keepvaibin/nebula](https://github.com/keepvaibin/nebula) · [doc](nebula-galaxy.md) |
 | RalliSport Challenge 2 Recompiled | Original Xbox native Linux recompilation | [Mortify7612/RallisportChallenge2-decomp](https://github.com/Mortify7612/RallisportChallenge2-decomp) · [doc](rsc2.md) |
+| Gran Turismo 4 Recompiled | PS2 USA retail static recompilation, Windows build under Wine | [moesuito/gt4-staticrecomp](https://github.com/moesuito/gt4-staticrecomp) · [doc](gt4-recomp.md) |
+| OpenCMR2 | Native Colin McRae Rally 2.0 port | [pablocpas/OpenCMR2](https://github.com/pablocpas/OpenCMR2) · [doc](opencmr2.md) |
+| God of War III SpartanPort | PS4 native PC port | [FelipePrado0/gow3_pc](https://github.com/FelipePrado0/gow3_pc) · [doc](gow3-pc.md) |
+| ForzaInfinity for Azimuth | Forza Horizon 2 online hook and relay | [anarqz/ForzaInfinity-POC](https://github.com/anarqz/ForzaInfinity-POC) · [doc](azimuth-fh2.md) |
+| Gran Turismo Sport through RyGT | PS4 recompilation under Wine | [mlgprorektm8/RyGT](https://github.com/mlgprorektm8/RyGT) · [doc](rygt-gt-sport.md) |
+| DriveClub Recomp | PS4 static recompilation, Windows build under Proton | [OverkillLabs3/driveclub-recomp](https://github.com/OverkillLabs3/driveclub-recomp) · [doc](driveclub-recomp.md) |
 | I Could Have Given You The World | 007: The World Is Not Enough N64 native Linux recompilation | [riseio/TWIPE_00Sheven](https://github.com/riseio/TWIPE_00Sheven) · [doc](twine-007.md) |
 | Fukami | Ridge Racer V static recompilation | [danisandoval/fukami](https://github.com/danisandoval/fukami) · [doc](fukami-rrv.md) |
+| Dusk (Twilight Princess) | GameCube Twilight Princess native port | [TwilitRealm/dusklight](https://github.com/TwilitRealm/dusklight) · [doc](dusk-twilight-princess.md) |
 | Project Midas | GoldenEye 007 native PC port from the N64 decompilation (replaced the cblock85 recomp 2026-10-18) | [murkantor/Project-Midas](https://github.com/murkantor/Project-Midas) · [doc](project-midas.md) |
 | FM4 Recompiled | Forza Motorsport 4 (Xbox 360) static recompilation via ReXGlue | [Alexbeav/fm4-recomp](https://github.com/Alexbeav/fm4-recomp) · [doc](fm4-recomp.md) |
 | Star Fox 64 Recompiled | Star Fox 64 N64Recomp + RT64 recomp (native Linux, Vulkan, widescreen); supersedes Starship | [sonicdcer/Starfox64Recomp](https://github.com/sonicdcer/Starfox64Recomp) · [doc](starfox64-recomp.md) |
@@ -33,7 +40,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | Pilotwings 64: Recompiled | N64Recomp + RT64 native Linux build | [danielgomesvieira2000/pilotwings-64-recomp](https://github.com/danielgomesvieira2000/pilotwings-64-recomp) · [doc](pilotwings-recomp.md) |
 | Conker's Bad Fur Day: Recompiled | N64Recomp + RT64 native Linux build | [sciaschi/CBFD-Recompiled](https://github.com/sciaschi/CBFD-Recompiled) · [doc](cbfd-recomp.md) |
 | DKR-R (Diddy Kong Racing Recompiled) | N64Recomp + RT64 native Linux AppImage | [ThatGuyMcd/DKR-R](https://github.com/ThatGuyMcd/DKR-R) · [doc](dkr-r.md) |
-| Banjo-Tooie Recompiled | N64Recomp + RT64 (Windows alpha under Wine) | [some-scurvy-dog/BanjoTooieRecompiled](https://github.com/some-scurvy-dog/BanjoTooieRecompiled) · [doc](banjotooie-recomp.md) |
+| Banjo-Tooie Recompiled | N64Recomp + RT64 (Windows alpha under Wine) | [some-scurvy-dog/banjo-tooie-scurvy-dog-port](https://github.com/some-scurvy-dog/banjo-tooie-scurvy-dog-port) · [doc](banjotooie-recomp.md) |
 | Beetle Adventure Racing! Recompiled | N64Recomp + RT64 (Windows build under Wine) | [danielgomesvieira2000/beetle-adventure-racing-recomp](https://github.com/danielgomesvieira2000/beetle-adventure-racing-recomp) · [doc](beetle-recomp.md) |
 | Road Rash 64 Recompiled | N64 recompilation (native Linux AppImage) | [linkssy2/RoadRash64Recompiled](https://github.com/linkssy2/RoadRash64Recompiled) · [doc](roadrash64.md) |
 | Perfect Dark | N64 decomp PC port | [DabDavis/perfect-dark-dabs-mod](https://github.com/DabDavis/perfect-dark-dabs-mod) · [doc](perfect-dark.md) |

@@ -28,7 +28,7 @@ it to z64 and md5-verifies. Override `dg_pd_rom_src` for your rip.
 
 ## Release pinning (stable version tags)
 
-The fork ships **stable version releases** (e.g. `v3.2.2`). The role pins the
+The fork ships **stable version releases** (currently `v3.15.1`). The role pins the
 tag + a **sha256** (`dg_pd_asset_sha256`, provenance in `dg_pd_build_ref`) and
 reuses the tarball staged on the NAS at
 `ROMS_FINAL/PC/perfect-dark-port/pd-dabs-mod-x86_64-linux.tar.gz`; `get_url` only

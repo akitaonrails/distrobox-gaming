@@ -1,15 +1,14 @@
 # Ship of Harkinian
 
-This installs the official HarbourMasters Shipwright Linux release ZIP for
+This installs the official HarbourMasters Shipwright Linux AppImage for
 Ship of Harkinian, rather than building from source or using AUR packages.
 
 ## Pins
 
-- Release: `9.2.3` / `Ackbar Delta 9.2.3`
+- Release: `9.3.1` / `Dewey Bravo`
 - Repository: <https://github.com/HarbourMasters/Shipwright.git>
-- Tag commit: `cb71e22a79bc5d1f688fa881795bbd93094895fc`
-- Asset: `SoH-Ackbar-Delta-Linux.zip`
-- Asset SHA256: `f81cde8052142d6abbbaaffa70699d6748e4cde3f158be8f268c3aab338ee315`
+- Asset: `SoH-Dewey-Bravo.appimage`
+- Asset SHA256: `e4bb775c9a0c3629ebac57e4b6ccba6d0b621d71ab201e9105aceef9141ad1f4`
 - HD pack: `oot-reloaded-v11.0.0-soh-o2r-hd.7z`
 - HD pack SHA256: `a6a551e880739de7f5313888f6cf4eea2eb9d2f04274697fe8ad524ea3c30161`
 

@@ -1,5 +1,7 @@
 # DOOM 3 via DUDE
 
+The source checkout is pinned to [v0.9.6](https://github.com/Inkub0/dude/releases/tag/v0.9.6), commit `1948b4e2bef25b55621f0569b72fb3525ed7713a`, for reproducible native Vulkan builds. Re-running `install-dude.yml` updates the binary without changing the owned Doom 3 data.
+
 **DUDE** (Doom3 Unified Development Engine) is a modernized fork of **dhewm3** — the
 classic Doom 3 source port — with new **OpenGL 3.3** and **Vulkan 1.4** renderers and
 an opt-in enhancement suite (shadow maps, HDR, SSAO, PBR, SMAA/FXAA/FSR2; ray-traced

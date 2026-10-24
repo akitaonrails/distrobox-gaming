@@ -292,7 +292,7 @@ dg_ogm_games:
     id: azimuth-fh2-infinity
     category: port
     sgdb_query: "Forza Horizon 2"
-    github: anarqz/ForzaInfinity
+    github: anarqz/ForzaInfinity-POC
   - desktop_id: gaming-driveclub-recomp
     id: driveclub-recomp
     category: recomp
@@ -333,6 +333,11 @@ dg_ogm_games:
     category: wine
     sgdb_query: "Forza Motorsport 4"
     github: "{{ dg_fm4_recomp_repo }}"
+  - desktop_id: gaming-gt4-recomp
+    id: gt4-recomp
+    category: recomp
+    sgdb_query: "Gran Turismo 4"
+    github: "{{ dg_gt4r_repo }}"
   - desktop_id: gaming-mph-recomp
     id: mph-recomp
     category: recomp
@@ -369,7 +374,7 @@ dg_ogm_games:
     id: banjotooie-recomp
     category: recomp
     sgdb_query: "Banjo-Tooie"
-    github: "{{ dg_btooie_zip_url | regex_replace('^https://(api\\.)?github\\.com/(repos/)?([^/]+/[^/]+?)(\\.git)?(/.*)?$', '\\3') }}"
+    github: "{{ dg_btooie_repo }}"
   # Doom 64 RT — native Linux AppImage from the acolomba fork (upstream-
   # endorsed). NOTE: the fork is what we track, not upstream jlrouzies-fr.
   - desktop_id: gaming-doom64-rt

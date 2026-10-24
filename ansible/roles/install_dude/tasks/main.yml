@@ -6,8 +6,7 @@
   ansible.builtin.git:
     repo: "{{ dg_dude_repo }}"
     dest: "{{ dg_dude_src }}"
-    depth: 1
-    version: master
+    version: "{{ dg_dude_ref }}"
     force: true
   register: _dude_git
 

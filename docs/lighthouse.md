@@ -27,9 +27,9 @@ the launcher, desktop entry and install dir; your ROM is untouched).
 
 The role (see `group_vars/all/lighthouse.yml`):
 
-- downloads the pinned release zip (`1.1.0`, sha256-pinned) into
-  `tools/lighthouse/cache/` and extracts `lighthouse.appimage` +
-  `gamecontrollerdb.txt` into `tools/lighthouse/current/`;
+- downloads the pinned `1.2.0` AppImage (SHA256-pinned) into
+  `tools/lighthouse/cache/` and installs it into `tools/lighthouse/current/`
+  without deleting the generated data or existing controller database;
 - seeds the **baserom next to the appimage** as `baserom.us.v10.z64`, extracted
   from `ROMS_FINAL/n64/Banjo-Kazooie (USA).zip` and byteswapped to big-endian
   `.z64`, verifying its SHA-1;
@@ -40,8 +40,7 @@ On **first launch**, libultraship finds the baserom in its working directory and
 the SoH role. Saves, `bk.o2r` and `lighthouse.cfg.json` all live in
 `tools/lighthouse/current/`.
 
-> If a version bump wipes the install dir, the baserom is re-seeded and `bk.o2r`
-> regenerates on the next launch. If Lighthouse ever *does* show a ROM picker
+> Version updates preserve this directory. If Lighthouse ever shows a ROM picker
 > (e.g. it stops auto-detecting), point it at `baserom.us.v10.z64` in that dir.
 
 ## ROM requirement

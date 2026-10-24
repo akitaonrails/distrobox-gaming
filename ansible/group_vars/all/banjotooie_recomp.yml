@@ -1,5 +1,5 @@
 ---
-# Banjo-Tooie Recompiled (some-scurvy-dog/BanjoTooieRecompiled) — an
+# Banjo-Tooie Recompiled (some-scurvy-dog/banjo-tooie-scurvy-dog-port) — an
 # N64Recomp + N64ModernRuntime + RT64 static recomp PC port of Banjo-Tooie
 # (NTSC-U 1.0). Opt-in role install_banjotooie_recomp.
 # See docs/banjotooie-recomp.md.
@@ -10,16 +10,17 @@
 # the NAS. NOTE: upstream only marks prereleases so far, so the GitHub
 # "latest release" API is empty — update checks must list all releases.
 
-dg_btooie_version: "0.1.0-alpha.3"
+dg_btooie_repo: some-scurvy-dog/banjo-tooie-scurvy-dog-port
+dg_btooie_version: "0.1.0-alpha.4.3"
 dg_btooie_release_tag: "v{{ dg_btooie_version }}"
-dg_btooie_asset_name: "BanjoTooieRecompiled-Alpha3-Windows-x64.zip"
-dg_btooie_zip_url: "https://github.com/some-scurvy-dog/BanjoTooieRecompiled/releases/download/{{ dg_btooie_release_tag }}/{{ dg_btooie_asset_name }}"
-dg_btooie_zip_sha256: "6dfba9befc1188c7eaf58a5529df2125e621f6587f841d48b96ea5f74e3435ee"
+dg_btooie_asset_name: "BanjoTooieScurvyDogPort-Alpha4.3-Windows-x64.zip"
+dg_btooie_zip_url: "https://github.com/{{ dg_btooie_repo }}/releases/download/{{ dg_btooie_release_tag }}/{{ dg_btooie_asset_name }}"
+dg_btooie_zip_sha256: "a1f5b7605ec759f76be467f54ce2db40131859697992559e8b8cf1e5e51e2007"
 
 dg_btooie_root: "{{ dg_roms_final_root }}/PC/banjotooie-recomp"
 dg_btooie_zip: "{{ dg_btooie_root }}/{{ dg_btooie_asset_name }}"
-dg_btooie_install_dir: "{{ dg_box_home }}/Games/banjotooie-recomp"
-dg_btooie_exe: "TooieRecompiled.exe"
+dg_btooie_install_dir: "{{ dg_box_home }}/Games/banjotooie-recomp-{{ dg_btooie_release_tag }}"
+dg_btooie_exe: "BanjoTooieScurvyDogPort.exe"
 
 # ROM: Banjo-Tooie NTSC-U 1.0 ONLY (big-endian z64 sha256
 # 9ec37fba...3583 — the launcher hard-rejects anything else). The NAS dump

@@ -11,6 +11,10 @@
 # dg_external_games_root: /media/games
 # dg_emudeck_root: "{{ dg_external_games_root }}/EmuDeck"
 # dg_roms_final_root: "{{ dg_external_games_root }}/ROMS_FINAL"
+# GT4 Recomp requires an unpatched USA retail SCUS-97328 ISO with the pinned
+# game code. The Spec II SCUS-97436 image is not supported by v1.2.3.
+# dg_gt4r_iso: "{{ dg_roms_final_root }}/ps2/Gran Turismo 4/Gran Turismo 4.iso"
+# dg_gt4r_monitor: '\\.\DISPLAY2'  # Windows GDI display for a 4K landscape monitor
 # 007: The World Is Not Enough (USA) revision 0, byte-swapped N64 dump.
 # dg_twine_rom_source: "{{ dg_roms_final_root }}/n64/007 - The World Is Not Enough (USA).n64"
 # dg_external_usb_games_root: /run/media/me/STEAM

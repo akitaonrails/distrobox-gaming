@@ -130,7 +130,7 @@
           - --root
           - 'C:\Nebula'
           - --input
-          - "Z:{{ dg_nebula_extracted_game_dir | replace('/', '\\') }}"
+          - "Z:{{ dg_nebula_extracted_game_dir }}"
           - --jobs
           - "{{ dg_nebula_compile_jobs }}"
           - --accept-build-tools-license

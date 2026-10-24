@@ -43,6 +43,15 @@
     src: "{{ dg_opencmr2_cache_dir }}/{{ dg_opencmr2_archive_name }}"
     dest: "{{ dg_opencmr2_root }}"
     remote_src: true
+    creates: "{{ dg_opencmr2_root }}/.dg-installed-{{ dg_opencmr2_version }}"
+  register: _opencmr2_extract
+
+- name: Record the extracted OpenCMR2 version
+  ansible.builtin.copy:
+    dest: "{{ dg_opencmr2_root }}/.dg-installed-{{ dg_opencmr2_version }}"
+    content: "{{ dg_opencmr2_archive_sha256 }}\n"
+    mode: "0644"
+  when: _opencmr2_extract is changed
 
 - name: Make OpenCMR2 executable
   ansible.builtin.file:

@@ -6,7 +6,7 @@ is a native **N64 recompilation** of Road Rash 64 (N64Recomp + N64ModernRuntime
 custom-music rotation and experimental multiplayer. Runs on the RTX via Vulkan —
 no emulator.
 
-The **v1.3.1 Linux build** (CalenCyr's native contribution) ships as an
+The **v1.4.8 Linux build** ships as an
 AppImage; you supply your own **Road Rash 64 USA v1.0** ROM.
 
 ## Install
@@ -23,9 +23,10 @@ Launcher `bin/roadrash64`; host/Walker entry **"Road Rash 64 · Recompiled"**;
 
 ## How it works
 
-- Downloads the pinned `RoadRash64Recompiled-v1.3.1-Rev2-Linux-Experimental.zip`
-  (sha256 in `group_vars/all/roadrash64_recomp.yml`) and extracts the AppImage +
-  `music/` to `tools/roadrash64-recomp/`.
+- Downloads the pinned `RoadRash64Recompiled-v1.4.8-Linux-Experimental.zip`
+  (sha256 in `group_vars/all/roadrash64_recomp.yml`) and extracts the AppImage;
+  the existing `music/` directory and settings remain in place. The archive
+  also includes upstream documentation.
 - The role verifies your ROM is USA v1.0 (normalized z64 SHA-1
   `87727a298f583ec8325f5655088ff21e37b335b2`) — the `.n64` in `roms_mid/n64`
   matches — and fails early with a clear message otherwise.

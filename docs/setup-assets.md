@@ -42,6 +42,11 @@ You source and copy ROMs into these trees yourself.
 
 ## PCSX2 texture packs — GT4 & friends
 
+The optional [GT4 static recompilation](gt4-recomp.md) uses the unpatched USA
+retail SCUS-97328 ISO at `dg_gt4r_iso` under `dg_roms_final_root`. Its pinned
+game code is reconstructed into an executable without copying the 5 GB ISO.
+The Spec II SCUS-97436 image in `dg_rom_heavy_root` remains a PCSX2 asset.
+
 **Variable:** `dg_pcsx2_ps2_root` (default `{{ dg_external_games_root }}/ps2`).
 
 The `pcsx2_textures` role symlinks from this root into PCSX2's

@@ -1,0 +1,53 @@
+# Gran Turismo 4 Recompiled
+
+Optional [moesuito/gt4-staticrecomp](https://github.com/moesuito/gt4-staticrecomp)
+v1.2.3 Windows build, run in the `gaming` box with Wine. Install from
+`ansible/` with `ansible-playbook install-gt4-recomp.yml`; the `gt4_recomp`
+tag also runs it from `site.yml`. The role downloads pinned release files,
+extracts them to `dg_gt4r_release`, reconstructs the executable from the
+owned ISO with upstream `gt4l-disc` at a pinned commit, and installs
+`gaming-gt4-recomp.desktop`. The ISO stays in place and saves live under
+`dg_gt4r_root/data/sessions/default`.
+
+## Disc compatibility and Spec II
+
+The selected `dg_gt4r_iso` is USA retail SCUS-97328. Its entire ISO has
+SHA256 `e4d22e964729739e89099d42828a55b75cd0e1ff702ea85a3a5d793733dc1981`.
+Its `SYSTEM.CNF` says 1.01, so it differs from upstream's pinned full v2.00
+image; the `CORE.GT4` and boot executable **do** match upstream's pinned game
+code. The role checks the whole local image, and the helper verifies the core
+and the reconstructed executable against upstream pins. The final executable
+hash is `10f82e2231a51404b95682ed3ea81171100a1af2fefdeed3391943016c7c935c`.
+
+The separate EmuDeck image is SCUS-97436 (Spec II). v1.2.3's disc setup
+explicitly rejects that serial; its [Spec II study](https://github.com/moesuito/gt4-staticrecomp/blob/v1.2.3/docs/SPEC2-STUDY.md)
+describes a separate target. Do not feed that image or the Spec II xdelta to
+this release. Continue using Spec II in PCSX2; the retail recomp can coexist.
+
+## Display, frame rate and controller
+
+The desktop launcher uses the direct single-process Vulkan renderer under
+Wine. It selects the 4K landscape monitor (`dg_gt4r_monitor`), 3840×2160
+output, GT4's progressive 480p and widescreen modes, and FIFO present mode.
+The game engine is fixed at 60 Hz; the 60 FPS cap is a target, not a measured
+gameplay benchmark. The port does not expose an Ultra graphics preset.
+
+The upstream GUI launcher defaults to a separate GSdx process. In Wine that
+process starts but cannot attach its child window, so this installation uses
+the compiled-in Vulkan renderer. This is an unqualified Wine path; the native
+Linux release remains upstream work. The release's GS files are kept beside
+the game for a future upstream fix.
+
+Native SDL3 pad input is selected (`GT4_INPUT=sdl`). The Wine prefix routes
+controllers through WineBus SDL with controller mapping enabled; the game's
+default bindings cover steering, throttle, brake and menu navigation. Input
+enumeration and a full race with a connected pad should be checked in-game.
+The `8BitDo Ultimate 2` receiver was present during setup, but no gamepad was
+enumerated in the short smoke run, so button presses remain unverified.
+
+## Maintenance
+
+The release archives stay in `dg_gt4r_cache` because the role uses them on
+rebuilds. Scratch Cargo output is removed after executable preparation. The
+dedicated Wine prefix and session directory contain settings/saves and should
+be preserved. Change the version and hashes together when upgrading.

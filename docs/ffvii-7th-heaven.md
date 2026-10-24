@@ -4,7 +4,7 @@ Use MateriaForge for the Linux route. 7th Heaven itself is still the Windows mod
 manager; MateriaForge downloads and configures it for Proton/Linux and replaces
 the deprecated 7thDeck workflow.
 
-Status: MateriaForge `0.4.1` successfully installed 7th Heaven for the current
+Status: MateriaForge `0.5.0` successfully installed 7th Heaven for the current
 Steam app ID `3837340`, and the `7th Heaven Mod Manager (on gaming)` desktop
 launcher was confirmed to open the manager after the wrapper was fixed to launch
 from the 7th Heaven install directory.

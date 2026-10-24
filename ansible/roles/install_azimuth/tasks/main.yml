@@ -314,6 +314,7 @@
         src: "{{ dg_azimuth_zip }}"
         dest: "{{ dg_azimuth_infinity_install_dir }}"
         remote_src: true
+      when: not _azimuth_infinity_persistent.results[0].stat.exists
 
     - name: Copy tuned display and game path settings to the online client
       ansible.builtin.copy:
