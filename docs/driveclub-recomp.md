@@ -31,6 +31,16 @@ opened a `DRIVECLUB™` window, and logged the RTX 5090 Vulkan device. Gameplay,
 frame rate, rendering quality, saves, and controller input still need a
 hands-on check.
 
+**2026-10-24: the endless "Downloading" tours were an upstream bug, fixed in 0.3.0.**
+The Tour events stuck on "Downloading" after the tutorial are upstream issue #95,
+fixed in 0.3.0 ("endless Downloading on every track and car after the tutorial").
+0.2.4 also fixed the exact crash this box hit ("read access to
+0000000000000000 at guest offset 0x64db13"), the career event-start freeze
+(#23/#24/#49) and quiet stereo audio. The role now pins **0.3.1**, which adds
+DLSS/FSR **upscaling**, HDR10, graphics detail/effects options, a Detail tab,
+wheel support and VRR pacing. The operator's profile (archived during
+diagnosis) was restored — the bug was runtime-side, not save corruption.
+
 **2026-10-18: crash after the intro, diagnosed and fixed.** The first
 hands-on run of v0.2.1 crashed right after the intro (guest NULL read at
 32 s, log in `logs/`). Upstream's 0.2.2/0.2.3 target exactly this class:

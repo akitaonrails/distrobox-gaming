@@ -1,0 +1,32 @@
+#!/usr/bin/env sh
+# Gravity Rush Remastered native port — Windows x64 build through GE-Proton.
+# --play starts the game with the saved settings (no launcher window).
+set -eu
+
+APP="{{ dg_gr_app_dir }}"
+PROTON="{{ dg_gr_proton }}"
+
+if [ ! -f "$APP/Gravity Rush.exe" ]; then
+  printf '%s\n' 'Gravity Rush PC is not installed.' >&2
+  exit 1
+fi
+if [ ! -f "{{ dg_gr_game_dir }}/eboot.bin" ]; then
+  printf '%s\n' 'Gravity Rush game folder is missing (docs/gravity-rush.md).' >&2
+  exit 1
+fi
+if [ ! -x "$PROTON" ]; then
+  printf '%s\n' 'Configured Proton build is missing.' >&2
+  exit 1
+fi
+
+export STEAM_COMPAT_CLIENT_INSTALL_PATH="{{ dg_gr_steam_root }}"
+export STEAM_COMPAT_DATA_PATH="{{ dg_gr_compatdata }}"
+export SteamAppId=0
+export SteamGameId=0
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+mkdir -p "$STEAM_COMPAT_DATA_PATH"
+
+cd "$APP"
+exec "$PROTON" run "$APP/Gravity Rush.exe" --play "$@"

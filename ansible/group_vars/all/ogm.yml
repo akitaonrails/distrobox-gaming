@@ -328,6 +328,11 @@ dg_ogm_games:
     category: port
     sgdb_query: "GoldenEye 007"
     github: "{{ dg_midas_repo }}"
+  - desktop_id: gaming-gravity-rush
+    id: gravity-rush
+    category: wine
+    sgdb_query: "Gravity Rush Remastered"
+    github: "{{ dg_gr_repo }}"
   - desktop_id: gaming-fm4-recomp
     id: fm4-recomp
     category: wine

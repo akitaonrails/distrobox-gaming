@@ -1,0 +1,50 @@
+---
+# Gravity Rush Remastered — native PC port (LucaPazienza/gravityrush_pc).
+# Windows x64 build run through GE-Proton (Vulkan, shadPS4 video core).
+# Requires the user's own UNPACKED game folder for the European release
+# CUSA01113 v01.00 (eboot.bin + sce_module + sce_sys + arc/), not an ISO.
+# See docs/gravity-rush.md.
+
+dg_gr_repo: LucaPazienza/gravityrush_pc
+dg_gr_version: 0.1.8
+dg_gr_asset_name: "GravityRush-PC-{{ dg_gr_version }}-Windows.zip"
+dg_gr_asset_url: "https://github.com/{{ dg_gr_repo }}/releases/download/v{{ dg_gr_version }}/{{ dg_gr_asset_name }}"
+dg_gr_asset_sha256: 0cf4f686f77e30e1d35bcc25453910d6a9102b5bcf757981d08e9e9a062ad7ca
+
+# The port is validated on the European release; the resolution and shadow
+# patches only apply to that version.
+dg_gr_game_dir: "{{ dg_rom_rare_root }}/ps4/CUSA01113"
+
+dg_gr_install_dir: "{{ dg_box_home }}/tools/gravity-rush"
+dg_gr_release_dir: "{{ dg_gr_install_dir }}/releases/{{ dg_gr_version }}"
+dg_gr_app_dir: "{{ dg_gr_release_dir }}/gravityrush-windows"
+dg_gr_cache_dir: "{{ dg_box_home }}/cache/gravity-rush"
+# Saves, screenshots, mods and in-game settings survive updates here.
+dg_gr_user_dir: "{{ dg_box_home }}/.local/share/gravity-rush"
+dg_gr_launcher: "{{ dg_box_home }}/bin/gravity-rush"
+
+# GE-Proton, same build as the other Windows ports (DriveClub/Azimuth).
+dg_gr_proton: "{{ ansible_facts.env.HOME }}/.steam/steam/compatibilitytools.d/GE-Proton11-1/proton"
+dg_gr_steam_root: "{{ ansible_facts.env.HOME }}/.steam/steam"
+dg_gr_compatdata: "{{ dg_gr_install_dir }}/.compatdata"
+
+# Max-quality baseline (gravityrush.ini, key=value, applied once and kept
+# afterwards). 4K output, DLSS Quality upscaling (the release bundles both
+# gow3_dlss.dll and nvngx_dlss.dll, so it works under Proton), 4096 shadow map,
+# 16x anisotropy. FSR 3.1 is the fallback if DLSS ever fails to initialise.
+dg_gr_ini:
+  upscaler: dlss
+  preset: '1'
+  output_res: 3840x2160
+  display_mode: borderless
+  shadow_quality: high
+  anisotropy: '16'
+  engine_fps: '60'
+  vsync: '1'
+  fps_limit: '0'
+  show_fps: '1'
+  fxaa: '1'
+  sharpen: '0'
+  sharpness: '0.50'
+  async_shaders: '1'
+  deferred_readback: '1'

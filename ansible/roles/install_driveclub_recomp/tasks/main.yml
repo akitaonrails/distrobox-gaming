@@ -94,6 +94,53 @@
     force: false
   when: _dcr_game_ready | bool
 
+- name: Check whether the max-quality baseline was applied
+  ansible.builtin.stat:
+    path: "{{ dg_dcr_install_dir }}/.dg-max-baseline"
+  register: _dcr_max_marker
+  when: _dcr_game_ready | bool
+
+# The launcher's own window rewrites launcher.ini in this key=value form (no
+# sections), so the baseline is applied line by line and only once: later
+# changes made in the game or launcher are preserved.
+- name: Apply the max-quality launcher baseline once
+  ansible.builtin.lineinfile:
+    path: "{{ dg_dcr_install_dir }}/launcher.ini"
+    regexp: "^{{ item.key }}="
+    line: "{{ item.key }}={{ item.value }}"
+    mode: "0644"
+  loop: "{{ dg_dcr_max_baseline }}"
+  when:
+    - _dcr_game_ready | bool
+    - not _dcr_max_marker.stat.exists
+
+- name: Record that the max-quality baseline was applied
+  ansible.builtin.file:
+    path: "{{ dg_dcr_install_dir }}/.dg-max-baseline"
+    state: touch
+    mode: "0644"
+  when:
+    - _dcr_game_ready | bool
+    - not _dcr_max_marker.stat.exists
+
+- name: Drop the internal-resolution patch that carries the upstream depth bug
+  ansible.builtin.lineinfile:
+    path: "{{ dg_dcr_install_dir }}/data/user/patches_enabled.txt"
+    regexp: "Internal resolution \\[DEPTH BUG\\]"
+    state: absent
+  when: _dcr_game_ready | bool
+
+- name: Ensure the max-quality patches are enabled without dropping user ones
+  ansible.builtin.lineinfile:
+    path: "{{ dg_dcr_install_dir }}/data/user/patches_enabled.txt"
+    line: "{{ item }}"
+    mode: "0644"
+  loop:
+    - 60 FPS with deltatime
+    - 4K [3840x2160] Output resolution
+    - Memory for up to 4K
+  when: _dcr_game_ready | bool
+
 - name: Seed 4K output and real-time 60 FPS without overwriting user patches
   ansible.builtin.template:
     src: patches_enabled.txt.j2

@@ -29,7 +29,7 @@
     path: "{{ dg_fm4_recomp_proton }}"
   register: _fm4_proton
 - ansible.builtin.assert:
-    that: _fm4_proton.stat.exec is defined and _fm4_proton.stat.exec
+    that: _fm4_proton.stat.executable | default(false)
     fail_msg: >-
       FM4 needs GE-Proton (vkd3d-proton for the D3D12 ROV path). Install it
       under ~/.steam/steam/compatibilitytools.d/ or override

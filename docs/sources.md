@@ -29,6 +29,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | Dusk (Twilight Princess) | GameCube Twilight Princess native port | [TwilitRealm/dusklight](https://github.com/TwilitRealm/dusklight) · [doc](dusk-twilight-princess.md) |
 | Project Midas | GoldenEye 007 native PC port from the N64 decompilation (replaced the cblock85 recomp 2026-10-18) | [murkantor/Project-Midas](https://github.com/murkantor/Project-Midas) · [doc](project-midas.md) |
 | FM4 Recompiled | Forza Motorsport 4 (Xbox 360) static recompilation via ReXGlue | [Alexbeav/fm4-recomp](https://github.com/Alexbeav/fm4-recomp) · [doc](fm4-recomp.md) |
+| Gravity Rush PC | Gravity Rush Remastered (PS4) native port (shadPS4 video core) | [LucaPazienza/gravityrush_pc](https://github.com/LucaPazienza/gravityrush_pc) · [doc](gravity-rush.md) |
 | Star Fox 64 Recompiled | Star Fox 64 N64Recomp + RT64 recomp (native Linux, Vulkan, widescreen); supersedes Starship | [sonicdcer/Starfox64Recomp](https://github.com/sonicdcer/Starfox64Recomp) · [doc](starfox64-recomp.md) |
 | SpaghettiKart | Mario Kart 64 PC port | [HarbourMasters/SpaghettiKart](https://github.com/HarbourMasters/SpaghettiKart) · [doc](spaghettikart.md) |
 | Render96ex | Super Mario 64 (HD, DynOS) | [Render96/Render96ex](https://github.com/Render96/Render96ex) · [doc](render96ex.md) |

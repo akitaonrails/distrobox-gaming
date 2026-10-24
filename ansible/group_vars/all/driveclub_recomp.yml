@@ -19,6 +19,35 @@ dg_dcr_show_fps: true
 dg_dcr_default_patches:
   - 60 FPS with deltatime
   - 4K [3840x2160] Output resolution
+# The 4K *internal* resolution patch is deliberately NOT applied: it carries the
+# upstream [DEPTH BUG], and with AA=DLSS + Upscaling=DLAA the scene is sized to
+# the output resolution anyway.
+# Max-quality baseline applied once (key=value, no sections). The marker below
+# preserves later in-game/launcher changes.
+dg_dcr_max_baseline:
+  - { key: fps, value: '1' }          # show FPS counter
+  - { key: full, value: '1' }         # borderless fullscreen
+  - { key: unlocked, value: '0' }     # 60 FPS deltatime (switch to 1 for VRR)
+  - { key: skip_gpu_check, value: '1' }
+  - { key: mirror, value: '0' }       # Live mirrors/reflections
+  - { key: aniso, value: '5' }        # 16x anisotropic
+  - { key: aa, value: '2' }           # DLSS (RTX) anti-aliasing
+  - { key: up, value: '0' }           # Upscaling: DLAA (native, best picture)
+  - { key: sharpness, value: '80' }
+  - { key: dlc_unlock, value: '1' }   # DLC cars/bikes/tours/decals
+  - { key: hdr, value: '0' }          # no HDR display on this host
+  - { key: draw_threads, value: '0' } # off under Proton (upstream default)
+  - { key: gfx_car, value: '1' }
+  - { key: gfx_opponents, value: '1' }
+  - { key: gfx_scenery, value: '2' }      # Ultra
+  - { key: gfx_reflections, value: '1' }
+  - { key: gfx_shadows, value: '2' }      # Ultra
+  - { key: gfx_particles, value: '1' }
+  - { key: gfx_dynres, value: '0' }       # steady resolution (max quality)
+  - { key: gfx_motion_blur, value: '1' }
+  - { key: gfx_lens_dust, value: '1' }
+  - { key: gfx_heat_haze, value: '1' }
+  - { key: gfx_fxaa, value: '1' }
 dg_dcr_proton: "{{ dg_azimuth_proton }}"
 dg_dcr_steam_root: "{{ dg_azimuth_steam_root }}"
 dg_dcr_compatdata: "{{ dg_dcr_install_dir }}/.compatdata"

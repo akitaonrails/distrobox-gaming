@@ -1,0 +1,7 @@
+---
+- name: Install Gravity Rush Remastered PC port
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_gravity_rush

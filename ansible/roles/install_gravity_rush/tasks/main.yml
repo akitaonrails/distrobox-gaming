@@ -1,0 +1,121 @@
+---
+- name: Verify the unpacked Gravity Rush (CUSA01113) game folder
+  ansible.builtin.stat:
+    path: "{{ dg_gr_game_dir }}/{{ item }}"
+  loop: [eboot.bin, sce_module, sce_sys, arc]
+  register: _gr_game_files
+
+- name: Require the European CUSA01113 v01.00 unpacked game folder
+  ansible.builtin.assert:
+    that: _gr_game_files.results | selectattr('stat.exists') | list | length == 4
+    fail_msg: >-
+      Gravity Rush needs the unpacked European release CUSA01113 (eboot.bin,
+      sce_module, sce_sys, arc/) at dg_gr_game_dir — an ISO is not usable.
+
+- name: Require the configured Proton build
+  ansible.builtin.stat:
+    path: "{{ dg_gr_proton }}"
+  register: _gr_proton
+- ansible.builtin.assert:
+    that: _gr_proton.stat.executable | default(false)
+    fail_msg: >-
+      Gravity Rush runs through GE-Proton. Install it under
+      ~/.steam/steam/compatibilitytools.d/ or override dg_gr_proton.
+
+- name: Create Gravity Rush directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_gr_install_dir }}"
+    - "{{ dg_gr_release_dir }}"
+    - "{{ dg_gr_cache_dir }}"
+    - "{{ dg_gr_user_dir }}"
+    - "{{ dg_gr_compatdata }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Download the pinned Gravity Rush PC release
+  ansible.builtin.get_url:
+    url: "{{ dg_gr_asset_url }}"
+    dest: "{{ dg_gr_cache_dir }}/{{ dg_gr_asset_name }}"
+    checksum: "sha256:{{ dg_gr_asset_sha256 }}"
+    mode: "0644"
+
+# unzip exits 1 on this archive's backslash path warning even after a clean
+# extract, so use 7z (repo convention for Windows zips).
+- name: Extract the release into its versioned directory
+  ansible.builtin.command:
+    argv:
+      - 7z
+      - x
+      - -y
+      - "-o{{ dg_gr_release_dir }}"
+      - "{{ dg_gr_cache_dir }}/{{ dg_gr_asset_name }}"
+    creates: "{{ dg_gr_app_dir }}/Gravity Rush.exe"
+
+- name: Keep the port's user folder (saves, screenshots, menus) across releases
+  ansible.builtin.file:
+    path: "{{ dg_gr_app_dir }}/user"
+    src: "{{ dg_gr_user_dir }}"
+    state: link
+
+- name: Check whether the Gravity Rush quality baseline was applied
+  ansible.builtin.stat:
+    path: "{{ dg_gr_user_dir }}/.dg-max-baseline"
+  register: _gr_marker
+
+- name: Apply the 4K / FSR Quality / 4096-shadow baseline
+  ansible.builtin.lineinfile:
+    path: "{{ dg_gr_app_dir }}/gravityrush.ini"
+    create: true
+    mode: "0644"
+    regexp: "^{{ item.key }}="
+    line: "{{ item.key }}={{ item.value }}"
+  loop: "{{ dg_gr_ini | dict2items }}"
+  when: not _gr_marker.stat.exists
+
+- name: Record that the baseline was applied
+  ansible.builtin.file:
+    path: "{{ dg_gr_user_dir }}/.dg-max-baseline"
+    state: touch
+    mode: "0644"
+  when: not _gr_marker.stat.exists
+
+# The port keeps launcher options in %APPDATA%; pre-seed the game folder so
+# "Gravity Rush.exe --play" starts the game without the launcher window.
+- name: Create the Proton AppData settings folder
+  ansible.builtin.file:
+    path: "{{ dg_gr_compatdata }}/pfx/drive_c/users/steamuser/AppData/Roaming/gravityrush-launcher"
+    state: directory
+    mode: "0755"
+
+- name: Seed launcher settings with the game folder
+  ansible.builtin.template:
+    src: settings.json.j2
+    dest: "{{ dg_gr_compatdata }}/pfx/drive_c/users/steamuser/AppData/Roaming/gravityrush-launcher/settings.json"
+    mode: "0644"
+    force: false
+
+- name: Install Gravity Rush launcher
+  ansible.builtin.template:
+    src: gravity-rush.sh.j2
+    dest: "{{ dg_gr_launcher }}"
+    mode: "0755"
+
+- name: Render Gravity Rush desktop entry
+  ansible.builtin.template:
+    src: gravity-rush.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-gravity-rush.desktop"
+    mode: "0644"
+
+- name: Install Gravity Rush host desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _gr_host_launchers
+  changed_when: >-
+    'installed ' in _gr_host_launchers.stdout or
+    'removed stale ' in _gr_host_launchers.stdout
