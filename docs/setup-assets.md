@@ -40,6 +40,14 @@ dg_bios_root        → EmuDeck/Emulation/bios            # per-emulator BIOS fi
 
 You source and copy ROMs into these trees yourself.
 
+## Arcade Model 3 Virtua Fighter 3
+
+The optional [Virtua Fighter 3 Recomp](vf3-recomp.md) requires the MAME
+Revision D `vf3.zip` set at `dg_vf3_rom_zip`, derived from
+`dg_roms_final_root/arcade/model3`. The launcher reads the archive in place;
+the role verifies its SHA-256 and never moves or modifies it. `vf3tb.zip` is
+not supported by this port.
+
 ## PCSX2 texture packs — GT4 & friends
 
 The optional [GT4 static recompilation](gt4-recomp.md) uses the unpatched USA

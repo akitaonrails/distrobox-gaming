@@ -54,6 +54,7 @@
     - { role: install_roadrash64_recomp,  tags: [roadrash64, never] }
     - { role: install_fzero_recomp,      tags: [fzero_recomp, never] }
     - { role: install_vf1_recomp,        tags: [vf1_recomp, never] }
+    - { role: install_vf3_recomp,        tags: [vf3_recomp, never] }
     - { role: install_smas_recomp,       tags: [smas_recomp, never] }
     - { role: install_driveclub_shader_patch, tags: [driveclub, never] }
     - { role: install_driveclub_recomp,     tags: [driveclub_recomp, never] }

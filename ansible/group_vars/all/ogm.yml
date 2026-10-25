@@ -252,6 +252,11 @@ dg_ogm_games:
     category: recomp
     sgdb_query: "Virtua Fighter"
     github: "{{ dg_vf1_repo }}"
+  - desktop_id: gaming-vf3-recomp
+    id: vf3-recomp
+    category: recomp
+    sgdb_query: "Virtua Fighter 3"
+    github: "{{ dg_vf3_repo }}"
   - desktop_id: gaming-smas
     id: smas
     category: recomp

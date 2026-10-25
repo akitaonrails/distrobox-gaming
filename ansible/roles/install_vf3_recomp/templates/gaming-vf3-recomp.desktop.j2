@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Virtua Fighter 3 · Recompiled (on {{ dg_box_name }})
+Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_vf3_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Virtua Fighter 3 (Model 3) native Linux recompilation
+Categories=Game;
+Keywords=virtua;fighter;vf3;sega;model3;arcade;recomp;fighting;
+StartupWMClass=vf3
+{{ ogm_metadata('gaming-vf3-recomp') }}

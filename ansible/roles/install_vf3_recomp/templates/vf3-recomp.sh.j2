@@ -1,0 +1,37 @@
+#!/usr/bin/env sh
+set -eu
+
+GAMEDIR="{{ dg_vf3_gamedir }}"
+BIN="{{ dg_vf3_bin }}"
+if [ ! -x "$BIN" ]; then
+  printf '%s\n' "Virtua Fighter 3 Recomp is missing at $BIN" >&2
+  exit 1
+fi
+if [ ! -f "{{ dg_vf3_rom_zip }}" ]; then
+  printf '%s\n' "Virtua Fighter 3 vf3.zip is missing at {{ dg_vf3_rom_zip }}" >&2
+  exit 1
+fi
+
+# Focus the 4K 240 Hz display before SDL chooses its fullscreen display.
+python3 - <<'PY' 2>/dev/null || true
+import glob
+import os
+import socket
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+runtime = os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}")
+paths = [f"{runtime}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{runtime}/hypr/*/.socket.sock")
+if paths:
+    with socket.socket(socket.AF_UNIX) as sock:
+        sock.connect(paths[0])
+        sock.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_vf3_main_output }}" }))')
+        sock.recv(256)
+PY
+
+# Keep settings and saves outside the release tree and read the ROM from NAS.
+export VF3_DATA="{{ dg_vf3_data_dir }}"
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+cd "$GAMEDIR"
+exec ./vf3 --roms "{{ dg_vf3_rom_dir }}" "$@"

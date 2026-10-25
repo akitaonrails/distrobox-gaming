@@ -71,6 +71,7 @@ PIN_VARS = {
     "gaming-wipeout-pe": ("wipeout_pe.yml", "dg_wipeout_pe_version"),
     "gaming-wwhd-recomp": ("wwhd_recomp.yml", "dg_wwhd_release_tag"),
     "gaming-vf1": ("vf1_recomp.yml", "dg_vf1_release_tag"),
+    "gaming-vf3-recomp": ("vf3_recomp.yml", "dg_vf3_release_tag"),
     "ridge-racer": ("ridge_racer.yml", "dg_ridge_racer_version"),
     "sega-rally-hd": ("sega_rally.yml", "dg_sega_rally_version"),
     "virtua-fighter": ("model1.yml", "dg_model1_vf_version"),

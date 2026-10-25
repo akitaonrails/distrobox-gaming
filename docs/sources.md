@@ -48,6 +48,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | DKC 1 / 2 / 3 Recompiled | SNES recomp trilogy (source-built) | [elliotttate/DKC1Recomp](https://github.com/elliotttate/DKC1Recomp) · [2](https://github.com/elliotttate/DKC2Recomp) · [3](https://github.com/elliotttate/DKC3Recomp) · [doc](dkc-recomp.md) |
 | F-Zero SNES Recompiled | SNES recomp (native Linux AppImage), widescreen | [mstan/FZeroSNESRecomp](https://github.com/mstan/FZeroSNESRecomp) · [doc](fzero-recomp.md) |
 | Virtua Fighter Recompiled | SEGA Model 1 Virtua Fighter static recomp (native Linux, Vulkan); needs your MAME `vf` set | [mr-finster/vf1-recomp](https://github.com/mr-finster/vf1-recomp) · [doc](vf1-recomp.md) |
+| Virtua Fighter 3 Recomp | SEGA Model 3 native Linux recomp; needs the MAME Revision D `vf3` set | [mr-finster/vf3-recomp](https://github.com/mr-finster/vf3-recomp) · [doc](vf3-recomp.md) |
 | Super Mario All-Stars Recompiled | SNES All-Stars native recomp (native Linux, OpenGL); needs the **25th-Anniversary** USA ROM (recovered from the Wii disc) | [TanookiStudios/SuperMarioAllStarsRecomp](https://github.com/TanookiStudios/SuperMarioAllStarsRecomp) · [doc](smas-recomp.md) |
 | Super Mario 64 DS PC port | SM64 DS decompilation PC port (Windows build via Proton; needs your .nds) | [tangosdev/sm64ds-decomp](https://github.com/tangosdev/sm64ds-decomp) · [doc](sm64ds-port.md) |
 | Unleashed Recomp | Sonic Unleashed recompilation | [hedge-dev/UnleashedRecomp](https://github.com/hedge-dev/UnleashedRecomp) · [doc](unleashed-recomp.md) |

@@ -15,6 +15,7 @@ the upstream release is deleted.
 
 | What | Source | Role / var prefix |
 |---|---|---|
+| Virtua Fighter 3 Recomp v0.1.10-alpha | [mr-finster/vf3-recomp](https://github.com/mr-finster/vf3-recomp/releases/tag/v0.1.10-alpha) native Linux tarball, SHA256-pinned | `install_vf3_recomp` / `dg_vf3_*` |
 | OpenCMR2 v1.6.0 | [pablocpas/OpenCMR2](https://github.com/pablocpas/OpenCMR2/releases/tag/v1.6.0) Linux tarball, SHA256-pinned | `install_opencmr2` / `dg_opencmr2_*` |
 | RyGT GT Sport 2026-10-22 prerelease | [mlgprorektm8/RyGT](https://github.com/mlgprorektm8/RyGT/releases/tag/gt-sport-2026-10-22) Windows ZIP, SHA256-pinned | `install_rygt` / `dg_rygt_*` |
 | God of War III SpartanPort v2.7.0 | [FelipePrado0/gow3_pc](https://github.com/FelipePrado0/gow3_pc/releases/tag/windows-v2.7.0) Linux AppImage, SHA256-pinned | `install_gow3_pc` / `dg_gow3_pc_*` |

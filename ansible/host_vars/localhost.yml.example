@@ -11,6 +11,10 @@
 # dg_external_games_root: /media/games
 # dg_emudeck_root: "{{ dg_external_games_root }}/EmuDeck"
 # dg_roms_final_root: "{{ dg_external_games_root }}/ROMS_FINAL"
+# Virtua Fighter 3 Recomp expects the MAME Revision D vf3.zip set.
+# dg_vf3_rom_dir: "{{ dg_roms_final_root }}/arcade/model3"
+# dg_vf3_main_output: DP-1  # preferred 4K display
+# dg_vf3_data_rel: .local/share/vf3-recomp  # save-backup inventory follows this path
 # GT4 Recomp requires an unpatched USA retail SCUS-97328 ISO with the pinned
 # game code. The Spec II SCUS-97436 image is not supported by v1.2.3.
 # dg_gt4r_iso: "{{ dg_roms_final_root }}/ps2/Gran Turismo 4/Gran Turismo 4.iso"

@@ -1,0 +1,89 @@
+---
+- name: Check the owned Virtua Fighter 3 Revision D set
+  ansible.builtin.stat:
+    path: "{{ dg_vf3_rom_zip }}"
+    checksum_algorithm: sha256
+  register: _vf3_rom
+
+- name: Require the verified MAME vf3 set
+  ansible.builtin.assert:
+    that:
+      - _vf3_rom.stat.isreg | default(false)
+      - _vf3_rom.stat.checksum | default('') == dg_vf3_rom_sha256
+    fail_msg: "Virtua Fighter 3 Revision D vf3.zip missing or changed: {{ dg_vf3_rom_zip }}"
+
+- name: Create Virtua Fighter 3 install, cache, data and launcher directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_vf3_root }}"
+    - "{{ dg_vf3_cache_dir }}"
+    - "{{ dg_vf3_data_dir }}"
+    - "{{ dg_box_home }}/bin"
+    - "{{ dg_desktop_render_dir }}"
+
+- name: Download the pinned native Linux release
+  ansible.builtin.get_url:
+    url: "{{ dg_vf3_asset_url }}"
+    dest: "{{ dg_vf3_archive }}"
+    checksum: "sha256:{{ dg_vf3_asset_sha256 }}"
+    mode: "0644"
+
+- name: Extract the release when the installed tag changes
+  ansible.builtin.shell: |
+    set -eu
+    root="{{ dg_vf3_root }}"
+    if [ -x "{{ dg_vf3_bin }}" ] && grep -qx "{{ dg_vf3_release_tag }}" "$root/.dg-installed-ref" 2>/dev/null; then
+      exit 0
+    fi
+    tar -xzf "{{ dg_vf3_archive }}" -C "$root"
+    chmod 0755 "{{ dg_vf3_bin }}"
+    printf '%s\n' "{{ dg_vf3_release_tag }}" > "$root/.dg-installed-ref"
+    printf '%s\n' vf3-extracted
+  register: _vf3_extract
+  changed_when: "'vf3-extracted' in _vf3_extract.stdout"
+
+- name: Verify the native binary's shared libraries inside the box
+  ansible.builtin.command:
+    argv:
+      - distrobox
+      - enter
+      - "{{ dg_box_name }}"
+      - --
+      - ldd
+      - "{{ dg_vf3_bin }}"
+  register: _vf3_ldd
+  changed_when: false
+  failed_when: _vf3_ldd.rc != 0 or 'not found' in _vf3_ldd.stdout
+
+- name: Seed high-resolution display and native controller settings
+  ansible.builtin.template:
+    src: settings.ini.j2
+    dest: "{{ dg_vf3_data_dir }}/settings.ini"
+    mode: "0644"
+    force: false
+
+- name: Install the Virtua Fighter 3 launcher
+  ansible.builtin.template:
+    src: vf3-recomp.sh.j2
+    dest: "{{ dg_vf3_launcher }}"
+    mode: "0755"
+
+- name: Render the Virtua Fighter 3 desktop entry
+  ansible.builtin.template:
+    src: gaming-vf3-recomp.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-vf3-recomp.desktop"
+    mode: "0644"
+
+- name: Install the desktop entry on the host
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _vf3_host_launchers
+  changed_when: >-
+    'installed ' in _vf3_host_launchers.stdout or
+    'removed stale ' in _vf3_host_launchers.stdout

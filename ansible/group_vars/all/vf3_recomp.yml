@@ -1,0 +1,28 @@
+---
+# Virtua Fighter 3 Recomp: official native Linux/Steam Deck release.
+dg_vf3_repo: mr-finster/vf3-recomp
+dg_vf3_release_tag: v0.1.10-alpha
+dg_vf3_asset_name: VirtuaFighter3Recomp-deck.tar.gz
+dg_vf3_asset_url: "https://github.com/{{ dg_vf3_repo }}/releases/download/{{ dg_vf3_release_tag }}/{{ dg_vf3_asset_name }}"
+dg_vf3_asset_sha256: 8a21fef125e2614b2d71e8132e83dc4f12f9b3ffd3dfb193f0d81e16454f2915
+
+dg_vf3_rom_dir: "{{ dg_roms_final_root }}/arcade/model3"
+dg_vf3_rom_zip: "{{ dg_vf3_rom_dir }}/vf3.zip"
+dg_vf3_rom_sha256: 99a92b2110e9e5508e8f3951eaac044dd5e1291442e42bc8b69f84533bafce28
+dg_vf3_cache_dir: "{{ dg_box_home }}/cache/vf3-recomp"
+dg_vf3_archive: "{{ dg_vf3_cache_dir }}/VirtuaFighter3Recomp-deck-{{ dg_vf3_release_tag }}.tar.gz"
+dg_vf3_root: "{{ dg_box_home }}/tools/vf3-recomp"
+dg_vf3_gamedir: "{{ dg_vf3_root }}/VirtuaFighter3"
+dg_vf3_bin: "{{ dg_vf3_gamedir }}/vf3"
+dg_vf3_data_rel: .local/share/vf3-recomp
+dg_vf3_data_dir: "{{ dg_box_home }}/{{ dg_vf3_data_rel }}"
+dg_vf3_launcher: "{{ dg_box_home }}/bin/vf3-recomp"
+dg_vf3_main_output: DP-1
+
+# Fullscreen uses the selected monitor's 3840x2160 desktop mode. The arcade
+# simulation remains ~57.5 Hz; smooth motion outputs up to 120 pictures/s.
+dg_vf3_scale: 6
+dg_vf3_picture_shape: 3  # 16:9
+dg_vf3_antialiasing: 2
+dg_vf3_renderer_3d: 2  # Auto: GPU when its startup comparison passes
+dg_vf3_smooth_motion: 1
