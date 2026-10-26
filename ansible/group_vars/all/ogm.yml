@@ -333,6 +333,11 @@ dg_ogm_games:
     category: port
     sgdb_query: "GoldenEye 007"
     github: "{{ dg_midas_repo }}"
+  - desktop_id: gaming-kyty-gt7
+    id: kyty-gt7
+    category: port
+    sgdb_query: "Gran Turismo 7"
+    github: "{{ dg_kyty_repo }}"
   - desktop_id: gaming-gravity-rush
     id: gravity-rush
     category: wine

@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+# Gran Turismo 7 via KytyPS5-GT7 — native Linux emulator in the gaming box.
+# Flags are the upstream-tested GT7 profile (docs/GT7.md); extra args pass
+# through to kyty_emulator.
+set -eu
+
+R="{{ dg_kyty_release_dir }}"
+GAME="{{ dg_kyty_game_dir }}"
+
+if [ ! -x "$R/kyty_emulator" ]; then
+  printf '%s\n' 'KytyPS5 is not installed.' >&2
+  exit 1
+fi
+if [ ! -f "$GAME/eboot.bin" ]; then
+  printf '%s\n' 'GT7 game folder is missing (docs/kyty-gt7.md).' >&2
+  exit 1
+fi
+
+exec distrobox-enter -n {{ dg_box_name }} -- sh -c \
+  'cd "$0" && export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}" && exec ./kyty_emulator --game "$1" {% for flag in dg_kyty_emulator_flags %}{{ flag }} {% endfor %}"$@"' \
+  "$R" "$GAME" "$@"

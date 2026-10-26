@@ -72,7 +72,8 @@ newer build. Acceptable for actively developed emulators.
 | FM4 Recompiled (Forza Motorsport 4 recomp; win-x64 via GE-Proton) | github.com/Alexbeav/fm4-recomp release (pinned + sha256; AUTO). Needs the **extracted FM4 Europe Game of the Year Disc 1** (XEX hashes asserted; the local USA and Essentials dumps do NOT match — blocked until the EU GOTY dump is staged under `ROMS_FINAL/PC/`). Optional Disc 2 marketplace packages in `disc2-content/`. See `docs/fm4-recomp.md`. | `install_fm4_recomp` / `dg_fm4_recomp_*` |
 
 | Gravity Rush PC (Gravity Rush Remastered native port; win-x64 via GE-Proton) | github.com/LucaPazienza/gravityrush_pc release (pinned + sha256; AUTO). Needs the **unpacked European CUSA01113 v01.00** game folder — this box's `roms_rare/ps4/CUSA01113` (an ISO is not usable). See `docs/gravity-rush.md`. | `install_gravity_rush` / `dg_gr_*` || RetroArch cores + assets | buildbot.libretro.com | `retroarch_extras` |
-| .NET Desktop Runtime, VC++ redist (Xenia prefix) | aka.ms evergreen links | `install_xenia` |
+
+| KytyPS5-GT7 (PS5 emulator for Gran Turismo 7; native Linux) | github.com/usa-ratt/KytyPS5-GT7 releases (pinned + sha256; AUTO, daily tag cadence). Needs the **extracted** GT7 PPSA01317 v01.710 game folder — built from this box's 134 GB FIH FPKG with `pkg-to-anyps5` (see `docs/kyty-gt7.md`). | `install_kyty_gt7` / `dg_kyty_*` || .NET Desktop Runtime, VC++ redist (Xenia prefix) | aka.ms evergreen links | `install_xenia` |
 | GT5 official patch chain 1.05→1.13 | Sony CDN (`b0.ww.np.dl.playstation.net` — still online) | `install_gt5_master_mod` / `dg_gt5_pkg_chain` |
 | SMM2 popular courses | tgrcode.com MariOver API (mirrors live Nintendo servers) | `install_smm2_levels` |
 | yay-bin, flathub remote | AUR git / dl.flathub.org | `bootstrap_packages` |

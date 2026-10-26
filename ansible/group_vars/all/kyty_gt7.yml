@@ -1,0 +1,33 @@
+---
+# Gran Turismo 7 via KytyPS5-GT7 (usa-ratt's gt7-eqaa branch of Senaxx/KytyPS5).
+# Native Linux x86_64 PS5 emulator build; runs in the gaming distrobox on the
+# RTX 5090. Game: PPSA01317 v01.710 from the user's 134 GB FIH FPKG, extracted
+# with pkg-to-anyps5 into a Kyty-loadable folder (see docs/kyty-gt7.md).
+dg_kyty_repo: usa-ratt/KytyPS5-GT7
+dg_kyty_version: KytyPS5-2026-10-26-55a02de
+dg_kyty_asset_name: "{{ dg_kyty_version }}-Linux-x86_64.tar.gz"
+dg_kyty_asset_url: "https://github.com/{{ dg_kyty_repo }}/releases/download/{{ dg_kyty_version }}/{{ dg_kyty_asset_name }}"
+dg_kyty_asset_sha256: cf5fcb9fc31bf1fbec5e1495d262269bc4ddb7c7b22fdc70b571fae4a2fb767d
+
+# Assembled from the FPKG extraction: app0/ contents + unwrapped ELF
+# eboot.bin and sce_module (pkg-to-anyps5 source/ output).
+dg_kyty_game_dir: "{{ dg_roms_final_root }}/ps5/Gran.Turismo.7.PS5-PPSA01317[FPKG]/gt7-kyty"
+
+dg_kyty_install_dir: "{{ dg_box_home }}/tools/kytyps5"
+dg_kyty_release_dir: "{{ dg_kyty_install_dir }}/releases/{{ dg_kyty_version }}"
+dg_kyty_cache_dir: "{{ dg_box_home }}/cache/kyty-gt7"
+dg_kyty_launcher: "{{ dg_box_home }}/bin/kyty-gt7"
+
+# Upstream-tested GT7 profile (docs/GT7.md): 4K, Mailbox, vblank 60,
+# tessellation ON (car bodies break without it), bindless textures ON,
+# shader optimization Performance. Red-zone protection is on by default in
+# the emulator; readback/debugging off.
+dg_kyty_emulator_flags:
+  - --present-mode Mailbox
+  - --vblank-frequency 60
+  - --screen-width 3840
+  - --screen-height 2160
+  - --fullscreen
+  - --tessellation
+  - --bindless
+  - --shader-optimization-type Performance
