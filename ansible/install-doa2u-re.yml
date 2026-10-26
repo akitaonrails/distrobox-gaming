@@ -1,0 +1,7 @@
+---
+- name: Install the DOA2U native port
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_doa2u_re

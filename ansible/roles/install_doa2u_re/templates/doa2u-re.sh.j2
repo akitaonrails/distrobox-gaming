@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+# Dead or Alive 2 Ultimate native port — runs in the gaming distrobox
+# (SDL_GPU/Vulkan). Extra args pass through to run_game.py.
+set -eu
+
+A="{{ dg_doa2u_app_dir }}"
+
+if [ ! -x "$A/run_game.sh" ]; then
+  printf '%s\n' 'DOA2U port is not built (docs/doa2u-re.md).' >&2
+  exit 1
+fi
+
+exec distrobox-enter -n {{ dg_box_name }} -- sh -c \
+  'cd "$0" && export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}" && exec ./run_game.sh "$@"' \
+  "$A" "$@"

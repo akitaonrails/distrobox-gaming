@@ -1,0 +1,11 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Dead or Alive 2 Ultimate · PC Port
+Exec={{ dg_doa2u_launcher }}
+Terminal=false
+Type=Application
+Icon=input-gaming
+Comment=DOA2 Ultimate native PC port (Xbox recompilation, Vulkan).
+Categories=Game;
+Keywords=dead;alive;doa;ultimate;xbox;
+{{ ogm_metadata('gaming-doa2u-re') }}

@@ -1,0 +1,131 @@
+---
+- name: Require the DOA2U Disc 2 ISO
+  ansible.builtin.stat:
+    path: "{{ dg_doa2u_iso }}"
+  register: _doa2u_iso
+- ansible.builtin.assert:
+    that: _doa2u_iso.stat.isreg is defined and _doa2u_iso.stat.isreg
+    fail_msg: >-
+      DOA2U needs the Dead or Alive Ultimate (Xbox, USA) Disc 2 ISO at
+      dg_doa2u_iso — the build hash-verifies the executable and refuses
+      other regions, versions and Disc 1.
+
+- name: Verify the staged release ZIP
+  ansible.builtin.stat:
+    path: "{{ dg_doa2u_zip }}"
+    checksum_algorithm: sha256
+  register: _doa2u_zip
+- ansible.builtin.assert:
+    that: _doa2u_zip.stat.checksum | default('') == dg_doa2u_zip_sha256
+    fail_msg: >-
+      Staged ZIP {{ dg_doa2u_zip }} missing or wrong sha256 — re-download
+      DOA2U-{{ dg_doa2u_version }}-Linux.zip from the doa2u-re release.
+
+- name: Install the runtime packages in the box
+  ansible.builtin.command:
+    argv: "{{ ['distrobox-enter', '-n', dg_box_name, '--', 'sudo', 'pacman', '-S', '--noconfirm', '--needed'] + dg_doa2u_packages }}"
+  register: _doa2u_pkgs
+  changed_when: "'nothing to do' not in _doa2u_pkgs.stdout"
+
+- name: Create the DOA2U directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_doa2u_release_dir }}"
+    - "{{ dg_doa2u_user_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Extract the release ZIP
+  ansible.builtin.command:
+    argv:
+      - distrobox-enter
+      - -n
+      - "{{ dg_box_name }}"
+      - --
+      - 7z
+      - x
+      - -y
+      - "-o{{ dg_doa2u_release_dir }}"
+      - "{{ dg_doa2u_zip }}"
+    creates: "{{ dg_doa2u_app_dir }}/build_game.sh"
+
+- name: Create the lifter's Python venv
+  ansible.builtin.command:
+    argv:
+      - distrobox-enter
+      - -n
+      - "{{ dg_box_name }}"
+      - --
+      - sh
+      - -c
+      - >-
+        cd '{{ dg_doa2u_app_dir }}' &&
+        python3 -m venv private/venv &&
+        private/venv/bin/pip install -q capstone==5.0.7 pillow==12.2.0 &&
+        touch private/.dg-venv
+    creates: "{{ dg_doa2u_app_dir }}/private/.dg-venv"
+
+# The release ships no runner: this lifts the game from the ISO (extracts it
+# once into private/imported-disc, ~4.1 GB) and compiles. ~15-25 min once.
+- name: Build the game from the Disc 2 ISO
+  ansible.builtin.command:
+    argv:
+      - distrobox-enter
+      - -n
+      - "{{ dg_box_name }}"
+      - --
+      - sh
+      - -c
+      - >-
+        cd '{{ dg_doa2u_app_dir }}' &&
+        ./build_game.sh '{{ dg_doa2u_iso }}'
+    creates: "{{ dg_doa2u_app_dir }}/private/.dg-built"
+  register: _doa2u_build
+
+- name: Record the successful build
+  ansible.builtin.file:
+    path: "{{ dg_doa2u_app_dir }}/private/.dg-built"
+    state: touch
+    mode: "0644"
+  when: _doa2u_build is changed
+
+# Saves and the disc cache live in private/play-disc; keep them across
+# version upgrades through a stable symlink.
+- name: Point the game's save/cache folder at the stable user dir
+  ansible.builtin.file:
+    path: "{{ dg_doa2u_app_dir }}/private/play-disc"
+    src: "{{ dg_doa2u_user_dir }}/play-disc"
+    state: link
+    force: true
+
+- name: Seed the launcher baseline when absent
+  ansible.builtin.copy:
+    content: "{{ dg_doa2u_launcher_json }}"
+    dest: "{{ dg_doa2u_app_dir }}/private/launcher.json"
+    force: false
+    mode: "0644"
+
+- name: Install the DOA2U launcher
+  ansible.builtin.template:
+    src: doa2u-re.sh.j2
+    dest: "{{ dg_doa2u_launcher }}"
+    mode: "0755"
+
+- name: Render the DOA2U desktop entry
+  ansible.builtin.template:
+    src: doa2u-re.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-doa2u-re.desktop"
+    mode: "0644"
+
+- name: Install the DOA2U host desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _doa2u_host
+  changed_when: >-
+    'installed ' in _doa2u_host.stdout or
+    'removed stale ' in _doa2u_host.stdout

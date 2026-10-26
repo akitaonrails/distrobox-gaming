@@ -1,0 +1,7 @@
+---
+- name: Install GT3 Revisited
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_gt3_revisited

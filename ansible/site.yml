@@ -40,6 +40,8 @@
     - { role: install_fm4_recomp,        tags: [fm4_recomp, never] }
     - { role: install_gravity_rush,      tags: [gravity_rush, never] }
     - { role: install_kyty_gt7,          tags: [kyty_gt7, never] }
+    - { role: install_doa2u_re,          tags: [doa2u, never] }
+    - { role: install_gt3_revisited,     tags: [gt3_revisited, never] }
     - { role: install_m2emulator,        tags: [m2emulator, never] }
     - { role: install_model1,            tags: [model1, never] }
     - { role: install_sega_rally,        tags: [sega_rally, never] }

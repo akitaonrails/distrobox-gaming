@@ -1,0 +1,43 @@
+---
+# GT3 Revisited — open-source reimplementation of the Gran Turismo 3 A-Spec
+# engine (matt-pulsipher/GT3-revisited), native Linux x86_64 + Vulkan (SDL_GPU).
+# Reads the user's own NTSC-U disc image directly at runtime; nothing is
+# extracted or redistributed. Saves import/export from PS2/PCSX2 saves.
+# See docs/gt3-revisited.md.
+
+dg_gt3r_repo: matt-pulsipher/GT3-revisited
+dg_gt3r_version: 0.3.0
+dg_gt3r_asset_name: gt3r-linux-x86_64.tar.gz
+dg_gt3r_asset_url: "https://github.com/{{ dg_gt3r_repo }}/releases/download/v{{ dg_gt3r_version }}/{{ dg_gt3r_asset_name }}"
+dg_gt3r_asset_sha256: da6f14ac0e67c7421cb5d2abd193a09585579deb13659f27b575da98056bc3c8
+
+# NTSC-U disc only (SCUS-97102 or the PBPX-95503 bundle disc — both verified
+# upstream; ours is the latter). Only .iso images are read.
+dg_gt3r_iso: "{{ dg_rom_heavy_root }}/ps2/Gran Turismo 3 - A-spec (USA) (v1.10)/Gran Turismo 3 - A-spec (USA) (v1.10).iso"
+
+dg_gt3r_install_dir: "{{ dg_box_home }}/tools/gt3r"
+dg_gt3r_release_dir: "{{ dg_gt3r_install_dir }}/releases/{{ dg_gt3r_version }}"
+dg_gt3r_app_dir: "{{ dg_gt3r_release_dir }}/gt3r-v{{ dg_gt3r_version }}-linux-x86_64"
+dg_gt3r_cache_dir: "{{ dg_box_home }}/cache/gt3r"
+dg_gt3r_launcher: "{{ dg_box_home }}/bin/gt3-revisited"
+
+# User data (config, saves, replays, mods, screenshots) lives in
+# ~/.local/share/GT3Revisited/GT3Revisited — survives upgrades; in backups.
+dg_gt3r_config_dir: "{{ dg_box_home }}/.local/share/GT3Revisited/GT3Revisited"
+
+# Baseline config.ini, seeded once (later Settings changes win). Widescreen
+# at the display's native size with vsync, MSAA 8, dynamic resolution on,
+# uncapped (limit_60fps off — the engine paces itself; 240 Hz display here).
+dg_gt3r_config_ini: |
+  [game]
+  disc = {{ dg_gt3r_iso }}
+  [video]
+  fullscreen = on
+  vsync = 1
+  limit_60fps = off
+  msaa = 8
+  render_scale = auto
+  dynamic_resolution = on
+  gpu = 1
+  [online]
+  update_check = off

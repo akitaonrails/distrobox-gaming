@@ -1,0 +1,82 @@
+---
+- name: Require the GT3 NTSC-U disc image
+  ansible.builtin.stat:
+    path: "{{ dg_gt3r_iso }}"
+  register: _gt3r_iso
+- ansible.builtin.assert:
+    that: _gt3r_iso.stat.isreg is defined and _gt3r_iso.stat.isreg
+    fail_msg: >-
+      GT3 Revisited reads an NTSC-U .iso (SCUS-97102 or PBPX-95503) at
+      dg_gt3r_iso — other regions are untested and only .iso is supported.
+
+- name: Create the GT3 Revisited directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_gt3r_release_dir }}"
+    - "{{ dg_gt3r_cache_dir }}"
+    - "{{ dg_gt3r_config_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Download the pinned GT3 Revisited Linux build
+  ansible.builtin.get_url:
+    url: "{{ dg_gt3r_asset_url }}"
+    dest: "{{ dg_gt3r_cache_dir }}/{{ dg_gt3r_asset_name }}"
+    checksum: "sha256:{{ dg_gt3r_asset_sha256 }}"
+    mode: "0644"
+
+- name: Extract the build into its versioned release directory
+  ansible.builtin.unarchive:
+    src: "{{ dg_gt3r_cache_dir }}/{{ dg_gt3r_asset_name }}"
+    dest: "{{ dg_gt3r_release_dir }}"
+    remote_src: true
+    creates: "{{ dg_gt3r_app_dir }}/bin/gt3r"
+
+- name: Verify the disc with the project's own tool
+  ansible.builtin.command:
+    argv:
+      - distrobox-enter
+      - -n
+      - "{{ dg_box_name }}"
+      - --
+      - "{{ dg_gt3r_app_dir }}/bin/gt3tool"
+      - info
+      - "{{ dg_gt3r_iso }}"
+  register: _gt3r_disc
+  changed_when: false
+- ansible.builtin.assert:
+    that: "'verified' in _gt3r_disc.stdout"
+    fail_msg: >-
+      gt3tool did not report the disc as verified: {{ _gt3r_disc.stdout[-400:] }}
+
+- name: Seed the config baseline when absent
+  ansible.builtin.copy:
+    content: "{{ dg_gt3r_config_ini }}"
+    dest: "{{ dg_gt3r_config_dir }}/config.ini"
+    force: false
+    mode: "0644"
+
+- name: Install the GT3 Revisited launcher
+  ansible.builtin.template:
+    src: gt3-revisited.sh.j2
+    dest: "{{ dg_gt3r_launcher }}"
+    mode: "0755"
+
+- name: Render the GT3 Revisited desktop entry
+  ansible.builtin.template:
+    src: gt3-revisited.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-gt3-revisited.desktop"
+    mode: "0644"
+
+- name: Install the GT3 Revisited host desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _gt3r_host
+  changed_when: >-
+    'installed ' in _gt3r_host.stdout or
+    'removed stale ' in _gt3r_host.stdout

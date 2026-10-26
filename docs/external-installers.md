@@ -74,8 +74,10 @@ newer build. Acceptable for actively developed emulators.
 | Gravity Rush PC (Gravity Rush Remastered native port; win-x64 via GE-Proton) | github.com/LucaPazienza/gravityrush_pc release (pinned + sha256; AUTO). Needs the **unpacked European CUSA01113 v01.00** game folder — this box's `roms_rare/ps4/CUSA01113` (an ISO is not usable). See `docs/gravity-rush.md`. | `install_gravity_rush` / `dg_gr_*` || RetroArch cores + assets | buildbot.libretro.com | `retroarch_extras` |
 
 | KytyPS5-GT7 (PS5 emulator for Gran Turismo 7; native Linux) | github.com/usa-ratt/KytyPS5-GT7 releases (pinned + sha256; AUTO, daily tag cadence). Needs the **extracted** GT7 PPSA01317 v01.710 game folder — built from this box's 134 GB FIH FPKG with `pkg-to-anyps5` (see `docs/kyty-gt7.md`). | `install_kyty_gt7` / `dg_kyty_*` || .NET Desktop Runtime, VC++ redist (Xenia prefix) | aka.ms evergreen links | `install_xenia` |
-| GT5 official patch chain 1.05→1.13 | Sony CDN (`b0.ww.np.dl.playstation.net` — still online) | `install_gt5_master_mod` / `dg_gt5_pkg_chain` |
-| SMM2 popular courses | tgrcode.com MariOver API (mirrors live Nintendo servers) | `install_smm2_levels` |
+
+| DOA2U PC Port (Dead or Alive 2 Ultimate recomp; native Linux SDL_GPU/Vulkan) | github.com/NoRain211/doa2u-re release ZIP (pinned + sha256; MANUAL-build hybrid: the ZIP is staged, the runner is compiled in the box from the game dump). Needs the **DOA Ultimate (Xbox, USA) Disc 2** ISO — this box's `roms_heavy/xbox/Dead or Alive 2 Ultimate (USA, Japan) (En,Ja).iso`; XBE hash-verified, other discs refused. See `docs/doa2u-re.md`. | `install_doa2u_re` / `dg_doa2u_*` || GT5 official patch chain 1.05→1.13 | Sony CDN (`b0.ww.np.dl.playstation.net` — still online) | `install_gt5_master_mod` / `dg_gt5_pkg_chain` |
+
+| GT3 Revisited (GT3 engine reimplementation; native Linux Vulkan) | github.com/matt-pulsipher/GT3-revisited releases (pinned + sha256; AUTO). Needs a **GT3 NTSC-U .iso** — this box's `roms_heavy/ps2/Gran Turismo 3 - A-spec (USA) (v1.10).iso` (PBPX-95503, verified by gt3tool). See `docs/gt3-revisited.md`. | `install_gt3_revisited` / `dg_gt3r_*` || SMM2 popular courses | tgrcode.com MariOver API (mirrors live Nintendo servers) | `install_smm2_levels` |
 | yay-bin, flathub remote | AUR git / dl.flathub.org | `bootstrap_packages` |
 
 ## 3. AUTO — known URL but fragile

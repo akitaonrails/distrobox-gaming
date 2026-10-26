@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+# GT3 Revisited — native Linux engine reimplementation, runs in the gaming
+# distrobox (Vulkan via SDL_GPU). Extra args pass through to gt3r.
+set -eu
+
+B="{{ dg_gt3r_app_dir }}/bin/gt3r"
+
+if [ ! -x "$B" ]; then
+  printf '%s\n' 'GT3 Revisited is not installed.' >&2
+  exit 1
+fi
+if [ ! -f "{{ dg_gt3r_iso }}" ]; then
+  printf '%s\n' 'GT3 disc image is missing (docs/gt3-revisited.md).' >&2
+  exit 1
+fi
+
+exec distrobox-enter -n {{ dg_box_name }} -- sh -c \
+  'export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}" && exec "$0" "{{ dg_gt3r_iso }}" "$@"' \
+  "$B" "$@"

@@ -333,6 +333,16 @@ dg_ogm_games:
     category: port
     sgdb_query: "GoldenEye 007"
     github: "{{ dg_midas_repo }}"
+  - desktop_id: gaming-gt3-revisited
+    id: gt3-revisited
+    category: port
+    sgdb_query: "Gran Turismo 3 A-Spec"
+    github: "{{ dg_gt3r_repo }}"
+  - desktop_id: gaming-doa2u-re
+    id: doa2u-re
+    category: port
+    sgdb_query: "Dead or Alive 2 Ultimate"
+    github: "{{ dg_doa2u_repo }}"
   - desktop_id: gaming-kyty-gt7
     id: kyty-gt7
     category: port

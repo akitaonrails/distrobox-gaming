@@ -1,0 +1,39 @@
+---
+# Dead or Alive 2 Ultimate — native PC port (NoRain211/doa2u-re, static
+# recompilation of the Xbox DOA2U executable). Linux build renders through
+# SDL_GPU/Vulkan. The release ZIP ships NO prebuilt runner: build_game.sh
+# lifts the game from the user's own Disc 2 ISO (hash-verified; other
+# regions/versions/Disc 1 refused) and compiles it in place.
+# See docs/doa2u-re.md.
+
+dg_doa2u_repo: NoRain211/doa2u-re
+dg_doa2u_version: 0.1.6-Alpha
+dg_doa2u_zip: "{{ dg_roms_final_root }}/PC/DOA2U-{{ dg_doa2u_version }}-Linux.zip"
+dg_doa2u_zip_sha256: 530ec313aeac37b206ab59ba55c94e471ac540aaef1c2ef4096f46c3c333b3fc
+
+# Dead or Alive Ultimate (Xbox, USA) Disc 2 — the DOA2U disc. The build
+# verifies the executable's SHA-256 and refuses anything else.
+dg_doa2u_iso: "{{ dg_rom_heavy_root }}/xbox/Dead or Alive 2 Ultimate (USA, Japan) (En,Ja).iso"
+
+dg_doa2u_install_dir: "{{ dg_box_home }}/tools/doa2u"
+dg_doa2u_release_dir: "{{ dg_doa2u_install_dir }}/releases/{{ dg_doa2u_version }}"
+dg_doa2u_app_dir: "{{ dg_doa2u_release_dir }}/DOA2U-{{ dg_doa2u_version }}"
+dg_doa2u_user_dir: "{{ dg_box_home }}/.local/share/doa2u-re"
+dg_doa2u_launcher: "{{ dg_box_home }}/bin/doa2u-re"
+
+# The lifter needs capstone 5.0.7 + Pillow in its venv; the runner needs
+# shaderc at runtime (Vulkan shaders compile on the fly).
+dg_doa2u_packages: [shaderc]
+
+# Baseline launcher choices (private/launcher.json). 4K, game's own 16:9
+# widescreen, MSAA 8 (SDL_GPU/Linux ceiling; higher falls back), SMAA on.
+# Stereo default; intro movies kept. Applied only when the file is absent.
+dg_doa2u_launcher_json: |
+  {
+    "resolution": 2160,
+    "msaa": 8,
+    "smaa": true,
+    "widescreen": true,
+    "skipIntro": false,
+    "surround": false
+  }
