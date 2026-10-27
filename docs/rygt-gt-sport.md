@@ -12,4 +12,10 @@ RyGT renders the game internally at 1920×1080. Its packaged per-game config ena
 
 The local `ROMS_FINAL/ps4` collection has the CUSA03220 base PKG and 1.69 patch PKG, with no separate GT Sport DLC PKG. The extracted game and `ps4-addons` likewise have no CUSA03220 add-on. The release NFO's mention of add-ons is not proof that DLC packages are present. RyGT's current `sceAppContentAddcontMount` is unimplemented and `sceAppContentGetAddcontInfoList` always returns zero, so this release cannot mount separate DLC even if acquired later. Keep DLC PKGs separate until the port implements add-on content.
 
+**Upstream is gone (2026-10-27).** `github.com/mlgprorektm8/RyGT` returns
+HTTP 404 — the repository was deleted, with no successor found on GitHub. The
+pinned `gt-sport-2026-10-22` release installed here keeps working, but there
+are no further updates and the release sweep now reports it as `GONE` instead
+of an API error. Do not delete the installed tree; it is the only copy.
+
 Upstream: [RyGT](https://github.com/mlgprorektm8/RyGT), [GT Sport setup/status](https://github.com/mlgprorektm8/RyGT/blob/main/docs/gt-sport/README.md), [controller mapping](https://github.com/mlgprorektm8/RyGT/blob/main/docs/user/INPUT_MAPPING.md), [add-on content implementation](https://github.com/mlgprorektm8/RyGT/blob/main/core/libs/prx/libSceAppContent/Export.cpp).

@@ -22,6 +22,27 @@ DESKTOP_DIR = ROOT / "config/desktop/rendered"
 VARS_DIR = ROOT / "ansible/group_vars/all"
 GAME_CATEGORIES = {"port", "decomp", "recomp", "fangame", "wine", "arcade"}
 
+# Installs the sweep cannot compare against a release tag, and why. Keeping
+# them visible (instead of dropping them) documents the intent.
+SOURCE_PINNED = {
+    # built from source at a pinned commit, not from a release asset
+    "gaming-cannonball": "dg_cannonball_ref",
+    "gaming-dkc1-recomp": "commit pin",
+    "gaming-dkc2-recomp": "commit pin",
+    "gaming-dkc3-recomp": "commit pin",
+    "gaming-sonic2-2013": "source build",
+    "pc-outrun-2006": "nightly.link artifact pinned by commit",
+}
+AUTO_LATEST = {
+    # role installs whatever the API reports as latest, on purpose
+    "gaming-dusk": "latest-release role",
+    "gaming-unleashed-recomp": "latest-release role",
+}
+GONE_REPOS = {
+    # upstream deleted/renamed; the installed pinned copy is kept as-is
+    "gaming-rygt-gt-sport": "mlgprorektm8/RyGT is gone (HTTP 404); installed release kept",
+}
+
 # Values remain in group_vars; this only tells the sweep which pin to compare.
 # Games built from a moving Git ref, or installed by a latest-release role, are
 # still queried and shown as REVIEW rather than silently assumed current.
@@ -36,6 +57,7 @@ PIN_VARS = {
     "gaming-dkr-r": ("dkr_recomp.yml", "dg_dkr_release_tag"),
     "gaming-dude": ("dude.yml", "dg_dude_version"),
     "gaming-driveclub-recomp": ("driveclub_recomp.yml", "dg_dcr_version"),
+    "gaming-doa2u-re": ("doa2u_re.yml", "dg_doa2u_version"),
     "gaming-doom2-ray-traced": ("prboom_rt.yml", "dg_prboom_rt_version"),
     "gaming-ffvii-7th-heaven": ("7th_heaven.yml", "dg_7th_heaven_version"),
     "gaming-fukami-rrv": ("fukami.yml", "dg_fukami_version"),
@@ -186,7 +208,12 @@ def latest_release(repo, stem, pin, token):
 
 
 def same_tag(pinned, latest):
-    return pinned.lstrip("vV").lower() == latest.lstrip("vV").lower()
+    left, right = pinned.lstrip("vV").lower(), latest.lstrip("vV").lower()
+    if left == right:
+        return True
+    # Pins may carry the asset's own suffix ("0.1.6-Alpha", "1.3.0-rc6") while
+    # the tag is the bare version; treat a suffixed pin as the same release.
+    return left.startswith(right) or right.startswith(left)
 
 
 def main():
@@ -200,6 +227,12 @@ def main():
 
     def check_game(game):
         stem, repo = game
+        if stem in GONE_REPOS:
+            return stem, "GONE", GONE_REPOS[stem]
+        if stem in AUTO_LATEST:
+            return stem, "AUTO", AUTO_LATEST[stem]
+        if stem in SOURCE_PINNED:
+            return stem, "SOURCE", SOURCE_PINNED[stem]
         try:
             pin = pinned_tag(stem, {})
             release = latest_release(repo, stem, pin, token)
@@ -225,7 +258,10 @@ def main():
         for stem, status, detail in pool.map(check_game, games):
             counts[status] += 1
             print(f"  {status:10} {stem:30} {detail}", flush=True)
-    print("  " + ", ".join(f"{key.lower()}={counts[key]}" for key in ("CURRENT", "CANDIDATE", "REVIEW", "NO_RELEASE", "ERROR")))
+    print("  " + ", ".join(
+        f"{key.lower()}={counts[key]}"
+        for key in ("CURRENT", "CANDIDATE", "REVIEW", "SOURCE", "AUTO", "GONE", "NO_RELEASE", "ERROR")
+    ))
     return 1 if counts["CANDIDATE"] or counts["REVIEW"] or counts["ERROR"] else 0
 
 

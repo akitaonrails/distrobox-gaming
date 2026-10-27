@@ -243,6 +243,11 @@ still updates; the guard refuses *before* editing `config.toml`, so nothing is
 left half-written. Re-run `reset-configs.yml --tags configs` while idle if you
 want the config re-seeded.
 
+Sweep statuses: `CURRENT`, `CANDIDATE`, `REVIEW` (no pin resolved), `SOURCE`
+(built from source at a pinned commit — nothing to compare), `AUTO` (role
+installs upstream latest on purpose), `GONE` (upstream repo deleted; installed
+copy kept), `NO_RELEASE`, `ERROR`.
+
 The game sweep checks every rendered `port`, `decomp`, `recomp`, `fangame`,
 `wine`, and `arcade` entry with `X-OGM-GitHub`. It reads pinned versions from
 `group_vars` and queries GitHub releases, including prereleases in the pinned
