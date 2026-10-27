@@ -1,11 +1,11 @@
 {% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
 [Desktop Entry]
-Name=Gran Turismo 4 Recompiled
+Name=Gran Turismo 4 · Recompiled
 Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_gt4r_launcher }}
 Terminal=false
 Type=Application
 Icon=applications-games
-Comment=Gran Turismo 4 USA retail static recompilation.
+Comment=Gran Turismo 4 native port (v1.3.0-rc6, direct Vulkan renderer)
 Categories=Game;
 Keywords=gran turismo;gt4;recompiled;playstation 2;racing;
 {{ ogm_metadata('gaming-gt4-recomp') }}

@@ -1,0 +1,33 @@
+#!/usr/bin/env sh
+# GT4Recomp v1.3.0-rc6 — direct standalone launch. The upstream launcher GUI
+# is a Tauri app that needs Microsoft Edge WebView2, which Wine does not
+# provide, so the game executable is started with the same environment the
+# GUI would use. Wine accepts forward-slash Z: paths.
+set -eu
+
+R="{{ dg_gt4r_130_release }}"
+
+if [ ! -f "$R/game/gt4.exe" ]; then
+  printf '%s\n' 'GT4Recomp v1.3.0 is not extracted.' >&2
+  exit 1
+fi
+if [ ! -f "$R/data/games/gt4/prepared/SCUS_973.28" ]; then
+  printf '%s\n' 'The prepared GT4 executable is missing (re-run the playbook).' >&2
+  exit 1
+fi
+
+exec distrobox-enter -n {{ dg_box_name }} -- sh -c \
+  'cd "$0/game" && \
+   export WINEPREFIX="{{ dg_gt4r_prefix }}" \
+          WINEDEBUG=-all \
+          VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}" \
+          GT4_INPUT=sdl \
+          GT4_RENDERER=donor \
+          GT4_FORCE_480P=1 \
+          GT4_FORCE_WIDESCREEN=1 \
+          GT4_FULLSCREEN=1 \
+          GT4_OUTPUT_SIZE="{{ dg_gt4r_output_size }}" \
+          GT4_PRESENT_MODE=fifo && \
+   exec wine ./gt4.exe ../data/games/gt4/prepared/SCUS_973.28 --ntsc \
+        --disc "Z:{{ dg_gt4r_iso }}" "$@"' \
+  "$R" "$@"
