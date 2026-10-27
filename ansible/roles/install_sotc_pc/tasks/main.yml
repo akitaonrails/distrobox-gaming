@@ -52,17 +52,25 @@
     - { key: SOTC_GAME_DIR, value: 'Z:{{ dg_sotc_game_dir | replace("/", "\\") }}' }
     - { key: SOTC_MODES, value: fps60 }
 
-- name: Warn when the sound modules are missing
-  ansible.builtin.stat:
-    path: "{{ dg_sotc_app_dir }}/data/sys_modules/libSceNgs2.sprx"
-  register: _sotc_sysmod
-- ansible.builtin.debug:
-    msg: >-
-      libSceNgs2.sprx / libSceUlt.sprx are not installed — the game runs
-      SILENT. Copy both decrypted modules from your PS4 (/system/common/lib/,
-      GoldHEN FTP) into {{ dg_sotc_app_dir }}/data/sys_modules/ (or point
-      SOTC_SYS_MODULES in sotc.ini at a folder that has them).
-  when: not _sotc_sysmod.stat.exists
+# Sound needs two decrypted firmware modules. The box already has a full PS4
+# firmware module set (the shadPS4 tree it uses for GT Sport/DriveClub), so
+# copy them into the port instead of asking the user for a console dump.
+- name: Copy the sound modules from the local PS4 firmware set
+  ansible.builtin.copy:
+    src: "{{ dg_ps4_firmware_modules }}/{{ item }}"
+    dest: "{{ dg_sotc_app_dir }}/data/sys_modules/{{ item }}"
+    remote_src: true
+    mode: "0644"
+  loop:
+    - libSceNgs2.sprx
+    - libSceUlt.sprx
+
+- name: Point the port at its own module folder
+  ansible.builtin.lineinfile:
+    path: "{{ dg_sotc_app_dir }}/sotc.ini"
+    regexp: "^# ?SOTC_SYS_MODULES="
+    line: 'SOTC_SYS_MODULES=Z:{{ dg_sotc_app_dir }}/data/sys_modules'
+    mode: "0644"
 
 - name: Install the SOTC PC launcher
   ansible.builtin.template:

@@ -45,6 +45,16 @@ with `extract-xiso -x` into `ROMS_FINAL/PC/FM4-Recomp-EU-GOTY` (or point
 `dg_fm4_recomp_game_root` at it), then run the playbook. The role verifies the
 three XEX hashes before touching anything else.
 
+## Version support (checked 2026-10-27)
+
+Upstream has **not** widened support: the repository has had no commits since
+2026-10-15 (`v0.1.0-alpha.2`), `release-policy.json` still pins the same three
+XEX SHA-256s, and `docs/PLAYING.md` still says *"Copy the contents of your own
+extracted FM4 Europe Game of the Year Disc 1"*. So the requirement remains
+**EU Game of the Year (Racing GOTY, Rev 1, title ID 4D530910, media ID
+42C67824) Disc 1 only** — USA, Essentials/World, the 2011 PAL original and any
+later pressing are all still rejected by hash.
+
 ## Layout once installed
 
 - Player: `~/distrobox/gaming/tools/fm4-recomp/releases/0.1.0-alpha.2/`

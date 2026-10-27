@@ -28,15 +28,15 @@ end** (v0.60.3), high quality textures, PS4 Pro mode, 60 FPS.
   Spotted Steed) unpack to 1 MB PKGs that shadPKG extracts empty — cosmetic
   DLC, not installed; revisit with shadPS4's own installer if wanted.
 
-## ⚠️ Sound is missing on this box
+## Sound
 
-The port needs **two decrypted firmware modules from your own PS4**:
-`libSceNgs2.sprx` + `libSceUlt.sprx` (`/system/common/lib/`, via GoldHEN FTP).
-Neither is on this box (no shadPS4 `user/sys_modules` either) — **the game
-runs silent until they are copied** to `<app>/data/sys_modules/` or
-`SOTC_SYS_MODULES` in `sotc.ini` points at a folder containing them. This is
-a Sony-firmware redistribution boundary the project will not cross; the files
-must come from your console.
+The port needs two decrypted firmware modules: `libSceNgs2.sprx` and
+`libSceUlt.sprx`. **They were already on this box** — the full PS4 11.00 module
+set at `dg_ps4_firmware_modules`
+(`EmuDeck/roms_rare/ps4-firmware/11.00_sys_modules`, the same set shadPS4 uses
+for GT Sport/DriveClub). The role copies both into
+`<app>/data/sys_modules/` and points `SOTC_SYS_MODULES` at that folder, so the
+game has audio without any manual step. Re-running the playbook re-copies them.
 
 ## Baseline and run
 
