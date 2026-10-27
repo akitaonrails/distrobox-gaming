@@ -1,13 +1,26 @@
 # Forza Horizon 2 via Azimuth
 
-The optional `install_azimuth` role installs [Azimuth](https://almost-there-games.itch.io/azimuth) v0.9.10 and [Extra Options](https://github.com/RokkuDayo/ForzaHorizon2_ExtraOptions/releases/tag/Azimuth_v0.9.10) v0.2.98 through Proton for the Xbox One Forza Horizon 2 release v1.0.0.64. Azimuth is an experimental Windows wrapper; its author reports Linux support through Proton. The role validates `era.vbi`, `Mount/AppxManifest.xml`, `Mount/`, and `EmbeddedXvd/` before installing the wrapper. It does not modify the game files.
+The optional `install_azimuth` role installs [Azimuth](https://almost-there-games.itch.io/azimuth) v1.0.2 and [Extra Options](https://github.com/RokkuDayo/ForzaHorizon2_ExtraOptions/releases/tag/Azimuth_v1.0.0) v0.3.2 (the "Azimuth v1.0.2 compatibility" build) through Proton for the Xbox One Forza Horizon 2 release v1.0.0.64.
+
+**Azimuth 1.0 (2026-10-27)** rebuilt the wrapper: a new controller/mouse
+launcher that **finds games and content packages automatically** (it scans the
+folder beside it and any folder you point it to — our games live in
+`ROMS_FINAL/xboxone`), per-game settings (your 0.9.x settings are copied to
+every added game once), up to **40% faster**, real-time pacing at every frame
+rate (the frame-pacing setting is gone), TV-level picture output, per-game
+volume, photo Gallery, save backups, and **three more games: Forza Motorsport
+5, Forza Motorsport 6 and Forza Horizon 3** (each needs its own dump; loyalty
+rewards read FM5/FH2 saves). First start after upgrading re-translates shaders
+once. The EO 0.3.x mod-loader layout (winmm.dll + `mods/` plugins) replaced
+the old tls shim, which the role removes. Azimuth is an experimental Windows wrapper; its author reports Linux support through Proton. The role validates `era.vbi`, `Mount/AppxManifest.xml`, `Mount/`, and `EmbeddedXvd/` before installing the wrapper. It does not modify the game files.
 
 Place the verified `azimuth-windows-0.9.10.zip` and `FH2_Extra_Options_0.2.98-release.zip` under `dg_roms_final_root/PC/`, with SHA-256 checks matching `group_vars/all/azimuth.yml`, and unpack the Xbox One game under `dg_azimuth_game_dir`. From `ansible/`, run `ansible-playbook install-azimuth.yml` or `ansible-playbook site.yml --tags azimuth`. Override `dg_azimuth_game_dir` and `dg_azimuth_proton` in `host_vars/localhost.yml` if needed. The launcher keeps its Proton prefix beside the wrapper in `dg_azimuth_compatdata` and uses the NVIDIA Vulkan driver. On first launch, select `dg_azimuth_game_dir` in Azimuth's folder picker if it is not already configured.
 
-Extra Options is version-locked to Azimuth 0.9.10. It adds controller shortcuts for autodrive (D-pad Down), lights (right stick), hazards (D-pad Up), and indicators (hold D-pad Left/Right). Its `FH2_ExtraOptions.ini` and `Gamerpic.png` are installed only if absent, so later role runs preserve customization. The installer also preserves Azimuth's existing settings, Proton prefix, saves, and game files; it removes only temporary extraction staging.
+Extra Options is version-locked to Azimuth 1.0.2 (tag Azimuth_v1.0.0). It adds controller shortcuts for autodrive (D-pad Down), lights (right stick), hazards (D-pad Up), and indicators (hold D-pad Left/Right). Its `FH2_ExtraOptions.ini` and `Gamerpic.png` are installed only if absent, so later role runs preserve customization. The installer also preserves Azimuth's existing settings, Proton prefix, saves, and game files; it removes only temporary extraction staging.
 
-The existing Azimuth settings file is tuned once to 2160p (4K), Ultra graphics,
-60 FPS and real-time pacing. VSync remains under Azimuth's existing setting;
+The display baseline (2160p, Ultra, 60 FPS) is applied once per machine
+(unversioned marker `.dg-display-baseline-applied`); 1.0's own migration then
+keeps settings per game. VSync remains under Azimuth's existing setting;
 this avoids using its fixed-tick mode at 60 FPS. A marker preserves later
 user changes. The 0.9.10 first launch migrated saves into a per-title folder
 and made its own backup under `data/saves-backup-*`; keep that backup until

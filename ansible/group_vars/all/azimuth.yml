@@ -1,9 +1,10 @@
 ---
 # Azimuth: Xbox One Forza Horizon 2 compatibility wrapper through Proton.
-dg_azimuth_version: 0.9.10
+dg_azimuth_version: 1.0.2
 dg_azimuth_web_url: https://almost-there-games.itch.io/azimuth
-dg_azimuth_zip: "{{ dg_roms_final_root }}/PC/azimuth-windows-{{ dg_azimuth_version }}.zip"
-dg_azimuth_zip_sha256: ad6ce5b3a84246dbd1b4c0612bfc8c76923c045d6dfd22fe12b0f1b9440770e1
+# 1.0.x zips carry a build-date suffix; pin the exact staged name.
+dg_azimuth_zip: "{{ dg_roms_final_root }}/PC/azimuth-windows-1.0.2-20261027.zip"
+dg_azimuth_zip_sha256: 4d5b19812efb5bf0977588ee86182b4647bfc41291230088f5b6aafd21a9a988
 dg_azimuth_supported_game_version: 1.0.0.64
 dg_azimuth_game_dir: "{{ dg_roms_final_root }}/xboxone/Anthem_1.0.0.64_x64__8wekyb3d8bbwe"
 dg_azimuth_install_dir: "{{ dg_box_home }}/tools/azimuth"
@@ -11,10 +12,12 @@ dg_azimuth_launcher: "{{ dg_box_home }}/bin/azimuth-fh2"
 dg_azimuth_proton: "{{ ansible_facts.env.HOME }}/.steam/steam/compatibilitytools.d/GE-Proton11-1/proton"
 dg_azimuth_steam_root: "{{ ansible_facts.env.HOME }}/.steam/steam"
 dg_azimuth_compatdata: "{{ dg_azimuth_install_dir }}/.compatdata"
-dg_azimuth_extra_options_version: 0.2.98
+dg_azimuth_extra_options_version: 0.3.2
 dg_azimuth_extra_options_repo: RokkuDayo/ForzaHorizon2_ExtraOptions
+# Tag Azimuth_v1.0.0 = "Azimuth v1.0.2 compatibility" (mod-loader layout;
+# no separate tls dll or root ini any more — winmm.dll + mods/ only).
 dg_azimuth_extra_options_zip: "{{ dg_roms_final_root }}/PC/FH2_Extra_Options_{{ dg_azimuth_extra_options_version }}-release.zip"
-dg_azimuth_extra_options_sha256: d3b9db715416abd8efef4048445a9edbe22d333ba0267fb48fb255dfab000c38
+dg_azimuth_extra_options_sha256: d7a9713c7a21e4b6ed57a105911ab22ce20192d2fe977c41ffa9bdc51210a15d
 # One-time display baseline after Azimuth creates its UTF-16 settings file.
 # Later user changes are preserved by the marker in the install directory.
 dg_azimuth_resolution: 2160

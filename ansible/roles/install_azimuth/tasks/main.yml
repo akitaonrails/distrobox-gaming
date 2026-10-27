@@ -118,24 +118,23 @@
         mode: "0644"
       loop:
         - { src: winmm.dll, dest: winmm.dll }
-        - { src: data/bin/azimuth-tls.dll, dest: data/bin/azimuth-tls.dll }
 
-    - name: Check existing Extra Options user files
-      ansible.builtin.stat:
-        path: "{{ dg_azimuth_install_dir }}/{{ item }}"
-      loop:
-        - FH2_ExtraOptions.ini
-        - Gamerpic.png
-      register: _azimuth_extra_options_user_files
+    # 0.3.x ships its extras as launcher mods; existing mods are preserved
+    # by only copying the shipped folder when it is not already installed.
+    - name: Install the Extra Options mod-loader plugins
+      ansible.builtin.command:
+        argv:
+          - cp
+          - -a
+          - "{{ _azimuth_extra_options_staging.path }}/Azimuth/mods/."
+          - "{{ dg_azimuth_install_dir }}/mods/"
+        creates: "{{ dg_azimuth_install_dir }}/mods/Extra Options - Garage Revving/mod.json"
 
-    - name: Install Extra Options defaults when no customization exists
-      ansible.builtin.copy:
-        src: "{{ _azimuth_extra_options_staging.path }}/Azimuth/{{ item.item }}"
-        dest: "{{ dg_azimuth_install_dir }}/{{ item.item }}"
-        remote_src: true
-        mode: "0644"
-      loop: "{{ _azimuth_extra_options_user_files.results }}"
-      when: not item.stat.exists
+    # 0.2.x installed a tls shim that 1.0.x replaced with its own pair.
+    - name: Remove the obsolete Extra Options tls shim
+      ansible.builtin.file:
+        path: "{{ dg_azimuth_install_dir }}/data/bin/azimuth-tls.dll"
+        state: absent
 
     - name: Record installed Extra Options version
       ansible.builtin.file:
@@ -154,7 +153,7 @@
     path: "{{ item }}"
   loop:
     - "{{ dg_azimuth_install_dir }}/data/azimuth.ini"
-    - "{{ dg_azimuth_install_dir }}/.dg-display-baseline-{{ dg_azimuth_version }}"
+    - "{{ dg_azimuth_install_dir }}/.dg-display-baseline-applied"
   register: _azimuth_display_baseline
 
 - name: Set Azimuth to 4K Ultra and 60 FPS real-time pacing once
@@ -179,8 +178,10 @@
                 ending = '\r\n' if line.endswith('\r\n') else '\n' if line.endswith('\n') else ''
                 lines[index] = f'{key}={settings[key]}{ending}'
                 seen.add(key)
-        if seen != settings.keys():
-            raise SystemExit(f'Missing Azimuth setting keys: {settings.keys() - seen}')
+        if not seen:
+            raise SystemExit('No known Azimuth setting keys found')
+        if settings.keys() - seen:
+            print('skipped-removed-keys:', ','.join(sorted(settings.keys() - seen)))
         updated = ''.join(lines)
         if updated != text:
             path.write_bytes(updated.encode('utf-16'))
@@ -198,7 +199,7 @@
 
 - name: Remember that the Azimuth display baseline has been applied
   ansible.builtin.file:
-    path: "{{ dg_azimuth_install_dir }}/.dg-display-baseline-{{ dg_azimuth_version }}"
+    path: "{{ dg_azimuth_install_dir }}/.dg-display-baseline-applied"
     state: touch
     mode: "0644"
   when:
