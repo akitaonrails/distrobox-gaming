@@ -77,6 +77,16 @@ windowrule = monitor DP-1, match:class ^(or2006c2c\.exe)$
 windowrule = fullscreen on, match:class ^(or2006c2c\.exe)$
 ```
 
+GT4Recomp (`gt4.exe`) is the second such case: it self-fullscreens at
+3840×2160 on Wine's monitor, but a new fullscreen window lands on the
+focused screen — the portrait one — and the picture comes out squashed.
+Same pair of rules:
+
+```ini
+windowrule = monitor DP-1, match:class ^(gt4\.exe)$
+windowrule = fullscreen on, match:class ^(gt4\.exe)$
+```
+
 Prefer this windowrule approach over in-game absolute positioning for
 any non-gamescope wine game — compositor coordinates win under
 XWayland scaling.

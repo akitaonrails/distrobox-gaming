@@ -82,11 +82,55 @@ So the role stages everything the GUI would have set up and starts the
 | manage the textures folder | symlinks the PCSX2 HD packs into `data/Textures/` |
 
 Launcher `bin/gt4-recomp` (Walker entry **Gran Turismo 4 · Recompiled**): 4K
-fullscreen, fifo present, donor renderer, 480p + widescreen forced, and
+fullscreen, fifo present, donor renderer, 480p + widescreen forced,
+`--memcard` for the port's own save card, and
 `--disc "Z:/…/Gran Turismo 4.iso"` (Wine accepts forward-slash `Z:` paths).
 
-Verified 2026-10-27: boots, mounts the retail disc (146 files, 2,594,960
-sectors), Vulkan device = RTX 5090, IOP modules load from the disc.
+### `--fullscreen` is mandatory in the standalone path
+
+The standalone `gt4.exe` only creates its Win32 window when
+`--fullscreen` is on the command line. `GT4_FULLSCREEN=1` alone is not
+enough: without the flag the host window is never created, the audio thread
+never starts, and the game boots into the void — it runs, waits at its first
+prompt, and the desktop shows nothing. With the flag the log gains
+
+```
+[window] fullscreen start (GT4_FULLSCREEN)
+[window] monitor \\.\DISPLAY2 (3840x2160 at 2160,0), output size 3840x2160, client 3840x2160
+[window] real guest GPU output through native Vulkan
+[audio] Windows PCM stereo16 48000 Hz, paced: 16 x 256 frames, ...
+```
+
+and the picture appears. Verified 2026-10-27: fullscreen 3840×2160 on the
+Odyssey G8, Vulkan device = RTX 5090, retail disc mounted (146 files,
+2,594,960 sectors), IOP modules loaded, memory card seen in slot 1, audio
+stream live (`application.name = "Gran Turismo 4"`).
+
+`GT4_MONITOR` must reach Wine with **two** backslashes
+(`\\.\DISPLAY2`), so the launcher passes it through `env '…'` instead of
+inside the quoted `sh -c` string — one level of shell escaping eats it
+otherwise and the port refuses the value.
+
+### Memory card
+
+The standalone build has no default card path, so a fresh install stops at
+"No memory card (PS2) inserted into MEMORY CARD slot 1" and cannot save.
+The role seeds `data/memcards/gt4.ps2` **once** from the empty PCSX2 card
+(`Mcd002.ps2`) and passes it with `--memcard`; after that the port owns the
+file. Deleting it just re-seeds on the next playbook run.
+
+### Placement (host Hyprland rule)
+
+The port asks for 3840×2160 on `\\.\DISPLAY2`, but Hyprland hands a new
+fullscreen window to whichever monitor is focused, which here is the
+portrait screen — the 16:9 picture ends up squashed into a narrow strip on
+the left. `~/.config/hypr/gaming.conf` pins it (see
+[hyprland-gaming.md](hyprland-gaming.md)):
+
+```ini
+windowrule = monitor DP-1, match:class ^(gt4\.exe)$
+windowrule = fullscreen on, match:class ^(gt4\.exe)$
+```
 
 **Spec II is not wired yet.** The standalone path runs retail only: Spec II
 needs `data/games/spec2/prepared/SCUS_974.36` (an ELF derived from the Spec II

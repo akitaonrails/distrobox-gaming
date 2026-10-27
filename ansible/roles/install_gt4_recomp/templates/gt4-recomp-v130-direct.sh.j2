@@ -1,8 +1,17 @@
 #!/usr/bin/env sh
 # GT4Recomp v1.3.0-rc6 — direct standalone launch. The upstream launcher GUI
 # is a Tauri app that needs Microsoft Edge WebView2, which Wine does not
-# provide, so the game executable is started with the same environment the
-# GUI would use. Wine accepts forward-slash Z: paths.
+# provide, so the game executable is started with the same settings the GUI
+# would apply. Wine accepts forward-slash Z: paths.
+#
+# `--fullscreen` is NOT optional: without it the standalone never creates its
+# host window — and never starts its audio thread — so the game boots into the
+# void and waits at its first prompt with no picture or sound. GT4_FULLSCREEN=1
+# alone does not create the window; the flag does.
+#
+# GT4_MONITOR is passed through `env` on purpose: Wine wants the literal
+# device name \\.\DISPLAY2 (two backslashes), and putting it inside the quoted
+# `sh -c` string would eat one level of escaping.
 set -eu
 
 R="{{ dg_gt4r_130_release }}"
@@ -16,7 +25,8 @@ if [ ! -f "$R/data/games/gt4/prepared/SCUS_973.28" ]; then
   exit 1
 fi
 
-exec distrobox-enter -n {{ dg_box_name }} -- sh -c \
+exec env 'GT4_MONITOR={{ dg_gt4r_monitor }}' \
+  distrobox-enter -n {{ dg_box_name }} -- sh -c \
   'cd "$0/game" && \
    export WINEPREFIX="{{ dg_gt4r_prefix }}" \
           WINEDEBUG=-all \
@@ -28,6 +38,7 @@ exec distrobox-enter -n {{ dg_box_name }} -- sh -c \
           GT4_FULLSCREEN=1 \
           GT4_OUTPUT_SIZE="{{ dg_gt4r_output_size }}" \
           GT4_PRESENT_MODE=fifo && \
-   exec wine ./gt4.exe ../data/games/gt4/prepared/SCUS_973.28 --ntsc \
+   exec wine ./gt4.exe ../data/games/gt4/prepared/SCUS_973.28 --ntsc --fullscreen \
+        --memcard "Z:{{ dg_gt4r_memcard }}" \
         --disc "Z:{{ dg_gt4r_iso }}" "$@"' \
   "$R" "$@"

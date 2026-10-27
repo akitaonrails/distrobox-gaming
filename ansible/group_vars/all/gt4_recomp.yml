@@ -3,7 +3,7 @@
 dg_gt4r_repo: moesuito/gt4-staticrecomp
 dg_gt4r_version: 1.2.3   # kept for the 1.2.3 direct-launch fallback
 dg_gt4r_130_version: 1.3.0-rc6
-dg_gt4r_130_zip: "{{ dg_roms_final_root }}/PC/GT4Recomp-{{ dg_gt4r_130_version }}-portable.zip"
+dg_gt4r_130_zip: "{{ dg_roms_final_root }}/PC/releases/GT4Recomp-{{ dg_gt4r_130_version }}-portable.zip"
 dg_gt4r_130_sha256: d94479da17e74e76e3b27545ce957dc691ceddbb6976899f8a0e130946bd33bd
 dg_gt4r_130_release: "{{ dg_gt4r_root }}/releases/{{ dg_gt4r_130_version }}"
 dg_gt4r_installer_name: GT4Recomp-Setup-1.2.3.exe
@@ -25,6 +25,11 @@ dg_gt4r_release: "{{ dg_gt4r_root }}/releases/{{ dg_gt4r_version }}"
 dg_gt4r_elf: "{{ dg_gt4r_root }}/data/prepared/SCUS_973.28"
 dg_gt4r_prefix: "{{ dg_box_home }}/wineprefixes/gt4recomp"
 dg_gt4r_launcher: "{{ dg_box_home }}/bin/gt4-recomp"
+# The port has no built-in card path; --memcard is the only way to save.
+# Keep a dedicated card so the recomp never touches the PCSX2 cards it is
+# seeded from (that copy is only a source of a valid formatted 8 MB image).
+dg_gt4r_memcard: "{{ dg_gt4r_130_release }}/data/memcards/gt4.ps2"
+dg_gt4r_memcard_seed: "{{ dg_box_home }}/.config/PCSX2/memcards/Mcd002.ps2"
 dg_gt4r_output_size: 3840x2160
 dg_gt4r_monitor: '\\.\DISPLAY2'
 dg_gt4r_winebus_registry:
