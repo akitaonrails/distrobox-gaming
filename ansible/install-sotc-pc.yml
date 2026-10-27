@@ -1,0 +1,7 @@
+---
+- name: Install the SOTC PC port
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_sotc_pc

@@ -34,6 +34,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | DOA2U PC Port | Dead or Alive 2 Ultimate (Xbox) native port by static recompilation | [NoRain211/doa2u-re](https://github.com/NoRain211/doa2u-re) · [doc](doa2u-re.md) |
 | GT3 Revisited | Gran Turismo 3 A-Spec engine reimplementation (native Linux/Android/VR) | [matt-pulsipher/GT3-revisited](https://github.com/matt-pulsiffer/GT3-revisited) · [doc](gt3-revisited.md) |
 | GT2 PC Port | Gran Turismo 2 native decompilation port + mod kit (win-x64 via Proton) | [CurtisSlone/GT2-PC-Port-Mod-Kit](https://github.com/CurtisSlone/GT2-PC-Port-Mod-Kit) · [doc](gt2-pc-port.md) |
+| SOTC PC Port | Shadow of the Colossus (PS4 remake) native port (win-x64 via Proton) | [AjncSystem/ShadowOfTheColossus-PC](https://github.com/AjncSystem/ShadowOfTheColossus-PC) · [doc](sotc-pc.md) |
 | Star Fox 64 Recompiled | Star Fox 64 N64Recomp + RT64 recomp (native Linux, Vulkan, widescreen); supersedes Starship | [sonicdcer/Starfox64Recomp](https://github.com/sonicdcer/Starfox64Recomp) · [doc](starfox64-recomp.md) |
 | SpaghettiKart | Mario Kart 64 PC port | [HarbourMasters/SpaghettiKart](https://github.com/HarbourMasters/SpaghettiKart) · [doc](spaghettikart.md) |
 | Render96ex | Super Mario 64 (HD, DynOS) | [Render96/Render96ex](https://github.com/Render96/Render96ex) · [doc](render96ex.md) |

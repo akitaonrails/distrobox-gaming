@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+# Shadow of the Colossus PC — Windows x64 through GE-Proton (Vulkan).
+# Extra args pass through to SotC.exe.
+set -eu
+
+A="{{ dg_sotc_app_dir }}"
+
+if [ ! -x "$A/SotC.exe" ]; then
+  printf '%s\n' 'SOTC PC port is not installed.' >&2
+  exit 1
+fi
+if [ ! -f "{{ dg_sotc_game_dir }}/eboot.bin" ]; then
+  printf '%s\n' 'SOTC game folder is missing (docs/sotc-pc.md).' >&2
+  exit 1
+fi
+
+exec distrobox-enter -n {{ dg_box_name }} -- sh -c \
+  'cd "$0" && export STEAM_COMPAT_CLIENT_INSTALL_PATH="{{ dg_sotc_steam_root }}" STEAM_COMPAT_DATA_PATH="{{ dg_sotc_compatdata }}" SteamAppId=0 SteamGameId=0 VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}" && exec "{{ dg_sotc_proton }}" run ./SotC.exe "$@"' \
+  "$A" "$@"

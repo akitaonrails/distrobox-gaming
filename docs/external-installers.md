@@ -81,6 +81,7 @@ newer build. Acceptable for actively developed emulators.
 
 | GT2 PC Port (GT2 decompilation + mod kit; win-x64 via GE-Proton) | github.com/CurtisSlone/GT2-PC-Port-Mod-Kit (repo zipball, pinned + sha256; release tags carry no assets). Needs the **exact GT2 (USA) Simulation Mode v1.0** cue/bin (redump disc/85, md5 7f3e9b95…) — Rev 1/Rev 2/patched v1.2 all refused; one-time Proton install from the disc. See `docs/gt2-pc-port.md`. | `install_gt2_pc` / `dg_gt2_*` || yay-bin, flathub remote | AUR git / dl.flathub.org | `bootstrap_packages` |
 
+| SOTC PC Port (Shadow of the Colossus PS4 remake; win-x64 via GE-Proton) | github.com/AjncSystem/ShadowOfTheColossus-PC releases (pinned + sha256; AUTO). Needs the **CUSA08809 EU 1.01 / CUSA08034 US 1.00** dump folder — this box's merged extraction at `ROMS_FINAL/ps4/sotc-kyty` (base + update PKG via shadPKG). **Sound needs two decrypted firmware sprx from the user's own PS4** (not on this box yet). See `docs/sotc-pc.md`. | `install_sotc_pc` / `dg_sotc_*` |
 ## 3. AUTO — known URL but fragile
 
 Downloads work today but the URL scheme is hostile to automation.

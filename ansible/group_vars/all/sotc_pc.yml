@@ -1,0 +1,27 @@
+---
+# Shadow of the Colossus — native PC port (AjncSystem/ShadowOfTheColossus-PC).
+# Windows x64 build run through GE-Proton (Vulkan). Reads the user's own
+# CUSA08809 (EU) or CUSA08034 (US) dump directly. Sound needs two decrypted
+# firmware modules from the user's own PS4 (libSceNgs2.sprx + libSceUlt.sprx)
+# which are NOT on this box yet — the game is silent without them.
+# See docs/sotc-pc.md.
+
+dg_sotc_repo: AjncSystem/ShadowOfTheColossus-PC
+dg_sotc_version: 0.60.6-C3
+dg_sotc_zip: "{{ dg_roms_final_root }}/PC/SotC-PC-v{{ dg_sotc_version }}.zip"
+dg_sotc_zip_sha256: e51c629f5a36b8f28406e14b30c25d681d91de49f216ff7071245c3aa405fbe0
+
+# Merged EU 1.01 game folder (base 1.00 PKG + 1.01 update PKG, extracted with
+# shadPKG; the update's cachedfiles.psarc replaced the base's under the base's
+# filename to avoid a case-sensitive duplicate).
+dg_sotc_game_dir: "{{ dg_roms_final_root }}/ps4/sotc-kyty"
+
+dg_sotc_install_dir: "{{ dg_box_home }}/tools/sotc-pc"
+dg_sotc_release_dir: "{{ dg_sotc_install_dir }}/releases/{{ dg_sotc_version }}"
+dg_sotc_app_dir: "{{ dg_sotc_release_dir }}/SotC-PC"
+dg_sotc_launcher: "{{ dg_box_home }}/bin/sotc-pc"
+
+# SOTC_MODES=fps60 = 60 FPS cap (the port's PS4 Pro Performance mode).
+dg_sotc_proton: "{{ ansible_facts.env.HOME }}/.steam/steam/compatibilitytools.d/GE-Proton11-1/proton"
+dg_sotc_steam_root: "{{ ansible_facts.env.HOME }}/.steam/steam"
+dg_sotc_compatdata: "{{ dg_sotc_install_dir }}/.compatdata"

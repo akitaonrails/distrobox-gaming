@@ -333,6 +333,11 @@ dg_ogm_games:
     category: port
     sgdb_query: "GoldenEye 007"
     github: "{{ dg_midas_repo }}"
+  - desktop_id: gaming-sotc-pc
+    id: sotc-pc
+    category: wine
+    sgdb_query: "Shadow of the Colossus"
+    github: "{{ dg_sotc_repo }}"
   - desktop_id: gaming-gt2-pc-port
     id: gt2-pc-port
     category: wine

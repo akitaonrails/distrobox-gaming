@@ -1,0 +1,88 @@
+---
+- name: Require the SOTC game folder
+  ansible.builtin.stat:
+    path: "{{ dg_sotc_game_dir }}/{{ item }}"
+  loop: [eboot.bin, sce_module, sce_sys]
+  register: _sotc_game
+- ansible.builtin.assert:
+    that: _sotc_game.results | selectattr('stat.exists') | list | length == 3
+    fail_msg: >-
+      SOTC PC needs the CUSA08809/CUSA08034 dump (eboot.bin, sce_module,
+      sce_sys) at dg_sotc_game_dir.
+
+- name: Verify the staged port ZIP
+  ansible.builtin.stat:
+    path: "{{ dg_sotc_zip }}"
+    checksum_algorithm: sha256
+  register: _sotc_zip
+- ansible.builtin.assert:
+    that: _sotc_zip.stat.checksum | default('') == dg_sotc_zip_sha256
+    fail_msg: "Staged SotC-PC zip missing or wrong sha256 at {{ dg_sotc_zip }}."
+
+- name: Create the SOTC PC directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_sotc_release_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Extract the port into its versioned release directory
+  ansible.builtin.command:
+    argv:
+      - distrobox-enter
+      - -n
+      - "{{ dg_box_name }}"
+      - --
+      - 7z
+      - x
+      - -y
+      - "-o{{ dg_sotc_release_dir }}"
+      - "{{ dg_sotc_zip }}"
+    creates: "{{ dg_sotc_app_dir }}/SotC.exe"
+
+- name: Point the port at the game folder and 60 FPS mode
+  ansible.builtin.lineinfile:
+    path: "{{ dg_sotc_app_dir }}/sotc.ini"
+    regexp: "^{{ item.key }}="
+    line: "{{ item.key }}={{ item.value }}"
+    mode: "0644"
+  loop:
+    - { key: SOTC_GAME_DIR, value: 'Z:{{ dg_sotc_game_dir | replace("/", "\\") }}' }
+    - { key: SOTC_MODES, value: fps60 }
+
+- name: Warn when the sound modules are missing
+  ansible.builtin.stat:
+    path: "{{ dg_sotc_app_dir }}/data/sys_modules/libSceNgs2.sprx"
+  register: _sotc_sysmod
+- ansible.builtin.debug:
+    msg: >-
+      libSceNgs2.sprx / libSceUlt.sprx are not installed — the game runs
+      SILENT. Copy both decrypted modules from your PS4 (/system/common/lib/,
+      GoldHEN FTP) into {{ dg_sotc_app_dir }}/data/sys_modules/ (or point
+      SOTC_SYS_MODULES in sotc.ini at a folder that has them).
+  when: not _sotc_sysmod.stat.exists
+
+- name: Install the SOTC PC launcher
+  ansible.builtin.template:
+    src: sotc-pc.sh.j2
+    dest: "{{ dg_sotc_launcher }}"
+    mode: "0755"
+
+- name: Render the SOTC PC desktop entry
+  ansible.builtin.template:
+    src: sotc-pc.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-sotc-pc.desktop"
+    mode: "0644"
+
+- name: Install the SOTC PC host desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _sotc_host
+  changed_when: >-
+    'installed ' in _sotc_host.stdout or
+    'removed stale ' in _sotc_host.stdout
