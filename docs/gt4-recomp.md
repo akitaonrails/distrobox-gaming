@@ -45,6 +45,23 @@ enumeration and a full race with a connected pad should be checked in-game.
 The `8BitDo Ultimate 2` receiver was present during setup, but no gamepad was
 enumerated in the short smoke run, so button presses remain unverified.
 
+## HD textures
+
+The port loads **PCSX2 community texture packs without renaming** ("Load
+custom textures" is on by default). The same NAS packs that the PCSX2 setup
+links under `SCUS-97328`/`SCUS-97436` (see [gt4-spec-ii.md](gt4-spec-ii.md))
+are symlinked into the port's `data/Textures/`:
+
+| Pack | Source | Size |
+|---|---|---|
+| HD HUD & UI (Silentwarior112) | `Gran Turismo 4 Remaster/Gran Turismo 4 HD HUD & UI Texture pack by Silentwarior112/replacements` | 2.3 GB |
+| HD HUD update 2.1 | `Gran Turismo 4 Remaster/update 2.1/replacements` | 137 MB |
+| Blocky haze fix v2 | `Gran Turismo 4 Remaster/HD HUD & U.I. blocky haze fix v2/text files jap kor usa pal shared` | small |
+
+Per-texture hashes are version-agnostic (work under both vanilla and Spec II
+ELFs — and now the recomp's reconstructed executable, which matches upstream's
+pinned game code).
+
 ## Maintenance
 
 The release archives stay in `dg_gt4r_cache` because the role uses them on

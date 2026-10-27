@@ -154,6 +154,22 @@
         state: touch
         mode: "0644"
 
+- name: Link the PCSX2 HD texture packs into the port
+  ansible.builtin.file:
+    path: "{{ dg_gt4r_release }}/data/Textures/{{ item.name }}"
+    src: "{{ item.src }}"
+    state: link
+    force: true
+  loop:
+    - name: hd-hud-ui
+      src: "{{ dg_pcsx2_ps2_root }}/Gran Turismo 4 Remaster/Gran Turismo 4 HD HUD & UI Texture pack by Silentwarior112/replacements"
+    - name: hd-hud-ui-update-2.1
+      src: "{{ dg_pcsx2_ps2_root }}/Gran Turismo 4 Remaster/update 2.1/replacements"
+    - name: blocky-haze-fix
+      src: "{{ dg_pcsx2_ps2_root }}/Gran Turismo 4 Remaster/HD HUD & U.I. blocky haze fix v2/text files jap kor usa pal shared"
+  # The port's "Load custom textures" is on by default; PCSX2 community
+  # packs work without renaming (per upstream README).
+
 - name: Install GT4 direct Vulkan launcher
   ansible.builtin.template:
     src: gt4-recomp.sh.j2
