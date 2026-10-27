@@ -62,26 +62,42 @@ Per-texture hashes are version-agnostic (work under both vanilla and Spec II
 ELFs — and now the recomp's reconstructed executable, which matches upstream's
 pinned game code).
 
-## GT4Recomp v1.3.0-rc6 (Spec II support)
+## GT4Recomp v1.3.0-rc6 — direct launch (the GUI cannot run here)
 
-The **v1.3.0-rc6 portable** release is extracted alongside 1.2.3, adding
-**Gran Turismo 4 Spec II as a second game** (launcher game-selector, per-game
-saves/replays, shared textures), the new **Performance Mode** (night races
-18.4→7.9 ms — no more Nordschleife sun-glare drops), Direct3D 12/11 fallback,
-save export as `.psu`, and automatic GPU selection. Walker entry:
-**GT4 Recomp 1.3 · Launcher**.
+**The upstream launcher GUI does not work under Wine.** It is a Tauri app that
+needs the Microsoft Edge **WebView2** runtime; without it the program shows
+*"GT4Recomp could not start its window: Microsoft Edge WebView2 is missing"*
+and exits before drawing anything (the launcher log says
+`ERROR WebView2 is missing: the native message is shown before any window`).
+WebView2 under Wine is a dead end: the Microsoft installer stalls mid-install
+and the Fixed-Version cab links expire.
 
-**One-time setup (interactive):** run the v1.3.0 launcher GUI once under Wine.
-It asks for each game's disc image — point it at the retail ISO
-(`ROMS_FINAL/ps2/Gran Turismo 4/Gran Turismo 4.iso`) and the Spec II ISO
-(`roms_heavy/ps2/Gran Turismo 4/Gran Turismo 4 (USA).iso`). It copies and
-prepares both games (~5.2 GB + 3.7 GB), then the standalone
-`game/gt4.exe` and `game/gt4-spec2.exe` work directly. The shared
-`data/Textures/` already has the HD HUD/UI packs linked.
+So the role stages everything the GUI would have set up and starts the
+**standalone `game/gt4.exe`** instead:
 
-The old 1.2.3 direct-launch entry is kept as a fallback. Note that v1.3.0
-saves live under `user/saves/` inside the portable folder (not the old
-`data/sessions/default`).
+| The GUI would… | The role does |
+|---|---|
+| prepare the ELF from your disc | copies the pinned `dg_gt4r_elf` to `data/games/gt4/prepared/SCUS_973.28` |
+| download the GSdx renderer | unpacks the pinned 1.2.1 archive into `game/gs/gt4-gs.exe` |
+| manage the textures folder | symlinks the PCSX2 HD packs into `data/Textures/` |
+
+Launcher `bin/gt4-recomp` (Walker entry **Gran Turismo 4 · Recompiled**): 4K
+fullscreen, fifo present, donor renderer, 480p + widescreen forced, and
+`--disc "Z:/…/Gran Turismo 4.iso"` (Wine accepts forward-slash `Z:` paths).
+
+Verified 2026-10-27: boots, mounts the retail disc (146 files, 2,594,960
+sectors), Vulkan device = RTX 5090, IOP modules load from the disc.
+
+**Spec II is not wired yet.** The standalone path runs retail only: Spec II
+needs `data/games/spec2/prepared/SCUS_974.36` (an ELF derived from the Spec II
+image — that preparation step is GUI-only in v1.3.0) plus the shipped
+`gt4-spec2.exe`. Revisit when upstream adds a CLI preparation path or the GUI
+runs under Wine.
+
+## GT4Recomp 1.2.3 (retired)
+
+The v1.2.3 release and its desktop entry were removed on 2026-10-27: no saves
+existed and v1.3.0 supersedes it.
 
 ## Maintenance
 
