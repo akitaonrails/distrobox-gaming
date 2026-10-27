@@ -367,7 +367,7 @@ dg_ogm_games:
     id: fm4-recomp
     category: wine
     sgdb_query: "Forza Motorsport 4"
-    github: "{{ dg_fm4_recomp_repo }}"
+    github: "{{ dg_hl360_repo }}"
   - desktop_id: gaming-gt4-recomp
     id: gt4-recomp
     category: recomp

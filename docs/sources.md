@@ -28,7 +28,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | Fukami | Ridge Racer V static recompilation | [danisandoval/fukami](https://github.com/danisandoval/fukami) · [doc](fukami-rrv.md) |
 | Dusk (Twilight Princess) | GameCube Twilight Princess native port | [TwilitRealm/dusklight](https://github.com/TwilitRealm/dusklight) · [doc](dusk-twilight-princess.md) |
 | Project Midas | GoldenEye 007 native PC port from the N64 decompilation (replaced the cblock85 recomp 2026-10-18) | [murkantor/Project-Midas](https://github.com/murkantor/Project-Midas) · [doc](project-midas.md) |
-| FM4 Recompiled | Forza Motorsport 4 (Xbox 360) static recompilation via ReXGlue | [Alexbeav/fm4-recomp](https://github.com/Alexbeav/fm4-recomp) · [doc](fm4-recomp.md) |
+| FM4 PC Port | Forza Motorsport 4 (Xbox 360) native port via ReXGlue, USA Rev 1 (superseded fm4-recomp 2026-10-27) | [0herculabs/hl360-forza4](https://github.com/0herculabs/hl360-forza4) · [doc](fm4-hl360.md) |
 | Gravity Rush PC | Gravity Rush Remastered (PS4) native port (shadPS4 video core) | [LucaPazienza/gravityrush_pc](https://github.com/LucaPazienza/gravityrush_pc) · [doc](gravity-rush.md) |
 | KytyPS5-GT7 | PS5 emulator branch tuned for Gran Turismo 7 (native Linux build) | [usa-ratt/KytyPS5-GT7](https://github.com/usa-ratt/KytyPS5-GT7) · [doc](kyty-gt7.md) |
 | DOA2U PC Port | Dead or Alive 2 Ultimate (Xbox) native port by static recompilation | [NoRain211/doa2u-re](https://github.com/NoRain211/doa2u-re) · [doc](doa2u-re.md) |

@@ -1,0 +1,103 @@
+---
+# hl360-forza4 needs the USA Rev 1 discs. The port itself is installed either
+# way; the game is only installed from matching discs (upstream's launcher does
+# the extraction and content installation interactively).
+
+- name: Verify the staged player ZIP
+  ansible.builtin.stat:
+    path: "{{ dg_hl360_cache_dir }}/{{ dg_hl360_asset_name }}"
+    checksum_algorithm: sha256
+  register: _hl360_zip
+- ansible.builtin.assert:
+    that: _hl360_zip.stat.checksum | default('') == dg_hl360_asset_sha256
+    fail_msg: >-
+      Stage {{ dg_hl360_asset_name }} (sha256 {{ dg_hl360_asset_sha256 }}) in
+      {{ dg_hl360_cache_dir }}.
+
+- name: Require the configured Proton build
+  ansible.builtin.stat:
+    path: "{{ dg_hl360_proton }}"
+  register: _hl360_proton
+- ansible.builtin.assert:
+    that: _hl360_proton.stat.executable | default(false)
+    fail_msg: "GE-Proton is required at dg_hl360_proton."
+
+- name: Create the port directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_hl360_release_dir }}"
+    - "{{ dg_hl360_cache_dir }}"
+    - "{{ dg_hl360_user_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+# The ZIP stores entry names as "FM4\\file"; 7z/unzip keep those literal on
+# POSIX, so normalise the separators with the repo helper.
+- name: Extract the player build
+  ansible.builtin.command:
+    argv:
+      - python3
+      - "{{ dg_project_root }}/scripts/zip-extract-posix.py"
+      - "{{ dg_hl360_cache_dir }}/{{ dg_hl360_asset_name }}"
+      - "{{ dg_hl360_release_dir }}"
+    creates: "{{ dg_hl360_app_dir }}/fm4.exe"
+
+# The launcher keeps settings, profiles and the extracted game beside itself;
+# point them at a stable directory so a version bump does not lose saves.
+- name: Keep player data across versions
+  ansible.builtin.file:
+    path: "{{ dg_hl360_app_dir }}/{{ item }}"
+    src: "{{ dg_hl360_user_dir }}/{{ item }}"
+    state: link
+    force: true
+  loop:
+    - user
+    - logs
+
+- name: Check whether the matching USA Rev 1 discs are present
+  ansible.builtin.stat:
+    path: "{{ item }}"
+    checksum_algorithm: md5
+  loop:
+    - "{{ dg_hl360_disc1 }}"
+    - "{{ dg_hl360_disc2 }}"
+  register: _hl360_discs
+  failed_when: false
+
+- name: Report the disc requirement
+  ansible.builtin.debug:
+    msg: >-
+      {{ 'USA Rev 1 discs verified — run the launcher and install both discs.'
+         if (_hl360_discs.results | selectattr('stat.checksum', 'defined')
+             | map(attribute='stat.checksum')
+             | list) == [dg_hl360_disc1_md5, dg_hl360_disc2_md5]
+         else 'Discs do NOT match the supported USA Rev 1 images (Disc 1 md5 '
+              ~ dg_hl360_disc1_md5 ~ ', Disc 2 md5 ' ~ dg_hl360_disc2_md5
+              ~ '). The port is installed, but the game needs those discs. '
+              ~ 'Local Disc 1/Disc 2 are ' 
+              ~ (_hl360_discs.results | map(attribute='stat.checksum', default='missing') | join(' / ')) }}
+
+- name: Install the FM4 port launcher
+  ansible.builtin.template:
+    src: hl360-fm4.sh.j2
+    dest: "{{ dg_hl360_launcher }}"
+    mode: "0755"
+
+- name: Render the FM4 port desktop entry
+  ansible.builtin.template:
+    src: hl360-fm4.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-fm4-recomp.desktop"
+    mode: "0644"
+
+- name: Install the FM4 port host desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _hl360_host
+  changed_when: >-
+    'installed ' in _hl360_host.stdout or
+    'removed stale ' in _hl360_host.stdout

@@ -1,0 +1,32 @@
+---
+# Forza Motorsport 4 — native PC port, 0herculabs/hl360-forza4 (ReXGlue).
+# Superseded Alexbeav/fm4-recomp (2026-10-27): this one supports the USA Rev 1
+# play disc, ships an SDL3/ImGui launcher (no WebView2), a Project Forza Plus 4
+# integration, wheel FFB, and v0.3.9+ renders through Vulkan — which is what
+# makes it viable under GE-Proton.
+# See docs/fm4-hl360.md.
+
+dg_hl360_repo: 0herculabs/hl360-forza4
+dg_hl360_version: v0.3.9
+dg_hl360_asset_name: "FM4-{{ dg_hl360_version }}-windows-x64.zip"
+dg_hl360_asset_url: "https://github.com/{{ dg_hl360_repo }}/releases/download/{{ dg_hl360_version }}/{{ dg_hl360_asset_name }}"
+dg_hl360_asset_sha256: 402c55a08f5880f636d5106945cf4bcea6a791231bef8bf74830d5434dec2ebc
+
+# Supported inputs (upstream): Forza Motorsport 4 (USA) Rev 1, multilanguage
+# Play Disc — title ID 4D530910, media ID 33E7B39F, XEX 0.0.0.14.
+# The installer hashes the whole ISO; these are the exact development images.
+dg_hl360_disc1: "{{ dg_roms_final_root }}/xbox360/Forza Motorsport 4 (USA) (En,Ja,Fr,De,Es,It,Nl,Pt,Zh,Ko,Pl,Ru,Cs,Hu) (Disc 1) (Play Disc).iso"
+dg_hl360_disc1_md5: "2470358250b8566bf5ddc3aaf1b76c68"
+dg_hl360_disc2: "{{ dg_roms_final_root }}/xbox360/Forza Motorsport 4 (USA) (En,Ja,Fr,De,Es,It,Nl,Pt,Zh,Ko,Pl,Ru,Cs,Hu) (Disc 2) (Content Install Disc).iso"
+dg_hl360_disc2_md5: "9915d1adaabf3b58441651a70e5e8dbe"
+
+dg_hl360_install_dir: "{{ dg_box_home }}/tools/hl360-fm4"
+dg_hl360_release_dir: "{{ dg_hl360_install_dir }}/releases/{{ dg_hl360_version }}"
+dg_hl360_app_dir: "{{ dg_hl360_release_dir }}/FM4"
+dg_hl360_cache_dir: "{{ dg_box_home }}/cache/hl360-fm4"
+dg_hl360_user_dir: "{{ dg_box_home }}/.local/share/hl360-fm4"
+dg_hl360_launcher: "{{ dg_box_home }}/bin/fm4-port"
+
+dg_hl360_proton: "{{ ansible_facts.env.HOME }}/.steam/steam/compatibilitytools.d/GE-Proton11-1/proton"
+dg_hl360_steam_root: "{{ ansible_facts.env.HOME }}/.steam/steam"
+dg_hl360_compatdata: "{{ dg_hl360_install_dir }}/.compatdata"

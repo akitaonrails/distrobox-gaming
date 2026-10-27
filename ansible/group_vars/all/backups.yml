@@ -63,7 +63,7 @@ dg_save_sets:
   - { name: spaghettikart-save,   src: "tools/spaghettikart/current/Save" }
   - { name: dk64-recomp,          src: ".config/DK64Recompiled" }
   - { name: project-midas,       src: ".local/share/ProjectMidas" }
-  - { name: fm4-recomp,          src: ".local/share/fm4-recomp" }
+  - { name: hl360-fm4,           src: ".local/share/hl360-fm4" }
   - { name: gravity-rush,        src: ".local/share/gravity-rush" }
   - { name: doa2u-re,            src: ".local/share/doa2u-re" }
   - { name: gt3-revisited,        src: ".local/share/GT3Revisited" }

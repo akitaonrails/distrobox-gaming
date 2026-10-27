@@ -57,6 +57,7 @@ PIN_VARS = {
     "gaming-dkr-r": ("dkr_recomp.yml", "dg_dkr_release_tag"),
     "gaming-dude": ("dude.yml", "dg_dude_version"),
     "gaming-driveclub-recomp": ("driveclub_recomp.yml", "dg_dcr_version"),
+    "gaming-fm4-recomp": ("hl360_fm4.yml", "dg_hl360_version"),
     "gaming-doa2u-re": ("doa2u_re.yml", "dg_doa2u_version"),
     "gaming-doom2-ray-traced": ("prboom_rt.yml", "dg_prboom_rt_version"),
     "gaming-ffvii-7th-heaven": ("7th_heaven.yml", "dg_7th_heaven_version"),

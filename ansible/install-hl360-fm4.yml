@@ -1,0 +1,7 @@
+---
+- name: Install the Forza Motorsport 4 PC port (hl360-forza4)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_hl360_fm4
