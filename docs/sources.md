@@ -32,7 +32,8 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | Gravity Rush PC | Gravity Rush Remastered (PS4) native port (shadPS4 video core) | [LucaPazienza/gravityrush_pc](https://github.com/LucaPazienza/gravityrush_pc) · [doc](gravity-rush.md) |
 | KytyPS5-GT7 | PS5 emulator branch tuned for Gran Turismo 7 (native Linux build) | [usa-ratt/KytyPS5-GT7](https://github.com/usa-ratt/KytyPS5-GT7) · [doc](kyty-gt7.md) |
 | DOA2U PC Port | Dead or Alive 2 Ultimate (Xbox) native port by static recompilation | [NoRain211/doa2u-re](https://github.com/NoRain211/doa2u-re) · [doc](doa2u-re.md) |
-| GT3 Revisited | Gran Turismo 3 A-Spec engine reimplementation (native Linux/Android/VR) | [matt-pulsipher/GT3-revisited](https://github.com/matt-pulsipher/GT3-revisited) · [doc](gt3-revisited.md) |
+| GT3 Revisited | Gran Turismo 3 A-Spec engine reimplementation (native Linux/Android/VR) | [matt-pulsipher/GT3-revisited](https://github.com/matt-pulsiffer/GT3-revisited) · [doc](gt3-revisited.md) |
+| GT2 PC Port | Gran Turismo 2 native decompilation port + mod kit (win-x64 via Proton) | [CurtisSlone/GT2-PC-Port-Mod-Kit](https://github.com/CurtisSlone/GT2-PC-Port-Mod-Kit) · [doc](gt2-pc-port.md) |
 | Star Fox 64 Recompiled | Star Fox 64 N64Recomp + RT64 recomp (native Linux, Vulkan, widescreen); supersedes Starship | [sonicdcer/Starfox64Recomp](https://github.com/sonicdcer/Starfox64Recomp) · [doc](starfox64-recomp.md) |
 | SpaghettiKart | Mario Kart 64 PC port | [HarbourMasters/SpaghettiKart](https://github.com/HarbourMasters/SpaghettiKart) · [doc](spaghettikart.md) |
 | Render96ex | Super Mario 64 (HD, DynOS) | [Render96/Render96ex](https://github.com/Render96/Render96ex) · [doc](render96ex.md) |

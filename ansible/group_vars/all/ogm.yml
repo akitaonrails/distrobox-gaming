@@ -333,6 +333,11 @@ dg_ogm_games:
     category: port
     sgdb_query: "GoldenEye 007"
     github: "{{ dg_midas_repo }}"
+  - desktop_id: gaming-gt2-pc-port
+    id: gt2-pc-port
+    category: wine
+    sgdb_query: "Gran Turismo 2"
+    github: "{{ dg_gt2_repo }}"
   - desktop_id: gaming-gt3-revisited
     id: gt3-revisited
     category: port

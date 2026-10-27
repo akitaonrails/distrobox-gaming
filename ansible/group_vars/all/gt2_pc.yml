@@ -1,0 +1,26 @@
+---
+# Gran Turismo 2 — native PC port + mod kit (CurtisSlone/GT2-PC-Port-Mod-Kit).
+# Byte-matched decompilation on the PSX Runtime (not an emulator); Windows
+# x64 exes run through GE-Proton. The kit release tag carries NO assets —
+# the repo zipball IS the package. Requires the exact GT2 (USA) Simulation
+# Mode v1.0 disc (SCUS-94488, redump disc/85), fingerprint-verified by the
+# installer. See docs/gt2-pc-port.md.
+
+dg_gt2_repo: CurtisSlone/GT2-PC-Port-Mod-Kit
+dg_gt2_version: 0.3.0
+dg_gt2_zip: "{{ dg_roms_final_root }}/PC/GT2-PC-Port-Mod-Kit-{{ dg_gt2_version }}.zip"
+dg_gt2_zip_sha256: aecd13cb7faf1ffde277ef375974d9d24796206ae648820911b63341849cfc50
+
+# The ONE accepted disc: USA Simulation Mode v1.0 first print (redump disc/85,
+# 680497104 bytes, md5 7f3e9b9555556da8638d475fd6e46e01). Rev 1/Rev 2 and the
+# patched v1.2 in the library are all refused by the installer.
+dg_gt2_cue: "{{ dg_roms_final_root }}/psx/Gran Turismo 2 (Simulation Mode) (v1.0)/Gran Turismo 2 (Simulation Mode) (v1.0).cue"
+
+dg_gt2_install_dir: "{{ dg_box_home }}/tools/gt2-pc"
+dg_gt2_release_dir: "{{ dg_gt2_install_dir }}/releases/{{ dg_gt2_version }}"
+dg_gt2_user_dir: "{{ dg_box_home }}/.local/share/gt2-pc"
+dg_gt2_launcher: "{{ dg_box_home }}/bin/gt2-pc-port"
+
+dg_gt2_proton: "{{ ansible_facts.env.HOME }}/.steam/steam/compatibilitytools.d/GE-Proton11-1/proton"
+dg_gt2_steam_root: "{{ ansible_facts.env.HOME }}/.steam/steam"
+dg_gt2_compatdata: "{{ dg_gt2_release_dir }}/.compatdata"

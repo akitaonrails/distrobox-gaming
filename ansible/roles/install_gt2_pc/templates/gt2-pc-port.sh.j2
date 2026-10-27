@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+# Gran Turismo 2 native PC port — Windows exes through GE-Proton, like the
+# other Windows ports. Extra args pass through to psx-play.exe
+# (e.g. --widescreen off, --render-scale 4).
+set -eu
+
+A="{{ dg_gt2_release_dir }}"
+
+if [ ! -x "$A/psx-play.exe" ] || [ ! -f "$A/data/manifest.json" ]; then
+  printf '%s\n' 'GT2 PC Port is not installed from the disc (docs/gt2-pc-port.md).' >&2
+  exit 1
+fi
+
+exec distrobox-enter -n {{ dg_box_name }} -- sh -c \
+  'cd "$0" && export STEAM_COMPAT_CLIENT_INSTALL_PATH="{{ dg_gt2_steam_root }}" STEAM_COMPAT_DATA_PATH="{{ dg_gt2_compatdata }}" SteamAppId=0 SteamGameId=0 VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}" && exec "{{ dg_gt2_proton }}" run ./psx-play.exe --hle --data "Z:\\{{ dg_gt2_release_dir | replace("/", "\\") }}\\data" --modules "Z:\\{{ dg_gt2_release_dir | replace("/", "\\") }}\\modules" --card1 "Z:\\{{ dg_gt2_release_dir | replace("/", "\\") }}\\cards\\card1.mcr" --shots "Z:\\{{ dg_gt2_release_dir | replace("/", "\\") }}\\shots" "$@"' \
+  "$A" "$@"

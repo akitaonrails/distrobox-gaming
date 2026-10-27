@@ -1,0 +1,143 @@
+---
+- name: Require the exact GT2 v1.0 disc image
+  ansible.builtin.stat:
+    path: "{{ dg_gt2_cue }}"
+  register: _gt2_cue
+- ansible.builtin.assert:
+    that: _gt2_cue.stat.isreg is defined and _gt2_cue.stat.isreg
+    fail_msg: >-
+      GT2 PC Port needs Gran Turismo 2 (USA) Simulation Mode v1.0 (SCUS-94488,
+      redump disc/85, 680497104 bytes, md5 7f3e9b95...) at dg_gt2_cue. Rev 1,
+      Rev 2 (Greatest Hits) and patched v1.2 dumps are refused by design.
+
+- name: Verify the staged kit ZIP
+  ansible.builtin.stat:
+    path: "{{ dg_gt2_zip }}"
+    checksum_algorithm: sha256
+  register: _gt2_zip
+- ansible.builtin.assert:
+    that: _gt2_zip.stat.checksum | default('') == dg_gt2_zip_sha256
+    fail_msg: "Staged kit ZIP missing or wrong sha256 at {{ dg_gt2_zip }}."
+
+- name: Create the GT2 PC Port directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_gt2_release_dir }}"
+    - "{{ dg_gt2_user_dir }}/cards"
+    - "{{ dg_gt2_user_dir }}/shots"
+    - "{{ dg_box_home }}/bin"
+
+- name: Extract the kit into its versioned release directory
+  ansible.builtin.command:
+    argv:
+      - distrobox-enter
+      - -n
+      - "{{ dg_box_name }}"
+      - --
+      - sh
+      - -c
+      - >-
+        cd '{{ dg_gt2_release_dir }}' &&
+        7z x -y '{{ dg_gt2_zip }}' >/dev/null &&
+        cp -a GT2-PC-Port-Mod-Kit-{{ dg_gt2_version }}/. . &&
+        rm -rf GT2-PC-Port-Mod-Kit-{{ dg_gt2_version }}
+    creates: "{{ dg_gt2_release_dir }}/psx-play.exe"
+
+- name: Keep the blank memory card in the stable user dir
+  ansible.builtin.copy:
+    src: "{{ dg_gt2_release_dir }}/cards/blank.mcd"
+    dest: "{{ dg_gt2_user_dir }}/blank.mcd"
+    remote_src: true
+    force: false
+    mode: "0644"
+
+- name: Keep saves and screenshots across kit upgrades
+  ansible.builtin.file:
+    path: "{{ dg_gt2_release_dir }}/{{ item.name }}"
+    src: "{{ dg_gt2_user_dir }}/{{ item.src }}"
+    state: link
+    force: true
+  loop:
+    - { name: cards, src: cards }
+    - { name: shots, src: shots }
+
+- name: Seed the memory card on first install
+  ansible.builtin.copy:
+    src: "{{ dg_gt2_user_dir }}/blank.mcd"
+    dest: "{{ dg_gt2_user_dir }}/cards/card1.mcr"
+    remote_src: true
+    force: false
+    mode: "0644"
+
+# One-time install from the disc: fingerprints the cue/bin (v1.0 only) and
+# copies the game into data/ (~2 GB, ~1 min under Proton).
+- name: Install the game from the v1.0 disc
+  ansible.builtin.command:
+    argv:
+      - distrobox-enter
+      - -n
+      - "{{ dg_box_name }}"
+      - --
+      - sh
+      - -c
+      - >-
+        cd '{{ dg_gt2_release_dir }}' &&
+        export STEAM_COMPAT_CLIENT_INSTALL_PATH='{{ dg_gt2_steam_root }}' &&
+        export STEAM_COMPAT_DATA_PATH='{{ dg_gt2_compatdata }}' &&
+        export SteamAppId=0 SteamGameId=0 VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/nvidia_icd.json &&
+        '{{ dg_gt2_proton }}' run ./psx-play.exe
+        'Z:\\{{ dg_gt2_cue | replace("/", "\\") }}'
+        --install-only
+        --data 'Z:\\{{ dg_gt2_release_dir | replace("/", "\\") }}\data'
+        --modules 'Z:\\{{ dg_gt2_release_dir | replace("/", "\\") }}\modules'
+    creates: "{{ dg_gt2_release_dir }}/data/manifest.json"
+
+- name: Verify the install matches the disc
+  ansible.builtin.command:
+    argv:
+      - distrobox-enter
+      - -n
+      - "{{ dg_box_name }}"
+      - --
+      - sh
+      - -c
+      - >-
+        cd '{{ dg_gt2_release_dir }}' &&
+        export STEAM_COMPAT_CLIENT_INSTALL_PATH='{{ dg_gt2_steam_root }}' &&
+        export STEAM_COMPAT_DATA_PATH='{{ dg_gt2_compatdata }}' SteamAppId=0 SteamGameId=0 &&
+        '{{ dg_gt2_proton }}' run ./psx-play.exe
+        'Z:\\{{ dg_gt2_cue | replace("/", "\\") }}'
+        --install-only --verify-data
+        --data 'Z:\\{{ dg_gt2_release_dir | replace("/", "\\") }}\data'
+        --modules 'Z:\\{{ dg_gt2_release_dir | replace("/", "\\") }}\modules'
+  register: _gt2_verify
+  changed_when: false
+- ansible.builtin.assert:
+    that: _gt2_verify.rc == 0
+    fail_msg: "psx-play verify-data failed: {{ _gt2_verify.stdout[-400:] }}"
+
+- name: Install the GT2 PC Port launcher
+  ansible.builtin.template:
+    src: gt2-pc-port.sh.j2
+    dest: "{{ dg_gt2_launcher }}"
+    mode: "0755"
+
+- name: Render the GT2 PC Port desktop entry
+  ansible.builtin.template:
+    src: gt2-pc-port.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-gt2-pc-port.desktop"
+    mode: "0644"
+
+- name: Install the GT2 PC Port host desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _gt2_host
+  changed_when: >-
+    'installed ' in _gt2_host.stdout or
+    'removed stale ' in _gt2_host.stdout

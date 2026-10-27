@@ -42,6 +42,7 @@
     - { role: install_kyty_gt7,          tags: [kyty_gt7, never] }
     - { role: install_doa2u_re,          tags: [doa2u, never] }
     - { role: install_gt3_revisited,     tags: [gt3_revisited, never] }
+    - { role: install_gt2_pc,            tags: [gt2_pc, never] }
     - { role: install_m2emulator,        tags: [m2emulator, never] }
     - { role: install_model1,            tags: [model1, never] }
     - { role: install_sega_rally,        tags: [sega_rally, never] }
