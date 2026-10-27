@@ -62,6 +62,27 @@ Per-texture hashes are version-agnostic (work under both vanilla and Spec II
 ELFs — and now the recomp's reconstructed executable, which matches upstream's
 pinned game code).
 
+## GT4Recomp v1.3.0-rc6 (Spec II support)
+
+The **v1.3.0-rc6 portable** release is extracted alongside 1.2.3, adding
+**Gran Turismo 4 Spec II as a second game** (launcher game-selector, per-game
+saves/replays, shared textures), the new **Performance Mode** (night races
+18.4→7.9 ms — no more Nordschleife sun-glare drops), Direct3D 12/11 fallback,
+save export as `.psu`, and automatic GPU selection. Walker entry:
+**GT4 Recomp 1.3 · Launcher**.
+
+**One-time setup (interactive):** run the v1.3.0 launcher GUI once under Wine.
+It asks for each game's disc image — point it at the retail ISO
+(`ROMS_FINAL/ps2/Gran Turismo 4/Gran Turismo 4.iso`) and the Spec II ISO
+(`roms_heavy/ps2/Gran Turismo 4/Gran Turismo 4 (USA).iso`). It copies and
+prepares both games (~5.2 GB + 3.7 GB), then the standalone
+`game/gt4.exe` and `game/gt4-spec2.exe` work directly. The shared
+`data/Textures/` already has the HD HUD/UI packs linked.
+
+The old 1.2.3 direct-launch entry is kept as a fallback. Note that v1.3.0
+saves live under `user/saves/` inside the portable folder (not the old
+`data/sessions/default`).
+
 ## Maintenance
 
 The release archives stay in `dg_gt4r_cache` because the role uses them on

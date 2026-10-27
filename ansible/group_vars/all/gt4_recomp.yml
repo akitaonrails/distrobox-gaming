@@ -1,7 +1,11 @@
 ---
 # GT4 static recompilation, Windows v1.2.3 under Wine.
 dg_gt4r_repo: moesuito/gt4-staticrecomp
-dg_gt4r_version: 1.2.3
+dg_gt4r_version: 1.2.3   # kept for the 1.2.3 direct-launch fallback
+dg_gt4r_130_version: 1.3.0-rc6
+dg_gt4r_130_zip: "{{ dg_roms_final_root }}/PC/GT4Recomp-{{ dg_gt4r_130_version }}-portable.zip"
+dg_gt4r_130_sha256: d94479da17e74e76e3b27545ce957dc691ceddbb6976899f8a0e130946bd33bd
+dg_gt4r_130_release: "{{ dg_gt4r_root }}/releases/{{ dg_gt4r_130_version }}"
 dg_gt4r_installer_name: GT4Recomp-Setup-1.2.3.exe
 dg_gt4r_installer_url: "https://github.com/{{ dg_gt4r_repo }}/releases/download/v{{ dg_gt4r_version }}/{{ dg_gt4r_installer_name }}"
 dg_gt4r_installer_sha256: 475defe07926f6e41e8f8c91fd4bb3565a17d6aac92f5c8fc857d0a143530a0b
@@ -10,6 +14,8 @@ dg_gt4r_gs_version: 1.2.1
 dg_gt4r_gs_name: gt4-gs-1.2.1-windows-x64.zip
 dg_gt4r_gs_url: "https://github.com/{{ dg_gt4r_gs_repo }}/releases/download/gt4gs-v{{ dg_gt4r_gs_version }}/{{ dg_gt4r_gs_name }}"
 dg_gt4r_gs_sha256: 7eb7e4a3bb42f7b742fe3ac26bf81790e6fa01b0d82c6fcef26eabdc415ad71c
+# Spec II (SCUS-97436) is at the EmuDeck PS2 tree
+dg_gt4r_spec2_iso: "{{ dg_rom_heavy_root }}/ps2/Gran Turismo 4/Gran Turismo 4 (USA).iso"
 dg_gt4r_iso: "{{ dg_roms_final_root }}/ps2/Gran Turismo 4/Gran Turismo 4.iso"
 dg_gt4r_iso_sha256: e4d22e964729739e89099d42828a55b75cd0e1ff702ea85a3a5d793733dc1981
 dg_gt4r_elf_sha256: 10f82e2231a51404b95682ed3ea81171100a1af2fefdeed3391943016c7c935c

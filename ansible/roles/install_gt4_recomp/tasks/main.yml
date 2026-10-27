@@ -190,3 +190,65 @@
     DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
   register: _gt4r_host_launcher
   changed_when: "'installed ' in _gt4r_host_launcher.stdout or 'removed stale ' in _gt4r_host_launcher.stdout"
+
+# --- GT4Recomp v1.3.0-rc6 (Spec II support) ---
+
+- name: Verify the staged v1.3.0 portable ZIP
+  ansible.builtin.stat:
+    path: "{{ dg_gt4r_130_zip }}"
+    checksum_algorithm: sha256
+  register: _gt4r_130_zip
+- ansible.builtin.assert:
+    that: _gt4r_130_zip.stat.checksum | default('') == dg_gt4r_130_sha256
+    fail_msg: "Staged v1.3.0 ZIP missing or wrong sha256 at {{ dg_gt4r_130_zip }}."
+
+- name: Extract v1.3.0 portable into its versioned release directory
+  ansible.builtin.command:
+    argv:
+      - distrobox-enter
+      - -n
+      - "{{ dg_box_name }}"
+      - --
+      - 7z
+      - x
+      - -y
+      - "-o{{ dg_gt4r_130_release }}"
+      - "{{ dg_gt4r_130_zip }}"
+    creates: "{{ dg_gt4r_130_release }}/GT4Recomp.exe"
+
+- name: Link the HD texture packs into the v1.3.0 shared Textures folder
+  ansible.builtin.file:
+    path: "{{ dg_gt4r_130_release }}/data/Textures/{{ item.name }}"
+    src: "{{ item.src }}"
+    state: link
+    force: true
+  loop:
+    - name: hd-hud-ui
+      src: "{{ dg_pcsx2_ps2_root }}/Gran Turismo 4 Remaster/Gran Turismo 4 HD HUD & UI Texture pack by Silentwarior112/replacements"
+    - name: hd-hud-ui-update-2.1
+      src: "{{ dg_pcsx2_ps2_root }}/Gran Turismo 4 Remaster/update 2.1/replacements"
+    - name: blocky-haze-fix
+      src: "{{ dg_pcsx2_ps2_root }}/Gran Turismo 4 Remaster/HD HUD & U.I. blocky haze fix v2/text files jap kor usa pal shared"
+
+- name: Install the v1.3.0 launcher (opens the GUI under Wine)
+  ansible.builtin.template:
+    src: gt4-recomp-130-launcher.sh.j2
+    dest: "{{ dg_box_home }}/bin/gt4-recomp-130"
+    mode: "0755"
+
+- name: Render the v1.3.0 desktop entry
+  ansible.builtin.template:
+    src: gt4-recomp-130.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-gt4-recomp-130.desktop"
+    mode: "0644"
+
+- name: Install the v1.3.0 host desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _gt4r_130_host
+  changed_when: >-
+    'installed ' in _gt4r_130_host.stdout or
+    'removed stale ' in _gt4r_130_host.stdout
