@@ -18,7 +18,7 @@ dg_triaevum_zip_sha256: "23c3febe3a4dc1b7ffe652f21861f4c5b5068411a16df5fc721e52a
 # continuity; migrating to the native flatpak is a possible follow-up.
 
 # NAS-staged release + install/working dir (holds the Forge-prepared data/).
-dg_triaevum_root: "{{ dg_roms_final_root }}/PC/triaevum"
+dg_triaevum_root: "{{ dg_roms_final_root }}/PC/ports/triaevum"
 dg_triaevum_zip: "{{ dg_triaevum_root }}/TriAevum-{{ dg_triaevum_version }}-Windows-x64.zip"
 dg_triaevum_install_dir: "{{ dg_triaevum_root }}/extracted"
 dg_triaevum_forge_exe: TriAevumForge.exe

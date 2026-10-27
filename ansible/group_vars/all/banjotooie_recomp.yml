@@ -17,7 +17,7 @@ dg_btooie_asset_name: "BanjoTooieScurvyDogPort-Alpha4.5-Windows-x64.zip"
 dg_btooie_zip_url: "https://github.com/{{ dg_btooie_repo }}/releases/download/{{ dg_btooie_release_tag }}/{{ dg_btooie_asset_name }}"
 dg_btooie_zip_sha256: "a7cd5c8289090da28b48698fd17bb436c89b389dff1554b5c79af396be0ad771"
 
-dg_btooie_root: "{{ dg_roms_final_root }}/PC/banjotooie-recomp"
+dg_btooie_root: "{{ dg_roms_final_root }}/PC/ports/banjotooie-recomp"
 dg_btooie_zip: "{{ dg_btooie_root }}/{{ dg_btooie_asset_name }}"
 dg_btooie_install_dir: "{{ dg_box_home }}/Games/banjotooie-recomp-{{ dg_btooie_release_tag }}"
 dg_btooie_exe: "BanjoTooieScurvyDogPort.exe"

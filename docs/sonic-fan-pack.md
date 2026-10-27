@@ -34,7 +34,7 @@ week — it's fan-port season).
 [Eukaryot/sonic3air](https://github.com/Eukaryot/sonic3air) — "Angel Island
 Revisited", the definitive Sonic 3 & Knuckles remaster on the Oxygen engine.
 **Official native Linux build** (`sonic3air_game.tar.gz` from the stable GitHub
-release, sha256-pinned, NAS-staged under `ROMS_FINAL/PC/sonic remake/`; the
+release, sha256-pinned, NAS-staged under `ROMS_FINAL/PC/ports/sonic remake/`; the
 `sonic3air_game.zip` downloaded from sonic3air.org is the *Windows* package).
 **Requires the original Sonic 3 & Knuckles combined ROM** — the role stages the
 box's standard 4 MiB dump (`Sonic and Knuckles & Sonic 3 (JUE) [!].bin`, sha1
@@ -65,7 +65,7 @@ Knuckles campaign acting as an epilogue to the Death Egg Saga. Currently the
 **Time Attack Preview v1.2**. **Official native Linux AppImage** (GameMaker
 runner), no ROM required. Distribution is Google Drive links off the download
 page (no releases API) — the user stages the zip at
-`ROMS_FINAL/PC/SonicXG_TA-Preview-V1.2-Linux.zip` and the role installs from
+`ROMS_FINAL/PC/ports/SonicXG_TA-Preview-V1.2-Linux.zip` and the role installs from
 there; bump `dg_sonicxg_version` + `dg_sonicxg_zip` on upgrades (ogm
 fingerprints the download page to badge new releases). FUSE for the AppImage
 is covered by `fuse2`/`fuse3` in `packages.yml`. Like the others it launches
@@ -84,7 +84,7 @@ Mac build exists, no Linux) → wine-11.8 with the standard recipe (UseEGL=N GLX
 pin, WineBus SDL for the 8BitDo) presented **fullscreen via gamescope integer
 scaling** (`dg_sonicgalactic_gamescope_args`), which also subsumes the old
 Wine-virtual-desktop corner-render fix. Source = the user's NAS zip
-(`ROMS_FINAL/PC/sonicgalactic-demo2-patch1-win.zip`, `SonicGalactic.exe` +
+(`ROMS_FINAL/PC/ports/sonicgalactic-demo2-patch1-win.zip`, `SonicGalactic.exe` +
 `Data.hatch` inside). Bump `dg_sonicgalactic_version` + `_zip` on new demos;
 ogm fingerprints the download page. Verified 2026-10-01: boots under Wine and
 stays up. Launcher `bin/sonic-galactic`, Walker "Sonic Galactic".
@@ -96,7 +96,7 @@ stays up. Launcher `bin/sonic-galactic`, Walker "Sonic Galactic".
 (mmf2d3d9.dll, .mfx modules), **2023 demo** (`Overture95_Demo_v1`).
 **Windows-only** → wine-11.8, same recipe as Galactic (UseEGL=N GLX pin,
 WineBus SDL, gamescope integer-scaled fullscreen). Source = the user's NAS rar
-(`ROMS_FINAL/PC/Overture95_Demo_v1.rar`; top-level `Overture95_Demo_v1/`
+(`ROMS_FINAL/PC/ports/Overture95_Demo_v1.rar`; top-level `Overture95_Demo_v1/`
 folder with `SonicOverture95.exe` inside). itch has no releases API — ogm
 fingerprints the itch page. Verified 2026-10-01: boots and runs under Wine
 (smoke-test note: `pgrep -x` can't match `SonicOverture95.exe` — Linux
@@ -110,7 +110,7 @@ Launcher `bin/sonic-overture`, Walker "Sonic Overture".
 on GameMaker Studio 2 (`data.win`, `.vsh` shaders). **Windows-only** →
 wine-11.8, same recipe as Galactic/Overture (UseEGL=N GLX pin, WineBus SDL,
 gamescope integer-scaled fullscreen). Source = the user's NAS zip
-(`ROMS_FINAL/PC/Sonic Legends.zip`, files at zip root — note the exe name has
+(`ROMS_FINAL/PC/ports/Sonic Legends.zip`, files at zip root — note the exe name has
 a space). itch has no releases API — ogm fingerprints the itch page.
 Verified 2026-10-01: boots and runs under Wine. Launcher
 `bin/sonic-legends`, Walker "Sonic Legends".
@@ -123,7 +123,7 @@ Verified 2026-10-01: boots and runs under Wine. Launcher
 anniversary, the newest demo as of 2026-10). **Windows-only** → wine-11.8,
 same recipe as Galactic (UseEGL=N GLX pin, WineBus SDL, gamescope
 integer-scaled fullscreen). Source = the user's NAS rar
-(`ROMS_FINAL/PC/sonic-rush-rerun-anniversary-demo.rar`; top-level
+(`ROMS_FINAL/PC/ports/sonic-rush-rerun-anniversary-demo.rar`; top-level
 `Sonic Rush Rerun/` folder, exe `Sonic Rush Rerun.exe`). GameJolt has no
 releases API — ogm fingerprints the GameJolt page. Launcher
 `bin/sonic-rush-rerun`, Walker "Sonic Rush Rerun".
@@ -136,7 +136,7 @@ releases API — ogm fingerprints the GameJolt page. Launcher
 DeviantArt post, which is the canonical distribution page). **Windows-only**
 → wine-11.8, same recipe (UseEGL=N GLX pin, WineBus SDL, gamescope
 integer-scaled fullscreen). Source = the user's NAS rar
-(`ROMS_FINAL/PC/Sonic Dimensions 5.1.0.rar`; top-level `Sonic Dimensions/`
+(`ROMS_FINAL/PC/ports/Sonic Dimensions 5.1.0.rar`; top-level `Sonic Dimensions/`
 folder, exe `Sonic Dimensions 5.1.0.exe` — note the exe name embeds the
 version, so a future 5.1.1 update needs `dg_sonicdimensions_exe` bumped).
 ogm fingerprints the DeviantArt page. Launcher `bin/sonic-dimensions`,
@@ -150,7 +150,7 @@ Walker "Sonic Dimensions".
 (2025-02-10, "Final 2") is what we install — no further updates expected.
 **Windows-only** → wine-11.8, same recipe (UseEGL=N GLX pin, WineBus SDL,
 gamescope integer-scaled fullscreen). Source = the user's NAS zip
-(`ROMS_FINAL/PC/sonic-and-the-moon-facility-last-build.zip`; top-level
+(`ROMS_FINAL/PC/ports/sonic-and-the-moon-facility-last-build.zip`; top-level
 `Sonic and The Moon Facility (Final 2)/` folder, exe
 `Sonic and The Moon Facility.exe`). ogm fingerprints the GameJolt page.
 Launcher `bin/moon-facility`, Walker "Sonic and the Moon Facility".
@@ -165,7 +165,7 @@ wine-11.8, same recipe as the other Clickteam games (UseEGL=N GLX pin, WineBus
 SDL for the 8BitDo, **gamescope integer-scaled fullscreen capped at 60 fps** via
 `dg_fs_gamescope_args` — the cap stops the Fusion runtime's 240 Hz held-button
 double-fire). Source = the user's NAS zip
-(`ROMS_FINAL/PC/Sonic and the Fallen Star (V1.1.1 Edit 4).zip`; a version-named
+(`ROMS_FINAL/PC/ports/Sonic and the Fallen Star (V1.1.1 Edit 4).zip`; a version-named
 top-level folder holds `Sonic and the Fallen Star.exe` + `.dat` + `Modules/`).
 Bump `dg_fs_version` + `_zip` (+ `_subdir`) on new builds; ogm fingerprints the
 project page. Launcher `bin/sonic-fallen-star`, Walker "Sonic and the Fallen
@@ -179,7 +179,7 @@ self-contained `SClassicWS.exe` + external `BG_Music/`, `Ghosts/`, and a loose
 `ringdata.sav`). **Windows-only** → wine-11.8, same recipe (UseEGL=N GLX pin,
 WineBus SDL for the 8BitDo, **gamescope integer-scaled fullscreen capped at
 60 fps** via `dg_sclassic_gamescope_args`). Source = the user's NAS rar
-(`ROMS_FINAL/PC/S_Classic1Rev03.5_FULL.rar`, extracted with 7z into a
+(`ROMS_FINAL/PC/mods/S_Classic1Rev03.5_FULL.rar`, extracted with 7z into a
 `S_Classic1Rev03_FULL/` subdir). ogm fingerprints the install (no releases API).
 Launcher `bin/sonic-classic`, Walker "Sonic Classic". Install:
 `ansible-playbook install-sonic-classic.yml`.

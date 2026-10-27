@@ -27,6 +27,6 @@ dg_ff7re_steam_localconfig: ""
 
 dg_ff7re_ffviihook: { id: "4", file: "9565", name: "FFVIIHook v2.2i" }
 dg_ff7re_engineini: { id: "3", file: "9705", name: "Ultimate Engine Tweaks v131 (No VRR)" }
-dg_ff7re_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/ff7rebirth"
+dg_ff7re_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/ff7rebirth"
 
 dg_ff7re_revert: false

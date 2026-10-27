@@ -14,7 +14,7 @@
 #  - Screamer 1's GOG installer is already 1.01 (v2), so the separate
 #    1.0->1.01 patch in the source dir is NOT needed.
 dg_screamer_root: "{{ dg_box_home }}/tools/screamer"
-dg_screamer_source_dir: "{{ dg_roms_final_root }}/PC/Screamer"
+dg_screamer_source_dir: "{{ dg_roms_final_root }}/PC/ports/Screamer"
 dg_screamer_games_dir: "{{ dg_screamer_root }}/games"
 
 # Self-contained dosbox-staging (GOG ships staging configs; not in the box repos).

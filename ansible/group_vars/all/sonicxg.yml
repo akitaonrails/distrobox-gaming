@@ -12,7 +12,7 @@
 # See docs/sonic-fan-pack.md.
 
 dg_sonicxg_version: "TA-Preview-V1.2"
-dg_sonicxg_zip: "{{ dg_roms_final_root }}/PC/SonicXG_TA-Preview-V1.2-Linux.zip"
+dg_sonicxg_zip: "{{ dg_roms_final_root }}/PC/ports/SonicXG_TA-Preview-V1.2-Linux.zip"
 
 dg_sonicxg_install_dir: "{{ dg_box_home }}/Games/sonicxg"
 dg_sonicxg_bin: "{{ dg_sonicxg_install_dir }}/SonicXG_{{ dg_sonicxg_version }}-Linux.AppImage"

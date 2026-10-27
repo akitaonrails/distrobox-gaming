@@ -11,7 +11,7 @@
 # top-level Overture95_Demo_v1/ folder with SonicOverture95.exe inside.
 
 dg_sonicoverture_version: "2023-demo-v1"
-dg_sonicoverture_rar: "{{ dg_roms_final_root }}/PC/Overture95_Demo_v1.rar"
+dg_sonicoverture_rar: "{{ dg_roms_final_root }}/PC/ports/Overture95_Demo_v1.rar"
 
 dg_sonicoverture_install_dir: "{{ dg_box_home }}/Games/sonic-overture"
 dg_sonicoverture_game_dir: "{{ dg_sonicoverture_install_dir }}/Overture95_Demo_v1"

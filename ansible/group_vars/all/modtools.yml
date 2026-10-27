@@ -6,7 +6,7 @@
 # manual pass under the game's Proton prefix (see docs/nexusmods.md for steps).
 # Their target mods are already staged under NexusMods/<game>/.
 
-dg_modtools_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/_loaders"
+dg_modtools_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/_loaders"
 
 dg_modtools:
   - key: snakebite

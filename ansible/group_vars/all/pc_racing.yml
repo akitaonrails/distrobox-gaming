@@ -1,6 +1,6 @@
 # Optional Windows PC racing games managed with Wine inside the distrobox.
 
-dg_pc_racing_source_root: "{{ dg_roms_final_root }}/PC"
+dg_pc_racing_source_root: "{{ dg_roms_final_root }}/PC/games"
 dg_pc_racing_install_root: "{{ dg_box_home }}/Games/pc-racing"
 dg_pc_racing_prefix_root: "{{ dg_box_home }}/wineprefixes/pc-racing"
 dg_pc_racing_media_root: "{{ dg_box_home }}/tools/pc-racing/media"
@@ -13,7 +13,7 @@ dg_pc_racing_wine_runner_root: "{{ dg_box_home }}/tools/wine-runners"
 dg_pc_racing_pinned_wine_runners:
   - version: "11.8"
     release: "1"
-dg_pc_racing_directx_jun2010_redist: "{{ dg_pc_racing_source_root }}/Project 06 - Silver Release (Patch v1.45)/Sonic the Hedgehog (P-06)/Redist/directx_Jun2010_redist.exe"
+dg_pc_racing_directx_jun2010_redist: "{{ dg_roms_final_root }}/PC/ports/Project 06 - Silver Release (Patch v1.45)/Sonic the Hedgehog (P-06)/Redist/directx_Jun2010_redist.exe"
 dg_pc_racing_xidi_version: v4.3.1
 dg_pc_racing_xidi_url: "https://github.com/samuelgr/Xidi/releases/download/{{ dg_pc_racing_xidi_version }}/Xidi-{{ dg_pc_racing_xidi_version }}.zip"
 dg_pc_racing_xidi_archive: "{{ dg_pc_racing_cache_root }}/Xidi-{{ dg_pc_racing_xidi_version }}.zip"
@@ -344,7 +344,7 @@ dg_pc_racing_games:
       # the .exe; pure data replacement). Preserved on the NAS under
       # NexusMods/cmr2/; re-stage there on a from-scratch rebuild.
       - name: wrc-liveries
-        source: "{{ dg_roms_final_root }}/PC/NexusMods/cmr2/Official WRC Liveries-1-1-0-1703499888.zip"
+        source: "{{ dg_roms_final_root }}/PC/mods/NexusMods/cmr2/Official WRC Liveries-1-1-0-1703499888.zip"
         strip_prefix: "Colin McRae Rally 2.0"
         creates: ".dg-wrc-liveries"
     ini:
@@ -453,7 +453,7 @@ dg_pc_racing_games:
     # page-faults loading any race on high-thread CPUs — EGO v1 worker
     # map init chokes on 32 logical CPUs; pinning affinity does NOT
     # help, the game reads GetSystemInfo). Applied 2026-07-10, archive
-    # in ROMS_FINAL/PC/dirt-patches/CMCR-DiRT-MTFix-Windows.zip:
+    # in ROMS_FINAL/PC/mods/dirt-patches/CMCR-DiRT-MTFix-Windows.zip:
     #   1. set the LAA (4GB) flag bit on DiRT.exe (backup DiRT.bak)
     #   2. copy Files/system/*.xml worker maps into <game>/system/
     #   3. render Template.xml with _Y_ -> 12 (the fix's max) to
@@ -763,7 +763,7 @@ dg_pc_racing_games:
         # by the ini: edits below) is preserved. To bump: drop a newer CI zip on
         # the NAS, update url/source/creates + this marker.
         url: https://nightly.link/emoose/OutRun2006Tweaks/actions/runs/32972770753/outrun2006tweaks-08e5efb4deea4066c440307ec009c868a30562d3.zip
-        source: "{{ dg_pc_racing_source_root }}/OutRun2006Tweaks-ci-08e5efb4.zip"
+        source: "{{ dg_roms_final_root }}/PC/mods/OutRun2006Tweaks-ci-08e5efb4.zip"
         backup_exe: "OR2006C2C.exe"
         extract_files:
           - dinput8.dll
@@ -1032,7 +1032,7 @@ dg_pc_racing_games:
         value: Arial
     notes: >-
       RallySimFans (RSF) Richard Burns Rally. Sources are consolidated under
-      ROMS_FINAL/PC/Richard Burns Rally/ (retail installer, the
+      ROMS_FINAL/PC/games/Richard Burns Rally/ (retail installer, the
       rsf_installer_files torrent payload, and Rallysimfans_Installer.exe). The
       RSF installer is a native-Win32 GUI wizard with no silent flags, so the
       install is interactive: run bin/install-richard-burns-rally, point the

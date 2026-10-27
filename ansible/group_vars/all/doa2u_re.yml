@@ -8,7 +8,7 @@
 
 dg_doa2u_repo: NoRain211/doa2u-re
 dg_doa2u_version: 0.1.6-Alpha
-dg_doa2u_zip: "{{ dg_roms_final_root }}/PC/DOA2U-{{ dg_doa2u_version }}-Linux.zip"
+dg_doa2u_zip: "{{ dg_roms_final_root }}/PC/releases/DOA2U-{{ dg_doa2u_version }}-Linux.zip"
 dg_doa2u_zip_sha256: 530ec313aeac37b206ab59ba55c94e471ac540aaef1c2ef4096f46c3c333b3fc
 
 # Dead or Alive Ultimate (Xbox, USA) Disc 2 — the DOA2U disc. The build

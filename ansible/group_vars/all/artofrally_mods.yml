@@ -22,7 +22,7 @@ dg_artofrally_game_dir: "{{ dg_artofrally_steam_library_root }}/steamapps/common
 # In-box Steam root (userdata → launch options).
 dg_artofrally_steam_root: "{{ dg_box_home }}/.local/share/Steam"
 
-dg_artofrally_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/artofrally"
+dg_artofrally_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/artofrally"
 
 # Unity Mod Manager (Nexus "site" mod 21). Pinned to the current MAIN build.
 dg_artofrally_umm_mod: "21"

@@ -22,7 +22,7 @@ dg_cheatengine_linux_release: "4"
 dg_cheatengine_linux_version_flat: "{{ dg_cheatengine_linux_version | replace('.', '') }}"
 dg_cheatengine_linux_archive_name: "CheatEngineLinux{{ dg_cheatengine_linux_version_flat }}-{{ dg_cheatengine_linux_release }}"
 
-dg_cheatengine_source_dir: "{{ dg_pc_racing_source_root }}/CheatEngine"
+dg_cheatengine_source_dir: "{{ dg_roms_final_root }}/PC/tools/CheatEngine"
 dg_cheatengine_linux_zip: "{{ dg_cheatengine_source_dir }}/{{ dg_cheatengine_linux_archive_name }}.zip"
 
 # Extraction yields <install_root>/<archive_name>/cheatengine-x86_64.

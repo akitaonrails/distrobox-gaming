@@ -18,7 +18,7 @@ dg_pd_asset_name: pd-dabs-mod-x86_64-linux.tar.gz
 dg_pd_asset_url: "https://github.com/{{ dg_pd_repo }}/releases/download/{{ dg_pd_release_tag }}/{{ dg_pd_asset_name }}"
 dg_pd_asset_sha256: 12d03c8736cadfaf0649e00db9d44c638cfe1df7cbaf698c6007d40dd17fef73
 dg_pd_build_ref: "dabs-mod v3.8.0 (2026-09-25)"   # provenance of the pinned sha256, informational
-dg_pd_archive_source: "{{ dg_roms_final_root }}/PC/perfect-dark-port/{{ dg_pd_asset_name }}"
+dg_pd_archive_source: "{{ dg_roms_final_root }}/PC/ports/perfect-dark-port/{{ dg_pd_asset_name }}"
 
 dg_pd_root: "{{ dg_box_home }}/tools/perfect-dark"    # pd.x86_64 + data/
 dg_pd_cache_dir: "{{ dg_box_home }}/cache/perfect-dark"

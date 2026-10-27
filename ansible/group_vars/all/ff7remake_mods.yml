@@ -19,7 +19,7 @@ dg_ff7remake_game_dir: "{{ dg_ff7remake_steam_library_root }}/steamapps/common/F
 # Literal ~mods (tilde is mid-path, not shell-expanded).
 dg_ff7remake_paks_mods_dir: "{{ dg_ff7remake_game_dir }}/End/Content/Paks/~mods"
 
-dg_ff7remake_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/ff7remake"
+dg_ff7remake_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/ff7remake"
 
 # Each entry pins the CHOSEN variant file (these mods ship many mutually-
 # exclusive files; install exactly one .pak each).

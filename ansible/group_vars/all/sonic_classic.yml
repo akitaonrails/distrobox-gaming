@@ -19,7 +19,7 @@
 # Ghosts/ aside by hand if you want to keep a run across a rebuild.
 
 dg_sclassic_version: "rev03.5-full"
-dg_sclassic_rar: "{{ dg_roms_final_root }}/PC/S_Classic1Rev03.5_FULL.rar"
+dg_sclassic_rar: "{{ dg_roms_final_root }}/PC/mods/S_Classic1Rev03.5_FULL.rar"
 
 dg_sclassic_install_dir: "{{ dg_box_home }}/Games/sonic-classic"
 # The rar wraps everything in this top-level folder; exe + BG_Music/ + Ghosts/ +

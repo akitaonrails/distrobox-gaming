@@ -11,7 +11,7 @@ dg_cbfd_version: "0.1.6"
 dg_cbfd_tarball_url: "https://github.com/sciaschi/CBFD-Recompiled/releases/download/V{{ dg_cbfd_version }}/ConkerRecompiled-V{{ dg_cbfd_version }}-Linux.tar.gz"
 dg_cbfd_tarball_sha256: "4fc3b53bf422385c11eadea14415445ca5c72dd32795a22ce200c5713368a422"
 
-dg_cbfd_root: "{{ dg_roms_final_root }}/PC/cbfd-recomp"
+dg_cbfd_root: "{{ dg_roms_final_root }}/PC/ports/cbfd-recomp"
 dg_cbfd_tarball: "{{ dg_cbfd_root }}/ConkerRecompiled-V{{ dg_cbfd_version }}-Linux.tar.gz"
 dg_cbfd_install_dir: "{{ dg_box_home }}/tools/cbfd-recomp"
 dg_cbfd_config_dir: "{{ dg_box_home }}/.config/ConkerRecompiled"

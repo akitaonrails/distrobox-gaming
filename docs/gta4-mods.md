@@ -42,8 +42,8 @@ OpenIV / `.rpf` editing). Single-owner data files go last.
 
 ## Sourcing — download & preserve on the NAS
 
-Everything lives under **`{{ dg_roms_final_root }}/PC/NexusMods/gta4/`**
-(`/mnt/terachad/Emulators/ROMS_FINAL/PC/NexusMods/gta4/`). The role reuses
+Everything lives under **`{{ dg_roms_final_root }}/PC/mods/NexusMods/gta4/`**
+(`/mnt/terachad/Emulators/ROMS_FINAL/PC/mods/NexusMods/gta4/`). The role reuses
 anything already there before downloading again, and never deletes it.
 
 - **FusionFix (716)** — auto-downloaded from GitHub (pinned `v5.0.1`, sha256

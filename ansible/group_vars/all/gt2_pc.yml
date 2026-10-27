@@ -8,7 +8,7 @@
 
 dg_gt2_repo: CurtisSlone/GT2-PC-Port-Mod-Kit
 dg_gt2_version: 0.3.0
-dg_gt2_zip: "{{ dg_roms_final_root }}/PC/GT2-PC-Port-Mod-Kit-{{ dg_gt2_version }}.zip"
+dg_gt2_zip: "{{ dg_roms_final_root }}/PC/releases/GT2-PC-Port-Mod-Kit-{{ dg_gt2_version }}.zip"
 dg_gt2_zip_sha256: aecd13cb7faf1ffde277ef375974d9d24796206ae648820911b63341849cfc50
 
 # The ONE accepted disc: USA Simulation Mode v1.0 first print (redump disc/85,

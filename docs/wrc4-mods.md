@@ -32,7 +32,7 @@ restore stock before reinstalling the other variant.
 ```sh
 cd ansible
 # Premium key auto-downloads; else stage the .rar under
-# ROMS_FINAL/PC/NexusMods/wrc4/1/ and re-run.
+# ROMS_FINAL/PC/mods/NexusMods/wrc4/1/ and re-run.
 NEXUS_MODS_API_KEY=... ansible-playbook install-wrc4-mods.yml
 
 # restore the stock DATA.MIX
@@ -40,7 +40,7 @@ ansible-playbook install-wrc4-mods.yml -e dg_wrc4_revert=true
 ```
 
 The exe version is gated to `1.0.0.0` (`scripts/pe-version.py`). The mod archive
-is preserved on the NAS under `ROMS_FINAL/PC/NexusMods/wrc4/` and reused on
+is preserved on the NAS under `ROMS_FINAL/PC/mods/NexusMods/wrc4/` and reused on
 rebuild. Override the game location with `dg_wrc4_steam_library_root` if your
 USB library mounts elsewhere.
 

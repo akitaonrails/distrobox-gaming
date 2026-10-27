@@ -20,7 +20,7 @@ booting** — DXVK renders D3D11 on the RTX 5090 at 4K, ROM set accepted.
 
 RRC's own help text wants these exact zips in its `roms/` folder next to the exe.
 They're consolidated in the Wanszai source archive
-(`dg_ridge_racer_rom_source_dir` = `ROMS_FINAL/PC/wanszai/ridge-racer/roms/`) and
+(`dg_ridge_racer_rom_source_dir` = `ROMS_FINAL/PC/ports/wanszai/ridge-racer/roms/`) and
 the role symlinks them into the work dir:
 
 | File | Notes |

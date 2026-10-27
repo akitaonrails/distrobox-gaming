@@ -10,7 +10,7 @@
 # version by staging the new zip + updating the sha256.
 
 dg_project_reignition_version: "1.0.1"
-dg_project_reignition_zip: "{{ dg_roms_final_root }}/PC/project-reignition-linux-v{{ dg_project_reignition_version }}.zip"
+dg_project_reignition_zip: "{{ dg_roms_final_root }}/PC/releases/project-reignition-linux-v{{ dg_project_reignition_version }}.zip"
 dg_project_reignition_zip_sha256: 2517648a75893ddafb36db1e1a5a36b8b7a36e40c183245b40f24c7f9bb239e1
 # top-level dir inside the zip
 dg_project_reignition_zip_dir: "Project Reignition - Linux v{{ dg_project_reignition_version }}"

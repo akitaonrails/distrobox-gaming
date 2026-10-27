@@ -23,7 +23,7 @@ dg_mgs3mc_steam_library_root: >-
 dg_mgs3mc_game_dir: "{{ dg_mgs3mc_steam_library_root }}/steamapps/common/MGS3"
 
 dg_mgs3mc_steam_root: "{{ dg_box_home }}/.local/share/Steam"
-dg_mgs3mc_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/mgs3mc"
+dg_mgs3mc_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/mgs3mc"
 
 # MGSHDFix loads via a wininet/winhttp proxy under Proton.
 dg_mgs3mc_launch_options: 'WINEDLLOVERRIDES="wininet,winhttp=n,b" %command%'

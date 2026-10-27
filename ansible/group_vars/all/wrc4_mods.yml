@@ -18,7 +18,7 @@ dg_wrc4_steam_library_root: >-
      else dg_box_home + '/.local/share/Steam' }}
 dg_wrc4_game_dir: "{{ dg_wrc4_steam_library_root }}/steamapps/common/WRC 4"
 
-dg_wrc4_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/wrc4"
+dg_wrc4_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/wrc4"
 
 # Camera-looseness variant of mod 1 (both are MAIN downloads):
 #   file 2 = "Loose camera 0.7"  (default — looser, best for reducing motion

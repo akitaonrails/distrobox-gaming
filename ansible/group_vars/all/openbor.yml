@@ -39,7 +39,7 @@ dg_openbor_games:
     # chronocrash.com/forum/resources/streets-of-rage-troubles-in-japan.443/
     # v1.1 by Berlioz (needs OpenBOR 4). Bundle ships an OpenBOR v3.0 GAME.exe
     # (ignored) + the pak.
-    archive: "{{ dg_roms_final_root }}/PC/SoR_Troubles_In_Japan.rar"
+    archive: "{{ dg_roms_final_root }}/PC/ports/SoR_Troubles_In_Japan.rar"
     pak_member: "paks/SoR_Troubles_In_Japan.pak"
     pak: "SoR_Troubles_In_Japan.pak"
     desktop: true

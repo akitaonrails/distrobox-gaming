@@ -21,7 +21,7 @@ dg_re1hd_appid: "304240"
 dg_re1hd_steam_library_root: "{{ dg_box_home }}/.local/share/Steam"
 dg_re1hd_game_dir: "{{ dg_re1hd_steam_library_root }}/steamapps/common/Resident Evil Biohazard HD REMASTER"
 
-dg_re1hd_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/re1hd"
+dg_re1hd_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/re1hd"
 
 dg_re1hd_mods:
   - id: "102"

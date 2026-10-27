@@ -10,7 +10,7 @@ installed 2026-09-25 at `v0.7.1`.
 
 Neither game is playable without original assets. Both come from the
 [Project R Assets pack on archive.org](https://archive.org/details/project-r-assets-v-0.6.0.7z)
-(sha1-pinned, kept on the NAS at `ROMS_FINAL/PC/project-r/` and extracted to
+(sha1-pinned, kept on the NAS at `ROMS_FINAL/PC/ports/project-r/` and extracted to
 `assets/` beside it):
 
 - **Rush: The Rock** — `sfrushrk.chd` hard-drive dump + the four audio ROMs

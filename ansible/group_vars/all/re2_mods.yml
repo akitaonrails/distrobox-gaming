@@ -18,7 +18,7 @@ dg_re2_appid: "883710"
 dg_re2_steam_library_root: "{{ dg_box_home }}/.local/share/Steam"
 dg_re2_game_dir: "{{ dg_re2_steam_library_root }}/steamapps/common/RESIDENT EVIL 2  BIOHAZARD RE2"
 
-dg_re2_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/re2"
+dg_re2_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/re2"
 
 dg_re2_mods:
   - id: "1627"

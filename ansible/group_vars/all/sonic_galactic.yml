@@ -13,7 +13,7 @@
 # upgrades; ogm.yml fingerprints the download page to badge new demos.
 
 dg_sonicgalactic_version: "demo2-patch1"
-dg_sonicgalactic_zip: "{{ dg_roms_final_root }}/PC/sonicgalactic-demo2-patch1-win.zip"
+dg_sonicgalactic_zip: "{{ dg_roms_final_root }}/PC/ports/sonicgalactic-demo2-patch1-win.zip"
 
 dg_sonicgalactic_install_dir: "{{ dg_box_home }}/Games/sonic-galactic"
 dg_sonicgalactic_exe: "SonicGalactic.exe"

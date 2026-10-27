@@ -46,7 +46,7 @@ dg_re4_hd_bin32_payload:
 # setting_overrides/HDProject.ini + sideload/. Empty = keep the bundled version.
 # (Nexus mod 306 "Realistic Gun Damage" is NOT applicable — it's a modified
 # game.exe for the old Ubisoft port, incompatible with the Steam UHD.)
-dg_re4_hd_re4tweaks_update_zip: "{{ dg_roms_final_root }}/PC/NexusMods/re4-2005/101-re4-tweaks/re4_tweaks1.9.1-101-1-9-1-1679477554.zip"
+dg_re4_hd_re4tweaks_update_zip: "{{ dg_roms_final_root }}/PC/mods/NexusMods/re4-2005/101-re4-tweaks/re4_tweaks1.9.1-101-1-9-1-1679477554.zip"
 
 # BIO4 entries never copied into the game even if a repack source ships them.
 # steam_appid.txt lets the game bypass Steam (part of the "alternative Steam").

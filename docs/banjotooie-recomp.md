@@ -18,7 +18,7 @@ runs under **wine-11.8** with the established recipe: `UseEGL=N` GLX pin
 **gamescope** (`-W 3840 -H 2160 -f`) for fullscreen on DP-1. RT64 renders
 through its "plume" D3D12→Vulkan layer (vkd3d) — confirmed initializing on
 the RTX 5090 in the boot smoke test. The release zip is hash-pinned on the
-NAS (`ROMS_FINAL/PC/banjotooie-recomp/`).
+NAS (`ROMS_FINAL/PC/ports/banjotooie-recomp/`).
 
 > Update-check note: upstream has **only prereleases** so far, so
 > `releases/latest` is empty — query the releases list instead.
@@ -30,7 +30,7 @@ NAS (`ROMS_FINAL/PC/banjotooie-recomp/`).
 launcher hard-rejects other regions/byte orders/modified ROMs. The NAS dump
 `ROMS_FINAL/n64/Banjo-Tooie (USA).zip` (`Banjo-Tooie (U) [!].v64`,
 byte-swapped) is normalized to `.z64`, sha256-verified and kept at
-`ROMS_FINAL/PC/banjotooie-recomp/Banjo-Tooie (USA).z64`, plus a copy next to
+`ROMS_FINAL/PC/ports/banjotooie-recomp/Banjo-Tooie (USA).z64`, plus a copy next to
 the exe so the ROM picker defaults beside it.
 
 **First launch is a one-time manual step**: Play → **Choose ROM...** → pick

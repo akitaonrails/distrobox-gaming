@@ -12,7 +12,7 @@
 # "Sonic Legends.exe" (name has a space — quote everywhere).
 
 dg_soniclegends_version: "trial-2023-11-24"
-dg_soniclegends_zip: "{{ dg_roms_final_root }}/PC/Sonic Legends.zip"
+dg_soniclegends_zip: "{{ dg_roms_final_root }}/PC/ports/Sonic Legends.zip"
 
 dg_soniclegends_install_dir: "{{ dg_box_home }}/Games/sonic-legends"
 dg_soniclegends_exe: "Sonic Legends.exe"

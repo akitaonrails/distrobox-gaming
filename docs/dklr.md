@@ -8,7 +8,7 @@ kasquez's free fangame remake of the GameBoy *Donkey Kong Land* in the SNES
   raw build). The launcher **integer-scales** it to the panel with gamescope for
   crisp pixels — no blur.
 - **Source:** staged on the NAS at `dg_dklr_source_dir`
-  (`ROMS_FINAL/PC/DKLR`); the role copies it to a writable local install
+  (`ROMS_FINAL/PC/ports/DKLR`); the role copies it to a writable local install
   (`{{ dg_box_home }}/Games/dklr`) so autosaves work.
 
 ## Install / run / revert

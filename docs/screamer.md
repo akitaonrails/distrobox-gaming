@@ -6,7 +6,7 @@ the DOS files out of the GOG installers; a self-contained dosbox-staging binary
 (pinned v0.82.2, SHA-256-checked) runs them. Opt-in; installed 2026-08-17.
 Screamer 1 **smoke-verified booting**.
 
-Sources are the GOG installers in `ROMS_FINAL/PC/Screamer/`
+Sources are the GOG installers in `ROMS_FINAL/PC/ports/Screamer/`
 (`setup_screamer_1.01_gog_v2_*.exe`, `setup_screamer2_2.0.0.1.exe`). The separate
 `patch_screamer_1.0_to_1.01_*.exe` is **not needed** — the installer is already
 1.01 (v2).

@@ -18,7 +18,7 @@ dg_bloodstained_steam_library_root: >-
 dg_bloodstained_game_dir: "{{ dg_bloodstained_steam_library_root }}/steamapps/common/Bloodstained Ritual of the Night"
 dg_bloodstained_paks_mods_dir: "{{ dg_bloodstained_game_dir }}/BloodstainedRotN/Content/Paks/~mods"
 
-dg_bloodstained_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/bloodstained"
+dg_bloodstained_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/bloodstained"
 
 # Mods 67 (Improved Drop Rates +10%) and 38 (Drop Rate Plus 100%) overwrite the
 # SAME drop asset — mutually exclusive. Pick one: "38" (100%, default, matches

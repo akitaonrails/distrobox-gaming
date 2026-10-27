@@ -15,7 +15,7 @@ dg_alexkidddx_steam_library_root: >-
 dg_alexkidddx_game_dir: "{{ dg_alexkidddx_steam_library_root }}/steamapps/common/Alex Kidd in Miracle World DX"
 dg_alexkidddx_managed_dir: "{{ dg_alexkidddx_game_dir }}/Alex Kidd in Miracle World DX_Data/Managed"
 
-dg_alexkidddx_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/alexkidddx"
+dg_alexkidddx_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/alexkidddx"
 # Stock Assembly-CSharp.dll backed up here before the swap (for revert).
 dg_alexkidddx_backup_dir: "{{ dg_external_games_root }}/backups/alexkidddx"
 

@@ -18,7 +18,9 @@ web-page update badges where a pollable page exists (see the field docs in
 `ogm.yml` and `docs/ogm-launcher.md`; verify regexes against the live page).
 The opt-in `ogm_catalog` role (tag `ogm`) renders the same data to a
 `catalog.d` fallback fragment. See `docs/ogm-launcher.md`.
-Focused setup notes are in `docs/`. The native macOS baseline is a separate
+The PC side of the library (`ROMS_FINAL/PC`) is bucketed as `ports/`,
+`games/`, `mods/`, `releases/` and `tools/`; put new assets in the right
+bucket and see `docs/pc-library.md`. Focused setup notes are in `docs/`. The native macOS baseline is a separate
 stack under `macos/` and shares no code with the Linux tree — keep macOS
 changes there and Linux changes out of it.
 

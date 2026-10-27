@@ -13,7 +13,7 @@ dg_re0_appid: "339340"
 dg_re0_steam_library_root: "{{ dg_box_home }}/.local/share/Steam"
 dg_re0_game_dir: "{{ dg_re0_steam_library_root }}/steamapps/common/Resident Evil 0"
 
-dg_re0_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/re0"
+dg_re0_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/re0"
 
 dg_re0_mods:
   - id: "39"

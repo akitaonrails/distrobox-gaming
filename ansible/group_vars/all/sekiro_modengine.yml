@@ -16,7 +16,7 @@ dg_sekiro_me_steam_library_root: >-
   {{ dg_external_usb_games_root if (dg_external_usb_games_root | length > 0)
      else dg_box_home + '/.local/share/Steam' }}
 dg_sekiro_me_game_dir: "{{ dg_sekiro_me_steam_library_root }}/steamapps/common/Sekiro"
-dg_sekiro_me_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/sekiro"
+dg_sekiro_me_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/sekiro"
 
 dg_sekiro_me_chain_dll: "weaponwheel.dll"
 

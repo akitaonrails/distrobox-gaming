@@ -21,8 +21,8 @@ The AppImage needs a `game/` dir beside it with:
 
 | File | Source | Status |
 |---|---|---|
-| Doom 64: **Retribution v1.5** (whole archive — WAD, brightmaps, soundfont) | [ModDB](https://www.moddb.com/mods/doom-64-retribution) | ✅ `ROMS_FINAL/PC/D64RTRv1.5.zip` |
-| `D64MUS.PK3` (OGG music pack v1.3) | [ModDB addon](https://www.moddb.com/mods/doom-64-retribution/addons/doom-64-retribution-ogg-music-pack-v13) | ✅ `ROMS_FINAL/PC/D64MUS.zip` |
+| Doom 64: **Retribution v1.5** (whole archive — WAD, brightmaps, soundfont) | [ModDB](https://www.moddb.com/mods/doom-64-retribution) | ✅ `ROMS_FINAL/PC/releases/D64RTRv1.5.zip` |
+| `D64MUS.PK3` (OGG music pack v1.3) | [ModDB addon](https://www.moddb.com/mods/doom-64-retribution/addons/doom-64-retribution-ogg-music-pack-v13) | ✅ `ROMS_FINAL/PC/releases/D64MUS.zip` |
 | `doom2.wad` (DOOM II, required IWAD) | copied by the role from `Emulators/Doom/GZDOOM/DOOM2.WAD` | ✅ local |
 
 The exact ModDB downloads are `D64RTRv1.5.ZIP` (28,465,541 bytes, MD5

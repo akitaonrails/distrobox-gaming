@@ -21,7 +21,7 @@ dg_eldenring_steam_library_root: >-
 dg_eldenring_game_dir: "{{ dg_eldenring_steam_library_root }}/steamapps/common/ELDEN RING"
 dg_eldenring_regulation: "{{ dg_eldenring_game_dir }}/Game/regulation.bin"
 
-dg_eldenring_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/eldenring"
+dg_eldenring_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/eldenring"
 dg_eldenring_backup_dir: "{{ dg_external_games_root }}/backups/eldenring"
 
 # Easy Mode variant (mutually exclusive — one regulation can be active):

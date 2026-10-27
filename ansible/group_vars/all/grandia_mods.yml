@@ -17,7 +17,7 @@ dg_grandia_steam_library_root: >-
 dg_grandia_game_dir: "{{ dg_grandia_steam_library_root }}/steamapps/common/GRANDIA HD Remaster"
 dg_grandia_content_dir: "{{ dg_grandia_game_dir }}/content"
 
-dg_grandia_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/grandia"
+dg_grandia_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/grandia"
 
 # Mod 2 toggles (its .bat menu options A and C):
 dg_grandia_remove_filters: true    # move smoothing-filter data to _backup (sharp originals)

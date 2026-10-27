@@ -31,7 +31,7 @@ it to z64 and md5-verifies. Override `dg_pd_rom_src` for your rip.
 The fork ships **stable version releases** (currently `v3.15.1`). The role pins the
 tag + a **sha256** (`dg_pd_asset_sha256`, provenance in `dg_pd_build_ref`) and
 reuses the tarball staged on the NAS at
-`ROMS_FINAL/PC/perfect-dark-port/pd-dabs-mod-x86_64-linux.tar.gz`; `get_url` only
+`ROMS_FINAL/PC/ports/perfect-dark-port/pd-dabs-mod-x86_64-linux.tar.gz`; `get_url` only
 downloads when that copy is absent/corrupt and refuses a newer build until the
 sha is bumped. To update: bump `dg_pd_release_tag`, download the new tarball to
 that NAS path, set the new sha256 + `dg_pd_build_ref`, re-run (extract is

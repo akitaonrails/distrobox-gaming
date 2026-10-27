@@ -142,7 +142,7 @@ dg_rom_patches:
   # relics. Per the author (optovania.com) it patches the Castlevania PRG1 ROM
   # — our Castlevania (USA) (Rev 1).nes. Installed ALONGSIDE the untouched
   # original (descriptive filename, ES-DE picks it up as a second entry).
-  # User's zip: ROMS_FINAL/PC/romhacks/Castlevania_The_Holy_Relics.zip;
+  # User's zip: ROMS_FINAL/PC/mods/romhacks/Castlevania_The_Holy_Relics.zip;
   # NAS-staged patch: ROMS_FINAL/nes/romhack-patches/.
   - name: "Castlevania - The Holy Relics (CV1 hack)"
     base: "{{ dg_rom_root }}/nes/Castlevania (USA) (Rev 1).nes"

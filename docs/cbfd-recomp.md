@@ -12,7 +12,7 @@ version marker before extracting a newer build; config and saves stay in
 
 Upstream ships a **native Linux x86-64 build** — RT64 renders through
 **Vulkan** directly, so no Wine. The role hash-pins the release tarball on the
-NAS (`ROMS_FINAL/PC/cbfd-recomp/`) and extracts it to `tools/cbfd-recomp` in
+NAS (`ROMS_FINAL/PC/ports/cbfd-recomp/`) and extracts it to `tools/cbfd-recomp` in
 the box. Runtime deps per `ldd` on the binary: `sdl2 vulkan-icd-loader
 freetype2 dbus` (installed by the role).
 

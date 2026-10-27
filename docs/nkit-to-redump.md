@@ -102,10 +102,10 @@ The recovered ISO is the pristine base. Apply each hack's xdelta on the host
 `dolphin-emu -b -e %ROM%` (no Riivolution needed).
 
 ```sh
-BASE="<RF>/PC/romhacks/sms/_base_SMS_USA_redump.iso"   # the verified redump
-7z e -so "<RF>/PC/romhacks/sms/super_mario_sunburn_v2.7z" patches/console.xdelta > /tmp/sb.xdelta
+BASE="<RF>/PC/mods/romhacks/sms/_base_SMS_USA_redump.iso"   # the verified redump
+7z e -so "<RF>/PC/mods/romhacks/sms/super_mario_sunburn_v2.7z" patches/console.xdelta > /tmp/sb.xdelta
 xdelta3 -d -f -s "$BASE" /tmp/sb.xdelta "<GC>/Super Mario Sunburn (v2).iso"     # GMSE03
-7z e -so "<RF>/PC/romhacks/sms/super_mario_eclipse_106_de_10.7z" patches/v1.0.6.xdelta > /tmp/ec.xdelta
+7z e -so "<RF>/PC/mods/romhacks/sms/super_mario_eclipse_106_de_10.7z" patches/v1.0.6.xdelta > /tmp/ec.xdelta
 xdelta3 -d -f -s "$BASE" /tmp/ec.xdelta "<GC>/Super Mario Eclipse (v1.0.6).iso" # GMSE04
 ```
 
@@ -119,7 +119,7 @@ Under `<RF>/PC/`, so nothing is re-downloaded or re-derived by hand:
 
 - `PC/tools/nkit-v1.4/` — NKit + Redump.dat + GC recovery files (the whole
   restore toolchain).
-- `PC/romhacks/sms/` — the hack archives (`*.7z`, which contain the xdelta) and
+- `PC/mods/romhacks/sms/` — the hack archives (`*.7z`, which contain the xdelta) and
   `_base_SMS_USA_redump.iso` (the verified pristine base, so re-patching skips
   the recovery step).
 

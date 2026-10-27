@@ -17,7 +17,7 @@ dg_rerequiem_steam_library_root: >-
      else dg_box_home + '/.local/share/Steam' }}
 dg_rerequiem_game_dir: "{{ dg_rerequiem_steam_library_root }}/steamapps/common/RESIDENT EVIL requiem BIOHAZARD requiem"
 
-dg_rerequiem_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/rerequiem"
+dg_rerequiem_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/rerequiem"
 
 dg_rerequiem_mods:
   - id: "14"

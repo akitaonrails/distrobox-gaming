@@ -14,7 +14,7 @@
 dg_wrc7_appid: "621830"
 dg_wrc7_steam_library_root: "{{ dg_box_home }}/.local/share/Steam"
 dg_wrc7_game_dir: "{{ dg_wrc7_steam_library_root }}/steamapps/common/WRC 7"
-dg_wrc7_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/wrc7"
+dg_wrc7_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/wrc7"
 # Extraction scratch on the NAS (the 6 GB rar must not land on a small /tmp tmpfs).
 dg_wrc7_extract_root: "{{ dg_wrc7_staging_root }}/_extract"
 # Folder inside the archive wrapper that maps onto the game root.

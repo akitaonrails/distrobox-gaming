@@ -13,7 +13,7 @@
 # "Sonic Dimensions 5.1.0.exe" inside.
 
 dg_sonicdimensions_version: "5.1.0-demo"
-dg_sonicdimensions_rar: "{{ dg_roms_final_root }}/PC/Sonic Dimensions 5.1.0.rar"
+dg_sonicdimensions_rar: "{{ dg_roms_final_root }}/PC/ports/Sonic Dimensions 5.1.0.rar"
 
 dg_sonicdimensions_install_dir: "{{ dg_box_home }}/Games/sonic-dimensions"
 dg_sonicdimensions_game_dir: "{{ dg_sonicdimensions_install_dir }}/Sonic Dimensions"

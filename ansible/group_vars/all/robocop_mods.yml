@@ -20,7 +20,7 @@ dg_robocop_steam_library_root: >-
 dg_robocop_game_dir: "{{ dg_robocop_steam_library_root }}/steamapps/common/Robocop Rogue City"
 dg_robocop_mods_subdir: "Game/Content/Paks/~mods"
 
-dg_robocop_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/robocop"
+dg_robocop_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/robocop"
 
 dg_robocop_mods:
   - { id: "1",  file: "246", name: "No-Intro / Splash Fix" }

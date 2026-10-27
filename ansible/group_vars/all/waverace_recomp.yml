@@ -15,7 +15,7 @@ dg_wr64_release_tag: "v0.4.0-macos.3"
 dg_wr64_zip_url: "https://github.com/elliotttate/wave-race-64-recomp/releases/download/{{ dg_wr64_release_tag }}/WaveRace64Recomp-{{ dg_wr64_version }}-windows-x64.zip"
 dg_wr64_zip_sha256: "88b037d32fa7fc0de6a1b64c7e65db733771532c1840de935a9ceb9f92ecbb31"
 
-dg_wr64_root: "{{ dg_roms_final_root }}/PC/waverace-recomp"
+dg_wr64_root: "{{ dg_roms_final_root }}/PC/ports/waverace-recomp"
 dg_wr64_zip: "{{ dg_wr64_root }}/WaveRace64Recomp-{{ dg_wr64_version }}-windows-x64.zip"
 dg_wr64_install_dir: "{{ dg_box_home }}/tools/waverace-recomp"
 dg_wr64_exe: WaveRace64Recomp.exe

@@ -17,7 +17,7 @@ dg_dsr_steam_library_root: "{{ dg_box_home }}/.local/share/Steam"
 dg_dsr_game_dir: "{{ dg_dsr_steam_library_root }}/steamapps/common/DARK SOULS REMASTERED"
 dg_dsr_gameparam: "{{ dg_dsr_game_dir }}/param/GameParam/GameParam.parambnd.dcx"
 
-dg_dsr_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/darksouls-remastered"
+dg_dsr_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/darksouls-remastered"
 dg_dsr_backup_dir: "{{ dg_external_games_root }}/backups/darksouls-remastered"
 
 # Easy mode (#293) damage-reduction variant: "50" (base/moderate, default), "70",

@@ -19,7 +19,7 @@ serves *corrupt* multi-connection ranges (verified: repeated downloads gave
 different full-size hashes, none matching archive.org's own md5/sha1). So
 the clean `.rar` is staged once on the NAS:
 
-- `dg_sorr_archive_source` defaults to `{{ dg_roms_final_root }}/PC/SORRv52_rev550.rar`.
+- `dg_sorr_archive_source` defaults to `{{ dg_roms_final_root }}/PC/ports/SORRv52_rev550.rar`.
 - The role copies it into the cache and `get_url` verifies the sha1; it only
   falls back to downloading from archive.org if the file is absent.
 - To (re)fetch manually, `aria2c -x16` from the MEGA/archive mirror, verify

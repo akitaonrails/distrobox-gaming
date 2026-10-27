@@ -22,10 +22,10 @@ dg_d64rt_appimage_name: "doom64-rt-v{{ dg_d64rt_version }}-x86_64.AppImage"
 dg_d64rt_appimage_url: "https://github.com/acolomba/doom64-rt/releases/download/v{{ dg_d64rt_version }}/{{ dg_d64rt_appimage_name }}"
 dg_d64rt_appimage_sha256: "e24a47a5d9f3cc33616f704e4601f18222fbfb40cd0c760378c2ea850e2e3896"
 
-dg_d64rt_root: "{{ dg_roms_final_root }}/PC/doom64-rt"
+dg_d64rt_root: "{{ dg_roms_final_root }}/PC/ports/doom64-rt"
 dg_d64rt_appimage: "{{ dg_d64rt_root }}/{{ dg_d64rt_appimage_name }}"
-dg_d64rt_retribution_archive: "{{ dg_roms_final_root }}/PC/D64RTRv1.5.zip"
-dg_d64rt_music_archive: "{{ dg_roms_final_root }}/PC/D64MUS.zip"
+dg_d64rt_retribution_archive: "{{ dg_roms_final_root }}/PC/releases/D64RTRv1.5.zip"
+dg_d64rt_music_archive: "{{ dg_roms_final_root }}/PC/releases/D64MUS.zip"
 dg_d64rt_doom2_wad: "{{ dg_external_games_root }}/Doom/GZDOOM/DOOM2.WAD"
 
 dg_d64rt_install_dir: "{{ dg_box_home }}/Games/doom64-rt"

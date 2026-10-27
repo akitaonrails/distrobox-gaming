@@ -20,7 +20,7 @@ dg_mgsdelta_win64_dir: "{{ dg_mgsdelta_game_dir }}/Binaries/Win64"
 dg_mgsdelta_prefix_config_dir: "{{ dg_mgsdelta_steam_library_root }}/steamapps/compatdata/{{ dg_mgsdelta_appid }}/pfx/drive_c/users/steamuser/AppData/Local/MGSDelta/Saved/Config/Windows"
 
 dg_mgsdelta_steam_root: "{{ dg_box_home }}/.local/share/Steam"
-dg_mgsdelta_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/mgsdelta"
+dg_mgsdelta_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/mgsdelta"
 
 # Mod 17 Camera Tweaks main variant (pick one): "117" Camera FoV (widened, default),
 # "119" Farther Camera (vanilla FoV), "118" Even Farther Camera.

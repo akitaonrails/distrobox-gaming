@@ -19,7 +19,7 @@ when only a `dist/` Windows nightly existed and the native external-ROM loader
 was broken) is **gone** — the role migrated away from it (removed the Wine
 prefix + old exe). The release zip is pinned by sha256 (verified against the
 release `SHA256SUMS.txt`) and staged on the NAS at
-`ROMS_FINAL/PC/starfox-enhanced/` for rebuilds.
+`ROMS_FINAL/PC/ports/starfox-enhanced/` for rebuilds.
 
 ## Game data
 

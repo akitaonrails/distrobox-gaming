@@ -21,6 +21,6 @@ dg_dude_packages: [cmake, gcc, sdl2, openal, vulkan-headers, vulkan-icd-loader, 
 dg_dude_doom3_search_paths:
   - "{{ ansible_facts.env.HOME }}/.local/share/Steam/steamapps/common/Doom 3"
   - "/mnt/data/steam/steamapps/common/Doom 3"
-  - "{{ dg_roms_final_root }}/PC/Doom 3"
+  - "{{ dg_roms_final_root }}/PC/games/Doom 3"
   # removable Steam drives are also globbed by the launcher, e.g.
   # /run/media/<user>/STEAM/steamapps/common/Doom 3 (where classic Doom 3 lives here).

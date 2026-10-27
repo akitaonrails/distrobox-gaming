@@ -16,7 +16,7 @@ dg_s3air_asset_name: sonic3air_game.tar.gz
 dg_s3air_asset_url: "https://github.com/{{ dg_s3air_repo }}/releases/download/{{ dg_s3air_version }}/{{ dg_s3air_asset_name }}"
 dg_s3air_asset_sha256: b8e268e09eb0bd8241f9e1b75be5b1ee42b8e7f1dbcea1181e54068fe5a8d7b0
 # NAS-staged copy (reused on rebuilds; get_url only downloads if absent/corrupt)
-dg_s3air_archive_source: "{{ dg_roms_final_root }}/PC/sonic remake/sonic3air_game_linux_v26.03.28.0.tar.gz"
+dg_s3air_archive_source: "{{ dg_roms_final_root }}/PC/ports/sonic remake/sonic3air_game_linux_v26.03.28.0.tar.gz"
 
 dg_s3air_install_dir: "{{ dg_box_home }}/Games/sonic3air"
 dg_s3air_bin: "{{ dg_s3air_install_dir }}/sonic3air_linux"

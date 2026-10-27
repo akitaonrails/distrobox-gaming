@@ -13,8 +13,8 @@ dg_ue4ss_repo: "UE4SS-RE/RE-UE4SS"
 dg_ue4ss_tag: "v3.0.1"
 dg_ue4ss_asset: "UE4SS_v3.0.1.zip"
 dg_ue4ss_url: "https://github.com/{{ dg_ue4ss_repo }}/releases/download/{{ dg_ue4ss_tag }}/{{ dg_ue4ss_asset }}"
-dg_ue4ss_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/_loaders/ue4ss"
-dg_ue4ss_mods_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods"
+dg_ue4ss_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/_loaders/ue4ss"
+dg_ue4ss_mods_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods"
 
 dg_ue4ss_launch_options: 'WINEDLLOVERRIDES="dwmapi=n,b" %command%'
 dg_ue4ss_steam_root: "{{ dg_box_home }}/.local/share/Steam"

@@ -23,7 +23,7 @@
 dg_mgsvmods_tool_commit: "7053368d02373d2c85d19ab9ea3d18afbd4c6de8"
 dg_mgsvmods_tool_url: "https://github.com/mkaflowski/mgsv-mod-installer/archive/{{ dg_mgsvmods_tool_commit }}.tar.gz"
 dg_mgsvmods_tool_sha256: "869c2824a9557f27c9bcc5cef08160821d9d3d3735cc028d810655f7ce954ba4"
-dg_mgsvmods_nexus_root: "{{ dg_roms_final_root }}/PC/NexusMods"
+dg_mgsvmods_nexus_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods"
 dg_mgsvmods_tool_tarball: "{{ dg_mgsvmods_nexus_root }}/_loaders/mgsv-mod-installer/mgsv-mod-installer-7053368d.tar.gz"
 dg_mgsvmods_tool_dir: "{{ dg_box_home }}/tools/mgsv-mod-installer"
 

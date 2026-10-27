@@ -8,7 +8,7 @@
 # README's SNES key map, giving real controller play without the bundled
 # Windows JoyToKey. See docs/dklr.md.
 
-dg_dklr_source_dir: "{{ dg_roms_final_root }}/PC/DKLR"
+dg_dklr_source_dir: "{{ dg_roms_final_root }}/PC/ports/DKLR"
 dg_dklr_install_root: "{{ dg_box_home }}/Games/dklr"
 dg_dklr_prefix: "{{ dg_box_home }}/wineprefixes/dklr"
 dg_dklr_bin: "{{ dg_box_home }}/bin/dklr"

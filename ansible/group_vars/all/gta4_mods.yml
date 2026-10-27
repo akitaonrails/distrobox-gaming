@@ -30,7 +30,7 @@ dg_gta4_steam_root: "{{ dg_box_home }}/.local/share/Steam"
 # Canonical preserve + staging root on the NAS. The role auto-downloads each
 # mod here via the Nexus API when NEXUS_MODS_API_KEY is set (Premium); anything
 # already present is reused, and originals are never deleted.
-dg_gta4_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/gta4"
+dg_gta4_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/gta4"
 
 # FusionFix — THE foundation (ASI loader + Overloader). Hotlinkable from GitHub,
 # pinned by sha256, cached in the preserve dir.

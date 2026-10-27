@@ -17,7 +17,7 @@ dg_sfe_asset_name: "StarFoxEnhanced-{{ dg_sfe_version }}-linux-x64.zip"
 dg_sfe_asset_url: "https://github.com/{{ dg_sfe_repo }}/releases/download/v{{ dg_sfe_version }}/{{ dg_sfe_asset_name }}"
 dg_sfe_asset_sha256: 6a2d418b6fb4b3d59d7ebfcf0c60af6c93432ed790198fc580e41363b2cb7e26
 # NAS-staged copy reused on rebuilds (get_url downloads only if absent/corrupt).
-dg_sfe_archive_source: "{{ dg_roms_final_root }}/PC/starfox-enhanced/{{ dg_sfe_asset_name }}"
+dg_sfe_archive_source: "{{ dg_roms_final_root }}/PC/ports/starfox-enhanced/{{ dg_sfe_asset_name }}"
 
 dg_sfe_root: "{{ dg_box_home }}/tools/starfox-enhanced"
 dg_sfe_game_dir: "{{ dg_sfe_root }}/game"       # starfox_pc + ROM + Starfox-Assets.BIN
@@ -32,7 +32,7 @@ dg_sfe_rom_name: "Star Fox (USA) (Rev 2).sfc"
 # Optional MSU-1 orchestral music set (enable in the in-game setup; reads
 # "NOT FOUND" without the PAK beside the executable). Staged on the NAS;
 # skipped when absent.
-dg_sfe_msu1_source: "{{ dg_roms_final_root }}/PC/starfox-enhanced/Starfox-MSU1.PAK"
+dg_sfe_msu1_source: "{{ dg_roms_final_root }}/PC/ports/starfox-enhanced/Starfox-MSU1.PAK"
 dg_sfe_msu1_sha256: 2139ec0bab97a768d04ab8655aa95f8e3d204f57a16028dfd12896e3f5599e7a
 
 dg_sfe_main_output: "DP-1"

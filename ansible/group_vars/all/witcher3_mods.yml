@@ -18,7 +18,7 @@
 dg_witcher3_appid: "292030"
 dg_witcher3_steam_library_root: "{{ dg_box_home }}/.local/share/Steam"
 dg_witcher3_game_dir: "{{ dg_witcher3_steam_library_root }}/steamapps/common/The Witcher 3"
-dg_witcher3_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/witcher3"
+dg_witcher3_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/witcher3"
 # Extraction scratch on the NAS (the HDMR parts extract to multi-GB — must not
 # land on a small /tmp tmpfs).
 dg_witcher3_extract_root: "{{ dg_witcher3_staging_root }}/_extract"

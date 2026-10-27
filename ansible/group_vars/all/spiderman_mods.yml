@@ -24,7 +24,7 @@ dg_smmods_overstrike_version: "1.8.1"
 dg_smmods_overstrike_url: "https://github.com/Tkachov/Overstrike/releases/download/OS/v{{ dg_smmods_overstrike_version }}/Overstrike_v{{ dg_smmods_overstrike_version }}.zip"
 dg_smmods_overstrike_sha256: "db63705e85c60777ea13d4d4107d3977e55f550c946e5adc6ef0ff3959981ce6"
 
-dg_smmods_nexus_root: "{{ dg_roms_final_root }}/PC/NexusMods"
+dg_smmods_nexus_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods"
 dg_smmods_overstrike_zip: "{{ dg_smmods_nexus_root }}/_loaders/overstrike/Overstrike_v{{ dg_smmods_overstrike_version }}.zip"
 dg_smmods_work_root: "{{ dg_box_home }}/tools/overstrike"
 

@@ -20,7 +20,7 @@ dg_uncharted_steam_library_root: >-
      else dg_box_home + '/.local/share/Steam' }}
 dg_uncharted_game_dir: "{{ dg_uncharted_steam_library_root }}/steamapps/common/Uncharted Legacy of Thieves Collection"
 
-dg_uncharted_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/uncharted"
+dg_uncharted_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/uncharted"
 
 dg_uncharted_mods:
   - { id: "137", file: "325", name: "DLSS 4 (v310.7)" }

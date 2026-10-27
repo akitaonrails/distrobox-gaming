@@ -206,7 +206,7 @@ correct thing (bootstrapping FFNx + the manager); no change made.
 Role: `install_gta4_mods` · appid `12210` (v1.2.0.59) · foundation: FusionFix
 v5.0.1. Full write-up: [gta4-mods.md](gta4-mods.md). All 8 Nexus archives
 downloaded (Premium API) + verified clean, staged at
-`ROMS_FINAL/PC/NexusMods/gta4/`.
+`ROMS_FINAL/PC/mods/NexusMods/gta4/`.
 
 | Mod | File | Install |
 |---|---|---|

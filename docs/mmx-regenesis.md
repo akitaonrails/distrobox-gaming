@@ -10,7 +10,7 @@ Proton — like DUDE and the recomp ports. Managed by `install_mmx_regenesis` /
 ## Game data (user-provided)
 
 Download the **`… Linux.x86_64`** build from the itch.io page and drop it in
-`ROMS_FINAL/PC/` (this box: `/mnt/terachad/Emulators/ROMS_FINAL/PC/`). It's a
+`ROMS_FINAL/PC/ports/` (this box: `/mnt/terachad/Emulators/ROMS_FINAL/PC/ports/`). It's a
 single self-contained Godot binary with the `.pck` embedded — no installer, no
 extraction. The role globs `*Regenesis*Linux.x86_64`, so a version bump
 (1.00.4 → 1.00.5 …) is picked up automatically; just drop the new file in.

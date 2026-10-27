@@ -16,8 +16,8 @@ dg_reframework_asset: "REFramework.zip"
 dg_reframework_url: "https://github.com/{{ dg_reframework_repo }}/releases/download/{{ dg_reframework_tag }}/{{ dg_reframework_asset }}"
 dg_reframework_loader_dll: "dinput8.dll"
 
-dg_reframework_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/_loaders/reframework"
-dg_reframework_mods_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods"
+dg_reframework_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/_loaders/reframework"
+dg_reframework_mods_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods"
 
 dg_reframework_launch_options: 'WINEDLLOVERRIDES="dinput8=n,b" %command%'
 dg_reframework_steam_root: "{{ dg_box_home }}/.local/share/Steam"

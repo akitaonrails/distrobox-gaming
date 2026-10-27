@@ -26,7 +26,7 @@
 # from the user's NAS zip.
 
 dg_sm64ds_version: "0.5.6"
-dg_sm64ds_zip: "{{ dg_roms_final_root }}/PC/sm64ds-port-0.5.6.zip"
+dg_sm64ds_zip: "{{ dg_roms_final_root }}/PC/releases/sm64ds-port-0.5.6.zip"
 
 dg_sm64ds_install_dir: "{{ dg_box_home }}/Games/sm64ds-port"
 dg_sm64ds_game_exe: "walk_window.exe"

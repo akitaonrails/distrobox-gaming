@@ -3,7 +3,7 @@
 dg_azimuth_version: 1.0.2
 dg_azimuth_web_url: https://almost-there-games.itch.io/azimuth
 # 1.0.x zips carry a build-date suffix; pin the exact staged name.
-dg_azimuth_zip: "{{ dg_roms_final_root }}/PC/azimuth-windows-1.0.2-20261027.zip"
+dg_azimuth_zip: "{{ dg_roms_final_root }}/PC/releases/azimuth-windows-1.0.2-20261027.zip"
 dg_azimuth_zip_sha256: 4d5b19812efb5bf0977588ee86182b4647bfc41291230088f5b6aafd21a9a988
 dg_azimuth_supported_game_version: 1.0.0.64
 dg_azimuth_game_dir: "{{ dg_roms_final_root }}/xboxone/Anthem_1.0.0.64_x64__8wekyb3d8bbwe"
@@ -16,7 +16,7 @@ dg_azimuth_extra_options_version: 0.3.2
 dg_azimuth_extra_options_repo: RokkuDayo/ForzaHorizon2_ExtraOptions
 # Tag Azimuth_v1.0.0 = "Azimuth v1.0.2 compatibility" (mod-loader layout;
 # no separate tls dll or root ini any more — winmm.dll + mods/ only).
-dg_azimuth_extra_options_zip: "{{ dg_roms_final_root }}/PC/FH2_Extra_Options_{{ dg_azimuth_extra_options_version }}-release.zip"
+dg_azimuth_extra_options_zip: "{{ dg_roms_final_root }}/PC/mods/FH2_Extra_Options_{{ dg_azimuth_extra_options_version }}-release.zip"
 dg_azimuth_extra_options_sha256: d7a9713c7a21e4b6ed57a105911ab22ce20192d2fe977c41ffa9bdc51210a15d
 # One-time display baseline after Azimuth creates its UTF-16 settings file.
 # Later user changes are preserved by the marker in the install directory.
@@ -26,10 +26,10 @@ dg_azimuth_frame_rate: 60
 dg_azimuth_frame_pacing: real-time
 # Optional FH2 radio and online client. Archives are retained for rebuilds.
 dg_azimuth_radio_version: 0.1.5
-dg_azimuth_radio_zip: "{{ dg_roms_final_root }}/PC/FH2-Streaming-Radio-v{{ dg_azimuth_radio_version }}.zip"
+dg_azimuth_radio_zip: "{{ dg_roms_final_root }}/PC/mods/FH2-Streaming-Radio-v{{ dg_azimuth_radio_version }}.zip"
 dg_azimuth_radio_sha256: 8d839f18bec917f6ea049f7530f082f2dfd72309eafe1bab4171806dde2a95fc
 dg_azimuth_infinity_version: 0.4.5
-dg_azimuth_infinity_zip: "{{ dg_roms_final_root }}/PC/ForzaInfinity-v{{ dg_azimuth_infinity_version }}.zip"
+dg_azimuth_infinity_zip: "{{ dg_roms_final_root }}/PC/mods/ForzaInfinity-v{{ dg_azimuth_infinity_version }}.zip"
 dg_azimuth_infinity_sha256: ad74003121501974a1401d6111a7265d839e731c9be1e0d252e5d7213eaebe07
 dg_azimuth_infinity_install_dir: "{{ dg_box_home }}/tools/azimuth-infinity"
 dg_azimuth_infinity_launcher: "{{ dg_box_home }}/bin/azimuth-fh2-infinity"

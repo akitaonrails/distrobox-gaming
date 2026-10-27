@@ -13,7 +13,7 @@ dg_bar_version: "0.4.2-alpha"
 dg_bar_zip_url: "https://github.com/danielgomesvieira2000/beetle-adventure-racing-recomp/releases/download/v{{ dg_bar_version }}/beetle-adventure-racing-recomp-v{{ dg_bar_version }}-windows-x64.zip"
 dg_bar_zip_sha256: "b7ad13d3518f6645d32b66bea2c8832595cfea76838299d800e20bf943a704d4"
 
-dg_bar_root: "{{ dg_roms_final_root }}/PC/beetle-recomp"
+dg_bar_root: "{{ dg_roms_final_root }}/PC/ports/beetle-recomp"
 dg_bar_zip: "{{ dg_bar_root }}/beetle-adventure-racing-recomp-v{{ dg_bar_version }}-windows-x64.zip"
 dg_bar_install_dir: "{{ dg_box_home }}/tools/beetle-recomp"
 dg_bar_exe: beetle-adventure-racing-recomp.exe

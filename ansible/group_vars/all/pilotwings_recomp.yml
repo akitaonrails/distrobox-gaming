@@ -11,7 +11,7 @@ dg_pw64_version: "0.1.1"
 dg_pw64_tarball_url: "https://github.com/danielgomesvieira2000/pilotwings-64-recomp/releases/download/v{{ dg_pw64_version }}/Pilotwings64Recomp-{{ dg_pw64_version }}-linux-x86_64.tar.gz"
 dg_pw64_tarball_sha256: "b4849feb348f68918daaaefd226cb1824f4512eaf5140095e28e765807749492"
 
-dg_pw64_root: "{{ dg_roms_final_root }}/PC/pilotwings-recomp"
+dg_pw64_root: "{{ dg_roms_final_root }}/PC/ports/pilotwings-recomp"
 dg_pw64_tarball: "{{ dg_pw64_root }}/Pilotwings64Recomp-{{ dg_pw64_version }}-linux-x86_64.tar.gz"
 dg_pw64_install_dir: "{{ dg_box_home }}/tools/pilotwings-recomp"
 dg_pw64_exe: Pilotwings64Recomp

@@ -20,7 +20,7 @@ dg_mgs2mc_game_dir: "{{ dg_mgs2mc_steam_library_root }}/steamapps/common/MGS2"
 dg_mgs2mc_gcx_dir: "{{ dg_mgs2mc_game_dir }}/assets/gcx/eu/_bp"
 
 dg_mgs2mc_steam_root: "{{ dg_box_home }}/.local/share/Steam"
-dg_mgs2mc_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/mgs2mc"
+dg_mgs2mc_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/mgs2mc"
 
 dg_mgs2mc_launch_options: 'WINEDLLOVERRIDES="wininet,winhttp=n,b" %command%'
 dg_mgs2mc_steam_localconfig: ""

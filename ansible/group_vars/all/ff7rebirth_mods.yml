@@ -18,7 +18,7 @@ dg_ff7rebirth_steam_library_root: >-
 dg_ff7rebirth_game_dir: "{{ dg_ff7rebirth_steam_library_root }}/steamapps/common/FINAL FANTASY VII REBIRTH"
 dg_ff7rebirth_paks_mods_dir: "{{ dg_ff7rebirth_game_dir }}/End/Content/Paks/~mods"
 
-dg_ff7rebirth_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/ff7rebirth"
+dg_ff7rebirth_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/ff7rebirth"
 
 # Chosen variant file id per mod (these ship many mutually-exclusive files).
 dg_ff7rebirth_mods:

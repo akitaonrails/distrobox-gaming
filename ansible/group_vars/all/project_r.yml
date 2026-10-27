@@ -14,7 +14,7 @@ dg_projectr_asset_name: "project-r-{{ dg_projectr_version }}-linux-x86_64.AppIma
 dg_projectr_asset_url: "https://t3hd0gg.com/project-r/{{ dg_projectr_version }}/{{ dg_projectr_asset_name }}"
 dg_projectr_asset_sha256: "5f9318e637110422fa22adbefb0fad1d3c1c451be37d3736581fa24622ccb9a0"
 
-dg_projectr_root: "{{ dg_roms_final_root }}/PC/project-r"
+dg_projectr_root: "{{ dg_roms_final_root }}/PC/ports/project-r"
 dg_projectr_appimage_nas: "{{ dg_projectr_root }}/{{ dg_projectr_asset_name }}"
 dg_projectr_install_dir: "{{ dg_box_home }}/tools/project-r"
 dg_projectr_appimage: "{{ dg_projectr_install_dir }}/ProjectR.AppImage"

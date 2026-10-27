@@ -20,7 +20,7 @@ NVIDIA GLX (SDL2/OpenGL renderer → the RTX, not the iGPU), focuses DP-1, and
 
 ## Games (data-driven)
 
-Drop the game's archive in `ROMS_FINAL/PC/` and add a `dg_openbor_games`
+Drop the game's archive in `ROMS_FINAL/PC/ports/` and add a `dg_openbor_games`
 entry in `ansible/group_vars/all/openbor.yml` (`archive` + the `.pak` member
 path inside it). The role extracts **only the pak** (bsdtar handles rar/zip/7z)
 into the ES-DE ROM dir `roms_mid/openbor/` and renders a Walker desktop entry.

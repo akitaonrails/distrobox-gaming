@@ -11,7 +11,7 @@
 # top-level "Sonic Rush Rerun/" folder with "Sonic Rush Rerun.exe" inside.
 
 dg_sonicrush_version: "anniversary-demo"
-dg_sonicrush_rar: "{{ dg_roms_final_root }}/PC/sonic-rush-rerun-anniversary-demo.rar"
+dg_sonicrush_rar: "{{ dg_roms_final_root }}/PC/ports/sonic-rush-rerun-anniversary-demo.rar"
 
 dg_sonicrush_install_dir: "{{ dg_box_home }}/Games/sonic-rush-rerun"
 dg_sonicrush_game_dir: "{{ dg_sonicrush_install_dir }}/Sonic Rush Rerun"

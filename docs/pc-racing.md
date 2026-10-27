@@ -226,7 +226,7 @@ Then the patch chain, all interactive wizards, in order:
 `Crack/dirt_1_1.exe` (official 1.1, ships on the RELOADED disc) →
 `DiRt_1_2.exe` → `DiRT 1.21 Patch.exe` → `dirt1.22patch.exe` (v1.22
 officially removes the disc protection — no cracked exe needed). The
-patch exes live in `ROMS_FINAL/PC/"Colin McRae DiRT - DiRT (2007)
+patch exes live in `ROMS_FINAL/PC/games/"Colin McRae DiRT - DiRT (2007)
 Incl Patch..."/Patches`.
 
 **Race-load crash on modern CPUs**: v1.22 menus work but loading any
@@ -234,7 +234,7 @@ race page-faults (`movl %eax, 0x2c(%edi)` with EDI=0) — EGO v1's
 worker-map init mishandles high logical-CPU counts (32 threads here).
 Pinning affinity does not help (the game reads `GetSystemInfo`, which
 ignores affinity). Fix: xatornet's CMCR-DiRT-MTFix (archived in
-`ROMS_FINAL/PC/dirt-patches/`), applied natively:
+`ROMS_FINAL/PC/mods/dirt-patches/`), applied natively:
 
 1. Set the LAA/4GB flag bit on `DiRT.exe` (backup kept as `DiRT.bak`).
 2. Copy the fix's `Files/system/*.xml` worker maps into
@@ -535,7 +535,7 @@ the current builds (new input system, config overlay, framerate interpolation)
 live only on the GitHub Actions tab. We pin the **CI build at commit `08e5efb4`
 (2026-08-26)**, fetched via [nightly.link](https://nightly.link) (no GitHub
 auth) and staged on the NAS at
-`ROMS_FINAL/PC/OutRun2006Tweaks-ci-08e5efb4.zip`. The patch uses `extract_files`
+`ROMS_FINAL/PC/mods/OutRun2006Tweaks-ci-08e5efb4.zip`. The patch uses `extract_files`
 to pull only `dinput8.dll` + `OR2006C2C.exe` + `OutRun2006Tweaks.lods.ini`, so
 our tuned `OutRun2006Tweaks.ini` (4K/borderless/DP-1 position/ControllerHotPlug/
 SkipIntroLogos, re-applied by the role's `ini:` edits) is preserved. The CI
@@ -646,7 +646,7 @@ main-menu path before the offline DirectX runtime was installed.
 Not managed here — the game's own MGameD3D renderer null-derefs with the 1.9.0
 and 2.0.0 25th-Anniversary repacks on this box. The
 2.0.0 installer payload (SHA-256 verified) is staged on the NAS at
-`ROMS_FINAL/PC/Sega Rally 2 ~ 25th Anniversary Edition 2.0.0/` for a future
+`ROMS_FINAL/PC/games/Sega Rally 2 ~ 25th Anniversary Edition 2.0.0/` for a future
 retry. Full attempt log + test matrix: https://github.com/akitaonrails/distrobox-gaming/issues/3
 
 A 2026-10-10 issue comment pointed to
@@ -664,7 +664,7 @@ the same executable and renderer DLL hashes. If a supported original
 PC release becomes available, test the patcher on a separate install rather
 than applying its binary offsets to the Anniversary executable.
 
-The later `ROMS_FINAL/PC/SEGA RALLY 2.exe` download is a 632 MB GAME-TIME
+The later `ROMS_FINAL/PC/games/SEGA RALLY 2.exe` download is a 632 MB GAME-TIME
 "Portable Edition" packaged with Cameyo VOS virtualization, not a retail PC
 disc image or an accessible original game executable. The patcher cannot
 identify its build from that wrapper. A supported original PC release is still

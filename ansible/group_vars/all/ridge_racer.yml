@@ -10,12 +10,12 @@ dg_ridge_racer_root: "{{ dg_box_home }}/tools/ridge-racer"
 dg_ridge_racer_cache_dir: "{{ dg_ridge_racer_root }}/cache"
 
 # ROM source: the consolidated Wanszai romset staged under
-# ROMS_FINAL/PC/wanszai/ridge-racer/roms/. RRC's own help text (and MAME 0.150)
+# ROMS_FINAL/PC/ports/wanszai/ridge-racer/roms/. RRC's own help text (and MAME 0.150)
 # want these exact filenames in its roms/ folder next to RRC.exe:
 #   ridgerac.zip, ridgeracb.zip (split sets), ridgera2.zip, raverace.zip,
 #   namcoc71.zip, namcoc74.zip (the C71/C74 MCU BIOS as MAME device zips —
 #   built from c71.bin/c74.bin, which live inside the game sets).
-dg_ridge_racer_rom_source_dir: "{{ dg_roms_final_root }}/PC/wanszai/ridge-racer/roms"
+dg_ridge_racer_rom_source_dir: "{{ dg_roms_final_root }}/PC/ports/wanszai/ridge-racer/roms"
 dg_ridge_racer_required_roms:
   - ridgerac.zip
   - ridgeracb.zip

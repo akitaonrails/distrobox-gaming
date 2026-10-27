@@ -12,7 +12,7 @@ RTX**. Fully self-contained (no original game data needed). Managed by
 ## Source
 
 The Linux zip from Gamejolt, staged on the NAS:
-`ROMS_FINAL/PC/project-reignition-linux-v<version>.zip`, pinned by sha256.
+`ROMS_FINAL/PC/releases/project-reignition-linux-v<version>.zip`, pinned by sha256.
 Updating: download the new Linux zip from Gamejolt to that path, bump
 `dg_project_reignition_version` + `dg_project_reignition_zip_sha256`, re-run
 (extract is version-gated; saves live in the Godot `user://` dir and survive).

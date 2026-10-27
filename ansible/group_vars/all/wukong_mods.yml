@@ -15,7 +15,7 @@ dg_wukong_game_dir: "{{ dg_wukong_steam_library_root }}/steamapps/common/BlackMy
 dg_wukong_win64_dir: "{{ dg_wukong_game_dir }}/b1/Binaries/Win64"
 
 dg_wukong_steam_root: "{{ dg_box_home }}/.local/share/Steam"
-dg_wukong_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/wukong"
+dg_wukong_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/wukong"
 
 # RE-UE4SS loader (Nexus mod 19, WukongUE4SS build). Its zip root WukongUE4SS/
 # holds dwmapi.dll + ue4ss/; extract its contents into b1/Binaries/Win64/.

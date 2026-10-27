@@ -13,7 +13,7 @@ dg_ac7_steam_library_root: >-
 dg_ac7_game_dir: "{{ dg_ac7_steam_library_root }}/steamapps/common/ACE COMBAT 7"
 dg_ac7_paks_mods_dir: "{{ dg_ac7_game_dir }}/Game/Content/Paks/~mods"
 
-dg_ac7_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/acecombat7"
+dg_ac7_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/acecombat7"
 
 # CHOICES (Skies Rebalanced ships options; pick one of each):
 #  - edition: "NON-DRIFT" (standard flight model, default) or "DRIFT" (arcade

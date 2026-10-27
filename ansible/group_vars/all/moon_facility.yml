@@ -13,7 +13,7 @@
 # further builds expected.
 
 dg_moonfacility_version: "final-2025-02-10"
-dg_moonfacility_zip: "{{ dg_roms_final_root }}/PC/sonic-and-the-moon-facility-last-build.zip"
+dg_moonfacility_zip: "{{ dg_roms_final_root }}/PC/ports/sonic-and-the-moon-facility-last-build.zip"
 
 dg_moonfacility_install_dir: "{{ dg_box_home }}/Games/moon-facility"
 dg_moonfacility_game_dir: "{{ dg_moonfacility_install_dir }}/Sonic and The Moon Facility (Final 2)"

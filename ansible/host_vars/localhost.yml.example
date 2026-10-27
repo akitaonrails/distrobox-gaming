@@ -81,7 +81,7 @@
 # GTA IV mod set (opt-in role install_gta4_mods / --tags gta4_mods). Requires
 # GTA IV Complete Edition (appid 12210, GTAIV.exe 1.2.0.59). Stage the manual
 # Nexus downloads under dg_gta4_staging_root; see docs/gta4-mods.md.
-# dg_gta4_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/gta4"
+# dg_gta4_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/gta4"
 # dg_gta4_steam_library_root: /run/media/me/STEAM   # if GTA IV is on a USB lib
 # dg_gta4_steam_localconfig: /home/me/.local/share/Steam/userdata/<steamid>/config/localconfig.vdf
 #
@@ -89,7 +89,7 @@
 # delisted; it defaults to the USB Steam library. The mod (loose camera +
 # realistic tyres) replaces DATA.MIX. See docs/wrc4-mods.md.
 # dg_wrc4_steam_library_root: /run/media/me/STEAM   # if WRC 4 mounts elsewhere
-# dg_wrc4_staging_root: "{{ dg_roms_final_root }}/PC/NexusMods/wrc4"
+# dg_wrc4_staging_root: "{{ dg_roms_final_root }}/PC/mods/NexusMods/wrc4"
 #
 # shadPS4 DLC/addon install dir (kept OUTSIDE the PS4 game tree so
 # ES-DE's .bin scan doesn't pick up addon files as fake games).
@@ -119,8 +119,8 @@
 # dg_pc_racing_gamepad_only: "0x2dc8/0x310b,0x045e/0x0b12"
 #
 # Staging root for the pc-racing installers (CMR 2.0/2/3/04, OutRun 2006,
-# Sega Rally 2/Revo, Sonic P-06) — CD extracts / repacks you source yourself.
-# dg_pc_racing_source_root: "{{ dg_roms_final_root }}/PC"
+# Sega Rally 2/Revo) — CD extracts / repacks you source yourself.
+# dg_pc_racing_source_root: "{{ dg_roms_final_root }}/PC/games"
 #
 # DriveClub Recomp (opt-in): requires the US CUSA00093 v1.28 dump. The default
 # shadPS4 game is EU CUSA00003 and cannot be used by this recomp release.

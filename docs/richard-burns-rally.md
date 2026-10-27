@@ -12,7 +12,7 @@ prefix.
 
 ## Sources (consolidated)
 
-Everything lives under `ROMS_FINAL/PC/Richard Burns Rally/`:
+Everything lives under `ROMS_FINAL/PC/games/Richard Burns Rally/`:
 
 - `Rallysimfans_Installer.exe` — the RSF GUI installer app (md5 `975135861905cdf662c9ece9218b9dcc`).
 - `rsf_installer_files/` — the RSF torrent payload the installer consumes

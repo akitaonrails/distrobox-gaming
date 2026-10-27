@@ -29,7 +29,7 @@ dg_sorr_checksum: "sha1:8e67ff027d71a6e8561eaa44bb5e735004aacafa"
 # step still verifies this file's sha1 (and only falls back to downloading
 # from the Internet Archive if it is absent or corrupt). Override or blank
 # it to force the download.
-dg_sorr_archive_source: "{{ dg_roms_final_root }}/PC/{{ dg_sorr_archive_name }}"
+dg_sorr_archive_source: "{{ dg_roms_final_root }}/PC/ports/{{ dg_sorr_archive_name }}"
 dg_sorr_release_dir: "{{ dg_sorr_root }}/releases/{{ dg_sorr_version }}"
 # Writable working copy — SorR.exe is portable and writes saves/config next
 # to itself, so the game runs from here (not the immutable release).

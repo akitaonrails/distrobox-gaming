@@ -5,7 +5,7 @@
 
 - name: Locate the native Linux export in ROMS_FINAL/PC
   ansible.builtin.find:
-    paths: "{{ dg_roms_final_root }}/PC"
+    paths: "{{ dg_roms_final_root }}/PC/ports"
     patterns: "*Regenesis*Linux.x86_64"
     file_type: file
   register: _mmx_src
@@ -13,7 +13,7 @@
 - name: Fail with guidance if the Linux export is missing
   ansible.builtin.fail:
     msg: >-
-      No Mega Man X Regenesis Linux export found under {{ dg_roms_final_root }}/PC
+      No Mega Man X Regenesis Linux export found under {{ dg_roms_final_root }}/PC/ports
       (looked for '*Regenesis*Linux.x86_64'). Download the "Linux.x86_64" build
       from https://mmxregenesis.itch.io/mega-man-x-regenesis and drop it there.
   when: _mmx_src.matched | int == 0
