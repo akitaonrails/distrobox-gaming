@@ -1,10 +1,10 @@
 ---
 # DekUI is a self-contained Azahar fork for Majora's Mask 3D USA v1.1.
 dg_dekui_repo: tgacquin/mm3d-dekui
-dg_dekui_version: 1.0.0
+dg_dekui_version: 1.1.0
 dg_dekui_asset_name: "Dekui-{{ dg_dekui_version }}-Linux-x86_64.tar.gz"
 dg_dekui_asset_url: "https://github.com/{{ dg_dekui_repo }}/releases/download/v{{ dg_dekui_version }}/{{ dg_dekui_asset_name }}"
-dg_dekui_asset_sha256: 45000c0bf7f8c6a8621e41740f69d2502cd1cb21a81bfe08ecee4abe54c0706a
+dg_dekui_asset_sha256: b641955c321f41d8d39db0beca0e8f2e818093badd6095a7e92922dce9f97398
 dg_dekui_rom: "{{ dg_rom_heavy_root }}/n3ds/Legend of Zelda The - Majoras Mask 3D (USA) (EnFrEs) (Rev 1)/Legend of Zelda, The - Majora's Mask 3D (USA) (En,Fr,Es) (Rev 1).cci"
 dg_dekui_rom_partition_sha256: 9c756279e3ec00bb9009f92ca2e7b9ec8b1fcdfcd9de057658b209caa24323da
 dg_dekui_cache_dir: "{{ dg_box_home }}/cache/dekui"

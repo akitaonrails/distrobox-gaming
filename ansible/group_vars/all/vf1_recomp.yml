@@ -19,10 +19,10 @@
 # only system deps are zlib + the Vulkan loader, both already in the box.
 
 dg_vf1_repo: mr-finster/vf1-recomp
-dg_vf1_release_tag: v1.4.0
+dg_vf1_release_tag: v1.4.2
 dg_vf1_asset_name: "VirtuaFighterRecomp-deck.tar.gz"
 dg_vf1_asset_url: "https://github.com/{{ dg_vf1_repo }}/releases/download/{{ dg_vf1_release_tag }}/{{ dg_vf1_asset_name }}"
-dg_vf1_asset_sha256: "a560efa7d98dffed53e7594ec6ed61665b0a4153a34f71dd66bdb2d62b0e1e80"
+dg_vf1_asset_sha256: "f69e2202c5746d578101ea43369f52ebf7f92964c4d0fafef273397abee0d7ff"
 
 dg_vf1_root: "{{ dg_box_home }}/tools/vf1-recomp"
 dg_vf1_cache_dir: "{{ dg_box_home }}/cache/vf1-recomp"

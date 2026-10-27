@@ -44,14 +44,15 @@
 
 # unzip exits 1 on this archive's backslash path warning even after a clean
 # extract, so use 7z (repo convention for Windows zips).
+# The release ZIP stores entry names with backslashes; 7z keeps those literal
+# on POSIX, so normalise them with the repo helper.
 - name: Extract the release into its versioned directory
   ansible.builtin.command:
     argv:
-      - 7z
-      - x
-      - -y
-      - "-o{{ dg_gr_release_dir }}"
+      - python3
+      - "{{ dg_project_root }}/scripts/zip-extract-posix.py"
       - "{{ dg_gr_cache_dir }}/{{ dg_gr_asset_name }}"
+      - "{{ dg_gr_release_dir }}"
     creates: "{{ dg_gr_app_dir }}/Gravity Rush.exe"
 
 - name: Keep the port's user folder (saves, screenshots, menus) across releases

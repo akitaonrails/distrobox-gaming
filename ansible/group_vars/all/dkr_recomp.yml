@@ -7,11 +7,11 @@
 # directly), so no Wine — we hash-pin the release AppImage on the NAS and copy
 # it into the box.
 
-dg_dkr_version: "1.0.8"
-dg_dkr_release_tag: "Version1.0.8"
+dg_dkr_version: "1.0.12"
+dg_dkr_release_tag: Version1.0.12
 dg_dkr_asset_name: "DKR-R-{{ dg_dkr_version }}-Linux-x86_64.AppImage"
 dg_dkr_asset_url: "https://github.com/ThatGuyMcd/DKR-R/releases/download/{{ dg_dkr_release_tag }}/{{ dg_dkr_asset_name }}"
-dg_dkr_asset_sha256: "035ed72bffaafe5be00b78ab812511ab8d09ec5de4362d0c88e6c1916e9c2f3d"
+dg_dkr_asset_sha256: "61a44fce7b43fe46c63b20651e613c8f602adc75d805981f9fa53074f46300f2"
 
 dg_dkr_nas_root: "{{ dg_roms_final_root }}/PC/dkr-r"
 dg_dkr_nas_appimage: "{{ dg_dkr_nas_root }}/{{ dg_dkr_asset_name }}"

@@ -2,9 +2,9 @@
 # Super Mario Galaxy recompilation. The local disc is an NKit ISO, so extract
 # its game partition before passing it to Nebula's Windows-only setup.
 dg_nebula_repo: keepvaibin/nebula
-dg_nebula_version: 1.0.1
+dg_nebula_version: 1.0.2
 dg_nebula_setup_url: "https://github.com/{{ dg_nebula_repo }}/releases/download/v{{ dg_nebula_version }}/Nebula-Setup.exe"
-dg_nebula_setup_sha256: 93d2542de34147f3808469e02067e2c42a822bb2380eca3c33388a70834bf9c8
+dg_nebula_setup_sha256: d216f131cf4ad0169e96f1b8c4e892b82e94b3985887d744616076dacad25c28
 dg_nebula_nkit_version: 3.1.0
 dg_nebula_nkit_url: "https://github.com/Nanook/NKit/releases/download/v{{ dg_nebula_nkit_version }}/NKit_linux-x64_CLI_{{ dg_nebula_nkit_version }}.zip"
 dg_nebula_nkit_sha256: f541d05361e8911d0f2236c0813a136e320798d7398488ae2a7cf97b9fe9d4ac

@@ -4,10 +4,10 @@
 # RTX 5090. Game: PPSA01317 v01.710 from the user's 134 GB FIH FPKG, extracted
 # with pkg-to-anyps5 into a Kyty-loadable folder (see docs/kyty-gt7.md).
 dg_kyty_repo: usa-ratt/KytyPS5-GT7
-dg_kyty_version: KytyPS5-2026-10-26-55a02de
+dg_kyty_version: KytyPS5-2026-10-27-d0f7159
 dg_kyty_asset_name: "{{ dg_kyty_version }}-Linux-x86_64.tar.gz"
 dg_kyty_asset_url: "https://github.com/{{ dg_kyty_repo }}/releases/download/{{ dg_kyty_version }}/{{ dg_kyty_asset_name }}"
-dg_kyty_asset_sha256: cf5fcb9fc31bf1fbec5e1495d262269bc4ddb7c7b22fdc70b571fae4a2fb767d
+dg_kyty_asset_sha256: 4c93fa2d63668974e10b2c9aa6143efa1dd41204001d37fa9536489c7867856e
 
 # Assembled from the FPKG extraction: app0/ contents + unwrapped ELF
 # eboot.bin and sce_module (pkg-to-anyps5 source/ output).

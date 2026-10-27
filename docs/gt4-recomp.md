@@ -99,6 +99,13 @@ runs under Wine.
 The v1.2.3 release and its desktop entry were removed on 2026-10-27: no saves
 existed and v1.3.0 supersedes it.
 
+## Release tracking note
+
+The sweep compares against **stable** releases, so it reports `v1.2.5` as a
+candidate while the pin tracks `1.3.0-rc6` (a release candidate). The rc is
+newer than 1.2.5 and is what is installed — the CANDIDATE line is expected,
+not a missing update.
+
 ## Maintenance
 
 The release archives stay in `dg_gt4r_cache` because the role uses them on

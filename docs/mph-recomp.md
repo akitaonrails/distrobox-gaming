@@ -68,3 +68,11 @@ checksum-gated `get_url` pulls the new build.
   writes a coverage JSON **next to the ROM on the NAS**.
 - `--adaptive-widescreen` is now refused for MPH ("supported: none") and makes
   the runner exit — dropped from `dg_mph_flags`.
+
+## Release tracking (2026-10-27)
+
+The periodic sweep reports `v0.7.11-alpha` as a candidate, but **that release
+ships only a Windows build** (`MetroidPrimeHuntersRecomp-windows-x64-v0.7.11.zip`)
+— the Linux AppImage stopped after `v0.7.3-alpha`. The pin intentionally stays
+at **v0.7.3-alpha** (last Linux build). Revisit only if upstream resumes Linux
+artifacts; the Windows zip could run under Proton if that ever becomes worth it.
