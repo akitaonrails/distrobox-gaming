@@ -1,0 +1,119 @@
+---
+# Xerenge installs itself: the AppImage is an installer whose command line
+# (--iso/--path/--no-shortcuts) works headless under Qt's offscreen platform.
+# It checks the disc image itself, extracts its XDVDFS tree and drops the
+# prebuilt game beside it.
+
+- name: Create the Xerenge directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_xerenge_cache_dir }}"
+    - "{{ dg_xerenge_payload_root }}"
+    - "{{ dg_xerenge_launcher | dirname }}"
+
+- name: Download the pinned Xerenge installer
+  ansible.builtin.get_url:
+    url: "{{ dg_xerenge_asset_url }}"
+    dest: "{{ dg_xerenge_cache_dir }}/{{ dg_xerenge_asset_name }}"
+    checksum: "sha256:{{ dg_xerenge_asset_sha256 }}"
+    mode: "0755"
+
+# --appimage-extract needs no FUSE. It unpacks next to its working directory as
+# squashfs-root/, which is also what XERENGE_PAYLOAD must point at.
+- name: Unpack the installer AppImage
+  ansible.builtin.command:
+    cmd: "{{ dg_xerenge_cache_dir }}/{{ dg_xerenge_asset_name }} --appimage-extract"
+    chdir: "{{ dg_xerenge_payload_root }}"
+    creates: "{{ dg_xerenge_payload_root }}/squashfs-root/usr/bin/xerenge-installer"
+
+# Upstream builds its disc list from two constants compiled into the installer.
+# This box's USA dump is a different mastering, so its hash replaces the USA
+# constant and the installer accepts the image as the American release — which
+# is what it is (language/strings/MainUS.bin, NTSC *_N.xmv movies). A matching
+# upstream dump would make this a no-op; the patch is idempotent either way.
+- name: Point the installer's USA constant at this disc
+  ansible.builtin.command:
+    argv:
+      - python3
+      - "{{ dg_project_root }}/scripts/patch-binary-string.py"
+      - "{{ dg_xerenge_payload_root }}/squashfs-root/usr/bin/xerenge-installer"
+      - "{{ dg_xerenge_upstream_usa_sha256 }}"
+      - "{{ dg_xerenge_disc_sha256 }}"
+  register: _xerenge_patch
+  changed_when: "'patched' in _xerenge_patch.stdout"
+
+- name: Check for an installed Burnout Revenge
+  ansible.builtin.stat:
+    path: "{{ dg_xerenge_app_dir }}/bin/burnout"
+  register: _xerenge_game
+
+- name: Check the Burnout Revenge disc image
+  ansible.builtin.stat:
+    path: "{{ dg_xerenge_disc }}"
+    checksum_algorithm: sha256
+  register: _xerenge_disc
+  when: not _xerenge_game.stat.exists
+
+- name: Require the USA disc image this install was validated against
+  ansible.builtin.assert:
+    that:
+      - _xerenge_disc.stat.exists
+      - _xerenge_disc.stat.size == dg_xerenge_disc_size
+      - _xerenge_disc.stat.checksum == dg_xerenge_disc_sha256
+    fail_msg: >-
+      Set dg_xerenge_disc to this box's Burnout Revenge (USA) image: expected
+      {{ dg_xerenge_disc_size }} bytes with sha256 {{ dg_xerenge_disc_sha256 }}.
+  when: not _xerenge_game.stat.exists
+
+- name: Install Burnout Revenge from the disc image
+  ansible.builtin.command:
+    argv:
+      - "{{ dg_xerenge_payload_root }}/squashfs-root/usr/bin/xerenge-installer"
+      - --iso
+      - "{{ dg_xerenge_disc }}"
+      - --path
+      - "{{ dg_xerenge_app_dir }}"
+      - --bloom
+      - --no-shortcuts
+    creates: "{{ dg_xerenge_app_dir }}/bin/burnout"
+  environment:
+    # headless: the installer is a Qt widget app even on this path
+    QT_QPA_PLATFORM: offscreen
+    XERENGE_PAYLOAD: "{{ dg_xerenge_payload_dir }}"
+
+# The game rewrites xerenge.conf as settings change in game; only the keys the
+# role owns are kept in place, everything else the player touched stays.
+- name: Keep the tuned Xerenge settings
+  ansible.builtin.lineinfile:
+    path: "{{ dg_xerenge_app_dir }}/xerenge.conf"
+    regexp: "^{{ item.key }} = "
+    line: "{{ item.key }} = {{ item.value }}"
+  loop: "{{ dg_xerenge_settings | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: Install the Xerenge launcher
+  ansible.builtin.template:
+    src: xerenge.sh.j2
+    dest: "{{ dg_xerenge_launcher }}"
+    mode: "0755"
+
+- name: Render the Xerenge desktop entry
+  ansible.builtin.template:
+    src: xerenge.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-xerenge.desktop"
+    mode: "0644"
+
+- name: Install the Xerenge host desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _xerenge_host_launchers
+  changed_when: >-
+    'installed ' in _xerenge_host_launchers.stdout or
+    'removed stale ' in _xerenge_host_launchers.stdout

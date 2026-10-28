@@ -1,0 +1,100 @@
+---
+# Takedawn is one binary that is both the game and its installer:
+#   takedawn --install <image|folder>   copies the disc, headless, no display
+#   takedawn --data-status              exit 0 = installed, 3 = not installed
+# It refuses anything that is not the North America (NTSC-U) retail pressing,
+# by hashing default.xbe, so that check is the real gate on the game data.
+
+- name: Create the Takedawn directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_takedawn_appimage | dirname }}"
+    - "{{ dg_takedawn_cache_dir }}"
+    - "{{ dg_takedawn_launcher | dirname }}"
+    - "{{ dg_takedawn_data_dir }}"
+
+- name: Download the pinned Takedawn AppImage
+  ansible.builtin.get_url:
+    url: "{{ dg_takedawn_asset_url }}"
+    dest: "{{ dg_takedawn_appimage }}"
+    checksum: "sha256:{{ dg_takedawn_asset_sha256 }}"
+    mode: "0755"
+
+# The launcher and the menu entry exist even while the game data is missing:
+# the launcher says so plainly instead of opening an empty setup window.
+- name: Install the Takedawn launcher
+  ansible.builtin.template:
+    src: takedawn.sh.j2
+    dest: "{{ dg_takedawn_launcher }}"
+    mode: "0755"
+
+- name: Render the Takedawn desktop entry
+  ansible.builtin.template:
+    src: takedawn.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-takedawn.desktop"
+    mode: "0644"
+
+- name: Install the Takedawn host desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _takedawn_host_launchers
+  changed_when: >-
+    'installed ' in _takedawn_host_launchers.stdout or
+    'removed stale ' in _takedawn_host_launchers.stdout
+
+- name: Check whether the Takedawn game data is installed
+  ansible.builtin.command:
+    argv:
+      - "{{ dg_takedawn_appimage }}"
+      - --data-status
+  register: _takedawn_status
+  changed_when: false
+  failed_when: _takedawn_status.rc not in [0, 3]
+
+# --check identifies the disc and writes nothing, so a wrong dump reports its
+# own reason (no-source / no-xbe / wrong-version / xbox360-disc / …).
+- name: Identify the Burnout 3 disc image
+  ansible.builtin.command:
+    argv:
+      - "{{ dg_takedawn_appimage }}"
+      - --install
+      - "{{ dg_takedawn_disc }}"
+      - --check
+  register: _takedawn_check
+  changed_when: false
+  failed_when: false
+  when: _takedawn_status.rc != 0
+
+- name: Require the North America (NTSC-U) retail Burnout 3 disc
+  ansible.builtin.fail:
+    msg: >-
+      Takedawn accepts only the NTSC-U retail Burnout 3: Takedown disc (title id
+      0x4541005B, default.xbe 4,308,992 bytes, sha256 9f497acd…d13f9), as an
+      .iso/.xiso or an extracted folder; set dg_takedawn_disc to it. Check said:
+      {{ (_takedawn_check.stdout | default('') | trim) }}
+      {{ (_takedawn_check.stderr | default('') | trim) }}
+      docs/takedawn.md explains why neither copy in this library qualifies.
+  when:
+    - _takedawn_status.rc != 0
+    - _takedawn_check.rc | default(1) != 0
+
+- name: Install the Burnout 3 game data
+  ansible.builtin.command:
+    argv:
+      - "{{ dg_takedawn_appimage }}"
+      - --install
+      - "{{ dg_takedawn_disc }}"
+  register: _takedawn_install
+  changed_when: "'RESULT OK ' in _takedawn_install.stdout"
+  failed_when: >-
+    _takedawn_install.rc != 0 or
+    'RESULT OK ' not in _takedawn_install.stdout
+  async: 3600
+  poll: 15
+  when: _takedawn_status.rc != 0

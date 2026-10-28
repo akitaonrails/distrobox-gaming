@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+# Burnout 3: Takedown (original Xbox) — Takedawn static recompilation.
+# Native Linux AppImage: no Wine, no distrobox. The same binary installs the
+# game data (`takedawn --install <disc>`) and plays it.
+set -eu
+
+APP="{{ dg_takedawn_appimage }}"
+
+if [ ! -x "$APP" ]; then
+  printf '%s\n' 'Takedawn is not installed (run install-takedawn.yml).' >&2
+  exit 1
+fi
+
+# Exit 3 is "game data not installed": say so instead of opening an empty
+# setup window from the game menu.
+if ! "$APP" --data-status >/dev/null 2>&1; then
+  printf '%s\n' 'Burnout 3 game data is missing: run install-takedawn.yml with a NTSC-U retail disc.' >&2
+  exit 1
+fi
+
+exec "$APP" "$@"

@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+# Burnout Revenge (Xbox 360, Xerenge) — native Linux build, no Wine and no
+# distrobox: the release is a Linux binary that renders through Vulkan.
+#
+# The installed `burnout_revenge` is the entry point: it reads xerenge.conf,
+# puts bin/ on LD_LIBRARY_PATH and execs the game build for this disc
+# (bin/burnout, the American build). Settings live in xerenge.conf beside it —
+# bloom, motion blur, renderer, AA, anisotropy, widescreen, keyboard-as-pad —
+# and the in-game Driver Details > Settings menu edits the same file.
+set -eu
+
+A="{{ dg_xerenge_app_dir }}"
+
+if [ ! -x "$A/burnout_revenge" ]; then
+  printf '%s\n' 'Burnout Revenge is not installed (run install-xerenge.yml).' >&2
+  exit 1
+fi
+
+cd "$A"
+exec ./burnout_revenge "$@"

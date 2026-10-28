@@ -333,6 +333,16 @@ dg_ogm_games:
     category: recomp
     sgdb_query: "Ridge Racer V"
     github: "{{ dg_fukami_repo }}"
+  - desktop_id: gaming-takedawn
+    id: takedawn
+    category: recomp
+    sgdb_query: "Burnout 3: Takedown"
+    github: "{{ dg_takedawn_repo }}"
+  - desktop_id: gaming-xerenge
+    id: xerenge
+    category: recomp
+    sgdb_query: "Burnout Revenge"
+    github: "{{ dg_xerenge_repo }}"
   - desktop_id: gaming-sm64ds-port
     id: sm64ds-port
     category: port

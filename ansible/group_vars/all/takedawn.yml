@@ -1,0 +1,25 @@
+---
+# Burnout 3: Takedown (original Xbox) static recompilation — xenophobentx/takedawn.
+# Native Linux AppImage; the same binary is the game and the installer
+# (`takedawn --install <image|folder>`), with a stdout "PROTOCOL 1 / STEP / RESULT"
+# line protocol and no display needed. See docs/takedawn.md.
+
+dg_takedawn_repo: xenophobentx/takedawn
+dg_takedawn_version: 0.2.1
+dg_takedawn_asset_name: "Takedawn-{{ dg_takedawn_version }}-linux-x86_64.AppImage"
+dg_takedawn_asset_url: "https://github.com/{{ dg_takedawn_repo }}/releases/download/v{{ dg_takedawn_version }}/{{ dg_takedawn_asset_name }}"
+dg_takedawn_asset_sha256: 255d5fa586285f34f2a6635ffb1d119cfe7924007421a500839f8db91015ff78
+
+# Takedawn accepts only the North America (NTSC-U) retail disc: title id
+# 0x4541005B, default.xbe 4,308,992 bytes sha256 9f497acd…d13f9,
+# manifest ntsc-u-retail 81dc20fd647fb0b1 (716 files, 2,476,107,072 bytes).
+# An .iso/.xiso or an extracted folder both work.
+# Neither local copy qualifies (see docs/takedawn.md): the EmuDeck ISO is a
+# multi-region pressing (wrong XBE hash, "wrong-version") and the HDD-ready
+# folder is a trimmed rip without default.xbe at all.
+dg_takedawn_disc: "{{ dg_rom_heavy_root }}/xbox/Burnout 3 Takedown.iso"
+
+dg_takedawn_appimage: "{{ dg_box_home }}/tools/takedawn/{{ dg_takedawn_asset_name }}"
+dg_takedawn_cache_dir: "{{ dg_box_home }}/cache/takedawn"
+dg_takedawn_launcher: "{{ dg_box_home }}/bin/takedawn"
+dg_takedawn_data_dir: "{{ ansible_facts.env.HOME }}/.local/share/takedawn"

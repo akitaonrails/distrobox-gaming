@@ -1,0 +1,46 @@
+---
+# Burnout Revenge (Xbox 360) static recompilation — shipa-2/Xerenge.
+# Native Linux build: the release AppImage is an installer that verifies the
+# disc image, extracts its XDVDFS tree and drops the prebuilt game beside it.
+# See docs/xerenge.md.
+
+dg_xerenge_repo: shipa-2/Xerenge
+dg_xerenge_version: v0.4.8
+dg_xerenge_asset_name: Burnout_Revenge_Installer-x86_64.AppImage
+dg_xerenge_asset_url: "https://github.com/{{ dg_xerenge_repo }}/releases/download/{{ dg_xerenge_version }}/{{ dg_xerenge_asset_name }}"
+dg_xerenge_asset_sha256: e81bc3a92346d4fa4e0f3988664e73369173d350d6b5c17f0922c3827a7d6117
+
+# The disc. Upstream supports exactly two images (Europe 34c1bd4d…, USA
+# 7abf689f…). This box's copy is the USA release — it carries
+# language/strings/MainUS.bin and only the NTSC *_N.xmv movies — but it is a
+# different mastering, so it hashes to 2dee23fb… and the installer's built-in
+# check refuses it. The role therefore rewrites the installer's USA constant to
+# the local hash (see tasks/main.yml); the game itself is the American build.
+dg_xerenge_disc: "{{ dg_roms_final_root }}/xbox360/Burnout Revenge [NTSCU].iso"
+dg_xerenge_disc_sha256: 2dee23fbacad85b522a12df4e19e454e48e2651529e9cfb0623b566f57593359
+dg_xerenge_disc_size: 7834892288
+dg_xerenge_upstream_usa_sha256: 7abf689f52b70666ba92052bd157cfcae9ed6290dae298fbf639baa1d169f92b
+
+dg_xerenge_install_dir: "{{ dg_box_home }}/tools/xerenge"
+dg_xerenge_release_dir: "{{ dg_xerenge_install_dir }}/releases/{{ dg_xerenge_version }}"
+dg_xerenge_app_dir: "{{ dg_xerenge_release_dir }}/Burnout Revenge"
+dg_xerenge_cache_dir: "{{ dg_box_home }}/cache/xerenge"
+# unpacked AppImage (--appimage-extract) lives here; the installer inside gets
+# the disc-hash rewrite, never the cached AppImage itself
+dg_xerenge_payload_root: "{{ dg_xerenge_cache_dir }}/appimage"
+dg_xerenge_payload_dir: "{{ dg_xerenge_payload_root }}/squashfs-root/usr/share/xerenge/payload"
+dg_xerenge_launcher: "{{ dg_box_home }}/bin/xerenge"
+
+# xerenge.conf keys the role keeps in place (the game reads it on every start).
+# Rendering follows the window, so 4K output needs no render_resolution (an
+# empty value means "the window's size").
+dg_xerenge_settings:
+  bloom: "true"
+  motion_blur: "false"
+  renderer: plume
+  windowed: "false"
+  aspect_16_9: "true"
+  aa: smaa
+  anisotropy: "16"
+  crash_interpolation: "true"
+  keyboard: "false"

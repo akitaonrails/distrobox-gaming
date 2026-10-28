@@ -40,6 +40,8 @@
     - { role: install_nebula,                  tags: [nebula, never] }
     - { role: install_dekui,                   tags: [dekui, never] }
     - { role: install_fukami,                  tags: [fukami, never] }
+    - { role: install_xerenge,                 tags: [xerenge, never] }
+    - { role: install_takedawn,                tags: [takedawn, never] }
     - { role: install_project_midas,           tags: [project_midas, goldeneye, never] }
     - { role: install_hl360_fm4,               tags: [fm4, hl360, never] }
     - { role: install_fh1_reimagined,          tags: [fh1r, never] }
