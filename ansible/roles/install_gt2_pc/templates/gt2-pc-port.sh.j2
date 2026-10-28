@@ -11,6 +11,17 @@ if [ ! -x "$A/psx-play.exe" ] || [ ! -f "$A/data/manifest.json" ]; then
   exit 1
 fi
 
+{% if dg_gt2_pad_bridge | bool %}
+# gilrs/WGI pads never arrive under Wine (kit issue #1): bridge the pad onto
+# the game's keyboard controls while it runs.
+if [ -f "{{ dg_gt2_bridge_profile }}" ]; then
+  distrobox-enter -n {{ dg_box_name }} -- sh -c \
+    'antimicrox --hidden --profile "$0" >/dev/null 2>&1 &' \
+    "{{ dg_gt2_bridge_profile }}"
+  trap 'pkill -x antimicrox 2>/dev/null || true' EXIT INT TERM HUP
+  sleep 1
+fi
+{% endif %}
 exec distrobox-enter -n {{ dg_box_name }} -- sh -c \
-  'cd "$0" && export STEAM_COMPAT_CLIENT_INSTALL_PATH="{{ dg_gt2_steam_root }}" STEAM_COMPAT_DATA_PATH="{{ dg_gt2_compatdata }}" SteamAppId=0 SteamGameId=0 VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}" SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1 SDL_JOYSTICK_HIDAPI="{{ dg_gt2_sdl_hidapi }}" SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT="{{ dg_gt2_gamepad_only }}" && exec "{{ dg_gt2_proton }}" run ./psx-play.exe --hle --scale 9 --data "Z:\\{{ dg_gt2_release_dir | replace("/", "\\") }}\\data" --modules "Z:\\{{ dg_gt2_release_dir | replace("/", "\\") }}\\modules" --card1 "Z:\\{{ dg_gt2_release_dir | replace("/", "\\") }}\\cards\\card1.mcr" --shots "Z:\\{{ dg_gt2_release_dir | replace("/", "\\") }}\\shots" "$@"' \
+  'cd "$0" && export STEAM_COMPAT_CLIENT_INSTALL_PATH="{{ dg_gt2_steam_root }}" STEAM_COMPAT_DATA_PATH="{{ dg_gt2_compatdata }}" SteamAppId=0 SteamGameId=0 VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}" SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1 SDL_JOYSTICK_HIDAPI="{{ dg_gt2_sdl_hidapi }}" SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT="{{ dg_gt2_gamepad_only }}" && exec "{{ dg_gt2_proton }}" run ./psx-play.exe --hle --scale 9 --widescreen 16:9 --gpu-scale auto --gpu-dither native --gpu-subpixel on --gpu-perspective on --gpu-deinterlace --draw-distance 2.5 --ram 8 --data "Z:\\{{ dg_gt2_release_dir | replace("/", "\\") }}\\data" --modules "Z:\\{{ dg_gt2_release_dir | replace("/", "\\") }}\\modules" --card1 "Z:\\{{ dg_gt2_release_dir | replace("/", "\\") }}\\cards\\card1.mcr" --shots "Z:\\{{ dg_gt2_release_dir | replace("/", "\\") }}\\shots" "$@"' \
   "$A" "$@"

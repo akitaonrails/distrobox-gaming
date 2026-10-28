@@ -29,6 +29,11 @@ dg_gt2_winebus_registry:
   - { name: DisableInput, value: 1 }
   - { name: "Enable SDL", value: 1 }
   - { name: "Map Controllers", value: 1 }
+# psx-play's gilrs/WGI gamepad layer never fires under Wine (kit issue #1),
+# so until upstream ships the xinput fallback the launcher bridges the pad to
+# the game's own keyboard controls through AntiMicroX. Set to false to skip.
+dg_gt2_pad_bridge: true
+dg_gt2_bridge_profile: "{{ dg_gt2_release_dir }}/gt2-pad-bridge.amgp"
 dg_gt2_sdl_hidapi: "0"
 dg_gt2_gamepad_only: "0x2dc8/0x310b,0x045e/0x0b12"
 

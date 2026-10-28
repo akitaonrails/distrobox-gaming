@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- AntiMicroX bridge profile: 8BitDo Ultimate 2 -> psx-play keyboard map.
+     psx-play (GT2 PC Port v0.3.0) reads gamepads through gilrs/WGI, whose
+     arrival events never fire under Wine (kit issue #1), so until upstream
+     ships the xinput fallback we translate pad buttons to the keyboard
+     controls psx-play documents (docs/gt2-pc-port.md):
+       d-pad arrows | X=Cross | Z=Circle | S=Square | A=Triangle
+       Q/W=L1/R1 | E/R=L2/R2 | Enter=Start | Right Shift=Select
+     Buttons are SDL Game Controller order: 1=A 2=B 3=X 4=Y 5=Back
+     6=Guide 7=Start 8=LStick 9=RStick 10=LShoulder 11=RShoulder.
+     Triggers: index 1 = left, 2 = right; triggerbutton 2 = the pull.
+     Left stick = steering (arrow keys). Right stick = menus (arrows too). -->
+<gamecontroller configversion="15" appversion="2.11">
+    <sdlname>8BitDo Ultimate 2 Wireless Controller</sdlname>
+    <guid>sdlgamecontroller</guid>
+    <profilename>GT2 psx-play bridge</profilename>
+    <names/>
+    <sets>
+        <set index="1">
+            <stick index="1">
+                <stickbutton index="1">
+                    <slots><slot><code>0x1000013</code><mode>keyboard</mode></slot></slots>
+                </stickbutton>
+                <stickbutton index="3">
+                    <slots><slot><code>0x1000014</code><mode>keyboard</mode></slot></slots>
+                </stickbutton>
+                <stickbutton index="5">
+                    <slots><slot><code>0x1000015</code><mode>keyboard</mode></slot></slots>
+                </stickbutton>
+                <stickbutton index="7">
+                    <slots><slot><code>0x1000012</code><mode>keyboard</mode></slot></slots>
+                </stickbutton>
+            </stick>
+            <dpad index="1">
+                <mode>four-way</mode>
+                <dpadbutton index="1">
+                    <slots><slot><code>0x1000013</code><mode>keyboard</mode></slot></slots>
+                </dpadbutton>
+                <dpadbutton index="2">
+                    <slots><slot><code>0x1000014</code><mode>keyboard</mode></slot></slots>
+                </dpadbutton>
+                <dpadbutton index="4">
+                    <slots><slot><code>0x1000015</code><mode>keyboard</mode></slot></slots>
+                </dpadbutton>
+                <dpadbutton index="8">
+                    <slots><slot><code>0x1000012</code><mode>keyboard</mode></slot></slots>
+                </dpadbutton>
+            </dpad>
+            <trigger index="1">
+                <triggerbutton index="2">
+                    <slots><slot><code>0x45</code><mode>keyboard</mode></slot></slots>
+                </triggerbutton>
+            </trigger>
+            <trigger index="2">
+                <triggerbutton index="2">
+                    <slots><slot><code>0x52</code><mode>keyboard</mode></slot></slots>
+                </triggerbutton>
+            </trigger>
+            <button index="1">
+                <slots><slot><code>0x58</code><mode>keyboard</mode></slot></slots>
+            </button>
+            <button index="2">
+                <slots><slot><code>0x5A</code><mode>keyboard</mode></slot></slots>
+            </button>
+            <button index="3">
+                <slots><slot><code>0x53</code><mode>keyboard</mode></slot></slots>
+            </button>
+            <button index="4">
+                <slots><slot><code>0x41</code><mode>keyboard</mode></slot></slots>
+            </button>
+            <button index="5">
+                <slots><slot><code>0x1000020</code><mode>keyboard</mode></slot></slots>
+            </button>
+            <button index="6">
+                <slots/>
+            </button>
+            <button index="7">
+                <slots><slot><code>0x1000004</code><mode>keyboard</mode></slot></slots>
+            </button>
+            <button index="8">
+                <slots/>
+            </button>
+            <button index="9">
+                <slots/>
+            </button>
+            <button index="10">
+                <slots><slot><code>0x51</code><mode>keyboard</mode></slot></slots>
+            </button>
+            <button index="11">
+                <slots><slot><code>0x57</code><mode>keyboard</mode></slot></slots>
+            </button>
+        </set>
+    </sets>
+</gamecontroller>

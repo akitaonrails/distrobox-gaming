@@ -152,6 +152,22 @@
   register: _gt2_winebus
   changed_when: "'changed' in _gt2_winebus.stdout"
 
+# Gamepad bridge: gilrs/WGI never fires under Wine (kit issue #1), so map the
+# pad onto the game's own keyboard controls with AntiMicroX (XWayland target).
+- name: Install the pad-to-keyword bridge package
+  ansible.builtin.command:
+    argv: "{{ ['distrobox-enter', '-n', dg_box_name, '--', 'sudo', 'pacman', '-S', '--noconfirm', '--needed'] + ['antimicrox'] }}"
+  register: _gt2_bridge_pkg
+  changed_when: "'nothing to do' not in _gt2_bridge_pkg.stdout"
+  when: dg_gt2_pad_bridge | bool
+
+- name: Install the bridge profile
+  ansible.builtin.copy:
+    src: gt2-pad-bridge.amgp
+    dest: "{{ dg_gt2_bridge_profile }}"
+    mode: "0644"
+  when: dg_gt2_pad_bridge | bool
+
 - name: Install the GT2 PC Port launcher
   ansible.builtin.template:
     src: gt2-pc-port.sh.j2
