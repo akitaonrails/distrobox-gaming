@@ -70,6 +70,90 @@
     dest: "{{ dg_desktop_render_dir }}/gaming-gt3-revisited.desktop"
     mode: "0644"
 
+# ── Easy mode: the prize-multiplier mod ─────────────────────────────────
+# Generated from the user's own disc (gt3tool extract + the patch script);
+# the database never enters the repo. The whole block only runs when the
+# marker's multiplier differs, so ordinary plays do not re-extract.
+- name: Read the installed prize multiplier marker
+  ansible.builtin.command:
+    argv:
+      - cat
+      - "{{ dg_gt3r_user_dir }}/mods/{{ dg_gt3r_mod_slug }}/.dg-multiplier"
+  register: _gt3r_mod_marker
+  changed_when: false
+  failed_when: false
+
+- name: Regenerate the prize-multiplier mod
+  when:
+    - dg_gt3r_prize_multiplier | int > 1
+    - (dg_gt3r_prize_multiplier | string) not in _gt3r_mod_marker.stdout
+  block:
+    - name: Create the mod staging directory
+      ansible.builtin.file:
+        path: "{{ dg_gt3r_install_dir }}/mod-staging"
+        state: directory
+        mode: "0755"
+
+    - name: Extract the event database from the disc
+      ansible.builtin.command:
+        argv:
+          - distrobox-enter
+          - -n
+          - "{{ dg_box_name }}"
+          - --
+          - "{{ dg_gt3r_app_dir }}/bin/gt3tool"
+          - extract
+          - "{{ dg_gt3r_iso }}"
+          - database/paramdb_us.db
+          - "{{ dg_gt3r_install_dir }}/mod-staging"
+        creates: "{{ dg_gt3r_install_dir }}/mod-staging/database/paramdb_us.db"
+
+    - name: Multiply the prizes in the extracted database
+      ansible.builtin.command:
+        argv:
+          - python3
+          - "{{ dg_project_root }}/scripts/gt3r-prize-patch.py"
+          - "{{ dg_gt3r_install_dir }}/mod-staging/database/paramdb_us.db"
+          - "{{ dg_gt3r_prize_multiplier | string }}"
+      register: _gt3r_patch
+      changed_when: "'fields changed: 0' not in _gt3r_patch.stdout"
+
+    - name: Install the mod files
+      ansible.builtin.copy:
+        src: "{{ dg_gt3r_install_dir }}/mod-staging/database/paramdb_us.db"
+        dest: "{{ dg_gt3r_user_dir }}/mods/{{ dg_gt3r_mod_slug }}/files/database/paramdb_us.db"
+        remote_src: true
+        mode: "0644"
+
+    - name: Write the mod manifest
+      ansible.builtin.copy:
+        content: |
+          [mod]
+          name = Prize Multiplier x{{ dg_gt3r_prize_multiplier }}
+          version = 1.0
+          author = distrobox-gaming
+          description = Multiplies every race prize and championship bonus by {{ dg_gt3r_prize_multiplier }}, generated from this machine's own disc.
+          priority = 10
+        dest: "{{ dg_gt3r_user_dir }}/mods/{{ dg_gt3r_mod_slug }}/mod.ini"
+        mode: "0644"
+
+    - name: Record the multiplier the mod was built for
+      ansible.builtin.copy:
+        content: "{{ dg_gt3r_prize_multiplier }}"
+        dest: "{{ dg_gt3r_user_dir }}/mods/{{ dg_gt3r_mod_slug }}/.dg-multiplier"
+        mode: "0644"
+
+    - name: Remove the mod staging directory
+      ansible.builtin.file:
+        path: "{{ dg_gt3r_install_dir }}/mod-staging"
+        state: absent
+
+- name: Remove the prize-multiplier mod when disabled
+  when: dg_gt3r_prize_multiplier | int <= 1
+  ansible.builtin.file:
+    path: "{{ dg_gt3r_user_dir }}/mods/{{ dg_gt3r_mod_slug }}"
+    state: absent
+
 - name: Install the GT3 Revisited host desktop entry
   ansible.builtin.command:
     cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"

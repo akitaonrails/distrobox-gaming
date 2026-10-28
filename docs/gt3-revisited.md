@@ -69,6 +69,20 @@ be reused: the `textures/SCUS-97102` dir this box has for PCSX2 is an empty
 skeleton (0 files — no GT3 pack was ever staged, unlike GT4's). Revisit when
 upstream ships the PNG pack feature.
 
+### Easy mode: the prize-multiplier mod (installed)
+
+`dg_gt3r_prize_multiplier` (default **10**) ships a mod the role generates
+itself: `gt3tool` extracts `database/paramdb_us.db` from your own disc,
+`scripts/gt3r-prize-patch.py` multiplies every event's six place prizes
+(`+0x1D4`) and championship bonus (`+0x1E2`) in place — same file size, clamped
+to the u16 ceiling — and the result lands in
+`~/.local/share/GT3Revisited/GT3Revisited/mods/dg-prize-multiplier/` as
+**Prize Multiplier x10** (folder mods are enabled by default; the game log
+confirms it at launch). 338 of 454 events carry prizes; a 50,000 Cr
+championship first prize becomes 500,000 Cr. Changing the variable regenerates
+the mod on the next run; `1` removes it. Nothing extracted from the disc is
+committed — only the patch script is in the repo.
+
 ## Notes
 
 - F11 fullscreen, F12 screenshots (into the user data folder).

@@ -20,6 +20,15 @@ dg_gt3r_release_dir: "{{ dg_gt3r_install_dir }}/releases/{{ dg_gt3r_version }}"
 dg_gt3r_app_dir: "{{ dg_gt3r_release_dir }}/gt3r-v{{ dg_gt3r_version }}-linux-x86_64"
 dg_gt3r_cache_dir: "{{ dg_box_home }}/cache/gt3r"
 dg_gt3r_launcher: "{{ dg_box_home }}/bin/gt3-revisited"
+# Easy mode: every race prize and championship bonus is multiplied by this.
+# The port has no cheat hook, so the role ships a mod instead — gt3tool
+# extracts database/paramdb_us.db from the user's own disc, scripts/gt3r-prize-patch.py
+# multiplies the event-table prize fields in place, and the result is installed
+# into the game's mods/ folder. Nothing extracted is committed to the repo.
+# Set to 1 to remove the mod.
+dg_gt3r_prize_multiplier: 10
+dg_gt3r_user_dir: "{{ dg_box_home }}/.local/share/GT3Revisited/GT3Revisited"
+dg_gt3r_mod_slug: dg-prize-multiplier
 
 # User data (config, saves, replays, mods, screenshots) lives in
 # ~/.local/share/GT3Revisited/GT3Revisited — survives upgrades; in backups.
