@@ -15,3 +15,8 @@ dg_rygt_font_source: "{{ dg_rygt_release_dir }}/.dg-font-source"
 dg_rygt_font2_source: "{{ dg_box_home }}/.local/share/shadPS4/sys_fonts/font2"
 dg_rygt_prefix: "{{ dg_box_home }}/wineprefixes/rygt"
 dg_rygt_launcher: "{{ dg_box_home }}/bin/rygt-gt-sport"
+# The game is an ImGui windowed app: user/imgui.ini sizes its main window,
+# and a layout saved on the portrait monitor (or a default) leaves a small
+# sliver that looks like "did not launch". Portrait-sized windows are repaired
+# to this landscape size by the role; a sane landscape layout is left alone.
+dg_rygt_display_size: "3840,2160"

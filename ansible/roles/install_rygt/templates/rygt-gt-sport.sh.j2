@@ -1,13 +1,17 @@
 #!/usr/bin/env sh
-# GT Sport (RyGT) — Windows build through the box's Wine. The wrapper runs on
-# the host, so the game itself must be started inside the gaming distrobox,
-# where Wine and the Vulkan loader live.
+# GT Sport (RyGT) — Windows build through the box's Wine. Re-execs inside the
+# gaming distrobox when started on the host (Wine exists only there); when a
+# desktop entry already entered the box, /.dockerenv is present and the wine
+# call runs directly — a nested distrobox-enter would fail (there is no
+# distrobox-enter inside the box).
 set -eu
 
-exec distrobox-enter -n {{ dg_box_name }} -- sh -c \
-  'cd "$0" && \
-   export WINEPREFIX="{{ dg_rygt_prefix }}" \
-          WINEDEBUG=-all \
-          VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}" && \
-   exec wine ./GTSport.exe "$@"' \
-  "{{ dg_rygt_release_dir }}" "$@"
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+
+cd "{{ dg_rygt_release_dir }}"
+export WINEPREFIX="{{ dg_rygt_prefix }}"
+export WINEDEBUG=-all
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+exec wine ./GTSport.exe "$@"

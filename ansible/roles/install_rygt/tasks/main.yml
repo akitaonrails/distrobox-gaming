@@ -62,7 +62,9 @@
       - "{{ dg_rygt_previous_user_dir }}/"
       - "{{ dg_rygt_release_dir }}/user/"
   register: _rygt_user_sync
-  changed_when: _rygt_user_sync.stdout | length > 0
+  # --itemize-changes prints a line per file even when nothing transferred
+  # (".f..." for up-to-date); only ">" (file) / "c" (dir) lines are changes.
+  changed_when: _rygt_user_sync.stdout_lines | select('match', '^[>c]') | list | length > 0
   when: _rygt_previous_user.stat.isdir | default(false)
 
 - name: Stage owned PS4 fonts for RyGT converter
@@ -143,6 +145,25 @@
       - "{{ dg_rygt_release_dir }}"
   register: _rygt_after
   changed_when: "'changed' in _rygt_after.stdout"
+
+- name: Repair a portrait-sized ImGui window layout
+  # The game saves its window layout to user/imgui.ini on exit. A layout saved
+  # portrait (the second monitor, or a default) leaves a small window that
+  # looks like a failed launch, so portrait Size= lines become the landscape
+  # baseline; a sane landscape layout is preserved untouched.
+  ansible.builtin.shell: |
+    set -eu
+    f='{{ dg_rygt_release_dir }}/user/imgui.ini'
+    [ -f "$f" ] || exit 0
+    tmp="$f.dg"
+    awk -F= 'BEGIN{OFS="="}
+      /^Size=/ { split($2,a,","); if (a[1]+0 > 0 && a[2]+0 > a[1]+0) { print "Size={{ dg_rygt_display_size }}"; next } }
+      { print }' "$f" > "$tmp"
+    if cmp -s "$f" "$tmp"; then rm -f "$tmp"; exit 0; fi
+    mv "$tmp" "$f"
+    printf '%s\n' resized
+  register: _rygt_imgui
+  changed_when: "'resized' in _rygt_imgui.stdout"
 
 - name: Install RyGT launcher
   ansible.builtin.template:

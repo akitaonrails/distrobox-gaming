@@ -1,6 +1,13 @@
 #!/usr/bin/env sh
 set -eu
 
+# Wine, innoextract and the other tools this installer needs live in the
+# gaming distrobox. Started on the host it re-execs inside the box (see
+# AGENTS.md: "Wine runs inside the box"); started there it just runs.
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+
 prefix="{{ item.prefix_path | default(dg_pc_racing_prefix_root ~ '/' ~ item.slug) }}"
 install_dir="{{ item.installed_path | default(dg_pc_racing_install_root ~ "/" ~ item.slug) }}"
 source_dir="{{ item.source_dir }}"

@@ -14,6 +14,13 @@
 # `sh -c` string would eat one level of escaping.
 set -eu
 
+# Re-exec inside the gaming distrobox when started on the host; when a caller
+# already entered the box, /.dockerenv is present and Wine runs directly (a
+# nested distrobox-enter would fail — there is none inside the box).
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+
 R="{{ dg_gt4r_130_release }}"
 
 if [ ! -f "$R/game/gt4.exe" ]; then
@@ -25,20 +32,20 @@ if [ ! -f "$R/data/games/gt4/prepared/SCUS_973.28" ]; then
   exit 1
 fi
 
-exec env 'GT4_MONITOR={{ dg_gt4r_monitor }}' \
-  distrobox-enter -n {{ dg_box_name }} -- sh -c \
-  'cd "$0/game" && \
-   export WINEPREFIX="{{ dg_gt4r_prefix }}" \
-          WINEDEBUG=-all \
-          VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}" \
-          GT4_INPUT=sdl \
-          GT4_RENDERER=donor \
-          GT4_FORCE_480P=1 \
-          GT4_FORCE_WIDESCREEN=1 \
-          GT4_FULLSCREEN=1 \
-          GT4_OUTPUT_SIZE="{{ dg_gt4r_output_size }}" \
-          GT4_PRESENT_MODE=fifo && \
-   exec wine ./gt4.exe ../data/games/gt4/prepared/SCUS_973.28 --ntsc --fullscreen \
-        --memcard "Z:{{ dg_gt4r_memcard }}" \
-        --disc "Z:{{ dg_gt4r_iso }}" "$@"' \
-  "$R" "$@"
+# We are inside the box here (guard above). Wine wants the literal device
+# name \\.\DISPLAY2 (two backslashes), so GT4_MONITOR is quoted verbatim.
+cd "$R/game"
+export WINEPREFIX="{{ dg_gt4r_prefix }}"
+export WINEDEBUG=-all
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export GT4_MONITOR='{{ dg_gt4r_monitor }}'
+export GT4_INPUT=sdl
+export GT4_RENDERER=donor
+export GT4_FORCE_480P=1
+export GT4_FORCE_WIDESCREEN=1
+export GT4_FULLSCREEN=1
+export GT4_OUTPUT_SIZE="{{ dg_gt4r_output_size }}"
+export GT4_PRESENT_MODE=fifo
+exec wine ./gt4.exe ../data/games/gt4/prepared/SCUS_973.28 --ntsc --fullscreen \
+     --memcard "Z:{{ dg_gt4r_memcard }}" \
+     --disc "Z:{{ dg_gt4r_iso }}" "$@"

@@ -1,7 +1,7 @@
 {% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
 [Desktop Entry]
 Name=Gran Turismo 4 · Recompiled
-Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_gt4r_launcher }}
+Exec={{ dg_gt4r_launcher }}
 Terminal=false
 Type=Application
 Icon=applications-games

@@ -19,3 +19,19 @@ are no further updates and the release sweep now reports it as `GONE` instead
 of an API error. Do not delete the installed tree; it is the only copy.
 
 Upstream: [RyGT](https://github.com/mlgprorektm8/RyGT), [GT Sport setup/status](https://github.com/mlgprorektm8/RyGT/blob/main/docs/gt-sport/README.md), [controller mapping](https://github.com/mlgprorektm8/RyGT/blob/main/docs/user/INPUT_MAPPING.md), [add-on content implementation](https://github.com/mlgprorektm8/RyGT/blob/main/core/libs/prx/libSceAppContent/Export.cpp).
+
+## Launcher
+
+`bin/rygt-gt-sport` is re-entrant: started on the host it re-execs inside the
+gaming distrobox (Wine exists only there); started inside the box it runs Wine
+directly. The Walker entry calls the script itself — never wrap it in
+`distrobox-enter` again, the nested call does not exist inside the box (see
+AGENTS.md, "Wine runs inside the box"; `scripts/check-launcher-wrappers.sh`
+guards the whole set).
+
+The game is an **ImGui windowed app**, not a real fullscreen game: its main
+window size comes from `user/imgui.ini` (saved on exit). A layout saved
+portrait — the second monitor here — leaves a small window that looks like a
+failed launch; the role repairs portrait sizes to `dg_rygt_display_size`
+(3840x2160) and a Hyprland rule pins the window to DP-1. Forcing Hyprland
+fullscreen instead makes it resize-fight the ImGui layout.

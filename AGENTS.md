@@ -43,6 +43,7 @@ ansible-playbook install-sonic-p06.yml     # run optional P-06 setup
 desktop-file-validate ../config/desktop/rendered/*.desktop
 ../scripts/check-box-sonames.sh            # after box updates: sweep for soname-broken AUR binaries
 ../scripts/check-pc-layout.sh "$DG_PC_ROOT"  # after any PC install: flag unfiled PC-root entries
+../scripts/check-launcher-wrappers.sh "$DG_BOX_HOME/bin" "$DG_DESKTOP_RENDER_DIR"  # wine launchers must be boxed
 ```
 
 **After every box package update** (`pacman -Syu` in the box), run
@@ -102,6 +103,33 @@ only finished when re-running the repo produces it again from a clean box:
   (or only the known Wine-registry churn).
 
 ## Reuse And Wine Game Patterns
+
+### Wine runs inside the box (hard rule — this broke twice)
+
+Wine (`wine`, `wineboot`, `wineserver`) exists **only inside the gaming
+distrobox**. A host-side launcher that calls it bare dies with
+`wine: not found` (rc=127) — exactly how RyGT shipped — and a desktop entry
+that wraps a script which *also* wraps itself fails differently: the nested
+`distrobox-enter` does not exist inside the box, so the game starts from a
+terminal but never from the menu (how GT4 and RyGT both broke on 2026-10-28).
+When writing or touching a launcher:
+
+- **Make every Wine launcher re-entrant** and let the desktop entry point at
+  the script directly (`Exec={{ dg_*_bin }}`, no outer `distrobox-enter`):
+
+  ```sh
+  if [ ! -e /.dockerenv ]; then
+    exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+  fi
+  # … wine runs here, inside the box
+  ```
+
+- GE-Proton launchers run **from the host** on purpose (Proton carries its own
+  runtime; set `STEAM_COMPAT_*` and call the `proton` binary) — do not box them.
+- Scripts that only ES-DE runs (inside the box already) are exempt.
+- After any launcher change, run
+  `scripts/check-launcher-wrappers.sh [bin dir] [rendered desktop dir]` — it
+  flags bare host-side Wine **and** entry/script double-wraps, and must be clean.
 
 Avoid duplicated Ansible logic. Before adding a new role or playbook, check
 whether an existing role can be extended with data, variables, or a small shared
