@@ -1,15 +1,41 @@
 #!/usr/bin/env sh
 # Forza Motorsport 4 (hl360-forza4) — Windows x64 build through GE-Proton.
-# Opens the port's SDL3/ImGui launcher; install the two discs there, then Play.
+#
+# Launches the GAME directly (default), because the port's ImGui launcher keeps
+# its own install receipts and reports "Not installed": our Disc 1/2 extraction
+# is done by the role with fm4tool (the NAS/NFS mount corrupted the launcher's
+# own extraction). Everything the launcher would set up is already on disk.
+#
+#   fm4-port              play
+#   fm4-port --launcher   the port's settings / install UI
 set -eu
 
 A="{{ dg_hl360_app_dir }}"
+PROTON="{{ dg_hl360_proton }}"
 
-if [ ! -f "$A/fm4-launcher.exe" ] && [ ! -f "$A/fm4.exe" ]; then
-  printf '%s\n' 'The FM4 port is not installed.' >&2
+APP=fm4.exe
+if [ "${1:-}" = "--launcher" ]; then
+  APP=fm4-launcher.exe
+  shift
+fi
+
+if [ ! -f "$A/$APP" ]; then
+  printf 'The FM4 port is not installed (%s missing).\n' "$APP" >&2
+  exit 1
+fi
+if [ "$APP" = fm4.exe ] && [ ! -f "$A/game/default.xex" ]; then
+  printf '%s\n' 'FM4 game data is missing (run install-hl360-fm4.yml).' >&2
   exit 1
 fi
 
-exec distrobox-enter -n {{ dg_box_name }} -- sh -c \
-  'cd "$0" && export STEAM_COMPAT_CLIENT_INSTALL_PATH="{{ dg_hl360_steam_root }}" STEAM_COMPAT_DATA_PATH="{{ dg_hl360_compatdata }}" SteamAppId=0 SteamGameId=0 VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}" && exec "{{ dg_hl360_proton }}" run ./fm4-launcher.exe "$@"' \
+# Proton needs STEAM_COMPAT_DATA_PATH to exist before it creates pfx.lock;
+# without it every launch died with FileNotFoundError (pfx.lock).
+mkdir -p "{{ dg_hl360_compatdata }}"
+
+# Gamepad: the port asks Windows.Gaming.Input first. Wine's WGI *lists* the
+# controller but never fires the GamepadAdded events the port waits for, so it
+# reports no pad. Disabling the DLL makes the port take its own SDL/XInput
+# fallback, which works here (verified: 8BitDo Ultimate 2, vid 2dc8 pid 310b).
+exec env FM4_APP="$APP" distrobox-enter -n {{ dg_box_name }} -- sh -c \
+  'cd "$0" && export STEAM_COMPAT_CLIENT_INSTALL_PATH="{{ dg_hl360_steam_root }}" STEAM_COMPAT_DATA_PATH="{{ dg_hl360_compatdata }}" SteamAppId=0 SteamGameId=0 VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}" WINEDLLOVERRIDES="windows.gaming.input=d${WINEDLLOVERRIDES:+;$WINEDLLOVERRIDES}" && exec "'"$PROTON"'" run "./$FM4_APP" "$@"' \
   "$A" "$@"

@@ -1,0 +1,126 @@
+# Player settings for the FM4 port. fm4.toml carries the engine profile; this
+# file overrides it and is what the launcher's Graphics/Controls tabs write.
+#
+# Seeded once by ansible/roles/install_hl360_fm4 as the baseline validated on
+# this box; later edits from the launcher win, and the game rewrites this file
+# on exit, so never edit it while the game runs. The comments explain why the
+# non-obvious values are what they are (upstream doc/graphics-troubleshooting.md
+# and doc/forza-plus.md).
+
+# 4x internal resolution (5K) downscaled to the 4K output, FSR, 16x AF.
+anisotropic_override = 16
+resolution_scale = 4
+present_effect = 'fsr'
+present_fsr_sharpness_reduction = 0.20000000000000001
+graphics_preset = 3
+
+# Async compilation skips draws while a pipeline is still being built, and
+# readback 'none' drops resolves the game expects back (roads, car thumbnails,
+# mirrors). The pair below is upstream's working desktop combination: compile
+# synchronously and resolve through the fast path.
+async_shader_compilation = false
+readback_resolve = 'fast'
+readback_memexport = false
+
+# vsync here is the guest vblank pacing, not a presentation switch: with it off
+# the emulated GPU runs a 1000 Hz vblank timer instead of the game's 60 Hz.
+vsync = true
+host_present_fps_limit = 60
+
+# video_mode is the mode requested *from the game* and stays at 720p; output
+# resolution comes from render scale plus the window. Feeding it 4K here gives
+# a black screen with sound.
+video_mode_width = 1280
+video_mode_height = 720
+video_mode_refresh_rate = 60.0
+fullscreen = true
+window_width = 1600
+window_height = 900
+monitor = 0
+
+# Keyboard/mouse mode steals the d-pad and left stick and breaks the pad.
+mnk_mode = false
+mnk_mouse = false
+mnk_sensitivity = 1.0
+input_backend = 'sdl'
+
+# Pointed at this install by install_hl360_fm4/tasks/main.yml; both directories
+# are version-local, and user/ is a symlink into ~/.local/share/hl360-fm4.
+game_data_root = '{{ dg_hl360_game_dir_win }}'
+user_data_root = '{{ dg_hl360_user_dir_win }}'
+
+audio_mute = false
+audio_output_mode = 'auto'
+frame_stats = false
+gpu_backend = 'vulkan'
+profile_name = 'Player'
+profile_xuid = 'E0000965C5DEDEEF'
+swap_post_effect = 'none'
+user_language = 1
+
+keybind_a = 'Semicolon,Space'
+keybind_b = 'Quote,Backspace'
+keybind_back = 'Z,Tab'
+keybind_dpad_down = 'Shift+Down'
+keybind_dpad_left = 'Shift+Left'
+keybind_dpad_right = 'Shift+Right'
+keybind_dpad_up = 'Shift+Up'
+keybind_left_shoulder = '1'
+keybind_left_trigger = 'Q,I'
+keybind_lstick_down = 'S'
+keybind_lstick_left = 'A'
+keybind_lstick_press = 'F'
+keybind_lstick_right = 'D'
+keybind_lstick_up = 'W'
+keybind_right_shoulder = '3'
+keybind_right_trigger = 'E,O'
+keybind_rstick_down = 'Down'
+keybind_rstick_left = 'Left'
+keybind_rstick_press = 'K'
+keybind_rstick_right = 'Right'
+keybind_rstick_up = 'Up'
+keybind_start = 'X,Return'
+keybind_x = 'L'
+keybind_y = 'P'
+
+wheel_brake_axis = 2
+wheel_brake_full = 32767
+wheel_brake_rest = -32768
+wheel_button_a = -1
+wheel_button_b = -1
+wheel_button_back = -1
+wheel_button_down = -1
+wheel_button_lb = -1
+wheel_button_left = -1
+wheel_button_ls = -1
+wheel_button_rb = -1
+wheel_button_right = -1
+wheel_button_rs = -1
+wheel_button_shift_down = -1
+wheel_button_shift_up = -1
+wheel_button_start = -1
+wheel_button_up = -1
+wheel_button_x = -1
+wheel_button_y = -1
+wheel_calibration = 0
+wheel_center = 0
+wheel_clutch_action = 1
+wheel_clutch_axis = -1
+wheel_clutch_calibration = 0
+wheel_clutch_enabled = false
+wheel_clutch_full = 32767
+wheel_clutch_rest = -32768
+wheel_clutch_threshold = 50
+wheel_device = ''
+wheel_enabled = false
+wheel_ffb = false
+wheel_ffb_gain = 10
+wheel_ffb_invert = false
+wheel_left = -32768
+wheel_right = 32767
+wheel_shift_down_action = 4
+wheel_shift_up_action = 5
+wheel_steering_axis = 0
+wheel_throttle_axis = 1
+wheel_throttle_full = 32767
+wheel_throttle_rest = -32768

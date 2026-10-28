@@ -31,3 +31,31 @@ dg_hl360_launcher: "{{ dg_box_home }}/bin/fm4-port"
 dg_hl360_proton: "{{ ansible_facts.env.HOME }}/.steam/steam/compatibilitytools.d/GE-Proton11-1/proton"
 dg_hl360_steam_root: "{{ ansible_facts.env.HOME }}/.steam/steam"
 dg_hl360_compatdata: "{{ dg_hl360_install_dir }}/.compatdata"
+
+# fm4tool.exe (shipped in the player ZIP) is the disc/package tool; it is a
+# Windows binary and only runs under the same Proton prefix as the game.
+dg_hl360_tool: "{{ dg_hl360_app_dir }}/fm4tool.exe"
+
+# The port stores Windows-style paths and sees the box filesystem as Z:.
+# Both roots live in the versioned release dir next to the settings file, so a
+# version bump has to re-point them (see install_hl360_fm4/tasks/main.yml).
+# dg_hl360_bs is one backslash written in YAML only: Ansible's templater passes
+# Jinja string escapes through untouched, so "\\" in a template would land in
+# the settings file doubled.
+dg_hl360_bs: '\'
+dg_hl360_win_root: 'Z:{{ dg_hl360_app_dir | replace("/", dg_hl360_bs) }}'
+dg_hl360_game_dir_win: '{{ dg_hl360_win_root }}{{ dg_hl360_bs }}game'
+dg_hl360_user_dir_win: '{{ dg_hl360_win_root }}{{ dg_hl360_bs }}user'
+
+# Local staging: the NAS mount is NFS, and reading a disc image straight off it
+# silently truncated and case-mangled the extraction, so every ISO is copied
+# here first and every fm4tool run reads only from local disk.
+dg_hl360_disc1_staged: "{{ dg_hl360_cache_dir }}/fm4-disc1.iso"
+dg_hl360_disc2_staged: "{{ dg_hl360_cache_dir }}/fm4-disc2.iso"
+dg_hl360_disc2_extract: "{{ dg_hl360_install_dir }}/disc2"
+dg_hl360_game_dir: "{{ dg_hl360_app_dir }}/game"
+
+# The same paths as fm4tool.exe (a Windows binary) has to see them.
+dg_hl360_disc1_win: 'Z:{{ dg_hl360_disc1_staged | replace("/", dg_hl360_bs) }}'
+dg_hl360_disc2_win: 'Z:{{ dg_hl360_disc2_staged | replace("/", dg_hl360_bs) }}'
+dg_hl360_disc2_extract_win: 'Z:{{ dg_hl360_disc2_extract | replace("/", dg_hl360_bs) }}'
