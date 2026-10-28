@@ -28,17 +28,21 @@ this release. Continue using Spec II in PCSX2; the retail recomp can coexist.
 
 ## Display, frame rate and controller
 
-The desktop launcher uses the direct single-process Vulkan renderer under
-Wine. It selects the 4K landscape monitor (`dg_gt4r_monitor`), 3840×2160
-output, GT4's progressive 480p and widescreen modes, and FIFO present mode.
-The game engine is fixed at 60 Hz; the 60 FPS cap is a target, not a measured
-gameplay benchmark. The port does not expose an Ultra graphics preset.
+The desktop launcher uses the **PCSX2 GSdx renderer process**
+(`GT4_RENDERER=pcsx2`, `game/gs/gt4-gs.exe`) with
+`[EmuCore/GS] upscale_multiplier = 6` (`dg_gt4r_upscale_multiplier`, written
+to `data/config/gt4-gs.ini`): 6 × the PS2's 640×448 = **native 3840-wide
+rendering**, plus GSdx's Automatic deinterlacing for the 480i menus. It
+selects the 4K landscape monitor (`dg_gt4r_monitor`), 3840×2160 output, GT4's
+progressive 480p and widescreen modes, and FIFO present mode. The game engine
+is fixed at 60 Hz; the 60 FPS cap is a target, not a measured gameplay
+benchmark. The port does not expose an Ultra graphics preset.
 
-The upstream GUI launcher defaults to a separate GSdx process. In Wine that
-process starts but cannot attach its child window, so this installation uses
-the compiled-in Vulkan renderer. This is an unqualified Wine path; the native
-Linux release remains upstream work. The release's GS files are kept beside
-the game for a future upstream fix.
+The alternative compiled-in renderer (`GT4_RENDERER=donor`) is **capped at
+native PS2 resolution** ("scale=1") and does not deinterlace the menus — at
+4K it reads as a soft, flickering picture, which is why GSdx is the default
+here. Verified 2026-10-28: `renderer PCSX2 GS Vulkan x6`, both the host and
+the GS child window at 3840×2160 on DP-1.
 
 Native SDL3 pad input is selected (`GT4_INPUT=sdl`). The Wine prefix routes
 controllers through WineBus SDL with controller mapping enabled; the game's
@@ -63,6 +67,19 @@ are symlinked into the port's `data/Textures/`:
 Per-texture hashes are version-agnostic (work under both vanilla and Spec II
 ELFs — and now the recomp's reconstructed executable, which matches upstream's
 pinned game code).
+
+## Cheats, money, easy mode
+
+GT4Recomp has **no cheat, mod or money hook** — prizes and prices are compiled
+into the recompiled game code, and no pnach system exists. The only moddable
+surfaces are the HD texture packs above and the GSdx renderer settings. For
+money/easy mode the working route is **save editing** with
+[Nenkai/GT4SaveEditor](https://github.com/Nenkai/GT4SaveEditor) (Windows GUI,
+.NET 9; edits credits, garage, event progress, used-car dealership): extract
+the `BASCUS-97328GAMEDATA` save from this install's `data/memcards/gt4.ps2`
+with [mymc](https://github.com/ps2homebrew/mymc-plus), edit, re-import —
+while the game is not running. Not wired into the role (skipped on request,
+2026-10-28); back up the card before editing.
 
 ## GT4Recomp v1.3.0-rc6 — direct launch (the GUI cannot run here)
 

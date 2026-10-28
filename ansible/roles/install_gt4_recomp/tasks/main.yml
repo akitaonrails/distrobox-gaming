@@ -131,6 +131,14 @@
     checksum: "sha256:{{ dg_gt4r_gs_sha256 }}"
     mode: "0644"
 
+- name: Configure the GSdx renderer upscale
+  ansible.builtin.copy:
+    content: |
+      [EmuCore/GS]
+      upscale_multiplier = {{ dg_gt4r_upscale_multiplier }}
+    dest: "{{ dg_gt4r_gs_config }}"
+    mode: "0644"
+
 - name: Ensure the GSdx renderer (gt4-gs.exe) is present
   ansible.builtin.unarchive:
     src: "{{ dg_gt4r_cache }}/{{ dg_gt4r_gs_name }}"

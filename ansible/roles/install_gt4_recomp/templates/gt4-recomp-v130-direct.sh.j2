@@ -40,12 +40,13 @@ export WINEDEBUG=-all
 export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
 export GT4_MONITOR='{{ dg_gt4r_monitor }}'
 export GT4_INPUT=sdl
-export GT4_RENDERER=donor
+export GT4_RENDERER={{ dg_gt4r_renderer }}
 export GT4_FORCE_480P=1
 export GT4_FORCE_WIDESCREEN=1
 export GT4_FULLSCREEN=1
 export GT4_OUTPUT_SIZE="{{ dg_gt4r_output_size }}"
 export GT4_PRESENT_MODE=fifo
+export GT4_GS_CONFIG="{{ dg_gt4r_gs_config }}"
 exec wine ./gt4.exe ../data/games/gt4/prepared/SCUS_973.28 --ntsc --fullscreen \
      --memcard "Z:{{ dg_gt4r_memcard }}" \
      --disc "Z:{{ dg_gt4r_iso }}" "$@"

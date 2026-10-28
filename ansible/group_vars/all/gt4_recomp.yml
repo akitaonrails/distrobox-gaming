@@ -12,6 +12,14 @@ dg_gt4r_gs_version: 1.2.1
 dg_gt4r_gs_name: gt4-gs-1.2.1-windows-x64.zip
 dg_gt4r_gs_url: "https://github.com/{{ dg_gt4r_gs_repo }}/releases/download/gt4gs-v{{ dg_gt4r_gs_version }}/{{ dg_gt4r_gs_name }}"
 dg_gt4r_gs_sha256: 7eb7e4a3bb42f7b742fe3ac26bf81790e6fa01b0d82c6fcef26eabdc415ad71c
+# Renderer choice: the compiled-in donor renderer is capped at native PS2
+# resolution ("scale=1") and does not deinterlace the 480i menus, which reads
+# as a soft, flickering picture at 4K. The PCSX2 GSdx process renders at
+# upscale_multiplier x 640x448 (6 = 3840 wide, native 4K) with Automatic
+# deinterlacing, so it is the default here.
+dg_gt4r_renderer: pcsx2
+dg_gt4r_upscale_multiplier: 6
+dg_gt4r_gs_config: "{{ dg_gt4r_130_release }}/data/config/gt4-gs.ini"
 # Spec II (SCUS-97436) is at the EmuDeck PS2 tree
 dg_gt4r_spec2_iso: "{{ dg_rom_heavy_root }}/ps2/Gran Turismo 4/Gran Turismo 4 (USA).iso"
 dg_gt4r_iso: "{{ dg_roms_final_root }}/ps2/Gran Turismo 4/Gran Turismo 4.iso"
