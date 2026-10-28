@@ -212,7 +212,6 @@
     checksum_algorithm: sha256
   loop:
     - { path: "{{ dg_azimuth_radio_zip }}", checksum: "{{ dg_azimuth_radio_sha256 }}" }
-    - { path: "{{ dg_azimuth_infinity_zip }}", checksum: "{{ dg_azimuth_infinity_sha256 }}" }
   register: _azimuth_mod_archives
 
 - name: Verify pinned Forza Horizon 2 mod archives
@@ -286,115 +285,22 @@
         state: absent
       when: _azimuth_radio_staging.path is defined
 
-- name: Check the isolated ForzaInfinity install
-  ansible.builtin.stat:
-    path: "{{ dg_azimuth_infinity_install_dir }}/.dg-infinity-{{ dg_azimuth_infinity_version }}"
-  register: _azimuth_infinity_installed
-
-- name: Check the online client's persistent files
-  ansible.builtin.stat:
-    path: "{{ dg_azimuth_infinity_install_dir }}/{{ item }}"
-  loop:
-    - data/azimuth.ini
-    - data/titles
-    - data/bin/azimuth-tls.dll.stock
-    - data/bin/FH2_ExtraOptions.ini
-  register: _azimuth_infinity_persistent
-
-- name: Install the isolated ForzaInfinity client
-  when: not _azimuth_infinity_installed.stat.exists
-  block:
-    - name: Create isolated Azimuth directory
-      ansible.builtin.file:
-        path: "{{ dg_azimuth_infinity_install_dir }}"
-        state: directory
-        mode: "0755"
-
-    - name: Extract a clean Azimuth wrapper for online use
-      ansible.builtin.unarchive:
-        src: "{{ dg_azimuth_zip }}"
-        dest: "{{ dg_azimuth_infinity_install_dir }}"
-        remote_src: true
-      when: not _azimuth_infinity_persistent.results[0].stat.exists
-
-    - name: Copy tuned display and game path settings to the online client
-      ansible.builtin.copy:
-        src: "{{ dg_azimuth_install_dir }}/data/azimuth.ini"
-        dest: "{{ dg_azimuth_infinity_install_dir }}/data/azimuth.ini"
-        remote_src: true
-        mode: "0644"
-      when: not _azimuth_infinity_persistent.results[0].stat.exists
-
-    - name: Copy the existing offline save once for optional online profile creation
-      ansible.builtin.copy:
-        src: "{{ dg_azimuth_install_dir }}/data/titles/"
-        dest: "{{ dg_azimuth_infinity_install_dir }}/data/titles/"
-        remote_src: true
-        mode: preserve
-      when: not _azimuth_infinity_persistent.results[1].stat.exists
-
-    - name: Create temporary ForzaInfinity staging directory
-      ansible.builtin.tempfile:
-        state: directory
-        prefix: dg-forza-infinity-
-      register: _azimuth_infinity_staging
-
-    - name: Extract the ForzaInfinity release to staging
-      ansible.builtin.unarchive:
-        src: "{{ dg_azimuth_infinity_zip }}"
-        dest: "{{ _azimuth_infinity_staging.path }}"
-        remote_src: true
-
-    - name: Keep the original Azimuth TLS helper for offline recovery
-      ansible.builtin.copy:
-        src: "{{ dg_azimuth_infinity_install_dir }}/data/bin/azimuth-tls.dll"
-        dest: "{{ dg_azimuth_infinity_install_dir }}/data/bin/azimuth-tls.dll.stock"
-        remote_src: true
-        mode: "0644"
-      when: not _azimuth_infinity_persistent.results[2].stat.exists
-
-    - name: Install ForzaInfinity hook and hostable world server
-      ansible.builtin.copy:
-        src: "{{ _azimuth_infinity_staging.path }}/ForzaInfinity/{{ item }}"
-        dest: "{{ dg_azimuth_infinity_install_dir }}/data/bin/{{ item }}"
-        remote_src: true
-        mode: "0644"
-      loop:
-        - azimuth-tls.dll
-        - dedicated_server.exe
-
-    - name: Configure the public ForzaInfinity server
-      ansible.builtin.copy:
-        src: "{{ _azimuth_infinity_staging.path }}/ForzaInfinity/FH2_ExtraOptions.template.ini"
-        dest: "{{ dg_azimuth_infinity_install_dir }}/data/bin/FH2_ExtraOptions.ini"
-        remote_src: true
-        mode: "0644"
-      when: not _azimuth_infinity_persistent.results[3].stat.exists
-
-    - name: Set the ForzaInfinity server address
-      ansible.builtin.replace:
-        path: "{{ dg_azimuth_infinity_install_dir }}/data/bin/FH2_ExtraOptions.ini"
-        regexp: __SERVER__
-        replace: "{{ dg_azimuth_infinity_server }}"
-      when: not _azimuth_infinity_persistent.results[3].stat.exists
-
-    - name: Record installed ForzaInfinity version
-      ansible.builtin.file:
-        path: "{{ dg_azimuth_infinity_install_dir }}/.dg-infinity-{{ dg_azimuth_infinity_version }}"
-        state: touch
-        mode: "0644"
-  always:
-    - name: Remove temporary ForzaInfinity staging directory
-      ansible.builtin.file:
-        path: "{{ _azimuth_infinity_staging.path }}"
-        state: absent
-      when: _azimuth_infinity_staging.path is defined
-
 - name: Install Azimuth launcher
   ansible.builtin.template:
     src: azimuth.sh.j2
     dest: "{{ dg_azimuth_launcher }}"
     mode: "0755"
+
+# ForzaInfinity (the FH2 online client) was removed on 2026-10-28: one game
+# short of interest. Drop everything an older run may have created.
+- name: Remove the retired ForzaInfinity install and entries
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ dg_box_home }}/bin/azimuth-fh2-infinity"
+    - "{{ dg_desktop_render_dir }}/gaming-azimuth-fh2-infinity.desktop"
+    - "{{ dg_box_home }}/tools/azimuth-infinity"
 
 - name: Check which Forza dumps are present
   ansible.builtin.stat:
@@ -429,12 +335,6 @@
   loop_control:
     label: "{{ item.slug }}"
 
-- name: Install isolated ForzaInfinity launcher
-  ansible.builtin.template:
-    src: azimuth-fh2-infinity.sh.j2
-    dest: "{{ dg_azimuth_infinity_launcher }}"
-    mode: "0755"
-
 - name: Render Azimuth desktop entry
   ansible.builtin.template:
     src: azimuth.desktop.j2
@@ -449,12 +349,6 @@
   loop: "{{ _azimuth_present }}"
   loop_control:
     label: "{{ item.slug }}"
-
-- name: Render ForzaInfinity desktop entry
-  ansible.builtin.template:
-    src: azimuth-fh2-infinity.desktop.j2
-    dest: "{{ dg_desktop_render_dir }}/gaming-azimuth-fh2-infinity.desktop"
-    mode: "0644"
 
 - name: Install Azimuth host desktop entry
   ansible.builtin.command:

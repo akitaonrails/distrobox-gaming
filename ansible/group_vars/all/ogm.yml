@@ -308,11 +308,6 @@ dg_ogm_games:
     id: azimuth-fm6
     category: port
     sgdb_query: "Forza Motorsport 6"
-  - desktop_id: gaming-azimuth-fh2-infinity
-    id: azimuth-fh2-infinity
-    category: port
-    sgdb_query: "Forza Horizon 2"
-    github: anarqz/ForzaInfinity-POC
   - desktop_id: gaming-driveclub-recomp
     id: driveclub-recomp
     category: recomp

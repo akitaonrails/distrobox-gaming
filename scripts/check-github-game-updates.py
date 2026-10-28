@@ -47,7 +47,6 @@ GONE_REPOS = {
 # Games built from a moving Git ref, or installed by a latest-release role, are
 # still queried and shown as REVIEW rather than silently assumed current.
 PIN_VARS = {
-    "gaming-azimuth-fh2-infinity": ("azimuth.yml", "dg_azimuth_infinity_version"),
     "gaming-2ship2harkinian": ("2ship2harkinian.yml", "dg_two_ship2harkinian_version"),
     "gaming-banjotooie-recomp": ("banjotooie_recomp.yml", "dg_btooie_release_tag"),
     "gaming-beetle-recomp": ("beetle_recomp.yml", "dg_bar_version"),

@@ -46,13 +46,7 @@ dg_azimuth_resolution: 2160
 dg_azimuth_graphics: ultra
 dg_azimuth_frame_rate: 60
 dg_azimuth_frame_pacing: real-time
-# Optional FH2 radio and online client. Archives are retained for rebuilds.
+# Optional FH2 radio mod; retained for rebuilds.
 dg_azimuth_radio_version: 0.1.5
 dg_azimuth_radio_zip: "{{ dg_roms_final_root }}/PC/mods/FH2-Streaming-Radio-v{{ dg_azimuth_radio_version }}.zip"
 dg_azimuth_radio_sha256: 8d839f18bec917f6ea049f7530f082f2dfd72309eafe1bab4171806dde2a95fc
-dg_azimuth_infinity_version: 0.4.5
-dg_azimuth_infinity_zip: "{{ dg_roms_final_root }}/PC/mods/ForzaInfinity-v{{ dg_azimuth_infinity_version }}.zip"
-dg_azimuth_infinity_sha256: ad74003121501974a1401d6111a7265d839e731c9be1e0d252e5d7213eaebe07
-dg_azimuth_infinity_install_dir: "{{ dg_box_home }}/tools/azimuth-infinity"
-dg_azimuth_infinity_launcher: "{{ dg_box_home }}/bin/azimuth-fh2-infinity"
-dg_azimuth_infinity_server: https://infinity.anarqz.dev

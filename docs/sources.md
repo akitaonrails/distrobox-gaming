@@ -21,7 +21,6 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | Gran Turismo 4 Recompiled | PS2 USA retail static recompilation, Windows build under Wine | [moesuito/gt4-staticrecomp](https://github.com/moesuito/gt4-staticrecomp) · [doc](gt4-recomp.md) |
 | OpenCMR2 | Native Colin McRae Rally 2.0 port | [pablocpas/OpenCMR2](https://github.com/pablocpas/OpenCMR2) · [doc](opencmr2.md) |
 | God of War III SpartanPort | PS4 native PC port | [FelipePrado0/gow3_pc](https://github.com/FelipePrado0/gow3_pc) · [doc](gow3-pc.md) |
-| ForzaInfinity for Azimuth | Forza Horizon 2 online hook and relay | [anarqz/ForzaInfinity-POC](https://github.com/anarqz/ForzaInfinity-POC) · [doc](azimuth.md) |
 | Gran Turismo Sport through RyGT | PS4 recompilation under Wine | [mlgprorektm8/RyGT](https://github.com/mlgprorektm8/RyGT) · [doc](rygt-gt-sport.md) |
 | DriveClub Recomp | PS4 static recompilation, Windows build under Proton | [OverkillLabs3/driveclub-recomp](https://github.com/OverkillLabs3/driveclub-recomp) · [doc](driveclub-recomp.md) |
 | I Could Have Given You The World | 007: The World Is Not Enough N64 native Linux recompilation | [riseio/TWIPE_00Sheven](https://github.com/riseio/TWIPE_00Sheven) · [doc](twine-007.md) |

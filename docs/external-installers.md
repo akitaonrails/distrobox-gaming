@@ -20,7 +20,6 @@ the upstream release is deleted.
 | RyGT GT Sport 2026-10-22 prerelease | [mlgprorektm8/RyGT](https://github.com/mlgprorektm8/RyGT/releases/tag/gt-sport-2026-10-22) Windows ZIP, SHA256-pinned | `install_rygt` / `dg_rygt_*` |
 | God of War III SpartanPort v2.7.0 | [FelipePrado0/gow3_pc](https://github.com/FelipePrado0/gow3_pc/releases/tag/windows-v2.7.0) Linux AppImage, SHA256-pinned | `install_gow3_pc` / `dg_gow3_pc_*` |
 | DekUI v1.0.0 | [tgacquin/mm3d-dekui](https://github.com/tgacquin/mm3d-dekui/releases/tag/v1.0.0) Linux tarball, SHA256-pinned | `install_dekui` / `dg_dekui_*` |
-| ForzaInfinity v0.4.5 | [anarqz/ForzaInfinity-POC](https://github.com/anarqz/ForzaInfinity-POC/releases/tag/v0.4.5) ZIP, SHA256-pinned on NAS | `install_azimuth` / `dg_azimuth_infinity_*` |
 | MateriaForge v0.5.0 (7th Heaven installer) | [dotaxis/MateriaForge-rs](https://github.com/dotaxis/MateriaForge-rs/releases/tag/0.5.0) ZIP, SHA256-pinned | `install_7th_heaven` / `dg_7th_heaven_release_*` |
 | DUDE v0.9.6 source | [Inkub0/dude](https://github.com/Inkub0/dude/releases/tag/v0.9.6) exact git commit; native build | `install_dude` / `dg_dude_*` |
 | DKR-R v1.0.8 | [ThatGuyMcd/DKR-R](https://github.com/ThatGuyMcd/DKR-R/releases/tag/Version1.0.8) Linux AppImage, SHA256-pinned | `install_dkr_recomp` / `dg_dkr_*` |

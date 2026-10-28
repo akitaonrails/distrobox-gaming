@@ -38,6 +38,37 @@ menu (or the GT3R button) opens the reimplementation's own menu — settings,
 controller setup (pads/wheels, remappable, adaptive triggers), mods, jukebox,
 quick race, online.
 
+## Mods
+
+The in-game **Mods** screen (main menu → Mods) installs mods from a `.zip`
+(**Install from .zip**, or drop the `.zip` on the window), and toggles or
+removes them. Unzipped mod folders can also be dropped straight into the
+user data folder, which on this box is
+`~/.local/share/GT3Revisited/GT3Revisited/mods/` (per upstream
+[MODDING](https://github.com/matt-pulsipher/GT3-revisited/blob/master/docs/MODDING.md)).
+
+What a mod can do today: **replace any file from `GT3.VOL`** (menus, models,
+courses, sounds, databases, movies), **replace music tracks** (`.ads`), and
+**add new cars** — small `cars/*.ini` files, optionally with their own glTF
+body and a new maker/dealer page, electric drivetrains included.
+
+Where to get mods (checked 2026-10-28): **nowhere public yet.** The project is
+days old; Discussions has no mod-sharing category and no third-party mods are
+posted. The one complete mod is upstream's own template,
+[`examples/mods/example_coupe`](https://github.com/matt-pulsipher/GT3-revisited/tree/master/examples/mods/example_coupe)
+(a Tesla Model Y Performance built as a copy-and-edit example — download the
+folder, zip it, install it). When a mod scene appears it will most likely live
+in that repo's Discussions.
+
+**HD textures: not supported, and not wired here.** The port has no
+hash-keyed PNG texture replacement yet — upstream lists "PNG texture
+replacement packs keyed by decoded-texture hash" as *planned*, and texture
+modding today means re-encoding the game's own `.img` texture files (Tex1;
+a PNG import tool is also planned). PCSX2-style HD packs therefore **cannot**
+be reused: the `textures/SCUS-97102` dir this box has for PCSX2 is an empty
+skeleton (0 files — no GT3 pack was ever staged, unlike GT4's). Revisit when
+upstream ships the PNG pack feature.
+
 ## Notes
 
 - F11 fullscreen, F12 screenshots (into the user data folder).
