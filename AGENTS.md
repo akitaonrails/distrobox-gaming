@@ -148,27 +148,92 @@ per-game virtual controller mapping over ad hoc registry toggles when modern
 controller triggers show up as permanently pressed axes. Document each game's
 controller policy in `docs/pc-racing.md`.
 
+## Graphics: Always Max Out (every install)
+
+Every game here runs on the same machine — an RTX 5090 driving 4K displays — so
+the default answer to "which preset?" is **the highest one that still holds a
+stable frame rate**. Study the game's graphics settings while installing it, not
+after a disappointing first launch, and apply the ceiling as part of the role:
+
+- **Find the knobs first.** Look for a settings file, launch flags, or
+  environment variables the installer can preconfigure, then read the game's /
+  port's own docs and issue tracker for combinations known to break (for FM4:
+  async shader compilation with readback off, guest `vsync` off, a 4K *guest*
+  video mode; for GT2: widescreen hack fighting the widescreen patch). Prefer
+  documented-safe maximal settings over guesswork, and never adopt a
+  "better" setting that upstream lists as artifact-prone.
+- **Target:** 3840×2160 output; native render resolution where the engine
+  supports it, render-scale + downscale where it does not; highest texture,
+  model, shadow and draw-distance tier; 16× anisotropic filtering; the engine's
+  best-supported anti-aliasing (MSAA/SMAA/TAA, whichever it implements); and the
+  highest stable frame rate — at least 60 FPS, higher when the game's physics,
+  timing and pacing are built for it.
+- **Keep it reproducible.** The chosen values live in `dg_*` variables or role
+  tasks. Seed a settings file only when it does not exist, or enforce only the
+  keys the role owns, so a rerun reports `changed=0` and the player's later
+  in-game changes survive.
+- **Settings that only exist in-game** (or behind a GUI toggle the installer
+  cannot reach) are recorded in `docs/<game>.md` with the exact menu path and
+  value, together with what was deliberately left at default and why.
+- **Report the cap, not just a number.** A cap (60 / 120 / uncapped) is a
+  setting; measured gameplay FPS is a result. Respect engine timing caps, never
+  run an uncapped/unpaced debug mode just to quote a higher figure, and never
+  stack competing VSync/pacer controls that cause uneven cadence or change game
+  speed.
+- **Verify when feasible** — swapchain/window resolution in the log, the preset
+  shown in the settings UI, AA/AF and fullscreen in a screenshot — and say
+  plainly when a setting could not be verified.
+
+Never leave a game on the installer's "Medium"/"Auto" default when a
+higher setting is known-good here, and never trade a stable frame rate for a
+higher preset: pick the highest settings that still hold the target, not the
+highest numbers on the menu.
+
 ## PC Port, Decompilation, and Recompilation Defaults
 
 For every PC port, decompilation, or recompilation, inspect settings that can be
 edited outside the running game and configure them as part of installation when
-practical. This machine has an RTX 5090 and 4K displays: target 3840×2160 output,
-high or ultra graphics, and the highest stable frame rate the game supports.
-Check the actual FPS cap, interpolation, VSync, and frame-pacing settings, and
-select at least 60 FPS or a higher stable target when supported. Distinguish
-the configured cap from measured gameplay FPS. Respect engine timing caps;
-do not use an unpaced/debug mode just to report a higher frame rate or enable
-competing VSync and pacer controls that cause uneven cadence or game-speed
-changes. Keep these choices reproducible in `dg_*` variables or role
-tasks, preserve saves and existing user customization, and document any setting
-that can only be changed inside the game.
+practical, at the ceiling described in *Graphics: Always Max Out* above. Check
+the actual FPS cap, interpolation, VSync, and frame-pacing settings, and select
+at least 60 FPS or a higher stable target when supported. Distinguish the
+configured cap from measured gameplay FPS. Keep these choices reproducible in
+`dg_*` variables or role tasks, preserve saves and existing user customization,
+and document any setting that can only be changed inside the game.
 
-Always provide gamepad support. Prefer the game's native controller input;
-select a working controller profile and configure buttons, sticks, triggers,
-and rumble outside the game when possible. If native support is absent, provide
-an appropriate controller-to-keyboard mapping. Check that the installed launcher
-can see the connected pad, test actual input when feasible, and state clearly
-when input could not be verified. Document the controller policy with the game.
+## Gamepad: Always Supported (every install)
+
+Every game here is played from the couch with a controller (the reference device
+on this box is an **8BitDo Ultimate 2**, USB `2dc8:310b`), so a game with no
+working pad input is not a finished install. Study how the game reads input
+before wiring anything up, and make the pad work as part of the role:
+
+- **Find out how the game reads input.** Native SDL/XInput/RawInput, an
+  emulator/libretro core mapping, a port's own controller profile, or
+  keyboard-only. Read the game's docs, launcher options and issue tracker for the
+  supported backends and their known breakage: Wine's **Windows.Gaming.Input**
+  enumerates a pad but never fires `GamepadAdded` (breaks hl360 FM4 and GT2's
+  gilrs — the fix there is `WINEDLLOVERRIDES="windows.gaming.input=d"`), legacy
+  DirectInput games report modern triggers as permanently pressed axes (Xidi in
+  the PC racing pipeline), and some ports only poll one pad or want a specific
+  mapping mode.
+- **Prefer the game's own pad support**, then a launcher/emulator mapping, and
+  only then a keyboard bridge (AntiMicroX for GT2) — and record which of the
+  three the install relies on.
+- **Configure it in the role, not by hand.** Bind every control the game uses
+  (sticks, triggers, shoulders, face buttons, Start/Back, d-pad, rumble where
+  supported), select the per-game profile from `dg_*` data, and keep the
+  mapping idempotent (`changed=0` on a rerun). Never leave keyboard/mouse mode
+  or a "keyboard as pad" default on: it silently steals the d-pad and left stick.
+- **Prove the pad is seen**: the device should appear in the port/emulator log
+  (SDL device add, `/dev/input`, input settings) and the mapping should be
+  exercised in-game when feasible. Say explicitly when a control could not be
+  verified rather than implying it works.
+- **When native support is missing or broken**, ship the documented workaround
+  (mapping file, bridge, DLL override), link the upstream issue, and note which
+  controls it cannot cover.
+- **Document the controller policy** in `docs/<game>.md` — and in
+  `docs/pc-racing.md` for the Wine racing titles — including anything that can
+  only be changed in-game.
 
 ## Documentation & Inventory Updates
 

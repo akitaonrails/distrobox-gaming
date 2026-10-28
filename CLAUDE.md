@@ -100,6 +100,14 @@ The original POSIX shell implementation (`bin/dg` dispatcher, `lib/paths.sh`/`li
   and shared templates before creating a one-off role. For Windows games, fold
   tested Wine lessons back into reusable `dg_*` data such as installer flags,
   `winetricks` components, DLL overrides, DXVK needs, and controller quirks.
+- Every game install targets the maximum graphics settings this box can hold —
+  4K output, max quality tier, 16x AF, the engine's best AA, and at least a
+  stable 60 FPS — set from the role, never left on the installer default. See
+  *Graphics: Always Max Out (every install)* in `AGENTS.md`.
+- Every game install ships working gamepad input, configured from the role
+  (native pad > launcher mapping > keyboard bridge), verified in the log and
+  documented in the game's doc. See *Gamepad: Always Supported (every install)*
+  in `AGENTS.md`.
 - Roles use `ansible.builtin.*` fully qualified module names.
 - File operations use `backup: true` so user state is preserved.
 - Per-emulator config is split into subtask files under `seed_configs/tasks/`.
