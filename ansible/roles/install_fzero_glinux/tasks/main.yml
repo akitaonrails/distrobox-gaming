@@ -1,0 +1,136 @@
+---
+# F-ZERO GLINUX splits in two: a GUI launcher (ModernGekko) and a runtime
+# (moderngekko-run). The only headless step the launcher offers is the disc
+# import (`--extract`), which is all the role needs — the runtime takes the
+# extracted tree on its command line, so PLAY never has to be clicked.
+# Nothing here opens a window.
+
+- name: Create the F-ZERO GLINUX directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_fzero_gx_install_dir }}"
+    - "{{ dg_fzero_gx_user_dir }}"
+    - "{{ dg_fzero_gx_user_dir }}/Config"
+    - "{{ dg_fzero_gx_launcher | dirname }}"
+
+- name: Download the pinned F-ZERO GLINUX AppImage
+  ansible.builtin.get_url:
+    url: "{{ dg_fzero_gx_asset_url }}"
+    dest: "{{ dg_fzero_gx_appimage }}"
+    checksum: "sha256:{{ dg_fzero_gx_asset_sha256 }}"
+    mode: "0755"
+
+# The AppImage needs FUSE to run in place; unpacking it once is enough for
+# both the launcher and the runtime, and keeps the versioned dir self-contained.
+- name: Unpack the F-ZERO GLINUX AppImage
+  ansible.builtin.command:
+    cmd: "{{ dg_fzero_gx_appimage }} --appimage-extract"
+    chdir: "{{ dg_fzero_gx_install_dir }}"
+    creates: "{{ dg_fzero_gx_appdir }}/usr/bin/moderngekko-run"
+
+- name: Check the F-ZERO GX disc image
+  ansible.builtin.stat:
+    path: "{{ dg_fzero_gx_rom }}"
+  register: _fzero_rom
+
+- name: Require an F-ZERO GX (GFZE01) disc image
+  ansible.builtin.assert:
+    that: _fzero_rom.stat.exists
+    fail_msg: >-
+      Set dg_fzero_gx_rom to an F-ZERO GX USA (GFZE01) image, .iso or .rvz.
+      Only the disc id is checked by this build, not a hash.
+
+# Headless import: "Extraction complete" the first time, "Using existing
+# extraction" afterwards (it re-verifies the extracted files' hashes).
+- name: Extract the F-ZERO GX disc
+  ansible.builtin.command:
+    argv:
+      - "{{ dg_fzero_gx_appdir }}/AppRun"
+      - --extract
+      - "{{ dg_fzero_gx_rom }}"
+    creates: "{{ dg_fzero_gx_user_dir }}/games/{{ dg_fzero_gx_game_id }}/sys/main.dol"
+  environment:
+    GLINUX_USER_DIR: "{{ dg_fzero_gx_user_dir }}"
+
+# config.ini belongs to the runtime (it writes it on every settings change);
+# the role owns only the keys below. aspect_ratio=16:9 is the game's own
+# widescreen mode, and the runtime pre-enables "Native 16:9 Widescreen on New
+# Save" in GameSettings/<id>.ini, so widescreen works without a widescreen hack.
+- name: Keep the tuned F-ZERO GLINUX video settings
+  community.general.ini_file:
+    path: "{{ dg_fzero_gx_user_dir }}/config.ini"
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    create: true
+    mode: "0644"
+  loop: "{{ dg_fzero_gx_settings }}"
+  loop_control:
+    label: "[{{ item.section }}] {{ item.option }}"
+
+- name: Enforce the resolution preset this build supports
+  community.general.ini_file:
+    path: "{{ dg_fzero_gx_user_dir }}/config.ini"
+    section: Video
+    option: resolution
+    value: "{{ dg_fzero_gx_resolution }}"
+    create: true
+    mode: "0644"
+
+# The launcher writes this per-game file with its unlock cheats only, and a
+# user-side copy shadows the one shipped in Sys/GameSettings — so the native
+# 16:9 memory patch upstream enables ("Native 16:9 Widescreen on New Save")
+# would be lost. Re-add it: new saves start in the game's own 16:9 screen mode,
+# which is what makes aspect_ratio=16:9 render a real widescreen image.
+- name: Keep F-ZERO GX's native 16:9 widescreen patch enabled
+  ansible.builtin.blockinfile:
+    path: "{{ dg_fzero_gx_user_dir }}/GameSettings/{{ dg_fzero_gx_game_id }}.ini"
+    marker: "# {mark} dg: native 16:9 widescreen (upstream Sys/GameSettings)"
+    block: |
+      [OnFrame]
+      $Default Native 16:9 Widescreen on New Save
+      0x8027DC0C:dword:0x38600001:0x4BFE3AED
+
+      [OnFrame_Enabled]
+      $Default Native 16:9 Widescreen on New Save
+    create: true
+    mode: "0644"
+
+- name: Check the GameCube pad profile
+  ansible.builtin.stat:
+    path: "{{ dg_fzero_gx_user_dir }}/Config/GCPadNew.ini"
+  register: _fzero_pad
+
+# The runtime leaves this file empty, and an empty profile means no pad at all.
+- name: Seed the GameCube pad profile
+  ansible.builtin.template:
+    src: gcpad.ini.j2
+    dest: "{{ dg_fzero_gx_user_dir }}/Config/GCPadNew.ini"
+    mode: "0644"
+  when: not _fzero_pad.stat.exists or _fzero_pad.stat.size == 0
+
+- name: Install the F-ZERO GLINUX launcher
+  ansible.builtin.template:
+    src: fzero-glinux.sh.j2
+    dest: "{{ dg_fzero_gx_launcher }}"
+    mode: "0755"
+
+- name: Render the F-ZERO GLINUX desktop entry
+  ansible.builtin.template:
+    src: fzero-glinux.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-fzero-glinux.desktop"
+    mode: "0644"
+
+- name: Install the F-ZERO GLINUX host desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _fzero_host_launchers
+  changed_when: >-
+    'installed ' in _fzero_host_launchers.stdout or
+    'removed stale ' in _fzero_host_launchers.stdout

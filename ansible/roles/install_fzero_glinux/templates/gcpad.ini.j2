@@ -1,0 +1,36 @@
+# GameCube pad for the F-ZERO GLINUX runtime (Dolphin InputCommon format).
+# Written by install_fzero_glinux from the launcher's own SDL template; the
+# runtime leaves this file empty, which is why the pad does nothing out of the
+# box. The Device string must match SDL's controller name exactly — if it
+# changes, regenerate from the launcher (fzero-glinux --launcher, CONTROLLER →
+# Generate GameCube controller profile).
+
+[GCPad1]
+Device = SDL/0/{{ dg_fzero_gx_pad_device }}
+Buttons/A = `Button A`
+Buttons/B = `Button B`
+Buttons/Z = `Shoulder R` | `Shoulder L` | Back
+Buttons/Start = Start
+Main Stick/Up = `Left Y+`
+Main Stick/Down = `Left Y-`
+Main Stick/Left = `Left X-`
+Main Stick/Right = `Left X+`
+Main Stick/Deadzone = 5.00
+Main Stick/Calibration = 100.00
+C-Stick/Up = `Right Y+`
+C-Stick/Down = `Right Y-`
+C-Stick/Left = `Right X-`
+C-Stick/Right = `Right X+`
+C-Stick/Deadzone = 5.00
+C-Stick/Calibration = 100.00
+Triggers/L = `Trigger L`
+Triggers/R = `Trigger R`
+Triggers/L-Analog = `Trigger L`
+Triggers/R-Analog = `Trigger R`
+Triggers/Deadzone = 5.00
+Triggers/Threshold = 85.00
+D-Pad/Up = `Pad N`
+D-Pad/Down = `Pad S`
+D-Pad/Left = `Pad W`
+D-Pad/Right = `Pad E`
+Rumble/Motor = `Motor L` | `Motor R`

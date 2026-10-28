@@ -1,0 +1,46 @@
+---
+# F-ZERO GX on Linux — Mabec-games/F-ZERO-GLINUX (v0.9).
+# A Dolphin-derived runtime (ModernGekko) with a controller-friendly launcher;
+# this build carries no static-recomp module, so the game runs on its
+# interpreter path (--allow-interpreter). Native Linux: no Wine.
+# See docs/fzero-glinux.md.
+
+dg_fzero_gx_repo: Mabec-games/F-ZERO-GLINUX
+dg_fzero_gx_version: "0.9"
+dg_fzero_gx_asset_name: "F-ZERO-GLINUX-{{ dg_fzero_gx_version }}-glibc2.35-x86_64.AppImage"
+dg_fzero_gx_asset_url: "https://github.com/{{ dg_fzero_gx_repo }}/releases/download/v{{ dg_fzero_gx_version }}/{{ dg_fzero_gx_asset_name }}"
+dg_fzero_gx_asset_sha256: b4c817a5315879616480359c61cb3889367bacd5ff60147e8b946fabfb793251
+
+# Only the 6-byte disc id (GFZE01) is checked: no hash, no revision gate. The
+# library has no plain GX image — this is F-Zero GX with the AX arcade mode
+# unlocked, whose header still reports "F-ZERO GX (US Version)" / GFZE01.
+dg_fzero_gx_rom: "{{ dg_rom_heavy_root }}/gc/F-Zero AX (Patch)/F-Zero AX (Patched).iso"
+dg_fzero_gx_game_id: GFZE01
+
+dg_fzero_gx_install_dir: "{{ dg_box_home }}/tools/fzero-glinux/{{ dg_fzero_gx_version }}"
+dg_fzero_gx_appimage: "{{ dg_fzero_gx_install_dir }}/{{ dg_fzero_gx_asset_name }}"
+dg_fzero_gx_appdir: "{{ dg_fzero_gx_install_dir }}/squashfs-root"
+dg_fzero_gx_user_dir: "{{ dg_box_home }}/.local/share/fzero-glinux"
+dg_fzero_gx_launcher: "{{ dg_box_home }}/bin/fzero-glinux"
+
+# v0.9 dies silently on its 3840x2160 preset here (rc 0, no window); 1440p
+# holds 59.9 FPS on the 5090, so that is the ceiling this build supports.
+# 4K output would need gamescope around a 1440p render — unverified.
+dg_fzero_gx_resolution: "2560x1440"
+dg_fzero_gx_anti_aliasing: msaa4
+dg_fzero_gx_anisotropy: "16"
+
+# config.ini [Video]/[Gameplay] keys the role owns. aspect_ratio accepts
+# preserve | 16:9 | 4:3; 16:9 is the game's own widescreen mode.
+dg_fzero_gx_settings:
+  - { section: Video,    option: aspect_ratio,       value: "16:9" }
+  - { section: Video,    option: anti_aliasing,      value: "{{ dg_fzero_gx_anti_aliasing }}" }
+  - { section: Video,    option: anisotropy,         value: "{{ dg_fzero_gx_anisotropy }}" }
+  - { section: Video,    option: backend,            value: Vulkan }
+  - { section: Video,    option: fullscreen,         value: "true" }
+  - { section: Video,    option: boost_on_x,         value: "false" }
+
+# The runtime leaves Config/GCPadNew.ini empty, so the pad does nothing until
+# a profile exists. This is the launcher's own SDL template, pre-filled for
+# the reference pad (the device string must match SDL's name exactly).
+dg_fzero_gx_pad_device: "8BitDo Ultimate 2 Wireless Controller"

@@ -30,6 +30,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | FM4 PC Port | Forza Motorsport 4 (Xbox 360) native port via ReXGlue, USA Rev 1 (superseded fm4-recomp 2026-10-27) | [0herculabs/hl360-forza4](https://github.com/0herculabs/hl360-forza4) · [doc](fm4-hl360.md) |
 | Burnout Revenge · Xerenge | Xbox 360 Burnout Revenge static recompilation (ReXGlue + plume), native Linux | [shipa-2/Xerenge](https://github.com/shipa-2/Xerenge) · [doc](xerenge.md) |
 | Burnout 3 · Takedawn | Original Xbox Burnout 3: Takedown static recompilation, native Linux (needs the NTSC-U retail disc) | [xenophobentx/takedawn](https://github.com/xenophobentx/takedawn) · [doc](takedawn.md) |
+| F-ZERO GX · GLINUX | GameCube F-ZERO GX on a Dolphin-derived runtime (ModernGekko), native widescreen | [Mabec-games/F-ZERO-GLINUX](https://github.com/Mabec-games/F-ZERO-GLINUX) · [doc](fzero-glinux.md) |
 | Gravity Rush PC | Gravity Rush Remastered (PS4) native port (shadPS4 video core) | [LucaPazienza/gravityrush_pc](https://github.com/LucaPazienza/gravityrush_pc) · [doc](gravity-rush.md) |
 | KytyPS5-GT7 | PS5 emulator branch tuned for Gran Turismo 7 (native Linux build) | [usa-ratt/KytyPS5-GT7](https://github.com/usa-ratt/KytyPS5-GT7) · [doc](kyty-gt7.md) |
 | DOA2U PC Port | Dead or Alive 2 Ultimate (Xbox) native port by static recompilation | [NoRain211/doa2u-re](https://github.com/NoRain211/doa2u-re) · [doc](doa2u-re.md) |

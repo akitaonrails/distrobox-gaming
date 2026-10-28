@@ -333,6 +333,11 @@ dg_ogm_games:
     category: recomp
     sgdb_query: "Ridge Racer V"
     github: "{{ dg_fukami_repo }}"
+  - desktop_id: gaming-fzero-glinux
+    id: fzero-glinux
+    category: emulator
+    sgdb_query: "F-Zero GX"
+    github: "{{ dg_fzero_gx_repo }}"
   - desktop_id: gaming-takedawn
     id: takedawn
     category: recomp

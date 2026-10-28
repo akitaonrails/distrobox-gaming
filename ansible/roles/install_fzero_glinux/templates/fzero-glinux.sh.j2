@@ -1,0 +1,40 @@
+#!/usr/bin/env sh
+# F-ZERO GX (Mabec-games/F-ZERO-GLINUX) — Dolphin-derived runtime, native
+# Linux, but it renders through the box's Vulkan stack, so it runs inside the
+# gaming distrobox.
+#
+#   fzero-glinux             play
+#   fzero-glinux --launcher  the controller-friendly launcher (DISPLAY,
+#                            GRAPHICS, CONTROLLER, CHEATS, PLAY ONLINE)
+set -eu
+
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+
+APPDIR="{{ dg_fzero_gx_appdir }}"
+UD="{{ dg_fzero_gx_user_dir }}"
+GAME="$UD/games/{{ dg_fzero_gx_game_id }}"
+
+if [ ! -x "$APPDIR/usr/bin/moderngekko-run" ]; then
+  printf '%s\n' 'F-ZERO GLINUX is not installed (run install-fzero-glinux.yml).' >&2
+  exit 1
+fi
+if [ ! -d "$GAME/sys" ]; then
+  printf '%s\n' 'The F-ZERO GX disc has not been extracted yet (run install-fzero-glinux.yml).' >&2
+  exit 1
+fi
+
+# The release ships its own SDL3/Vulkan loader libs; the ICD still comes from
+# the box.
+export LD_LIBRARY_PATH="$APPDIR/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+export MODERNGEKKO_STATICRECOMP=0
+
+if [ "${1:-}" = "--launcher" ]; then
+  shift
+  exec "$APPDIR/usr/bin/ModernGekko" --user-dir "$UD" "$@"
+fi
+
+# No native module exists in this build: the interpreter path is the only one.
+exec "$APPDIR/usr/bin/moderngekko-run" --x11 --allow-interpreter \
+  --user-dir "$UD" --game "$GAME" "$@"
