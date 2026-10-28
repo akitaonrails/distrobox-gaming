@@ -1,0 +1,21 @@
+---
+# Forza Horizon 1: ReImagined — native Linux static recompilation (ReXGlue)
+# of the Xbox 360 game. Builds itself from the user's own disc image via its
+# launcher; needs the compiler in the box. See docs/fh1-reimagined.md.
+dg_fh1r_repo: FH1-ReImagined/ForzaHorizon1-ReImagined
+dg_fh1r_version: 0.2.0
+dg_fh1r_tarball: "{{ dg_roms_final_root }}/PC/releases/ForzaHorizon1-ReImagined-linux-x86_64.tar.gz"
+dg_fh1r_tarball_sha256: 561f07daaf2c133200ca0d47b4d74a308810821e64bff26989af01716f6472f1
+
+# The user's own Forza Horizon (Xbox 360) disc image. The launcher
+# fingerprints default.xex (title 4D5309C9) and refuses anything else.
+dg_fh1r_iso: "{{ dg_roms_final_root }}/xbox360/Forza Horizon (USA) (En,Ja,Fr,De,Es,It,Pt,Zh,Pl,Ru).iso"
+
+dg_fh1r_install_dir: "{{ dg_box_home }}/tools/fh1-reimagined"
+dg_fh1r_app_dir: "{{ dg_fh1r_install_dir }}/ForzaHorizon1-ReImagined"
+dg_fh1r_launcher: "{{ dg_fh1r_app_dir }}/forza-launcher"
+dg_fh1r_bin: "{{ dg_box_home }}/bin/fh1-reimagined"
+
+# The launcher builds the game from the disc; it needs cmake, ninja, clang
+# and a Vulkan-capable driver in the box (all already present).
+dg_fh1r_packages: [cmake, ninja, clang, vulkan-icd-loader, sdl3, sdl2-compat]

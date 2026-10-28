@@ -1,0 +1,7 @@
+---
+- name: Install Forza Horizon 1 ReImagined
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_fh1_reimagined

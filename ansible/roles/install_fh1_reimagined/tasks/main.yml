@@ -1,0 +1,81 @@
+---
+# Forza Horizon 1: ReImagined — install the launcher and wire the disc.
+# The launcher (a PySide6 app) builds the game from the user's own disc
+# image on first run: Setup → Game files → pick the ISO → Build (~5 min).
+# That step is interactive and cannot be automated by this role.
+
+- name: Require the Forza Horizon disc image
+  ansible.builtin.stat:
+    path: "{{ dg_fh1r_iso }}"
+  register: _fh1r_iso
+- ansible.builtin.assert:
+    that: _fh1r_iso.stat.isreg | default(false)
+    fail_msg: >-
+      FH1 ReImagined needs the Forza Horizon (Xbox 360) disc image at
+      dg_fh1r_iso (title 4D5309C9).
+
+- name: Verify the staged release tarball
+  ansible.builtin.stat:
+    path: "{{ dg_fh1r_tarball }}"
+    checksum_algorithm: sha256
+  register: _fh1r_tarball
+- ansible.builtin.assert:
+    that: _fh1r_tarball.stat.checksum | default('') == dg_fh1r_tarball_sha256
+    fail_msg: "Staged tarball missing or wrong sha256 at {{ dg_fh1r_tarball }}."
+
+- name: Install the build prerequisites in the box
+  ansible.builtin.command:
+    argv: "{{ ['distrobox-enter', '-n', dg_box_name, '--', 'sudo', 'pacman', '-S', '--noconfirm', '--needed'] + dg_fh1r_packages }}"
+  register: _fh1r_pkgs
+  changed_when: "'nothing to do' not in _fh1r_pkgs.stdout"
+
+- name: Create the install directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_fh1r_install_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Extract the release
+  ansible.builtin.command:
+    argv:
+      - distrobox-enter
+      - -n
+      - "{{ dg_box_name }}"
+      - --
+      - tar
+      - xzf
+      - "{{ dg_fh1r_tarball }}"
+      - -C
+      - "{{ dg_fh1r_install_dir }}"
+    creates: "{{ dg_fh1r_launcher }}"
+
+- name: Mark the launcher executable
+  ansible.builtin.file:
+    path: "{{ dg_fh1r_launcher }}"
+    mode: "0755"
+
+- name: Install the host launcher wrapper
+  ansible.builtin.template:
+    src: fh1-reimagined.sh.j2
+    dest: "{{ dg_fh1r_bin }}"
+    mode: "0755"
+
+- name: Render the desktop entry
+  ansible.builtin.template:
+    src: fh1-reimagined.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-fh1-reimagined.desktop"
+    mode: "0644"
+
+- name: Install the host desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _fh1r_host
+  changed_when: >-
+    'installed ' in _fh1r_host.stdout or
+    'removed stale ' in _fh1r_host.stdout

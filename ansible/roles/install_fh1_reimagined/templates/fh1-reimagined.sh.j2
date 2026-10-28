@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+# Forza Horizon 1: ReImagined — launcher wrapper. The launcher (PySide6)
+# builds the game from the disc on first run and manages settings, saves
+# and online. Re-execs inside the box when started on the host.
+set -eu
+
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+
+if [ ! -x "{{ dg_fh1r_launcher }}" ]; then
+  printf '%s\n' 'FH1 ReImagined launcher is not installed.' >&2
+  exit 1
+fi
+
+cd "{{ dg_fh1r_app_dir }}"
+exec ./forza-launcher "$@"
