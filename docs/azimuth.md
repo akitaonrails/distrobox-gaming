@@ -16,21 +16,19 @@ the old tls shim, which the role removes. Azimuth is an experimental Windows wra
 
 Place the verified `azimuth-windows-<version>.zip` in `PC/releases/` and the pinned Extra Options and radio archives in `PC/mods/`, with SHA-256 checks matching `group_vars/all/azimuth.yml`, and keep the Xbox One dumps under `ROMS_FINAL/xboxone`. From `ansible/`, run `ansible-playbook install-azimuth.yml` or `ansible-playbook site.yml --tags azimuth`. Override `dg_azimuth_proton` in `host_vars/localhost.yml` if needed. The wrapper keeps its Proton prefix beside itself in `dg_azimuth_compatdata` and uses the NVIDIA Vulkan driver.
 
-## Launchers
+## Launcher
 
 | Walker entry | Runs | What it does |
 |---|---|---|
-| **Azimuth · Forza** | `bin/azimuth` | the hub: game picker, per-game settings, photo gallery, save backups |
-| **Forza Horizon 2 / 3, Motorsport 5 / 6 · Xbox One** | `bin/azimuth-<fh2\|fh3\|fm5\|fm6>` | boots that game through `azimuth.exe --game=<dump> --skip-launcher` |
+| **Azimuth · Forza** | `bin/azimuth` | Azimuth's own hub: game picker, per-game settings, photo gallery, save backups and updates |
 
-The per-game entries exist only for dumps present in `ROMS_FINAL/xboxone`
-(`dg_azimuth_games`); a dump added later gets its shortcut on the next run,
-and a removed dump's entry disappears. **First-run note (1.0.2):** until a
-title has been added once inside the hub, `--game` does not resolve and
-Azimuth falls back to opening the hub — point the hub's folder picker at
-`ROMS_FINAL/xboxone` once and accept everything it offers (done here on
-2026-10-28: FH2, FH3, FM5 and FM6 are all registered). All five Forza titles
-share the one prefix and `data/azimuth.ini`.
+**One entry on purpose.** The role used to render a shortcut per dump
+(`bin/azimuth-<slug>` running `azimuth.exe --game=<dump> --skip-launcher`).
+In 1.0.x that combination does not resolve — `--skip-launcher` is not honoured
+before the title is registered — so every shortcut just reopened the hub and
+added a click. They were removed on 2026-10-28 (`dg_azimuth_legacy_shortcuts`
+lists the leftovers the role deletes), and the hub is the single entry point
+for all five titles, which share one prefix and one `data/azimuth.ini`.
 
 Extra Options is version-locked to Azimuth 1.0.2 (tag Azimuth_v1.0.0). It adds controller shortcuts for autodrive (D-pad Down), lights (right stick), hazards (D-pad Up), and indicators (hold D-pad Left/Right). Its `FH2_ExtraOptions.ini` and `Gamerpic.png` are installed only if absent, so later role runs preserve customization. The installer also preserves Azimuth's existing settings, Proton prefix, saves, and game files; it removes only temporary extraction staging.
 

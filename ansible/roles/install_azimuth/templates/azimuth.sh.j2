@@ -1,16 +1,13 @@
 #!/usr/bin/env sh
 # Azimuth hub — the wrapper's own launcher: game picker, per-game settings,
-# photo gallery, save backups and updates. One install serves every Forza
-# title (FH2, FH2 F&F, FH3, FM5, FM6); the per-game bin/azimuth-<slug>
-# shortcuts boot straight into one game with --game --skip-launcher.
+# photo gallery, save backups and updates. One install and one entry serve
+# every Forza title (FH2, FH2 F&F, FH3, FM5, FM6). Per-game shortcuts were
+# dropped: in 1.0.x `--game=… --skip-launcher` does not resolve and just
+# reopens this hub, so they only added a click.
 set -eu
 
 if [ ! -f "{{ dg_azimuth_install_dir }}/azimuth.exe" ]; then
   printf '%s\n' 'Azimuth is not installed.' >&2
-  exit 1
-fi
-if [ ! -f "{{ dg_azimuth_game_dir }}/era.vbi" ]; then
-  printf '%s\n' 'Forza Horizon 2 game files are missing.' >&2
   exit 1
 fi
 if [ ! -x "{{ dg_azimuth_proton }}" ]; then

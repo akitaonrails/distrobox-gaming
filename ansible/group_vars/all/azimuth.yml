@@ -9,28 +9,17 @@ dg_azimuth_supported_game_version: 1.0.0.64
 dg_azimuth_game_dir: "{{ dg_roms_final_root }}/xboxone/Anthem_1.0.0.64_x64__8wekyb3d8bbwe"
 dg_azimuth_install_dir: "{{ dg_box_home }}/tools/azimuth"
 dg_azimuth_launcher: "{{ dg_box_home }}/bin/azimuth"
-# One hub launcher (Azimuth's own UI) plus one straight-to-game shortcut per
-# dump present in ROMS_FINAL/xboxone. `--game=DIR --skip-launcher` boots the
-# title directly; a title Azimuth has not added yet falls back to the hub, so
-# the first hub visit (its folder scan) completes the set. Dumps missing from
-# the library simply get no shortcut.
-dg_azimuth_games:
-  - slug: fh2
-    name: "Forza Horizon 2"
-    keywords: "horizon 2;storm island"
-    dir: "{{ dg_roms_final_root }}/xboxone/Anthem_1.0.0.64_x64__8wekyb3d8bbwe"
-  - slug: fh3
-    name: "Forza Horizon 3"
-    keywords: "horizon 3"
-    dir: "{{ dg_roms_final_root }}/xboxone/FH3-Opus_1.0.125.0_x64__8wekyb3d8bbwe"
-  - slug: fm5
-    name: "Forza Motorsport 5"
-    keywords: "motorsport 5"
-    dir: "{{ dg_roms_final_root }}/xboxone/FM5-Forza_1.0.0.20_x64__8wekyb3d8bbwe"
-  - slug: fm6
-    name: "Forza Motorsport 6"
-    keywords: "motorsport 6"
-    dir: "{{ dg_roms_final_root }}/xboxone/FM6-Monument_1.0.0.44_x64__8wekyb3d8bbwe"
+# One entry: Azimuth's own hub. Per-game shortcuts (bin/azimuth-<slug> with
+# --game=… --skip-launcher) were removed on 2026-10-28 — in 1.0.x they only
+# reopened the hub, so they added a click instead of removing one. These names
+# are the leftovers the role deletes on existing installs.
+dg_azimuth_legacy_shortcuts:
+  - azimuth-fh2
+  - azimuth-fh3
+  - azimuth-fm5
+  - azimuth-fm6
+  - azimuth-fh2-infinity
+
 dg_azimuth_proton: "{{ ansible_facts.env.HOME }}/.steam/steam/compatibilitytools.d/GE-Proton11-1/proton"
 dg_azimuth_steam_root: "{{ ansible_facts.env.HOME }}/.steam/steam"
 dg_azimuth_compatdata: "{{ dg_azimuth_install_dir }}/.compatdata"

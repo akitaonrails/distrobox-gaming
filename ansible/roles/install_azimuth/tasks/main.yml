@@ -291,64 +291,40 @@
     dest: "{{ dg_azimuth_launcher }}"
     mode: "0755"
 
-# ForzaInfinity (the FH2 online client) was removed on 2026-10-28: one game
-# short of interest. Drop everything an older run may have created.
-- name: Remove the retired ForzaInfinity install and entries
+
+# One launcher, Azimuth's own hub. The per-game entries (and the retired
+# ForzaInfinity one) all just reopened the hub in 1.0.x — `--skip-launcher`
+# does not resolve — so they are gone; delete whatever an older run left.
+- name: Remove the retired per-game Azimuth launchers
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: "{{ dg_box_home }}/bin/{{ item }}"
     state: absent
-  loop:
-    - "{{ dg_box_home }}/bin/azimuth-fh2-infinity"
-    - "{{ dg_desktop_render_dir }}/gaming-azimuth-fh2-infinity.desktop"
-    - "{{ dg_box_home }}/tools/azimuth-infinity"
+  loop: "{{ dg_azimuth_legacy_shortcuts }}"
 
-- name: Check which Forza dumps are present
-  ansible.builtin.stat:
-    path: "{{ item.dir }}"
-  loop: "{{ dg_azimuth_games }}"
-  loop_control:
-    label: "{{ item.slug }}"
-  register: _azimuth_game_dirs
+- name: Remove the retired per-game Azimuth desktop entries
+  ansible.builtin.file:
+    path: "{{ dg_desktop_render_dir }}/gaming-{{ item }}.desktop"
+    state: absent
+  loop: "{{ dg_azimuth_legacy_shortcuts }}"
 
-- name: Report missing dumps
-  ansible.builtin.debug:
-    msg: >-
-      No dump at {{ item.item.dir }} — the {{ item.item.slug }} shortcut is
-      skipped until it is placed there.
-  loop: "{{ _azimuth_game_dirs.results }}"
-  loop_control:
-    label: "{{ item.item.slug }}"
-  when: not item.stat.exists
+# install-host-launchers.sh only iterates the rendered directory, so host
+# entries whose template is gone are left behind; prune them here.
+- name: Remove the retired per-game Azimuth host entries
+  ansible.builtin.file:
+    path: "{{ dg_host_applications_dir }}/gaming-{{ item }}.desktop"
+    state: absent
+  loop: "{{ dg_azimuth_legacy_shortcuts }}"
 
-- name: Collect the Forza games whose dumps are present
-  ansible.builtin.set_fact:
-    _azimuth_present: >-
-      {{ _azimuth_game_dirs.results | selectattr('stat.exists')
-         | map(attribute='item') | list }}
-
-- name: Install the per-game shortcuts
-  ansible.builtin.template:
-    src: azimuth-game.sh.j2
-    dest: "{{ dg_box_home }}/bin/azimuth-{{ item.slug }}"
-    mode: "0755"
-  loop: "{{ _azimuth_present }}"
-  loop_control:
-    label: "{{ item.slug }}"
+- name: Remove the retired ForzaInfinity install directory
+  ansible.builtin.file:
+    path: "{{ dg_box_home }}/tools/azimuth-infinity"
+    state: absent
 
 - name: Render Azimuth desktop entry
   ansible.builtin.template:
     src: azimuth.desktop.j2
     dest: "{{ dg_desktop_render_dir }}/gaming-azimuth.desktop"
     mode: "0644"
-
-- name: Render the per-game desktop entries
-  ansible.builtin.template:
-    src: azimuth-game.desktop.j2
-    dest: "{{ dg_desktop_render_dir }}/gaming-azimuth-{{ item.slug }}.desktop"
-    mode: "0644"
-  loop: "{{ _azimuth_present }}"
-  loop_control:
-    label: "{{ item.slug }}"
 
 - name: Install Azimuth host desktop entry
   ansible.builtin.command:
