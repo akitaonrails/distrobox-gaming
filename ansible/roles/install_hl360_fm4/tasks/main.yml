@@ -1,7 +1,8 @@
 ---
 # hl360-forza4 needs the USA Rev 1 discs. The port itself is installed either
-# way; the game is only installed from matching discs (upstream's launcher does
-# the extraction and content installation interactively).
+# way; the game tree and the Disc 2 content packages are only built from
+# matching discs, through the fm4tool.exe the player ZIP ships (the port's own
+# launcher cannot be used for that here: see docs/fm4-hl360.md).
 
 # Self-healing: an already staged copy is reused, a missing or corrupt one is
 # fetched. Keeps the offline rebuild path (drop the ZIP in the cache) and the
@@ -174,6 +175,24 @@
   ansible.builtin.stat:
     path: "{{ dg_hl360_disc2_extract }}/default.xex"
   register: _hl360_disc2_tree
+
+# fm4tool runs inside the game's Proton prefix: `proton run` also waits for the
+# prefix to go idle, so a running game would hang the extraction indefinitely.
+- name: Find a running FM4 instance
+  ansible.builtin.command:
+    cmd: pgrep -x fm4.exe
+  register: _hl360_running
+  failed_when: false
+  changed_when: false
+  when: not _hl360_game.stat.exists or not _hl360_disc2_tree.stat.exists
+
+- name: Require the FM4 game to be closed
+  ansible.builtin.assert:
+    that: _hl360_running.stdout | default('') == ''
+    fail_msg: >-
+      Forza Motorsport 4 is running. The disc tools share its Proton prefix,
+      so close the game before installing the disc content.
+  when: not _hl360_game.stat.exists or not _hl360_disc2_tree.stat.exists
 
 - name: Stage Disc 2 locally before extraction
   ansible.builtin.copy:
