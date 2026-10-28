@@ -35,6 +35,26 @@
     mode: "0644"
     force: false
 
+# The port writes gow3.ini on first run; its own menu offers windowed /
+# borderless / fullscreen and the output resolutions. Only the two keys the
+# role owns are enforced, and only once the file exists.
+- name: Check the God of War III settings file
+  ansible.builtin.stat:
+    path: "{{ dg_box_home }}/.local/share/gow3/gow3.ini"
+  register: _gow3_ini
+
+- name: Keep God of War III fullscreen at 4K output
+  ansible.builtin.lineinfile:
+    path: "{{ dg_box_home }}/.local/share/gow3/gow3.ini"
+    regexp: "^{{ item.key }}="
+    line: "{{ item.key }}={{ item.value }}"
+  loop:
+    - { key: display_mode, value: fullscreen }
+    - { key: output_res,   value: 3840x2160 }
+  loop_control:
+    label: "{{ item.key }}"
+  when: _gow3_ini.stat.exists
+
 - name: Install the pinned God of War III Linux AppImage
   ansible.builtin.get_url:
     url: "{{ dg_gow3_pc_asset_url }}"

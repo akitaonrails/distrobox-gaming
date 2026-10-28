@@ -32,6 +32,24 @@ dg_hl360_proton: "{{ ansible_facts.env.HOME }}/.steam/steam/compatibilitytools.d
 dg_hl360_steam_root: "{{ ansible_facts.env.HOME }}/.steam/steam"
 dg_hl360_compatdata: "{{ dg_hl360_install_dir }}/.compatdata"
 
+# Graphics/behaviour keys the role keeps on the validated baseline. Upstream's
+# graphics troubleshooting doc is explicit that the async+none pair drops draws
+# (roads, car thumbnails) and that `vsync` is the guest vblank pacing, not a
+# presentation switch; anisotropic_override 5 was the launcher's own default.
+# The guest video mode stays 720p: it is a request to the game, and a 4K value
+# there gives a black screen with sound.
+dg_hl360_settings:
+  anisotropic_override: "16"
+  async_shader_compilation: "false"
+  readback_resolve: "'fast'"
+  graphics_preset: "3"
+  resolution_scale: "4"
+  present_effect: "'fsr'"
+  vsync: "true"
+  host_present_fps_limit: "60"
+  video_mode_width: "1280"
+  video_mode_height: "720"
+
 # fm4tool.exe (shipped in the player ZIP) is the disc/package tool; it is a
 # Windows binary and only runs under the same Proton prefix as the game.
 dg_hl360_tool: "{{ dg_hl360_app_dir }}/fm4tool.exe"

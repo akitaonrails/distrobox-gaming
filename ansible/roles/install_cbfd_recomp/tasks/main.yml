@@ -82,6 +82,21 @@
       args:
         creates: "{{ dg_cbfd_rom_z64 }}"
 
+    # The port writes graphics.json on first run. Its own menu offers MSAA
+    # 2X/4X/8X; 8X is the top of that list and free on the 5090, and
+    # res_option=Auto (its default) already follows the fullscreen 4K window.
+    - name: Check the Conker graphics settings
+      ansible.builtin.stat:
+        path: "{{ dg_cbfd_config_dir }}/graphics.json"
+      register: _cbfd_gfx
+
+    - name: Keep Conker at 8x MSAA
+      ansible.builtin.lineinfile:
+        path: "{{ dg_cbfd_config_dir }}/graphics.json"
+        regexp: '"msaa_option": ".*"'
+        line: '  "msaa_option": "MSAA8X",'
+      when: _cbfd_gfx.stat.exists
+
     - name: Deploy the launcher
       ansible.builtin.template:
         src: cbfd-launch.sh.j2

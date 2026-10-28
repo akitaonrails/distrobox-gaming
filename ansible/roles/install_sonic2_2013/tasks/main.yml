@@ -100,6 +100,20 @@
         force: false
         mode: "0644"
 
+    # RSDKv4 draws a 424x240 framebuffer and integer-scales it: 2160/240 = 9
+    # is the largest scale that fits the 4K panel (3816x2160), with
+    # ScalingMode=0 (nearest) keeping the pixels crisp.
+    - name: Scale Sonic 2 (2013) to pixel-perfect 4K
+      community.general.ini_file:
+        path: "{{ dg_s2013_game_dir }}/settings.ini"
+        section: Window
+        option: "{{ item.option }}"
+        value: "{{ item.value }}"
+        mode: "0644"
+      loop:
+        - { option: ScalingMode, value: "0" }
+        - { option: WindowScale, value: "9" }
+
     - name: Deploy the launcher
       ansible.builtin.template:
         src: sonic2-2013.sh.j2

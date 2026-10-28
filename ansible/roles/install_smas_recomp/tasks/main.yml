@@ -85,6 +85,29 @@
       changed_when: false
       failed_when: (_smas_ldd.stdout | trim) != "0"
 
+    # config.ini is the host's own settings file. Under [Graphics],
+    # Fullscreen 0=windowed, 1=desktop fullscreen, 2=exclusive mode change;
+    # WindowSize=Auto already follows the display, so desktop fullscreen is the
+    # ceiling. (The [KeyMap] Fullscreen entry is the Alt+Return binding — it is
+    # a different key, which is why this uses the section-aware module.)
+    - name: Keep Super Mario All-Stars fullscreen
+      community.general.ini_file:
+        path: "{{ dg_smas_gamedir }}/config.ini"
+        section: Graphics
+        option: Fullscreen
+        value: "1"
+        mode: "0644"
+      when: not (dg_smas_revert | bool)
+
+    - name: Restore the SMAS fullscreen hotkey
+      community.general.ini_file:
+        path: "{{ dg_smas_gamedir }}/config.ini"
+        section: KeyMap
+        option: Fullscreen
+        value: Alt+Return
+        mode: "0644"
+      when: not (dg_smas_revert | bool)
+
     - name: Deploy the SMAS launcher
       ansible.builtin.template:
         src: smas.sh.j2

@@ -135,6 +135,26 @@
           - { key: AssistPad2, value: "1528" }
           - { key: AssistPad3, value: "2040" }
 
+    # Graphics: the launcher offers 4:3 (Native) / 16:9 (Widescreen) /
+    # 16:10 / 21:9, alphabetical by AspectIndex, and a Widescreen switch for
+    # the widened rendering. This box is a 16:9 4K panel, so 16:9 in
+    # fullscreen is the ceiling; WindowScale only applies to windowed mode.
+    - name: Keep the DKC2/DKC3 launcher at 16:9 fullscreen
+      ansible.builtin.lineinfile:
+        path: "{{ item.0.src_dir }}/build/linux/launcher.cfg"
+        line: "{{ item.1.key }}={{ item.1.value }}"
+        regexp: "^{{ item.1.key }}="
+        create: true
+        mode: "0644"
+      loop: "{{ (dg_dkc_games | rejectattr('key', 'equalto', 'dkc1') | list) | product(_gfx_cfg) | list }}"
+      loop_control:
+        label: "{{ item.0.key }} {{ item.1.key }}"
+      vars:
+        _gfx_cfg:
+          - { key: Fullscreen,  value: "1" }
+          - { key: AspectIndex, value: "1" }
+          - { key: Widescreen,  value: "1" }
+
     - name: Deploy the launchers
       ansible.builtin.template:
         src: dkc-launch.sh.j2

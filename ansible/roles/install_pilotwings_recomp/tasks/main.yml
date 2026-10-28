@@ -85,6 +85,20 @@
       changed_when: false
       failed_when: "'matches the pinned target' not in _pw64_identify.stdout"
 
+    # The port writes graphics.json on first run; its menu offers MSAA 2X/4X/8X
+    # and res_option=Auto already follows the fullscreen window.
+    - name: Check the Pilotwings 64 graphics settings
+      ansible.builtin.stat:
+        path: "{{ dg_pw64_user_dir }}/graphics.json"
+      register: _pw64_gfx
+
+    - name: Keep Pilotwings 64 at 8x MSAA
+      ansible.builtin.lineinfile:
+        path: "{{ dg_pw64_user_dir }}/graphics.json"
+        regexp: '"msaa_option": ".*"'
+        line: '    "msaa_option": "MSAA8X",'
+      when: _pw64_gfx.stat.exists
+
     - name: Deploy the launcher
       ansible.builtin.template:
         src: pilotwings-launch.sh.j2

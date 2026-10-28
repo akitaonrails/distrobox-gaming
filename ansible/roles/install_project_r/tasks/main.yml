@@ -84,6 +84,25 @@
       register: _projectr_install
       changed_when: "'projectr-installed' in _projectr_install.stdout"
 
+    # project-r.toml is written by the port on first run; [display] mode is
+    # already full_screen_borderless, but it seeds a 2560x1440 window.
+    - name: Check the Project R settings file
+      ansible.builtin.stat:
+        path: "{{ dg_box_home }}/.config/ProjectR/project-r.toml"
+      register: _projectr_toml
+
+    - name: Keep Project R at 4K
+      ansible.builtin.lineinfile:
+        path: "{{ dg_box_home }}/.config/ProjectR/project-r.toml"
+        regexp: "^screen_{{ item.key }} = "
+        line: "screen_{{ item.key }} = {{ item.value }}"
+      loop:
+        - { key: width,  value: "3840" }
+        - { key: height, value: "2160" }
+      loop_control:
+        label: "screen_{{ item.key }}"
+      when: _projectr_toml.stat.exists
+
     - name: Deploy the launcher
       ansible.builtin.template:
         src: project-r-launch.sh.j2

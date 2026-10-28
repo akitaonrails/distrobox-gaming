@@ -92,6 +92,18 @@
   loop_control:
     label: "{{ item.key }}"
 
+# The launcher rewrites this file from its in-memory copy on exit, which is how
+# the tuned baseline got reverted once while a second instance was open. These
+# are the keys the role owns; everything else in the file is the player's.
+- name: Keep the FM4 graphics baseline
+  ansible.builtin.lineinfile:
+    path: "{{ dg_hl360_app_dir }}/fm4.user.toml"
+    regexp: "^{{ item.key }} = "
+    line: "{{ item.key }} = {{ item.value }}"
+  loop: "{{ dg_hl360_settings | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+
 # Keyboard/mouse mode takes over the d-pad and left stick from the pad.
 - name: Keep FM4 keyboard/mouse mode off
   ansible.builtin.lineinfile:

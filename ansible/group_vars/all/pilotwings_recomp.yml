@@ -14,6 +14,8 @@ dg_pw64_tarball_sha256: "b4849feb348f68918daaaefd226cb1824f4512eaf5140095e28e765
 dg_pw64_root: "{{ dg_roms_final_root }}/PC/ports/pilotwings-recomp"
 dg_pw64_tarball: "{{ dg_pw64_root }}/Pilotwings64Recomp-{{ dg_pw64_version }}-linux-x86_64.tar.gz"
 dg_pw64_install_dir: "{{ dg_box_home }}/tools/pilotwings-recomp"
+# The port keeps graphics.json / general.json / controls.json here.
+dg_pw64_user_dir: "{{ dg_box_home }}/.local/share/Pilotwings64Recomp"
 dg_pw64_exe: Pilotwings64Recomp
 
 # ROM: Pilotwings 64 (USA) ONLY (cart PW, region E, rev 0, z64 sha1
