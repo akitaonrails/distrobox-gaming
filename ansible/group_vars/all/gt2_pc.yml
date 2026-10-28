@@ -20,6 +20,17 @@ dg_gt2_install_dir: "{{ dg_box_home }}/tools/gt2-pc"
 dg_gt2_release_dir: "{{ dg_gt2_install_dir }}/releases/{{ dg_gt2_version }}"
 dg_gt2_user_dir: "{{ dg_box_home }}/.local/share/gt2-pc"
 dg_gt2_launcher: "{{ dg_box_home }}/bin/gt2-pc-port"
+# psx-play reads pads through SDL (Windows build) under Proton, so WineBus
+# must hand it SDL devices instead of raw hidraw — same registry baseline as
+# the pc-racing games (the 8BitDo Ultimate 2 also exposes keyboard/mouse HID
+# interfaces, which is why the ignore-except list exists).
+dg_gt2_winebus_registry:
+  - { name: DisableHidraw, value: 1 }
+  - { name: DisableInput, value: 1 }
+  - { name: "Enable SDL", value: 1 }
+  - { name: "Map Controllers", value: 1 }
+dg_gt2_sdl_hidapi: "0"
+dg_gt2_gamepad_only: "0x2dc8/0x310b,0x045e/0x0b12"
 
 dg_gt2_proton: "{{ ansible_facts.env.HOME }}/.steam/steam/compatibilitytools.d/GE-Proton11-1/proton"
 dg_gt2_steam_root: "{{ ansible_facts.env.HOME }}/.steam/steam"

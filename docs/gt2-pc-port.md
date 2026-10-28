@@ -45,3 +45,13 @@ guides if track modding is wanted.
 Installed and disc-verified 2026-10-27 (manifest `known: true`, title
 *(v1.0)*, data-track sha256 `0cc97dbd…` = the port's pinned fingerprint).
 **Not yet launched** — first boot is the verification step.
+
+## Controller
+
+psx-play reads pads through SDL (Windows build) under GE-Proton, so the role
+applies the same WineBus registry baseline as the pc-racing games
+(DisableHidraw/DisableInput, Enable SDL, Map Controllers) and the launcher
+exports the SDL joystick hints, including the 8BitDo-only ignore-except list
+(the Ultimate 2 dongle also exposes keyboard/mouse HID interfaces). psx-play
+hot-plugs: "no gamepad found yet (plug one in at any time)" is its own wait
+message. Physical button presses still need an in-game check.

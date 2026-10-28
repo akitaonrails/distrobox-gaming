@@ -54,6 +54,18 @@
     force: false
     mode: "0644"
 
+# 7z extracts the kit's PE executables mode 0644; the launcher guards on the
+# executable bit (and any future direct exec needs it), so set it explicitly.
+- name: Mark the kit executables executable
+  ansible.builtin.file:
+    path: "{{ dg_gt2_release_dir }}/{{ item }}"
+    mode: "0755"
+  loop:
+    - psx-play.exe
+    - gt2-course.exe
+    - gt2-scenec.exe
+    - gt2-trackc.exe
+
 - name: Keep saves and screenshots across kit upgrades
   ansible.builtin.file:
     path: "{{ dg_gt2_release_dir }}/{{ item.name }}"
@@ -118,6 +130,27 @@
 - ansible.builtin.assert:
     that: _gt2_verify.rc == 0
     fail_msg: "psx-play verify-data failed: {{ _gt2_verify.stdout[-400:] }}"
+
+# psx-play is an SDL app: WineBus has to expose the pads through SDL rather
+# than raw hidraw/evdev. Query first so a repeat run reports no change.
+- name: Route controllers through SDL (winebus)
+  ansible.builtin.shell: |
+    {{ dg_in_box }} bash -c '
+      export WINEPREFIX="{{ dg_gt2_compatdata }}/pfx"
+      want=$(printf "0x%x" {{ item.value }})
+      cur=$(wine reg query "HKCU\\Software\\Wine\\WineBus" /v "{{ item.name }}" 2>/dev/null \
+            | awk "/{{ item.name }}/ {print \$NF}" | tr -d "\r")
+      if [ "$cur" != "$want" ]; then
+        wine reg add "HKCU\\Software\\Wine\\WineBus" /v "{{ item.name }}" /t REG_DWORD /d "{{ item.value }}" /f >/dev/null
+        wineserver -w || true
+        printf "%s\n" changed
+      fi
+    '
+  loop: "{{ dg_gt2_winebus_registry }}"
+  loop_control:
+    label: "{{ item.name }}={{ item.value }}"
+  register: _gt2_winebus
+  changed_when: "'changed' in _gt2_winebus.stdout"
 
 - name: Install the GT2 PC Port launcher
   ansible.builtin.template:
