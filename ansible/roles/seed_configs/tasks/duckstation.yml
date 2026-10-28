@@ -80,6 +80,21 @@
     - item.stat.exists | default(false)
     - item.item.enable_ids | default([]) | length > 0
 
+# File-backed native-format cheat packs (source + tag): the same contract as
+# the inline entries below, for packs too large to keep in group_vars (the
+# RRT4 60 FPS pack is ~9k guarded write lines).
+- name: "Deploy file-backed DuckStation-native cheat packs"
+  ansible.builtin.copy:
+    src: "{{ item.source }}"
+    dest: "{{ dg_box_home }}/.config/duckstation/cheats/{{ item.serial }}_{{ item.tag }}.cht"
+    mode: "0644"
+  loop: "{{ dg_duckstation_cheats | default([]) }}"
+  loop_control:
+    label: "{{ item.serial }}_{{ item.tag | default('') }}.cht"
+  when:
+    - item.source is defined
+    - item.tag is defined
+
 # Inline native-format cheat files (tag + content entries). Deployed as
 # cheats/<serial>_<tag>.cht — the loader glob-matches <serial>*.cht, so
 # these load alongside any <serial>.cht pack.

@@ -290,6 +290,35 @@ dg_duckstation_per_game_settings:
       - { section: Hacks, option: MaxVRAMWriteSplits,                      value: "1024" }
       - { section: Display, option: AspectRatio,     value: "16:9" }
 
+  # Ridge Racer Type 4 (USA, SLUS-00797) — AEONG_AEONG's 60 FPS + 16:9 pack
+  # (gbatemp thread 684958, October 2026). The patch frees frame budget by
+  # running the game's own 60 Hz logic pass every vsync, and it redraws the UI
+  # and FOV for 16:9 itself — so the emulator-side widescreen hack must stay
+  # OFF, otherwise the two fight and the HUD warps. The CPU-speed bump is the
+  # author's requirement (the patched code assumes 3x host speed to hit the
+  # frame budget); PGXP stays on, which the author notes reduces background
+  # distortion.
+  - serial: SLUS-00797
+    name: "Ridge Racer Type 4"
+    settings:
+      - { section: Console, option: CPUOverclockEnable,      value: "true" }
+      - { section: Console, option: CPUOverclockNumerator,   value: "3" }
+      - { section: Console, option: CPUOverclockDenominator, value: "1" }
+      - { section: Display, option: AspectRatio,             value: "16:9" }
+      - { section: GPU, option: WidescreenHack,              value: "false" }
+      - { section: GPU, option: PGXPEnable,                  value: "true" }
+      - { section: GPU, option: PGXPCulling,                 value: "true" }
+      - { section: GPU, option: PGXPTextureCorrection,       value: "true" }
+      - { section: GPU, option: PGXPPreserveProjFP,          value: "true" }
+      - { section: GPU, option: PGXPDepthBuffer,             value: "true" }
+      - { section: GPU, option: Multisamples,                value: "8" }
+      - { section: GPU, option: PerSampleShading,            value: "true" }
+      - { section: GPU, option: TrueColor,                   value: "true" }
+      - { section: GPU, option: ScaledDithering,             value: "true" }
+      - { section: GPU, option: DisableInterlacing,          value: "true" }
+      - { section: TextureReplacements, option: EnableTextureReplacements, value: "true" }
+      - { section: TextureReplacements, option: PreloadTextures,           value: "true" }
+
 # Per-game DuckStation cheat deployments. Two shapes:
 #  - source + enable_ids: copies a .cht file (libretro format) from
 #    staging, renames it to <SERIAL>.cht inside DuckStation's cheats dir,
@@ -308,6 +337,20 @@ dg_duckstation_per_game_settings:
 #    Enable from the game settings layer only; EnablePatches matches
 #    names exactly).
 dg_duckstation_cheats:
+  # Ridge Racer Type 4 (USA, SLUS-00797) — AEONG_AEONG's GameShark pack,
+  # stored as a file (9k guarded write lines) rather than inline:
+  #   files/duckstation/SLUS-00797_rrt4.cht
+  # Sections: [60 FPS patch] (needs CPU speed 300%, set above),
+  # [16:9 Widescreen patch] (needs the emulator hack off, set above),
+  # [16:9 FMV] (opening movie), [CPU Marker] (opponent dots on the minimap —
+  # gameplay-affecting, deliberately left OFF; enable it in the cheat manager).
+  - serial: SLUS-00797
+    tag: rrt4
+    source: "{{ dg_project_root }}/ansible/roles/seed_configs/files/duckstation/SLUS-00797_rrt4.cht"
+    enable_names:
+      - 60 FPS patch
+      - 16:9 Widescreen patch
+      - 16:9 FMV
   # GT2 (Silent's-patched v1.2 ISOs the user runs; SCUS-94455 = Arcade
   # disc, SCUS-94488 = Simulation disc per redump — same pack applies to
   # both). All of Silent's GT2 improvements verbatim from
