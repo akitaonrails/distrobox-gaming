@@ -46,12 +46,26 @@ Installed and disc-verified 2026-10-27 (manifest `known: true`, title
 *(v1.0)*, data-track sha256 `0cc97dbd…` = the port's pinned fingerprint).
 **Not yet launched** — first boot is the verification step.
 
-## Controller
+## Controller — broken under Wine, cause isolated (2026-10-28)
 
-psx-play reads pads through SDL (Windows build) under GE-Proton, so the role
-applies the same WineBus registry baseline as the pc-racing games
-(DisableHidraw/DisableInput, Enable SDL, Map Controllers) and the launcher
-exports the SDL joystick hints, including the 8BitDo-only ignore-except list
-(the Ultimate 2 dongle also exposes keyboard/mouse HID interfaces). psx-play
-hot-plugs: "no gamepad found yet (plug one in at any time)" is its own wait
-message. Physical button presses still need an in-game check.
+psx-play's pad input is **gilrs 0.11.2** (Rust), whose default Windows backend
+enumerates through WinRT **Windows.Gaming.Input** and builds its gamepad set
+from the `GamepadAdded`/`RawGameControllerAdded` **events**. Verified with a
+probe exe under this exact prefix and launch method:
+
+- the pad is visible at every layer below: SDL in the box (8BitDo Ultimate 2,
+  vid 2dc8 pid 310b), Wine **XInput** (`XInputGetState(0)` = connected, both
+  via `proton run` and plain wine), and the WGI **lists**
+  (`Gamepad.Gamepads` = 1, `RawGameControllers` = 1, correct name);
+- the WGI **arrival events never fire** under Wine/GE-Proton 11-1 — so gilrs
+  reports zero gamepads and psx-play prints "no gamepad found yet".
+
+This is not fixable by configuration: the registry/WineBus/SDL tweaks do not
+touch the WGI event path, and gilrs' XInput fallback is a compile-time feature
+of the app (`gilrs = { default-features = false, features = ["xinput"] }`).
+Keyboard input works (its events were observed through --pad-debug).
+
+**Fix belongs upstream**: ask the kit author to ship the xinput gilrs feature
+(the runtime strings show WSLg support, so Wine is on his radar). Until then
+the interim option is a controller-to-keyboard bridge (AntimicroX in the box)
+mapped to the documented keyboard controls; say the word and it gets wired.
