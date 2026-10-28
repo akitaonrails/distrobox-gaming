@@ -392,9 +392,42 @@
 
 - name: Install Azimuth launcher
   ansible.builtin.template:
-    src: azimuth-fh2.sh.j2
+    src: azimuth.sh.j2
     dest: "{{ dg_azimuth_launcher }}"
     mode: "0755"
+
+- name: Check which Forza dumps are present
+  ansible.builtin.stat:
+    path: "{{ item.dir }}"
+  loop: "{{ dg_azimuth_games }}"
+  loop_control:
+    label: "{{ item.slug }}"
+  register: _azimuth_game_dirs
+
+- name: Report missing dumps
+  ansible.builtin.debug:
+    msg: >-
+      No dump at {{ item.item.dir }} — the {{ item.item.slug }} shortcut is
+      skipped until it is placed there.
+  loop: "{{ _azimuth_game_dirs.results }}"
+  loop_control:
+    label: "{{ item.item.slug }}"
+  when: not item.stat.exists
+
+- name: Collect the Forza games whose dumps are present
+  ansible.builtin.set_fact:
+    _azimuth_present: >-
+      {{ _azimuth_game_dirs.results | selectattr('stat.exists')
+         | map(attribute='item') | list }}
+
+- name: Install the per-game shortcuts
+  ansible.builtin.template:
+    src: azimuth-game.sh.j2
+    dest: "{{ dg_box_home }}/bin/azimuth-{{ item.slug }}"
+    mode: "0755"
+  loop: "{{ _azimuth_present }}"
+  loop_control:
+    label: "{{ item.slug }}"
 
 - name: Install isolated ForzaInfinity launcher
   ansible.builtin.template:
@@ -404,9 +437,18 @@
 
 - name: Render Azimuth desktop entry
   ansible.builtin.template:
-    src: azimuth-fh2.desktop.j2
-    dest: "{{ dg_desktop_render_dir }}/gaming-azimuth-fh2.desktop"
+    src: azimuth.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-azimuth.desktop"
     mode: "0644"
+
+- name: Render the per-game desktop entries
+  ansible.builtin.template:
+    src: azimuth-game.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-azimuth-{{ item.slug }}.desktop"
+    mode: "0644"
+  loop: "{{ _azimuth_present }}"
+  loop_control:
+    label: "{{ item.slug }}"
 
 - name: Render ForzaInfinity desktop entry
   ansible.builtin.template:

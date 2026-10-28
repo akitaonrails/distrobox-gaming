@@ -287,12 +287,27 @@ dg_ogm_games:
     category: port
     sgdb_query: "Castle of Illusion Starring Mickey Mouse"
     github: "{{ dg_mdc_repo }}"
+  - desktop_id: gaming-azimuth
+    id: azimuth
+    category: port
+    web_url: "{{ dg_azimuth_web_url }}"
+    update_regex: 'Version ([0-9]+[.][0-9]+[.][0-9]+)'
   - desktop_id: gaming-azimuth-fh2
     id: azimuth-fh2
     category: port
     sgdb_query: "Forza Horizon 2"
-    web_url: "{{ dg_azimuth_web_url }}"
-    update_regex: 'Version ([0-9]+[.][0-9]+[.][0-9]+)'
+  - desktop_id: gaming-azimuth-fh3
+    id: azimuth-fh3
+    category: port
+    sgdb_query: "Forza Horizon 3"
+  - desktop_id: gaming-azimuth-fm5
+    id: azimuth-fm5
+    category: port
+    sgdb_query: "Forza Motorsport 5"
+  - desktop_id: gaming-azimuth-fm6
+    id: azimuth-fm6
+    category: port
+    sgdb_query: "Forza Motorsport 6"
   - desktop_id: gaming-azimuth-fh2-infinity
     id: azimuth-fh2-infinity
     category: port

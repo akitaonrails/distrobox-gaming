@@ -1,0 +1,11 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name={{ item.name }} · Xbox One
+Exec={{ dg_box_home }}/bin/azimuth-{{ item.slug }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment={{ item.name }} through Azimuth and Proton (boots straight into the game).
+Categories=Game;
+Keywords={{ item.keywords }};forza;xbox one;azimuth;racing;
+{{ ogm_metadata('gaming-azimuth-' ~ item.slug) }}

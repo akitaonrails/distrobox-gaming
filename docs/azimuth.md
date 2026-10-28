@@ -1,6 +1,6 @@
-# Forza Horizon 2 via Azimuth
+# Forza on Xbox One via Azimuth
 
-The optional `install_azimuth` role installs [Azimuth](https://almost-there-games.itch.io/azimuth) v1.0.2 and [Extra Options](https://github.com/RokkuDayo/ForzaHorizon2_ExtraOptions/releases/tag/Azimuth_v1.0.0) v0.3.2 (the "Azimuth v1.0.2 compatibility" build) through Proton for the Xbox One Forza Horizon 2 release v1.0.0.64.
+The optional `install_azimuth` role installs [Azimuth](https://almost-there-games.itch.io/azimuth) v1.0.2 and [Extra Options](https://github.com/RokkuDayo/ForzaHorizon2_ExtraOptions/releases/tag/Azimuth_v1.0.0) v0.3.2 (the "Azimuth v1.0.2 compatibility" build) through Proton. Azimuth 1.0 is a **multi-title wrapper**: one install, one prefix and one `azimuth.ini` serve **Forza Horizon 2 (1.0.0.64), FH2 Presents Fast & Furious, Forza Horizon 3 (1.0.125.0), Forza Motorsport 5 (1.0.0.20) and Forza Motorsport 6 (1.0.0.44)** — each from its own dump in `ROMS_FINAL/xboxone`.
 
 **Azimuth 1.0 (2026-10-27)** rebuilt the wrapper: a new controller/mouse
 launcher that **finds games and content packages automatically** (it scans the
@@ -14,7 +14,24 @@ rewards read FM5/FH2 saves). First start after upgrading re-translates shaders
 once. The EO 0.3.x mod-loader layout (winmm.dll + `mods/` plugins) replaced
 the old tls shim, which the role removes. Azimuth is an experimental Windows wrapper; its author reports Linux support through Proton. The role validates `era.vbi`, `Mount/AppxManifest.xml`, `Mount/`, and `EmbeddedXvd/` before installing the wrapper. It does not modify the game files.
 
-Place the verified `azimuth-windows-0.9.10.zip` and `FH2_Extra_Options_0.2.98-release.zip` under `dg_roms_final_root/PC/`, with SHA-256 checks matching `group_vars/all/azimuth.yml`, and unpack the Xbox One game under `dg_azimuth_game_dir`. From `ansible/`, run `ansible-playbook install-azimuth.yml` or `ansible-playbook site.yml --tags azimuth`. Override `dg_azimuth_game_dir` and `dg_azimuth_proton` in `host_vars/localhost.yml` if needed. The launcher keeps its Proton prefix beside the wrapper in `dg_azimuth_compatdata` and uses the NVIDIA Vulkan driver. On first launch, select `dg_azimuth_game_dir` in Azimuth's folder picker if it is not already configured.
+Place the verified `azimuth-windows-<version>.zip` in `PC/releases/` and the pinned Extra Options / radio / ForzaInfinity archives in `PC/mods/`, with SHA-256 checks matching `group_vars/all/azimuth.yml`, and keep the Xbox One dumps under `ROMS_FINAL/xboxone`. From `ansible/`, run `ansible-playbook install-azimuth.yml` or `ansible-playbook site.yml --tags azimuth`. Override `dg_azimuth_proton` in `host_vars/localhost.yml` if needed. The wrapper keeps its Proton prefix beside itself in `dg_azimuth_compatdata` and uses the NVIDIA Vulkan driver.
+
+## Launchers
+
+| Walker entry | Runs | What it does |
+|---|---|---|
+| **Azimuth · Forza** | `bin/azimuth` | the hub: game picker, per-game settings, photo gallery, save backups |
+| **Forza Horizon 2 / 3, Motorsport 5 / 6 · Xbox One** | `bin/azimuth-<fh2\|fh3\|fm5\|fm6>` | boots that game through `azimuth.exe --game=<dump> --skip-launcher` |
+| **Forza Horizon 2 · Infinity Online** | `bin/azimuth-fh2-infinity` | the isolated online client (own prefix, own save) |
+
+The per-game entries exist only for dumps present in `ROMS_FINAL/xboxone`
+(`dg_azimuth_games`); a dump added later gets its shortcut on the next run,
+and a removed dump's entry disappears. **First-run note (1.0.2):** until a
+title has been added once inside the hub, `--game` does not resolve and
+Azimuth falls back to opening the hub — point the hub's folder picker at
+`ROMS_FINAL/xboxone` once and accept everything it offers (done here on
+2026-10-28: FH2, FH3, FM5 and FM6 are all registered). All five Forza titles
+share the one prefix and `data/azimuth.ini`.
 
 Extra Options is version-locked to Azimuth 1.0.2 (tag Azimuth_v1.0.0). It adds controller shortcuts for autodrive (D-pad Down), lights (right stick), hazards (D-pad Up), and indicators (hold D-pad Left/Right). Its `FH2_ExtraOptions.ini` and `Gamerpic.png` are installed only if absent, so later role runs preserve customization. The installer also preserves Azimuth's existing settings, Proton prefix, saves, and game files; it removes only temporary extraction staging.
 

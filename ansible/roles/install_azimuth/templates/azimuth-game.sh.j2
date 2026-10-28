@@ -1,12 +1,16 @@
 #!/usr/bin/env sh
+# {{ item.name }} straight into the game through Azimuth. Until the title has
+# been added once in the hub (Azimuth's own scan of ROMS_FINAL/xboxone),
+# --skip-launcher falls back to opening the hub — nothing breaks, it just
+# adds one click.
 set -eu
 
 if [ ! -f "{{ dg_azimuth_install_dir }}/azimuth.exe" ]; then
   printf '%s\n' 'Azimuth is not installed.' >&2
   exit 1
 fi
-if [ ! -f "{{ dg_azimuth_game_dir }}/era.vbi" ]; then
-  printf '%s\n' 'Forza Horizon 2 game files are missing.' >&2
+if [ ! -f "{{ item.dir }}/era.vbi" ]; then
+  printf '%s\n' '{{ item.name }} game files are missing ({{ item.dir }}).' >&2
   exit 1
 fi
 if [ ! -x "{{ dg_azimuth_proton }}" ]; then
@@ -24,4 +28,8 @@ export __GLX_VENDOR_LIBRARY_NAME=nvidia
 export WINEDLLOVERRIDES="winmm=n,b;d3dcompiler_47=n,b${WINEDLLOVERRIDES:+;$WINEDLLOVERRIDES}"
 mkdir -p "$STEAM_COMPAT_DATA_PATH"
 cd "{{ dg_azimuth_install_dir }}"
-exec "{{ dg_azimuth_proton }}" run "{{ dg_azimuth_install_dir }}/azimuth.exe" "$@"
+# Azimuth matches --game against the folder it stored in azimuth.ini, which
+# uses backslashes; convert so the comparison succeeds.
+GAME_DIR=$(printf '%s' 'Z:{{ item.dir }}' | tr '/' '\\')
+exec "{{ dg_azimuth_proton }}" run "{{ dg_azimuth_install_dir }}/azimuth.exe" \
+  "--game=$GAME_DIR" --skip-launcher "$@"
