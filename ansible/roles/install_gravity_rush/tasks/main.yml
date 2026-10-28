@@ -42,10 +42,8 @@
     checksum: "sha256:{{ dg_gr_asset_sha256 }}"
     mode: "0644"
 
-# unzip exits 1 on this archive's backslash path warning even after a clean
-# extract, so use 7z (repo convention for Windows zips).
-# The release ZIP stores entry names with backslashes; 7z keeps those literal
-# on POSIX, so normalise them with the repo helper.
+# The release ZIP stores entry names with backslashes; unzip/7z keep those
+# literal on POSIX, so normalise them with the repo helper.
 - name: Extract the release into its versioned directory
   ansible.builtin.command:
     argv:

@@ -34,7 +34,6 @@
     mode: "0755"
   loop:
     - "{{ dg_doa2u_release_dir }}"
-    - "{{ dg_doa2u_user_dir }}"
     - "{{ dg_box_home }}/bin"
 
 - name: Extract the release ZIP
@@ -91,14 +90,37 @@
     mode: "0644"
   when: _doa2u_build is changed
 
-# Saves and the disc cache live in private/play-disc; keep them across
-# version upgrades through a stable symlink.
-- name: Point the game's save/cache folder at the stable user dir
+# The port creates private/play-disc itself on first launch: prepare_disc()
+# builds a staging folder and renames it onto that name. A symlink in the way
+# makes that rename fail ("Not a directory: play-disc.tmp -> play-disc"), so
+# the folder must stay a real directory inside the release. Saves travel with
+# it, so a version bump adopts the previous release's folder instead.
+- name: Check what private/play-disc currently is
+  ansible.builtin.stat:
+    path: "{{ dg_doa2u_app_dir }}/private/play-disc"
+    follow: false
+  register: _doa2u_disc
+
+# Only the symlink is removed; a real save/cache folder is never touched.
+- name: Drop the symlink older releases of this role created
   ansible.builtin.file:
     path: "{{ dg_doa2u_app_dir }}/private/play-disc"
-    src: "{{ dg_doa2u_user_dir }}/play-disc"
-    state: link
-    force: true
+    state: absent
+  when: _doa2u_disc.stat.islnk | default(false)
+
+- name: Adopt the save/cache folder from an earlier release
+  ansible.builtin.shell: |
+    set -eu
+    target="{{ dg_doa2u_app_dir }}/private/play-disc"
+    [ -e "$target" ] && exit 0
+    src=$(find "{{ dg_doa2u_install_dir }}/releases" -mindepth 4 -maxdepth 4 \
+            -type d -name play-disc -printf '%T@ %p\n' 2>/dev/null \
+          | sort -nr | head -1 | cut -d' ' -f2-)
+    [ -n "$src" ] || exit 0
+    mv "$src" "$target"
+    printf '%s\n' adopted
+  register: _doa2u_adopt
+  changed_when: "'adopted' in _doa2u_adopt.stdout"
 
 - name: Seed the launcher baseline when absent
   ansible.builtin.copy:
@@ -106,6 +128,15 @@
     dest: "{{ dg_doa2u_app_dir }}/private/launcher.json"
     force: false
     mode: "0644"
+
+# Older runs of this role seeded "resolution", which run_game.saved_settings
+# never reads — the game then ignored the 4K baseline. Keep the user's file
+# (force: false above) and just rename the key when it is still wrong.
+- name: Apply the display baseline to a launcher.json seeded with the wrong key
+  ansible.builtin.replace:
+    path: "{{ dg_doa2u_app_dir }}/private/launcher.json"
+    regexp: '"resolution":'
+    replace: '"height":'
 
 - name: Install the DOA2U launcher
   ansible.builtin.template:

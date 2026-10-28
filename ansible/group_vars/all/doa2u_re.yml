@@ -18,7 +18,6 @@ dg_doa2u_iso: "{{ dg_rom_heavy_root }}/xbox/Dead or Alive 2 Ultimate (USA, Japan
 dg_doa2u_install_dir: "{{ dg_box_home }}/tools/doa2u"
 dg_doa2u_release_dir: "{{ dg_doa2u_install_dir }}/releases/{{ dg_doa2u_version }}"
 dg_doa2u_app_dir: "{{ dg_doa2u_release_dir }}/DOA2U-{{ dg_doa2u_version }}"
-dg_doa2u_user_dir: "{{ dg_box_home }}/.local/share/doa2u-re"
 dg_doa2u_launcher: "{{ dg_box_home }}/bin/doa2u-re"
 
 # The lifter needs capstone 5.0.7 + Pillow in its venv; the runner needs
@@ -28,9 +27,10 @@ dg_doa2u_packages: [shaderc]
 # Baseline launcher choices (private/launcher.json). 4K, game's own 16:9
 # widescreen, MSAA 8 (SDL_GPU/Linux ceiling; higher falls back), SMAA on.
 # Stereo default; intro movies kept. Applied only when the file is absent.
+# The port reads the key `height`, not `resolution` (run_game.saved_settings).
 dg_doa2u_launcher_json: |
   {
-    "resolution": 2160,
+    "height": 2160,
     "msaa": 8,
     "smaa": true,
     "widescreen": true,

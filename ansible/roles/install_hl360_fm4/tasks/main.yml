@@ -3,16 +3,15 @@
 # way; the game is only installed from matching discs (upstream's launcher does
 # the extraction and content installation interactively).
 
-- name: Verify the staged player ZIP
-  ansible.builtin.stat:
-    path: "{{ dg_hl360_cache_dir }}/{{ dg_hl360_asset_name }}"
-    checksum_algorithm: sha256
-  register: _hl360_zip
-- ansible.builtin.assert:
-    that: _hl360_zip.stat.checksum | default('') == dg_hl360_asset_sha256
-    fail_msg: >-
-      Stage {{ dg_hl360_asset_name }} (sha256 {{ dg_hl360_asset_sha256 }}) in
-      {{ dg_hl360_cache_dir }}.
+# Self-healing: an already staged copy is reused, a missing or corrupt one is
+# fetched. Keeps the offline rebuild path (drop the ZIP in the cache) and the
+# unattended one (the pinned URL) on the same task.
+- name: Fetch the pinned player build
+  ansible.builtin.get_url:
+    url: "{{ dg_hl360_asset_url }}"
+    dest: "{{ dg_hl360_cache_dir }}/{{ dg_hl360_asset_name }}"
+    checksum: "sha256:{{ dg_hl360_asset_sha256 }}"
+    mode: "0644"
 
 - name: Require the configured Proton build
   ansible.builtin.stat:

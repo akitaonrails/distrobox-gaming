@@ -14,6 +14,10 @@
     - gaming-shadps4-gui.desktop
     - gaming-flycast.desktop
     - gaming-eden-cheats-manager.desktop
+    # Opt-in game whose only entry point is this catalog: the sotn_recomp role
+    # installs the launcher and asks desktop_apps to refresh, so the entry has
+    # to be rendered here or the port has no Walker icon at all.
+    - gaming-sotn-recomp.desktop
 
 - name: Render generic emulator launcher desktop entries
   ansible.builtin.template:

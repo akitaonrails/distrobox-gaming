@@ -4,145 +4,168 @@
   connection: local
   gather_facts: true
   roles:
-    - { role: check_host,                tags: [check] }
-    - { role: create_box,                tags: [create] }
-    - { role: bootstrap_packages,        tags: [bootstrap] }
-    - { role: refresh_shadps4,           tags: [shadps4] }
-    - { role: install_rpcs3,             tags: [rpcs3] }
-    - { role: install_xemu,              tags: [xemu] }
-    - { role: install_hedgemodmanager,   tags: [hedgemodmanager] }
-    - { role: install_eden_cheats_manager, tags: [eden_cheats_manager] }
-    - { role: link_storage,              tags: [configure, storage] }
-    - { role: seed_configs,              tags: [configure, configs, reset_configs] }
-    - { role: scripts_in_box,            tags: [configure, scripts] }
-    - { role: backup_saves,              tags: [configure, backup_saves] }
+    - { role: check_host,                      tags: [check] }
+    - { role: create_box,                      tags: [create] }
+    - { role: bootstrap_packages,              tags: [bootstrap] }
+    - { role: refresh_shadps4,                 tags: [shadps4] }
+    - { role: install_rpcs3,                   tags: [rpcs3] }
+    - { role: install_xemu,                    tags: [xemu] }
+    - { role: install_hedgemodmanager,         tags: [hedgemodmanager] }
+    - { role: install_eden_cheats_manager,     tags: [eden_cheats_manager] }
+    - { role: install_azahar,                  tags: [azahar, never] }
+    - { role: install_xenia,                   tags: [xenia, never] }
+    - { role: link_storage,                    tags: [configure, storage] }
+    - { role: seed_configs,                    tags: [configure, configs, reset_configs] }
+    - { role: scripts_in_box,                  tags: [configure, scripts] }
+    - { role: backup_saves,                    tags: [configure, backup_saves] }
     # Opt-in roles: skipped by default, run only when the matching tag
     # is explicitly passed (e.g. --tags dlcs). These operate against
     # your specific NAS/ROM layout or make large downloads.
-    - { role: install_dlcs,              tags: [dlcs, never] }
-    - { role: switch_cheats,             tags: [cheats, never] }
-    - { role: rpcs3_per_game_configs,    tags: [rpcs3_configs, never] }
-    - { role: retroarch_extras,          tags: [retroarch, never] }
-    - { role: pcsx2_textures,            tags: [pcsx2_textures, never] }
-    - { role: install_pc_racing,         tags: [pc_racing, never] }
-    - { role: install_opencmr2,          tags: [opencmr2, never] }
-    - { role: install_gow3_pc,           tags: [gow3_pc, never] }
-    - { role: install_rygt,              tags: [rygt, never] }
-    - { role: install_rsc2,              tags: [rsc2, never] }
-    - { role: install_gt4_recomp,        tags: [gt4_recomp, never] }
-    - { role: install_mickey_donald,     tags: [mickey_donald, never] }
-    - { role: install_twine,             tags: [twine, never] }
-    - { role: install_azimuth,           tags: [azimuth, never] }
-    - { role: install_nebula,            tags: [nebula, never] }
-    - { role: install_dekui,             tags: [dekui, never] }
-    - { role: install_fukami,            tags: [fukami, never] }
-    - { role: install_project_midas,     tags: [project_midas, goldeneye, never] }
-    - { role: install_hl360_fm4,         tags: [fm4, hl360, never] }
-    - { role: install_gravity_rush,      tags: [gravity_rush, never] }
-    - { role: install_kyty_gt7,          tags: [kyty_gt7, never] }
-    - { role: install_doa2u_re,          tags: [doa2u, never] }
-    - { role: install_gt3_revisited,     tags: [gt3_revisited, never] }
-    - { role: install_gt2_pc,            tags: [gt2_pc, never] }
-    - { role: install_sotc_pc,          tags: [sotc_pc, never] }
-    - { role: install_m2emulator,        tags: [m2emulator, never] }
-    - { role: install_model1,            tags: [model1, never] }
-    - { role: install_sega_rally,        tags: [sega_rally, never] }
-    - { role: install_ridge_racer,       tags: [ridge_racer, never] }
-    - { role: install_screamer,          tags: [screamer, never] }
-    - { role: install_openbor,           tags: [openbor, never] }
-    - { role: install_starfox_enhanced,  tags: [starfox_enhanced, never] }
-    - { role: install_smw_remastered,    tags: [smw_remastered, never] }
-    - { role: install_dk64_recomp,       tags: [dk64_recomp, never] }
-    - { role: install_dkc_recomp,        tags: [dkc_recomp, never] }
-    - { role: install_lighthouse,        tags: [lighthouse, banjo, never] }
-    - { role: install_midnightclub_la,   tags: [midnightclub_la, never] }
-    - { role: install_roadrash64_recomp,  tags: [roadrash64, never] }
-    - { role: install_fzero_recomp,      tags: [fzero_recomp, never] }
-    - { role: install_vf1_recomp,        tags: [vf1_recomp, never] }
-    - { role: install_vf3_recomp,        tags: [vf3_recomp, never] }
-    - { role: install_smas_recomp,       tags: [smas_recomp, never] }
-    - { role: install_driveclub_shader_patch, tags: [driveclub, never] }
-    - { role: install_driveclub_recomp,     tags: [driveclub_recomp, never] }
-    - { role: install_perfect_dark,      tags: [perfect_dark, never] }
-    - { role: install_project_reignition, tags: [project_reignition, never] }
-    - { role: install_sonic3air,         tags: [sonic3air, never] }
-    - { role: install_sonic_sms_remake,  tags: [sonic_sms_remake, never] }
-    - { role: install_sonic2_2013,       tags: [sonic2_2013, never] }
-    - { role: install_sorr,              tags: [sorr, never] }
-    - { role: install_sor4_reignited,    tags: [sor4_reignited, never] }
-    - { role: install_prboom_plus_rt,    tags: [prboom_rt, doom_rt, never] }
-    - { role: metal_gear_master_collection, tags: [metal_gear_master_collection, never] }
-    - { role: install_re4_hd,            tags: [re4_hd, never] }
-    - { role: install_gta4_mods,         tags: [gta4_mods, never] }
-    - { role: install_alyx_novr,         tags: [alyx_novr, never] }
-    - { role: install_artofrally_mods,   tags: [artofrally_mods, never] }
-    - { role: install_alexkidddx_mods,   tags: [alexkidddx_mods, never] }
-    - { role: install_ac7_mods,          tags: [ac7_mods, never] }
-    - { role: install_wukong_mods,       tags: [wukong_mods, never] }
-    - { role: install_bloodstained_mods, tags: [bloodstained_mods, never] }
-    - { role: install_dsr_mods,          tags: [dsr_mods, never] }
-    - { role: install_eldenring_mods,    tags: [eldenring_mods, never] }
-    - { role: install_ff7remake_mods,    tags: [ff7remake_mods, never] }
-    - { role: install_ff7rebirth_mods,   tags: [ff7rebirth_mods, never] }
-    - { role: install_ff7rebirth_engine, tags: [ff7rebirth_engine, never] }
-    - { role: install_grandia_mods,      tags: [grandia_mods, never] }
-    - { role: install_mgsdelta_mods,     tags: [mgsdelta_mods, never] }
-    - { role: install_mgs3mc_mods,       tags: [mgs3mc_mods, never] }
-    - { role: install_mgs2mc_mods,       tags: [mgs2mc_mods, never] }
-    - { role: install_mgs1mc_mods,       tags: [mgs1mc_mods, never] }
-    - { role: install_rdr_mods,          tags: [rdr_mods, never] }
-    - { role: install_rdr_asi,           tags: [rdr_asi, never] }
-    - { role: install_re4r_mods,         tags: [re4r_mods, never] }
-    - { role: install_re2_mods,          tags: [re2_mods, never] }
-    - { role: install_re3_mods,          tags: [re3_mods, never] }
-    - { role: install_rerequiem_mods,    tags: [rerequiem_mods, never] }
-    - { role: install_revillage_mods,    tags: [revillage_mods, never] }
-    - { role: install_re0_mods,          tags: [re0_mods, never] }
-    - { role: install_re1hd_mods,        tags: [re1hd_mods, never] }
-    - { role: install_wrc4_mods,         tags: [wrc4_mods, never] }
-    - { role: install_robocop_mods,      tags: [robocop_mods, never] }
-    - { role: install_sekiro_mods,       tags: [sekiro_mods, never] }
-    - { role: install_txr_mods,          tags: [txr_mods, never] }
-    - { role: install_uncharted_mods,    tags: [uncharted_mods, never] }
-    - { role: install_reframework,       tags: [reframework, never] }
-    - { role: install_ue4ss,             tags: [ue4ss, never] }
-    - { role: install_sekiro_modengine,  tags: [sekiro_modengine, never] }
-    - { role: install_witcher3_mods,     tags: [witcher3_mods, never] }
-    - { role: install_wrc7_mods,         tags: [wrc7_mods, never] }
-    - { role: install_modtools,          tags: [modtools, never] }
-    - { role: steam_lib32_nvidia,        tags: [steam_lib32_nvidia, never] }
-    - { role: steam_trainers,            tags: [steam_trainers, never] }
-    - { role: steam_launch_options,      tags: [steam_launch_options, never] }
-    - { role: install_mta_shim,          tags: [mta_shim, never] }
-    - { role: install_splinter_cell_fixes, tags: [splinter_cell, never] }
-    - { role: install_render96ex,        tags: [render96ex, never] }
-    - { role: install_spaghettikart,     tags: [spaghettikart, never] }
-    - { role: install_ship_of_harkinian, tags: [ship_of_harkinian, never] }
-    - { role: install_2ship2harkinian,   tags: [two_ship2harkinian, never] }
-    - { role: install_starfox64_recomp,  tags: [starfox64_recomp, never] }
-    - { role: install_sonic_p06,         tags: [sonic_p06, never] }
-    - { role: install_wipeout_pe,        tags: [wipeout_pe, never] }
-    - { role: install_cannonball,        tags: [cannonball, never] }
-    - { role: install_parallel_launcher, tags: [parallel_launcher, never] }
-    - { role: install_triaevum,          tags: [triaevum, never] }
-    - { role: install_waverace_recomp,   tags: [waverace_recomp, never] }
-    - { role: install_sm64ds_port,       tags: [sm64ds_port, never] }
-    - { role: install_project_r,         tags: [project_r, never] }
-    - { role: install_pilotwings_recomp, tags: [pilotwings_recomp, never] }
-    - { role: install_cbfd_recomp,       tags: [cbfd_recomp, never] }
-    - { role: install_dkr_recomp,        tags: [dkr_recomp, never] }
-    - { role: install_bar_recomp,        tags: [beetle_recomp, never] }
-    - { role: install_smb_remastered,    tags: [smb_remastered, never] }
-    - { role: install_gdiffuser,         tags: [gdiffuser, never] }
-    - { role: install_mph_recomp,        tags: [mph_recomp, never] }
-    - { role: install_dklr,              tags: [dklr, never] }
-    - { role: install_unleashed_recomp,  tags: [unleashed_recomp, never] }
-    - { role: install_wwhd_recomp,       tags: [wwhd_recomp, never] }
-    - { role: install_smm2_levels,   tags: [smm2_levels, never] }
-    - { role: install_rom_patches,       tags: [rom_patches, dkc_gba_restoration, ffoae, never] }
-    - { role: install_7th_heaven,        tags: [seven_heaven, "7th_heaven", materiaforge, ffvii_7th_heaven, never] }
-    - { role: ogm_catalog,               tags: [ogm, never] }
-    - { role: desktop_apps,              tags: [configure, desktop, reset_configs] }
-    - { role: configure_esde,            tags: [configure, esde, reset_configs] }
-    - { role: shell_config,              tags: [configure, shell, reset_configs] }
-    - { role: verify,                    tags: [verify] }
+    - { role: install_dlcs,                    tags: [dlcs, never] }
+    - { role: switch_cheats,                   tags: [cheats, never] }
+    - { role: rpcs3_per_game_configs,          tags: [rpcs3_configs, never] }
+    - { role: retroarch_extras,                tags: [retroarch, never] }
+    - { role: pcsx2_textures,                  tags: [pcsx2_textures, never] }
+    - { role: install_hd_textures,             tags: [hd_textures, never] }
+    - { role: install_pc_racing,               tags: [pc_racing, never] }
+    - { role: install_gt5_master_mod,          tags: [gt5_master_mod, never] }
+    - { role: install_opencmr2,                tags: [opencmr2, never] }
+    - { role: install_gow3_pc,                 tags: [gow3_pc, never] }
+    - { role: install_rygt,                    tags: [rygt, never] }
+    - { role: install_rsc2,                    tags: [rsc2, never] }
+    - { role: install_gt4_recomp,              tags: [gt4_recomp, never] }
+    - { role: install_mickey_donald,           tags: [mickey_donald, never] }
+    - { role: install_twine,                   tags: [twine, never] }
+    - { role: install_azimuth,                 tags: [azimuth, never] }
+    - { role: install_nebula,                  tags: [nebula, never] }
+    - { role: install_dekui,                   tags: [dekui, never] }
+    - { role: install_fukami,                  tags: [fukami, never] }
+    - { role: install_project_midas,           tags: [project_midas, goldeneye, never] }
+    - { role: install_hl360_fm4,               tags: [fm4, hl360, never] }
+    - { role: install_gravity_rush,            tags: [gravity_rush, never] }
+    - { role: install_kyty_gt7,                tags: [kyty_gt7, never] }
+    - { role: install_doa2u_re,                tags: [doa2u, never] }
+    - { role: install_gt3_revisited,           tags: [gt3_revisited, never] }
+    - { role: install_gt2_pc,                  tags: [gt2_pc, never] }
+    - { role: install_sotc_pc,                 tags: [sotc_pc, never] }
+    - { role: install_m2emulator,              tags: [m2emulator, never] }
+    - { role: install_model1,                  tags: [model1, never] }
+    - { role: install_sega_rally,              tags: [sega_rally, never] }
+    - { role: install_ridge_racer,             tags: [ridge_racer, never] }
+    - { role: install_screamer,                tags: [screamer, never] }
+    - { role: install_openbor,                 tags: [openbor, never] }
+    - { role: install_starfox_enhanced,        tags: [starfox_enhanced, never] }
+    - { role: install_smw_remastered,          tags: [smw_remastered, never] }
+    - { role: install_dk64_recomp,             tags: [dk64_recomp, never] }
+    - { role: install_dkc_recomp,              tags: [dkc_recomp, never] }
+    - { role: install_lighthouse,              tags: [lighthouse, banjo, never] }
+    - { role: install_midnightclub_la,         tags: [midnightclub_la, never] }
+    - { role: install_roadrash64_recomp,       tags: [roadrash64, never] }
+    - { role: install_fzero_recomp,            tags: [fzero_recomp, never] }
+    - { role: install_vf1_recomp,              tags: [vf1_recomp, never] }
+    - { role: install_vf3_recomp,              tags: [vf3_recomp, never] }
+    - { role: install_smas_recomp,             tags: [smas_recomp, never] }
+    - { role: install_driveclub_shader_patch,  tags: [driveclub, never] }
+    - { role: install_driveclub_recomp,        tags: [driveclub_recomp, never] }
+    - { role: install_perfect_dark,            tags: [perfect_dark, never] }
+    - { role: install_project_reignition,      tags: [project_reignition, never] }
+    - { role: install_sonic3air,               tags: [sonic3air, never] }
+    - { role: install_sonic_sms_remake,        tags: [sonic_sms_remake, never] }
+    - { role: install_sonic_classic,           tags: [sonic_classic, never] }
+    - { role: install_sonic_dimensions,        tags: [sonic_dimensions, never] }
+    - { role: install_sonic_fallen_star,       tags: [sonic_fallen_star, never] }
+    - { role: install_sonic_galactic,          tags: [sonic_galactic, never] }
+    - { role: install_sonic_legends,           tags: [sonic_legends, never] }
+    - { role: install_sonic_overture,          tags: [sonic_overture, never] }
+    - { role: install_sonic_rush_rerun,        tags: [sonic_rush_rerun, never] }
+    - { role: install_sonicxg,                 tags: [sonicxg, never] }
+    - { role: install_sonic2_2013,             tags: [sonic2_2013, never] }
+    - { role: install_sorr,                    tags: [sorr, never] }
+    - { role: install_sor4_reignited,          tags: [sor4_reignited, never] }
+    - { role: install_prboom_plus_rt,          tags: [prboom_rt, doom_rt, never] }
+    - { role: install_doom64_rt,               tags: [doom64_rt, never] }
+    - { role: metal_gear_master_collection,    tags: [metal_gear_master_collection, never] }
+    - { role: install_re4_hd,                  tags: [re4_hd, never] }
+    - { role: install_gta4_mods,               tags: [gta4_mods, never] }
+    - { role: install_alyx_novr,               tags: [alyx_novr, never] }
+    - { role: install_artofrally_mods,         tags: [artofrally_mods, never] }
+    - { role: install_alexkidddx_mods,         tags: [alexkidddx_mods, never] }
+    - { role: install_ac7_mods,                tags: [ac7_mods, never] }
+    - { role: install_wukong_mods,             tags: [wukong_mods, never] }
+    - { role: install_bloodstained_mods,       tags: [bloodstained_mods, never] }
+    - { role: install_dsr_mods,                tags: [dsr_mods, never] }
+    - { role: install_eldenring_mods,          tags: [eldenring_mods, never] }
+    - { role: install_ff7remake_mods,          tags: [ff7remake_mods, never] }
+    - { role: install_ff7rebirth_mods,         tags: [ff7rebirth_mods, never] }
+    - { role: install_ff7rebirth_engine,       tags: [ff7rebirth_engine, never] }
+    - { role: install_grandia_mods,            tags: [grandia_mods, never] }
+    - { role: install_mgsdelta_mods,           tags: [mgsdelta_mods, never] }
+    - { role: install_mgs3mc_mods,             tags: [mgs3mc_mods, never] }
+    - { role: install_mgs2mc_mods,             tags: [mgs2mc_mods, never] }
+    - { role: install_mgs1mc_mods,             tags: [mgs1mc_mods, never] }
+    - { role: install_mgsvtpp_mods,            tags: [mgsvtpp_mods, never] }
+    - { role: install_rdr_mods,                tags: [rdr_mods, never] }
+    - { role: install_rdr_asi,                 tags: [rdr_asi, never] }
+    - { role: install_re4r_mods,               tags: [re4r_mods, never] }
+    - { role: install_re2_mods,                tags: [re2_mods, never] }
+    - { role: install_re3_mods,                tags: [re3_mods, never] }
+    - { role: install_rerequiem_mods,          tags: [rerequiem_mods, never] }
+    - { role: install_revillage_mods,          tags: [revillage_mods, never] }
+    - { role: install_re0_mods,                tags: [re0_mods, never] }
+    - { role: install_re1hd_mods,              tags: [re1hd_mods, never] }
+    - { role: install_wrc4_mods,               tags: [wrc4_mods, never] }
+    - { role: install_robocop_mods,            tags: [robocop_mods, never] }
+    - { role: install_sekiro_mods,             tags: [sekiro_mods, never] }
+    - { role: install_spiderman_mods,          tags: [spiderman_mods, never] }
+    - { role: install_txr_mods,                tags: [txr_mods, never] }
+    - { role: install_uncharted_mods,          tags: [uncharted_mods, never] }
+    - { role: install_reframework,             tags: [reframework, never] }
+    - { role: install_ue4ss,                   tags: [ue4ss, never] }
+    - { role: install_sekiro_modengine,        tags: [sekiro_modengine, never] }
+    - { role: install_witcher3_mods,           tags: [witcher3_mods, never] }
+    - { role: install_wrc7_mods,               tags: [wrc7_mods, never] }
+    - { role: install_modtools,                tags: [modtools, never] }
+    - { role: install_cheatengine,             tags: [cheatengine, never] }
+    - { role: steam_lib32_nvidia,              tags: [steam_lib32_nvidia, never] }
+    - { role: steam_trainers,                  tags: [steam_trainers, never] }
+    - { role: steam_launch_options,            tags: [steam_launch_options, never] }
+    - { role: install_mta_shim,                tags: [mta_shim, never] }
+    - { role: install_splinter_cell_fixes,     tags: [splinter_cell, never] }
+    - { role: install_render96ex,              tags: [render96ex, never] }
+    - { role: install_spaghettikart,           tags: [spaghettikart, never] }
+    - { role: install_ship_of_harkinian,       tags: [ship_of_harkinian, never] }
+    - { role: install_2ship2harkinian,         tags: [two_ship2harkinian, never] }
+    - { role: install_starfox64_recomp,        tags: [starfox64_recomp, never] }
+    - { role: install_sonic_p06,               tags: [sonic_p06, never] }
+    - { role: install_wipeout_pe,              tags: [wipeout_pe, never] }
+    - { role: install_cannonball,              tags: [cannonball, never] }
+    - { role: install_parallel_launcher,       tags: [parallel_launcher, never] }
+    - { role: install_triaevum,                tags: [triaevum, never] }
+    - { role: install_waverace_recomp,         tags: [waverace_recomp, never] }
+    - { role: install_sm64ds_port,             tags: [sm64ds_port, never] }
+    - { role: install_project_r,               tags: [project_r, never] }
+    - { role: install_dude,                    tags: [dude, never] }
+    - { role: install_dusk,                    tags: [dusk, never] }
+    - { role: install_mmx_regenesis,           tags: [mmx_regenesis, never] }
+    - { role: install_moon_facility,           tags: [moon_facility, never] }
+    - { role: install_opensc2k,                tags: [opensc2k, never] }
+    - { role: install_sotn_recomp,             tags: [sotn_recomp, never] }
+    - { role: install_pilotwings_recomp,       tags: [pilotwings_recomp, never] }
+    - { role: install_cbfd_recomp,             tags: [cbfd_recomp, never] }
+    - { role: install_banjotooie_recomp,       tags: [banjotooie, banjo_tooie, never] }
+    - { role: install_dkr_recomp,              tags: [dkr_recomp, never] }
+    - { role: install_bar_recomp,              tags: [beetle_recomp, never] }
+    - { role: install_smb_remastered,          tags: [smb_remastered, never] }
+    - { role: install_gdiffuser,               tags: [gdiffuser, never] }
+    - { role: install_mph_recomp,              tags: [mph_recomp, never] }
+    - { role: install_dklr,                    tags: [dklr, never] }
+    - { role: install_unleashed_recomp,        tags: [unleashed_recomp, never] }
+    - { role: install_wwhd_recomp,             tags: [wwhd_recomp, never] }
+    - { role: install_smm2_levels,             tags: [smm2_levels, never] }
+    - { role: install_rom_patches,             tags: [rom_patches, dkc_gba_restoration, ffoae, never] }
+    - { role: install_7th_heaven,              tags: [seven_heaven, "7th_heaven", materiaforge, ffvii_7th_heaven, never] }
+    - { role: ogm_catalog,                     tags: [ogm, never] }
+    - { role: desktop_apps,                    tags: [configure, desktop, reset_configs] }
+    - { role: configure_esde,                  tags: [configure, esde, reset_configs] }
+    - { role: shell_config,                    tags: [configure, shell, reset_configs] }
+    - { role: verify,                          tags: [verify] }

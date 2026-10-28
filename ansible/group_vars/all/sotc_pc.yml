@@ -9,6 +9,8 @@
 dg_sotc_repo: AjncSystem/ShadowOfTheColossus-PC
 dg_sotc_version: 0.60.6-C3
 dg_sotc_zip: "{{ dg_roms_final_root }}/PC/releases/SotC-PC-v{{ dg_sotc_version }}.zip"
+# Upstream ships a single asset name across versions; the local name carries it.
+dg_sotc_zip_url: "https://github.com/{{ dg_sotc_repo }}/releases/download/{{ dg_sotc_version }}/SotC-PC.zip"
 dg_sotc_zip_sha256: e51c629f5a36b8f28406e14b30c25d681d91de49f216ff7071245c3aa405fbe0
 
 # Merged EU 1.01 game folder (base 1.00 PKG + 1.01 update PKG, extracted with

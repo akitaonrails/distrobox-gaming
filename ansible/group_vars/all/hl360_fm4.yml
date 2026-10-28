@@ -15,9 +15,10 @@ dg_hl360_asset_sha256: 402c55a08f5880f636d5106945cf4bcea6a791231bef8bf74830d5434
 # Supported inputs (upstream): Forza Motorsport 4 (USA) Rev 1, multilanguage
 # Play Disc — title ID 4D530910, media ID 33E7B39F, XEX 0.0.0.14.
 # The installer hashes the whole ISO; these are the exact development images.
-dg_hl360_disc1: "{{ dg_roms_final_root }}/xbox360/Forza Motorsport 4 (USA) (En,Ja,Fr,De,Es,It,Nl,Pt,Zh,Ko,Pl,Ru,Cs,Hu) (Disc 1) (Play Disc).iso"
+# The supported USA Rev 1 set (redump 113180/113181) lives in its own folder.
+dg_hl360_disc1: "{{ dg_roms_final_root }}/xbox360/x360-fm4-usa-rev-1/Forza Motorsport 4 (USA) (En,Ja,Fr,De,Es,It,Nl,Pt,Zh,Ko,Pl,Ru,Cs,Hu) (Disc 1) (Play Disc) (Rev 1)/Forza Motorsport 4 (USA) (En,Ja,Fr,De,Es,It,Nl,Pt,Zh,Ko,Pl,Ru,Cs,Hu) (Disc 1) (Play Disc) (Rev 1).iso"
 dg_hl360_disc1_md5: "2470358250b8566bf5ddc3aaf1b76c68"
-dg_hl360_disc2: "{{ dg_roms_final_root }}/xbox360/Forza Motorsport 4 (USA) (En,Ja,Fr,De,Es,It,Nl,Pt,Zh,Ko,Pl,Ru,Cs,Hu) (Disc 2) (Content Install Disc).iso"
+dg_hl360_disc2: "{{ dg_roms_final_root }}/xbox360/x360-fm4-usa-rev-1/Forza Motorsport 4 (USA) (En,Ja,Fr,De,Es,It,Nl,Pt,Zh,Ko,Pl,Ru,Cs,Hu) (Disc 2) (Content Install Disc) (Rev 1)/Forza Motorsport 4 (USA) (En,Ja,Fr,De,Es,It,Nl,Pt,Zh,Ko,Pl,Ru,Cs,Hu) (Disc 2) (Content Install Disc) (Rev 1).iso"
 dg_hl360_disc2_md5: "9915d1adaabf3b58441651a70e5e8dbe"
 
 dg_hl360_install_dir: "{{ dg_box_home }}/tools/hl360-fm4"

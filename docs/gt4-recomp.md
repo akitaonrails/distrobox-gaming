@@ -1,13 +1,15 @@
 # Gran Turismo 4 Recompiled
 
 Optional [moesuito/gt4-staticrecomp](https://github.com/moesuito/gt4-staticrecomp)
-v1.2.3 Windows build, run in the `gaming` box with Wine. Install from
-`ansible/` with `ansible-playbook install-gt4-recomp.yml`; the `gt4_recomp`
-tag also runs it from `site.yml`. The role downloads pinned release files,
-extracts them to `dg_gt4r_release`, reconstructs the executable from the
-owned ISO with upstream `gt4l-disc` at a pinned commit, and installs
-`gaming-gt4-recomp.desktop`. The ISO stays in place and saves live under
-`dg_gt4r_root/data/sessions/default`.
+**v1.3.0-rc6** portable build, its standalone `game/gt4.exe` run in the `gaming`
+box with Wine. Install from `ansible/` with `ansible-playbook
+install-gt4-recomp.yml`; the `gt4_recomp` tag also runs it from `site.yml`.
+The role downloads the pinned portable ZIP and GSdx package (reusing a staged
+copy in `PC/releases` when it is already there), extracts into
+`dg_gt4r_130_release`, stages the prepared executable built once from the owned
+ISO with upstream `gt4l-disc`, seeds the memory card, and installs
+`gaming-gt4-recomp.desktop`. Saves live in the port's own card under
+`dg_gt4r_130_release/data/memcards/gt4.ps2`.
 
 ## Disc compatibility and Spec II
 

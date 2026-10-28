@@ -19,14 +19,14 @@
       GT4Recomp needs the USA retail Gran Turismo 4 image at dg_gt4r_iso
       (sha256 {{ dg_gt4r_iso_sha256 }}).
 
-- name: Verify the staged v1.3.0 portable ZIP
-  ansible.builtin.stat:
-    path: "{{ dg_gt4r_130_zip }}"
-    checksum_algorithm: sha256
-  register: _gt4r_130_zip
-- ansible.builtin.assert:
-    that: _gt4r_130_zip.stat.checksum | default('') == dg_gt4r_130_sha256
-    fail_msg: "Staged v1.3.0 ZIP missing or wrong sha256 at {{ dg_gt4r_130_zip }}."
+# Self-healing: a staged copy in PC/releases is reused, a missing or corrupt
+# one is fetched from the pinned upstream asset.
+- name: Fetch the pinned v1.3.0 portable ZIP
+  ansible.builtin.get_url:
+    url: "{{ dg_gt4r_130_url }}"
+    dest: "{{ dg_gt4r_130_zip }}"
+    checksum: "sha256:{{ dg_gt4r_130_sha256 }}"
+    mode: "0644"
 
 - name: Create the GT4Recomp directories
   ansible.builtin.file:
@@ -42,6 +42,29 @@
     - "{{ dg_gt4r_130_release }}/game/gs"
     - "{{ dg_gt4r_prefix }}"
     - "{{ dg_box_home }}/bin"
+
+# GT4 reads pads through SDL3; WineBus has to hand it SDL devices instead of
+# raw hidraw/evdev, exactly like the pc-racing games. Query first so a repeat
+# run reports no change (the repo's registry tasks that always rewrite are the
+# source of the "wine-registry churn" noted in AGENTS.md).
+- name: Route controllers through SDL (winebus)
+  ansible.builtin.shell: |
+    {{ dg_in_box }} bash -c '
+      export WINEPREFIX="{{ dg_gt4r_prefix }}"
+      want=$(printf "0x%x" {{ item.value }})
+      cur=$(wine reg query "HKCU\\Software\\Wine\\WineBus" /v "{{ item.name }}" 2>/dev/null \
+            | awk "/{{ item.name }}/ {print \$NF}" | tr -d "\r")
+      if [ "$cur" != "$want" ]; then
+        wine reg add "HKCU\\Software\\Wine\\WineBus" /v "{{ item.name }}" /t REG_DWORD /d "{{ item.value }}" /f >/dev/null
+        wineserver -w || true
+        printf "%s\n" changed
+      fi
+    '
+  loop: "{{ dg_gt4r_winebus_registry }}"
+  loop_control:
+    label: "{{ item.name }}={{ item.value }}"
+  register: _gt4r_winebus
+  changed_when: "'changed' in _gt4r_winebus.stdout"
 
 - name: Extract the v1.3.0 portable release
   ansible.builtin.command:
@@ -100,6 +123,13 @@
       No PCSX2 card at {{ dg_gt4r_memcard_seed }} — GT4 will start without a
       memory card (no saves) until one is placed at {{ dg_gt4r_memcard }}.
   when: not _gt4r_card_seed.stat.exists
+
+- name: Fetch the pinned GSdx renderer package
+  ansible.builtin.get_url:
+    url: "{{ dg_gt4r_gs_url }}"
+    dest: "{{ dg_gt4r_cache }}/{{ dg_gt4r_gs_name }}"
+    checksum: "sha256:{{ dg_gt4r_gs_sha256 }}"
+    mode: "0644"
 
 - name: Ensure the GSdx renderer (gt4-gs.exe) is present
   ansible.builtin.unarchive:
