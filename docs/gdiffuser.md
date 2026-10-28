@@ -9,7 +9,7 @@ interpolation, texture-pack modding, ghost library and more. Upstream:
 installed 2026-08-11.
 
 - **Distribution:** a prebuilt **native Linux** binary (no Wine). Pinned to
-  `dg_gdiffuser_version` (`v1.0.1`), fetched from the GitHub release by sha256.
+  `dg_gdiffuser_version` (`v1.1.0`), fetched from the GitHub release by sha256.
 - **You must provide three files (all required).** G-Diffuser ships no game
   data — it builds its `.o2r` archives from your dumps on first launch.
 

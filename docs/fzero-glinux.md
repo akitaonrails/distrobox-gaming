@@ -82,7 +82,8 @@ reference pad:
 ```
 [GCPad1]
 Device = SDL/0/8BitDo Ultimate 2 Wireless Controller
-Buttons/A|B|X|Y, Z = Shoulder R | Shoulder L | Back, Start
+Buttons/A|B|X|Y = the face buttons, Z = Shoulder R | Shoulder L | Back,
+Start
 Main Stick / C-Stick = Left/Right X±, Y± (deadzone 5.00)
 Triggers L/R + L-Analog/R-Analog (deadzone 5.00, threshold 85.00)
 D-Pad, Rumble/Motor

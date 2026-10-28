@@ -53,6 +53,14 @@ note the launcher persists its config BESIDE THE EXECUTABLE, not the cwd.
 (F7 pause, F8 step). Update = bump `ref`
 in `dg_dkc_games` (checkout is ref-gated; the build re-runs).
 
+## Graphics
+
+The role keeps both DKC2/DKC3 launcher configs at the ceiling for this box:
+`Fullscreen=1`, `AspectIndex=1` (the launcher's "16:9 (Widescreen)" entry) and
+`Widescreen=1` for the widened rendering. `WindowScale` only applies to windowed
+mode. DKC1's older SDL host has no launcher config; it opens its window from the
+host's own defaults.
+
 ## Saves, save states, and pad chords
 
 All three keep the game's built-in saves (cartridge SRAM, e.g. Candy's in

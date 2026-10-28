@@ -15,7 +15,7 @@ cd ansible && ansible-playbook install-xerenge.yml
 |---|---|
 | Release | `v0.4.8`, `Burnout_Revenge_Installer-x86_64.AppImage` (pinned + sha256) |
 | Disc | `ROMS_FINAL/xbox360/Burnout Revenge [NTSCU].iso` (USA) |
-| Installed tree | `~/.local/share/../tools/xerenge/releases/v0.4.8/Burnout Revenge/` (`bin/`, `game/` ≈ 3.6 GB, `xerenge.conf`) |
+| Installed tree | `tools/xerenge/releases/v0.4.8/Burnout Revenge/` in the box home (`bin/`, `game/` ≈ 3.6 GB, `xerenge.conf`) |
 | Launcher | `bin/xerenge` → `burnout_revenge` |
 | Entry | Walker/menu **Burnout Revenge · Xerenge** |
 

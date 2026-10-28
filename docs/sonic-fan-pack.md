@@ -185,10 +185,10 @@ Launcher `bin/sonic-classic`, Walker "Sonic Classic". Install:
 `ansible-playbook install-sonic-classic.yml`.
 
 **Saves:** progress is a loose `ringdata.sav` (+ time-attack `Ghosts/`) next to
-the exe — MMF2 writes to the app dir. `backup-saves` mirrors directories only,
-so this is **not** in `dg_save_sets`; the rar ships a default `ringdata.sav`, so
-a from-scratch rebuild resets progress. Copy `ringdata.sav` + `Ghosts/` aside by
-hand to keep a run across a rebuild.
+the exe — MMF2 writes to the app dir. Both are covered by `backup-saves` as the
+`sonic-classic` set (a `file:` source plus the `Ghosts/` directory); the rar
+ships a default `ringdata.sav`, so a from-scratch rebuild without the restore
+resets progress.
 
 ## Banjo-Kazooie
 

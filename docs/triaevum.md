@@ -4,7 +4,7 @@
 recompilation of *The Legend of Zelda: Ocarina of Time 3D*** (the 3DS remake),
 with a modern NRI/Vulkan renderer, cel/toon shading, real widescreen, 60/90 FPS
 visual interpolation, a single-screen TopScreen HUD, and (the author's words)
-"a lot of grass". Opt-in role; currently pinned to `v0.6.0-alpha.2c`.
+"a lot of grass". Opt-in role; currently pinned to `v0.8.0-beta.1.2`.
 
 The current install uses the Windows x64 alpha under **Wine 11 + DXVK/vkd3d-proton** on the RTX. It works, but
 it is early (upstream has only tested through the title/file-select on USA).

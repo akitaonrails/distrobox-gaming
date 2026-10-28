@@ -28,6 +28,13 @@ a big-endian `.z64` (kept next to the tarball on the NAS) and the binary's
 binary is distributed prebuilt; the ROM supplies the original assets at
 runtime.
 
+## Graphics
+
+`~/.local/share/Pilotwings64Recomp/graphics.json` is the port's settings file.
+The role pins `msaa_option` to **MSAA8X** (top of its 2X/4X/8X set);
+`res_option=Auto` follows the fullscreen window and `ar_option=Expand` gives the
+widescreen HUD-at-the-edges presentation.
+
 ## Install / run / revert
 
 ```sh

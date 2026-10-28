@@ -3,7 +3,7 @@
 [some-scurvy-dog/banjo-tooie-scurvy-dog-port](https://github.com/some-scurvy-dog/banjo-tooie-scurvy-dog-port)
 is an **N64Recomp + N64ModernRuntime + RT64 static recomp** PC port of
 Banjo-Tooie (NTSC-U 1.0), built on the Banjo-Tooie decompilation. Opt-in
-role; updated 2026-10-23 to `v0.1.0-alpha.4.3`. This is still an upstream
+role; updated to `v0.1.0-alpha.4.5`. This is still an upstream
 prerelease. The renamed executable is installed in a versioned folder so the
 old Alpha 3 build remains available for rollback; the external profile keeps
 saves, settings and the verified ROM. Alpha 4.3 fixes distant-geometry flicker

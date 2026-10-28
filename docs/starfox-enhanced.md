@@ -39,12 +39,22 @@ the PAK the option reads `NOT FOUND`).
 in Walker. Opens on DP-1 on the RTX (GLX/nvidia pinned). The pre-game setup
 selects `EXPERIENCE` (Original / Star Fox EX), pace, render FPS, display mode,
 renderer (GPU default), MSU-1, rumble, and controller remapping. **8BitDo
-works natively** (SDL, with rumble). **Select+Start exits.** Saves live in
-`Documents/Star Fox Enhanced/` (EX SRAM: `starfox-ex.srm`).
-`configure-pc-ports.yml` sets a one-time 120 FPS presentation and heavy AA,
-enhanced graphics and medium model smoothing. The existing render scale is
-already the maximum 4× supported by this installed release; its rumble setting
-is preserved.
+works natively** (SDL, with rumble). **Select+Start exits.**
+
+Saves live **beside the executable** — this is the native build, not the old
+Wine one, so `Documents/Star Fox Enhanced/` no longer exists. EX SRAM is written
+to `tools/starfox-enhanced/game/starfox-ex.srm`, and `backup_saves` mirrors that
+file.
+
+`ansible-playbook configure-pc-ports.yml` applies the one-time baseline to the
+port's own setup file (`pregame.cfg`, space-separated `KEY VALUE`): fullscreen,
+120 FPS presentation, AA level 3, enhanced graphics on, render scale 3 (this
+release's 4× maximum), RTX lighting on, model smoothing 2 (medium), rumble on,
+MSU-1 off. The effect toggles (bloom, HDR,
+enhanced shadows, chromatic aberration) are deliberately **off** — they are
+stylistic post effects this port adds, not higher-fidelity rendering. The file
+is the port's own settings surface: change it in the setup screen or edit the
+keys directly.
 
 Updated to `v0.0.8.8.1` on 2026-10-23. Updating: bump `dg_sfe_version` + `dg_sfe_asset_sha256` (from the release
 `SHA256SUMS.txt`), stage the new zip on the NAS, re-run (extract is

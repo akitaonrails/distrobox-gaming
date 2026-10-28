@@ -1,7 +1,7 @@
 # DriveClub Recomp
 
 [OverkillLabs3/driveclub-recomp](https://github.com/OverkillLabs3/driveclub-recomp)
-v0.3.1 is staged as an optional Windows runtime alongside the working shadPS4
+v0.3.2 is staged as an optional Windows runtime alongside the working shadPS4
 Driveclub installation. The pinned release ZIP is stored under
 `dg_roms_final_root/PC/`; `install-driveclub-recomp.yml` extracts it to
 `dg_box_home/tools/driveclub-recomp` without copying or changing game data.
@@ -15,7 +15,7 @@ separate `dg_dcr_source_root/dump/` subdirectories. Each PKG's original
 The role recognizes them and renders a **DriveClub Recomp** desktop entry.
 The original EU `CUSA00003` shadPS4 installation remains untouched.
 
-**2026-10-23 update:** v0.3.1 replaces the program and runtime files over the
+**2026-10-23 update:** v0.3.1 replaced the program and runtime files over the
 existing install. Its release notes describe fixes for race-exit hangs,
 rendering errors, and Wine/Proton two-thread defaults, plus DLSS/FSR upscaling
 options. The role retains `launcher.ini`, `data/user`, `mods/`, logs, and the
@@ -36,10 +36,10 @@ The Tour events stuck on "Downloading" after the tutorial are upstream issue #95
 fixed in 0.3.0 ("endless Downloading on every track and car after the tutorial").
 0.2.4 also fixed the exact crash this box hit ("read access to
 0000000000000000 at guest offset 0x64db13"), the career event-start freeze
-(#23/#24/#49) and quiet stereo audio. The role now pins **0.3.1**, which adds
-DLSS/FSR **upscaling**, HDR10, graphics detail/effects options, a Detail tab,
-wheel support and VRR pacing. The operator's profile (archived during
-diagnosis) was restored — the bug was runtime-side, not save corruption.
+(#23/#24/#49) and quiet stereo audio. 0.3.1 added DLSS/FSR **upscaling**, HDR10,
+graphics detail/effects options, a Detail tab, wheel support and VRR pacing; the
+role now pins **0.3.2**. The operator's profile (archived during diagnosis) was
+restored — the bug was runtime-side, not save corruption.
 
 **2026-10-18: crash after the intro, diagnosed and fixed.** The first
 hands-on run of v0.2.1 crashed right after the intro (guest NULL read at

@@ -33,6 +33,14 @@ anyway, verifies the sha1, and keeps the `.z64` next to the tarball. Asset-only
 ROM hacks (e.g. an uncensored patch) also work — load them via the launcher's
 **Add ROM**; code-changing hacks and other regions are refused upstream.
 
+## Graphics
+
+`graphics.json` in the config dir is the port's own settings file (also editable
+from its in-game menu). The role pins `msaa_option` to **MSAA8X**, the top of the
+2X/4X/8X set it offers; `res_option=Auto` already follows the fullscreen window,
+and `wm_option=Fullscreen` / `ar_option=Expand` give fullscreen widescreen. The
+high-precision-framebuffer option (`hpfb_option`) stays at the port's default.
+
 ## Install / run / revert
 
 ```sh

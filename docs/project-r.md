@@ -26,6 +26,14 @@ Input is **gamepad/wheel only** — keyboard and mouse are not supported yet, so
 do the setup with the 8BitDo. Setup state + config live in
 `~/.config/ProjectR/project-r.toml` in the box (`[assets.setup_complete]`).
 
+## Display
+
+The port writes `~/.config/ProjectR/project-r.toml` (`[display]`) on first run
+and the in-game menu edits it. It already runs
+`mode = "full_screen_borderless"` with 4× MSAA and 16× anisotropy; the role
+keeps `screen_width`/`screen_height` at **3840×2160** — the port's own default
+was a 2560×1440 window.
+
 ## Install / run / revert
 
 ```sh

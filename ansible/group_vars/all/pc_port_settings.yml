@@ -7,7 +7,7 @@ dg_pc_port_unleashed_fps: 120
 dg_pc_port_conker_graphics:
   wm_option: Fullscreen
   res_option: Auto
-  msaa_option: MSAA4X
+  msaa_option: MSAA8X   # the port offers 2X/4X/8X; 8X is free on the 5090
 
 dg_pc_port_roadrash_graphics:
   wm_option: Fullscreen

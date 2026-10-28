@@ -83,6 +83,14 @@ does for SNES VC titles (hcs's LZH8 decoder + Bryan Cain's BRR sample restore):
 
 3. Copy the verified `.sfc` to the NAS path above.
 
+## Graphics
+
+`config.ini` is the host's settings file. Under `[Graphics]`, `Fullscreen = 1`
+is desktop fullscreen (0 windowed, 2 exclusive mode change) and the role keeps
+it there; `WindowSize = Auto` follows the 4K display, and `[KeyMap] Fullscreen =
+Alt+Return` stays the toggle. Note the two `Fullscreen` keys are different
+settings in different sections.
+
 ## How it works
 
 - Downloads the pinned `SuperMarioAllStars-Linux.tar.gz` (sha256 in

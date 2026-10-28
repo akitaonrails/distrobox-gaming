@@ -27,7 +27,7 @@ the launcher, desktop entry and install dir; your ROM is untouched).
 
 The role (see `group_vars/all/lighthouse.yml`):
 
-- downloads the pinned `1.2.0` AppImage (SHA256-pinned) into
+- downloads the pinned `1.2.1` AppImage (SHA256-pinned) into
   `tools/lighthouse/cache/` and installs it into `tools/lighthouse/current/`
   without deleting the generated data or existing controller database;
 - seeds the **baserom next to the appimage** as `baserom.us.v10.z64`, extracted

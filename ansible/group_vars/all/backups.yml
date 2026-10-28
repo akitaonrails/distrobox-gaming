@@ -117,7 +117,8 @@ dg_save_sets:
   - { name: opencmr2,            src: ".local/share/OpenCMR2" }
   - { name: opensc2k,            src: ".local/share/godot/app_userdata/OpenSC2K/cities" }
   - { name: sonicxg,             src: ".config/Sonic_XG" }
-  - { name: sonic-classic,       src: "file:Games/sonic-classic/S_Classic1Rev03_FULL/ringdata.sav" }
+  - { name: sonic-classic,       src: ["file:Games/sonic-classic/S_Classic1Rev03_FULL/ringdata.sav",
+                                       "Games/sonic-classic/S_Classic1Rev03_FULL/Ghosts"] }
   - { name: sonic-dimensions,    src: "file:Games/sonic-dimensions/Sonic Dimensions/SaveData.sav" }
   - { name: sonic2-2013,         src: ["file:Games/sonic2-2013/SData.bin", "file:Games/sonic2-2013/UData.bin"] }
   - { name: cannonball,          src: ["file:Games/cannonball/highscores.xml", "file:Games/cannonball/play_stats.xml",

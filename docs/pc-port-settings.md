@@ -11,11 +11,18 @@ resolution in a fullscreen RT64 port uses the display's size, so an explicit
 3840×2160 value is unnecessary for those ports. Higher presentation rates do
 not override a game's simulation clock.
 
+> This playbook covers the ports below only. Ports whose role owns the
+> setting seed it directly instead — Sonic 2 (2013) at 9× integer scale,
+> DKC2/DKC3 at 16:9 fullscreen, Super Mario All-Stars at desktop fullscreen,
+> Project R and God of War III at 4K, F-ZERO GX at 1440p + 4× MSAA, and FM4's
+> whole settings baseline; each is documented on its own page.
+
 | Port | External display setting checked | Result |
 | --- | --- | --- |
 | Fukami | `~/.local/share/Fukami/fukami.ini` | Fullscreen 3840×2160, 6× internal scale, 16× anisotropic, high draw distance; native SDL gamepad and rumble. The game's normal ~60 Hz pacing remains enabled. |
 | DekUI | `user/config/qt-config.ini` | 10× internal scale and the detected 8BitDo SDL controller profile. `frame_limit=100` is the emulation-speed percentage, not a 100 FPS target; upstream still lists 60 FPS as planned. VSync remains enabled. |
-| Conker and Road Rash 64 Recompiled | RT64 `graphics.json` | Fullscreen, native-resolution Auto, 4× MSAA. SDL controller support remains intact. |
+| Conker Recompiled | RT64 `graphics.json` | Fullscreen, native-resolution Auto, **8× MSAA** (the port offers 2×/4×/8×). SDL controller support remains intact. |
+| Road Rash 64 Recompiled | RT64 `graphics.json` | Fullscreen, native-resolution Auto, 4× MSAA, maximum LOD, extended horizon haze, 60 FPS. The port's own menu holds the MSAA choice. |
 | Ship of Harkinian | `shipofharkinian.json` | Fullscreen; advanced resolution preset raised from 1440 to 2160 vertical pixels. Existing SDL button and stick mappings are preserved. |
 | 2Ship2Harkinian, Starship, SpaghettiKart | Port JSON beside the executable | Fullscreen on the 4K display; their existing input settings are preserved. |
 | G-Diffuser | `gdiffuser.cfg.json` | Fullscreen on the 4K display, interpolation matched to display refresh while simulation remains at 60 Hz; the separate 60 Hz frame pacer stays off. Native SDL controller settings are preserved. |
