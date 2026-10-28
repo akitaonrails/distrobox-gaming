@@ -2,7 +2,8 @@
 # restore-saves — pull emulator + PC-port save data back from the NAS backup.
 #
 # The counterpart to backup-saves. Reads the same manifest and rsyncs each
-# $DG_BACKUP_ROOT/<name>/ back to its box location. Intended for a from-scratch
+# $DG_BACKUP_ROOT/<name>/ back to its original location (a directory, or the
+# parent directory of a single-file source). Intended for a from-scratch
 # distrobox remount: run it once after `ansible-playbook site.yml`.
 #
 # SAFE BY DEFAULT: uses --ignore-existing, so a save already present on the box
@@ -39,17 +40,26 @@ done
 
 TAB="$(printf '\t')"
 n=0; restored=0; absent=0
-while IFS="$TAB" read -r name rel; do
+while IFS="$TAB" read -r name kind rel; do
   case "$name" in ''|\#*) continue ;; esac
   n=$((n + 1))
   bak="$DG_BACKUP_ROOT/$name"
   if [ ! -d "$bak" ]; then
     absent=$((absent + 1)); printf '  –  %s (nothing in backup)\n' "$name"; continue
   fi
-  dst="$HOME/$rel"
+  case "$rel" in
+    /*) target="$rel" ;;
+    *)  target="$HOME/$rel" ;;
+  esac
+  case "$kind" in
+    dir)  dst="$target" ;;
+    file) dst="$(dirname "$target")" ;;
+    *)    echo "restore-saves: bad manifest kind '$kind' for $name" >&2; exit 1 ;;
+  esac
   mkdir -p "$dst"
+  # shellcheck disable=SC2086  # $MODE/$DRY are empty or one flag each
   rsync -a $MODE $DRY "$bak/" "$dst/"
   restored=$((restored + 1)); printf '  \342\234\223  %s\n' "$name"
 done < "$MANIFEST"
 
-echo "restore-saves: $restored restored, $absent absent (of $n sets)${DRY:+  [dry-run]}${MODE:+  [${MODE#--}]}"
+echo "restore-saves: $restored restored, $absent absent (of $n sources)${DRY:+  [dry-run]}${MODE:+  [${MODE#--}]}"

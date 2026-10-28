@@ -1,6 +1,16 @@
 # Managed by the backup_saves role — do not edit by hand.
-# Save sets: <name><TAB><path relative to the box $HOME>.
+# Save sets: <name><TAB><kind><TAB><path>
+#   kind  dir  — mirror the directory's contents into <name>/
+#         file — copy that one file into <name>/
+#   path  relative to the box $HOME, or absolute for the native ports that run
+#         on the host and keep their saves in the host home.
+# One set may list several sources; they all mirror into the same <name> dir.
 # Edit dg_save_sets in group_vars/all/backups.yml and re-run the role.
 {% for s in dg_save_sets %}
-{{ s.name }}{{ "\t" }}{{ s.src }}
+{% set sources = s.src if (s.src is not string and s.src is iterable) else [s.src] %}
+{% for src in sources %}
+{% set kind = 'file' if src.startswith('file:') else 'dir' %}
+{% set path = src.split(':', 1)[1] if src.startswith(('file:', 'dir:')) else src %}
+{{ s.name }}{{ "\t" }}{{ kind }}{{ "\t" }}{{ path }}
+{% endfor %}
 {% endfor %}

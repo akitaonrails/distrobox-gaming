@@ -235,6 +235,29 @@ before wiring anything up, and make the pad work as part of the role:
   `docs/pc-racing.md` for the Wine racing titles — including anything that can
   only be changed in-game.
 
+## Save Data: Every Install Registers Its Paths
+
+`dg_save_sets` in `ansible/group_vars/all/backups.yml` is the only place the
+backup service learns what to mirror (see `docs/save-backups.md`). An install is
+not finished until its save data is listed there — a game whose saves are
+missing from that list is silently unprotected.
+
+- **Find where the game actually writes**, not where the README says: run it
+  once and look for the config dir, user-data dir, memory card, or loose
+  `.sav`/`.srm`/`.eep`/`.bin`/`.xml` save files beside the executable.
+- **Add a `dg_save_sets` entry**: a unique `name` (no spaces) and `src`, which
+  is a box-home-relative path, an absolute path for the native ports that run
+  on the *host* rather than in the box, or `file:` for one loose save file. A
+  set may list several sources and they all mirror into the same `<name>`
+  directory.
+- **Point at save data only.** Leave out what a rebuild re-derives — extracted
+  discs, texture packs, shader caches, ROM caches. Dusk keeps 6 GB of textures
+  beside its 36 KB memory card; Fukami a 461 MB extracted disc beside `mc/`.
+- **Verify both ends**: re-run `ansible-playbook site.yml --tags backup_saves`
+  to re-render the manifest, then
+  `distrobox enter gaming -- backup-saves --dry-run` and confirm the new set
+  appears (or reports "no local data" until the game is first played).
+
 ## Documentation & Inventory Updates
 
 Every new game install (and every patch, move, or removal of a game) must land

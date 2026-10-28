@@ -82,15 +82,33 @@ normal run never touches saves.
 ## What's covered
 
 The inventory is **data-driven** — `dg_save_sets` in
-`ansible/group_vars/all/backups.yml`, one `{name, src}` per directory (src is
-relative to the box `$HOME`). Currently: RetroArch (saves + states), PCSX2,
-DuckStation, Dolphin (GC/Wii/states), Flycast VMU, xemu, RPCS3 (`dev_hdd0/home`),
-PPSSPP, Azahar (sdmc + nand), melonDS, Eden (`nand/user/save` only — **not** the
-79 GB nand), Cemu, shadPS4 savedata, Supermodel NVRAM, Xenia content (per-title
+`ansible/group_vars/all/backups.yml`, one entry per save set. An entry is a
+`name` plus `src`, and `src` may be:
+
+| Form | Meaning |
+|---|---|
+| `.config/Game/x` | directory, relative to the box `$HOME` (the box home is the `gaming` distrobox's home) |
+| `/home/you/.local/share/Game` | absolute — the native ports that run on the **host** (Fukami, Takedawn) keep saves in the host home |
+| `file:.local/share/Game/save.bin` | one loose save file (EEPROM/SRAM/`.sav`/`.xml` beside the executable) |
+| `[a, b, file:c]` | several sources; they all mirror into the same `<name>` directory |
+
+The rendered manifest is `save-manifest.tsv` with
+`name<TAB>kind<TAB>path` rows, and both helpers understand `kind`.
+
+Currently covered: RetroArch (saves + states), PCSX2, DuckStation, Dolphin
+(GC / Wii / GBA / states), Flycast VMU, xemu, RPCS3 (`dev_hdd0/home` and
+`dev_hdd0/savedata`), PPSSPP, Azahar (sdmc + nand), melonDS, Eden
+(`nand/user/save` + `nand/system/save`, **not** the 79 GB nand), Cemu, shadPS4
+(`home/<uid>/savedata`), Supermodel and Model 1 NVRAM, Xenia content (per-title
 `00000001` savegames + installed TUs/DLC; the big DLC entries are symlinks and
-stay symlinks), and the native ports/recomps/fan games (Ship of Harkinian &
-family, DK64 / GoldenEye / Unleashed recomps, Perfect Dark, DUDE, PrBoom+ RT,
-Sonic 3 A.I.R., Star Fox Enhanced, SMW Remastered, SoRR, …).
+stay symlinks), and the native ports/recomps/fan games — Ship of Harkinian,
+2Ship, Lighthouse, SpaghettiKart, DK64/DKC/DKR/Conker/Banjo-Tooie recomps,
+GoldenEye, Unleashed, Perfect Dark, DUDE, Doom 64 RT, PrBoom+ RT, SMAS, SoTN,
+SoH-family, Fukami, Takedawn, Xerenge-adjacent ports, Sonic 3 A.I.R. /
+2 (2013) / Classic / Dimensions / P-06 / Fallen Star, SMW & SMB Remastered,
+Star Fox 64 / Enhanced / Pilotwings / MPH-adjacent recomps, SoRR, CannonBall,
+OpenCMR2, OpenSC2K, Project R, SOtC, Midnight Club LA, Road Rash 64, F-Zero
+(SNES + GLINUX), WipEout-adjacent, and the rest of the 2026-10-28 audit.
 
 The `backup_saves` role renders the manifest to
 `~/.config/distrobox-gaming/save-manifest.tsv` and the root to `backup.env`,
@@ -107,9 +125,16 @@ as the library grows.
 
 ## Notes / gaps
 
-- Entries must be **directories**. All current ones are.
-- **Wine/Proton game saves** (PC racing, DriveClub, etc.) live inside their
-  wineprefixes' `drive_c/users/.../Documents` / `Saved Games` and are **not**
-  covered yet — add specific prefix subpaths to `dg_save_sets` if you want them.
+- Entries may be directories or single files (see the table above); a set can
+  list several sources.
+- **Wine/Proton game saves** (PC racing, DriveClub, Azimuth's Forza titles,
+  WipEout PE, Mickey & Donald) live inside their wineprefixes'
+  `drive_c/users/.../Documents` / `Saved Games` and are **not** covered yet —
+  add specific prefix subpaths to `dg_save_sets` if you want them.
+- Games that have never been played have no save path on disk yet: their sets
+  report "no local data" until the first save (PPSSPP, Lighthouse, 2Ship,
+  F-Zero GLINUX memory card, DKC1). **Metroid Prime Hunters Recomp** and
+  **RalliSport Challenge 2** have no save location identified yet — revisit
+  after a first playthrough instead of guessing one.
 - The helpers need the NAS mounted; they abort cleanly if `dg_backup_root`
   isn't reachable.

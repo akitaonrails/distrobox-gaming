@@ -49,8 +49,12 @@ dg_save_sets:
   - { name: melonds,              src: ".config/melonDS" }
   - { name: eden-saves,           src: ".local/share/eden/nand/user/save" }
   - { name: cemu,                 src: ".local/share/Cemu" }
-  - { name: shadps4-savedata,     src: ".local/share/shadPS4/savedata" }
+  - { name: shadps4-savedata,     src: ".local/share/shadPS4/home" }   # per-user <uid>/savedata lives under home/
   - { name: supermodel-nvram,     src: ".supermodel/NVRAM" }
+  - { name: dolphin-gba-saves,    src: ".local/share/dolphin-emu/GBA/Saves" }
+  - { name: rpcs3-savedata,       src: ".config/rpcs3/dev_hdd0/savedata" }
+  - { name: eden-system-save,     src: ".local/share/eden/nand/system/save" }
+  - { name: model1-nvram,         src: ".local/share/mame-model1" }
   # Xenia: whole content tree (per-title 00000001 = savegames, plus installed
   # TUs/DLC; the big FM DLC entries are symlinks and stay symlinks under -a).
   - { name: xenia-content,        src: "tools/xenia-manager/current/Emulators/Xenia Canary/content" }
@@ -60,7 +64,8 @@ dg_save_sets:
   - { name: lighthouse-save,      src: "tools/lighthouse/current/Save" }
   - { name: 2ship-save,           src: "tools/2ship2harkinian/current/Save" }
   - { name: starfox64-recomp,     src: ".config/Starfox64Recompiled/saves" }  # Star Fox 64 Recompiled EEPROM saves (N64Recomp app folder; ROM/install re-derived on rebuild)
-  - { name: spaghettikart-save,   src: "tools/spaghettikart/current/Save" }
+  - { name: spaghettikart-save,   src: ["file:tools/spaghettikart/current/default.sav",
+                                        "file:tools/spaghettikart/current/controllerPak_header.sav"] }
   - { name: dk64-recomp,          src: ".config/DK64Recompiled" }
   - { name: project-midas,       src: ".local/share/ProjectMidas" }
   - { name: hl360-fm4,           src: ".local/share/hl360-fm4" }
@@ -76,9 +81,53 @@ dg_save_sets:
   - { name: prboom-data,          src: ".local/share/prboom-plus-rt" }
   - { name: banjo-recompiled,     src: ".config/BanjoRecompiled" }   # legacy BanjoRecomp saves (pre-Lighthouse)
 
+  # ---- 2026-10-28 save-path audit of every installed GitHub port ----
+  # Recomps/ports that keep saves in a per-game config or user-data dir.
+  # Dusk and Fukami are cut down to their memory cards: their user roots also
+  # hold 6 GB / 461 MB of re-derivable texture and disc data.
+  - { name: banjotooie-recomp,   src: ".config/banjotooie-recomp/saves" }
+  - { name: cbfd-recomp,         src: ".config/ConkerRecompiled/saves" }
+  - { name: dkr-recomp,          src: [".config/dkr-port/saves", "file:.config/dkr-port/controller-pak-1.mpk"] }
+  - { name: dusk-twilight,       src: ".local/share/TwilitRealm/Dusklight/USA" }
+  - { name: fzero-glinux,        src: ".local/share/fzero-glinux/GC" }
+  - { name: gow3-pc,             src: ".local/share/gow3/user/savedata" }
+  - { name: dekui,               src: "tools/dekui/dekui/user/nand" }
+  - { name: driveclub-recomp,    src: "tools/driveclub-recomp/data/user" }
+  - { name: overstrike,          src: ["tools/overstrike/msmm/Profiles", "tools/overstrike/msmr/Profiles"] }
+  - { name: project-r,           src: ".config/ProjectR" }
+  - { name: doom64-rt,           src: ".config/doom64-rt" }
+  - { name: dkc-recomp,          src: ["tools/dkc1-src/build/linux/saves", "tools/dkc2-src/build/linux/saves", "tools/dkc3-src/build/linux/saves"] }
+  # These two run natively on the host (no distrobox), so their saves are in the
+  # HOST home — absolute manifest paths, which backup-saves now supports.
+  - { name: fukami,              src: ["{{ ansible_facts.env.HOME }}/.local/share/Fukami/mc",
+                                       "file:{{ ansible_facts.env.HOME }}/.local/share/Fukami/fukami.ini"] }
+  - { name: takedawn,            src: "{{ ansible_facts.env.HOME }}/.local/share/takedawn" }
+
+  # Native fan games / source ports
+  - { name: g-diffuser,          src: "Games/g-diffuser/saves" }
+  - { name: moon-facility,       src: "Games/moon-facility/Sonic and The Moon Facility (Final 2)/Data" }
+  - { name: smb-remastered,      src: "Games/smb-remastered/config" }
+  - { name: sonic-p06-saves,     src: "Games/sonic-p06/SaveFiles" }
+  - { name: twine,               src: "Games/twine/data/saves" }
+  - { name: sotn-recomp,         src: ["file:Games/sotn-recomp/carda.sav", "file:Games/sotn-recomp/cardb.sav"] }
+  - { name: render96ex,          src: ".local/share/sm64ex" }
+  - { name: pilotwings-recomp,   src: ".local/share/Pilotwings64Recomp/saves" }
+  - { name: project-reignition,  src: ".local/share/godot/app_userdata/Sonic and the Secret Rings Remake" }
+  - { name: starfox-enhanced,    src: "file:tools/starfox-enhanced/game/starfox-ex.srm" }
+  - { name: opencmr2,            src: ".local/share/OpenCMR2" }
+  - { name: opensc2k,            src: ".local/share/godot/app_userdata/OpenSC2K/cities" }
+  - { name: sonicxg,             src: ".config/Sonic_XG" }
+  - { name: sonic-classic,       src: "file:Games/sonic-classic/S_Classic1Rev03_FULL/ringdata.sav" }
+  - { name: sonic-dimensions,    src: "file:Games/sonic-dimensions/Sonic Dimensions/SaveData.sav" }
+  - { name: sonic2-2013,         src: ["file:Games/sonic2-2013/SData.bin", "file:Games/sonic2-2013/UData.bin"] }
+  - { name: cannonball,          src: ["file:Games/cannonball/highscores.xml", "file:Games/cannonball/play_stats.xml",
+                                       "file:Games/cannonball/config.xml"] }
+
   # ---- Native fan games / remakes ----
   - { name: sonic3air,            src: ".local/share/Sonic3AIR" }
-  - { name: starfox-enhanced,     src: ".local/share/StarFoxEnhanced" }
+  # .local/share/StarFoxEnhanced was the Wine-era location and holds only a
+  # stale runtime.lock; the native port saves beside its executable (listed
+  # in the 2026-10-28 block below).
   - { name: smw-remastered,       src: ".local/share/SuperMarioWorldRemastered" }
   - { name: sorr-save,            src: "tools/sorr/game/savegame" }
   - { name: midnightclub-la,      src: "tools/midnightclubla/midnightclubla/user-data" }
@@ -87,6 +136,10 @@ dg_save_sets:
   - { name: sonic-fallen-star,    src: "Games/sonic-fallen-star/Sonic and the Fallen Star (V1.1.1 Edit 4)/Data" }  # Clickteam Fusion saves live next to the exe (re-extracted on rebuild)
   - { name: sm64ds-port,          src: "Games/sm64ds-port/save" }          # SM64 DS port cartridge save + save states (re-extracted gamedir on rebuild)
   - { name: wwhd-recomp,          src: "tools/wwhd-recomp/data/save" }     # Wind Waker HD recomp saves + Picto Box pics (game rebuilt from dump on rebuild)
-  - { name: vf1-recomp,           src: "tools/vf1-recomp/VirtuaFighter/data" }  # Virtua Fighter recomp settings/rankings/saves (portable mode; gamedir re-extracted on rebuild)
+  # Virtua Fighter recomp runs portable: EEPROM, NVRAM and ranking names sit
+  # beside the executable, not in a data/ subdir.
+  - { name: vf1-recomp,           src: ["file:tools/vf1-recomp/VirtuaFighter/eeprom.sav",
+                                        "file:tools/vf1-recomp/VirtuaFighter/nvram.sav",
+                                        "file:tools/vf1-recomp/VirtuaFighter/ranking_names.txt"] }
   - { name: vf3-recomp,           src: "{{ dg_vf3_data_rel }}" }  # VF3 settings, EEPROM, rankings, screenshots and logs; separate from release files
   - { name: smas-recomp,          src: "tools/smas-recomp/SuperMarioAllStars-Linux" }  # SMAS recomp config.ini/keybinds.ini + *.srm battery + *.sav states (anchored to exe dir, no save subdir; binary/assets re-extracted on rebuild)
