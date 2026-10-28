@@ -19,8 +19,16 @@ web-page update badges where a pollable page exists (see the field docs in
 The opt-in `ogm_catalog` role (tag `ogm`) renders the same data to a
 `catalog.d` fallback fragment. See `docs/ogm-launcher.md`.
 The PC side of the library (`ROMS_FINAL/PC`) is bucketed as `ports/`,
-`games/`, `mods/`, `releases/` and `tools/`; put new assets in the right
-bucket and see `docs/pc-library.md`. Focused setup notes are in `docs/`. The native macOS baseline is a separate
+`games/`, `mods/`, `releases/` and `tools/`; see `docs/pc-library.md`.
+**Nothing stays in the `ROMS_FINAL/PC` root.** Downloads land there by
+default, so every install — and every asset you notice while working on
+one — must be filed before the task is done: ports, recomps and decomps
+(and their source archives) in `ports/`, PC game installs and disc
+extracts in `games/`, mods/texture packs/romhacks in `mods/`, upstream
+release assets a role verifies in `releases/`, utilities in `tools/`.
+Ansible paths must always name a bucket (`…/PC/releases/foo.zip`), never
+the root. `scripts/check-pc-layout.sh <ROMS_FINAL/PC>` reports anything
+left unfiled. Focused setup notes are in `docs/`. The native macOS baseline is a separate
 stack under `macos/` and shares no code with the Linux tree — keep macOS
 changes there and Linux changes out of it.
 
@@ -34,6 +42,7 @@ ansible-playbook --syntax-check site.yml   # validate playbook syntax
 ansible-playbook install-sonic-p06.yml     # run optional P-06 setup
 desktop-file-validate ../config/desktop/rendered/*.desktop
 ../scripts/check-box-sonames.sh            # after box updates: sweep for soname-broken AUR binaries
+../scripts/check-pc-layout.sh "$DG_PC_ROOT"  # after any PC install: flag unfiled PC-root entries
 ```
 
 **After every box package update** (`pacman -Syu` in the box), run
@@ -121,6 +130,12 @@ fetched or staged, a current `dg_ogm_games` entry in
 the `dg_*` path variable or `docs/setup-assets.md` that references it. When
 asked to install something that is already present and documented, verify the
 inventory still matches reality instead of skipping the check.
+
+A PC install additionally starts with the asset's placement: if the archive was
+downloaded to the `ROMS_FINAL/PC` root (the usual case), move it into the right
+bucket first, then point the role and docs at `…/PC/<bucket>/…`. An install that
+leaves a file in the PC root is not finished, and
+`scripts/check-pc-layout.sh` must report a clean root.
 
 ## Coding Style & Naming Conventions
 

@@ -14,6 +14,18 @@ into five buckets so a path says what the thing *is*:
 
 Rules of thumb:
 
+- **Nothing stays in the `ROMS_FINAL/PC` root.** Browser downloads land
+  there by default. File every new archive, installer, port or mod into
+  its bucket *in the same change that installs it* — never leave it in
+  the root "for later", and never point a `dg_*` path at the root.
+  `scripts/check-pc-layout.sh <ROMS_FINAL/PC>` flags leftovers and is the
+  quick check after any PC install:
+
+  ```sh
+  ./scripts/check-pc-layout.sh /mnt/terachad/Emulators/ROMS_FINAL/PC
+  # PC layout OK: only ports/ games/ mods/ releases/ tools/ at the root
+  ```
+
 - **Leaf names never change.** Directories and files keep their upstream
   names so a path rewrite is mechanical (`PC/<name>` → `PC/<bucket>/<name>`).
 - **A role that ships its own release archive** points at
