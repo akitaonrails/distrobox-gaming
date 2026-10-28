@@ -65,7 +65,8 @@ touch the WGI event path, and gilrs' XInput fallback is a compile-time feature
 of the app (`gilrs = { default-features = false, features = ["xinput"] }`).
 Keyboard input works (its events were observed through --pad-debug).
 
-**Fix belongs upstream**: ask the kit author to ship the xinput gilrs feature
-(the runtime strings show WSLg support, so Wine is on his radar). Until then
-the interim option is a controller-to-keyboard bridge (AntimicroX in the box)
-mapped to the documented keyboard controls; say the word and it gets wired.
+**Fix belongs upstream**: reported 2026-10-28 with the probe evidence —
+[CurtisSlone/GT2-PC-Port-Mod-Kit#1](https://github.com/CurtisSlone/GT2-PC-Port-Mod-Kit/issues/1)
+(ship the gilrs xinput feature or a runtime fallback). Until then the interim
+option is a controller-to-keyboard bridge (AntimicroX in the box) mapped to
+the documented keyboard controls; say the word and it gets wired.
