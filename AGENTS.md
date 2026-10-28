@@ -77,6 +77,30 @@ overrides in `ansible/host_vars/localhost.yml.example`. Personal paths are
 acceptable only as default values in central variables or as clearly historical
 examples in archival docs.
 
+## Reproducibility (every install)
+
+**Every install is code in this repo, not a sequence of commands run once on
+this box.** A new emulator, port, recomp, Wine game, mod set, fix or tool is
+only finished when re-running the repo produces it again from a clean box:
+
+- the logic lives in `ansible/roles/install_<name>/` with a thin
+  `ansible/install-<name>.yml` playbook; opt-in features carry a `never` tag in
+  `site.yml`, anything the default rebuild needs is on the plain path;
+- every download is pinned in `ansible/group_vars/all/<name>.yml` by version,
+  URL and SHA256, recorded as an **AUTO** row in `docs/external-installers.md`,
+  and staged in `ROMS_FINAL/PC/releases/` — not left in a browser download
+  folder or a shell history;
+- paths come from `dg_*` variables, so another machine only edits
+  `host_vars/localhost.yml`;
+- when a step genuinely cannot be automated (a GUI-only preparation inside a
+  Windows installer, a user-owned dump), the role fails or skips with the exact
+  instructions and `docs/<name>.md` records it. A step that exists only on this
+  machine, undocumented, is a bug — backfill a role for it or write down why it
+  cannot be one;
+- the change ships with its docs and inventory rows (see *Documentation &
+  Inventory Updates*) and a second `ansible-playbook` run reports `changed=0`
+  (or only the known Wine-registry churn).
+
 ## Reuse And Wine Game Patterns
 
 Avoid duplicated Ansible logic. Before adding a new role or playbook, check
