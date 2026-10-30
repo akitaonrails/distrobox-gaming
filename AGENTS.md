@@ -313,12 +313,23 @@ role uses them on later runs or they are needed to reproduce the install.
 
 Track every process started for testing, including processes launched inside the
 gaming distrobox. Run interactive or headless game checks with a finite timeout
-and arrange cleanup on success, failure, and interruption (for example, a shell
-trap that terminates and waits for the test process). Before finishing, verify
-that each test PID and its children have exited; a timeout wrapper exiting is
-not proof that the game or emulator stopped. If one remains, inspect its exact
-command and start time, terminate only the process started for this task, and
-verify it is gone. Never stop an unrelated game, user session, or shared service.
+**inside the container**, with a supervisor that waits for the actual game
+process and cleans its dedicated Wine prefix on success, failure, and
+interruption. Record the test's PID, process name, start time, parent, and
+container. Do not put `timeout` only around `distrobox enter`, or pipe a live
+launcher into `head` / `rg -m`: terminating the outer wrapper can orphan Wine
+children under `containerd-shim`.
+
+Before finishing, inspect the full process table by exact game/emulator name
+and start time **and** by command line/environment. Include `STAT` and look for
+`Z` (defunct) entries: zombies have lost their command line and environment,
+so a `WINEPREFIX` scan misses them. Verify that each task-created PID and child
+has been reaped, not merely stopped; neither a timeout exiting nor
+`wineserver -k` proves this. Terminate only this task's live processes. If a
+zombie was adopted by the shared container shim, it cannot be killed directly:
+report it explicitly and arrange a safe restart when the container is idle.
+Never restart the shared `gaming` box or stop another game to hide a zombie.
+Never claim cleanup is complete while a task-created zombie remains.
 
 This host runs containers and build jobs for other projects. Inspect Docker
 containers, images, volumes, and build cache before cleanup, and remove only
