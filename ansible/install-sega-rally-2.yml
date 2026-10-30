@@ -1,0 +1,7 @@
+---
+- name: Install original Sega Rally 2 PC release
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_sega_rally_2

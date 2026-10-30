@@ -15,6 +15,7 @@ the upstream release is deleted.
 
 | What | Source | Role / var prefix |
 |---|---|---|
+| Sega Rally 2 patcher v0.9.2 | [pairomaniac/sr2-patcher](https://github.com/pairomaniac/sr2-patcher/releases/tag/v0.9.2) Python ZIP, SHA256-pinned and staged in `ROMS_FINAL/PC/releases/` (AUTO). Needs the original English PC install ISO and play BIN/CUE (MANUAL, SHA1-verified) in `ROMS_FINAL/PC/games/`; see [setup](sega-rally-2.md). | `install_sega_rally_2` / `dg_sr2_*` |
 | Virtua Fighter 3 Recomp v0.1.10-alpha | [mr-finster/vf3-recomp](https://github.com/mr-finster/vf3-recomp/releases/tag/v0.1.10-alpha) native Linux tarball, SHA256-pinned | `install_vf3_recomp` / `dg_vf3_*` |
 | OpenCMR2 v1.6.0 | [pablocpas/OpenCMR2](https://github.com/pablocpas/OpenCMR2/releases/tag/v1.6.0) Linux tarball, SHA256-pinned | `install_opencmr2` / `dg_opencmr2_*` |
 | RyGT GT Sport 2026-10-22 prerelease | [mlgprorektm8/RyGT](https://github.com/mlgprorektm8/RyGT/releases/tag/gt-sport-2026-10-22) Windows ZIP, SHA256-pinned | `install_rygt` / `dg_rygt_*` |

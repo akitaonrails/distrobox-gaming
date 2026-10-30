@@ -1,0 +1,256 @@
+---
+- name: Check the original Sega Rally 2 discs
+  ansible.builtin.stat:
+    path: "{{ dg_sr2_discs_dir }}/{{ item.file }}"
+    checksum_algorithm: sha1
+  loop: "{{ dg_sr2_discs }}"
+  register: _sr2_disc_checks
+
+- name: Require the supported original discs
+  ansible.builtin.assert:
+    that:
+      - item.stat.isreg | default(false)
+      - item.stat.checksum | default('') == item.item.sha1
+    fail_msg: "Missing or wrong original Sega Rally 2 disc: {{ dg_sr2_discs_dir }}/{{ item.item.file }}"
+    quiet: true
+  loop: "{{ _sr2_disc_checks.results }}"
+  loop_control:
+    label: "{{ item.item.file }}"
+
+- name: Create Sega Rally 2 parent directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_sr2_patcher_archive | dirname }}"
+    - "{{ dg_sr2_patcher_dir }}"
+    - "{{ dg_sr2_install_dir | dirname }}"
+    - "{{ dg_sr2_prefix }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Download pinned Sega Rally 2 patcher
+  ansible.builtin.get_url:
+    url: "{{ dg_sr2_patcher_url }}"
+    dest: "{{ dg_sr2_patcher_archive }}"
+    checksum: "sha256:{{ dg_sr2_patcher_sha256 }}"
+    mode: "0644"
+
+- name: Unpack the pinned patcher
+  ansible.builtin.unarchive:
+    src: "{{ dg_sr2_patcher_archive }}"
+    dest: "{{ dg_sr2_patcher_dir }}"
+    remote_src: true
+    creates: "{{ dg_sr2_patcher_script }}"
+
+- name: Require bubblewrap for network-isolated patching
+  ansible.builtin.command:
+    argv: [bwrap, --version]
+  changed_when: false
+
+- name: Check the patcher's internal consistency
+  ansible.builtin.command:
+    argv:
+      - bwrap
+      - --die-with-parent
+      - --unshare-net
+      - --ro-bind
+      - /
+      - /
+      - --dev-bind
+      - /dev
+      - /dev
+      - --proc
+      - /proc
+      - --tmpfs
+      - /tmp
+      - --
+      - python3
+      - "{{ dg_sr2_patcher_script }}"
+      - --selfcheck
+  changed_when: false
+
+- name: Check for a completed Sega Rally 2 installation
+  ansible.builtin.stat:
+    path: "{{ dg_sr2_install_dir }}/.dg-patcher-{{ dg_sr2_version }}"
+  register: _sr2_installed
+
+- name: Check for an existing unmarked game directory
+  ansible.builtin.stat:
+    path: "{{ dg_sr2_install_dir }}"
+  register: _sr2_install_path
+  when: not _sr2_installed.stat.exists
+
+- name: Refuse to overwrite an existing unmarked game or save
+  ansible.builtin.assert:
+    that: not _sr2_install_path.stat.exists
+    fail_msg: "{{ dg_sr2_install_dir }} exists without the managed install marker; inspect or move it before retrying."
+  when: not _sr2_installed.stat.exists
+
+- name: Install original discs into a disposable staging directory
+  when: not _sr2_installed.stat.exists
+  block:
+    - name: Remove an interrupted installer staging directory
+      ansible.builtin.file:
+        path: "{{ dg_sr2_stage_dir }}"
+        state: absent
+
+    - name: Create installer staging directory
+      ansible.builtin.file:
+        path: "{{ dg_sr2_stage_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Install and patch the original English PC disc
+      ansible.builtin.command:
+        argv:
+          - bwrap
+          - --die-with-parent
+          - --unshare-net
+          - --ro-bind
+          - /
+          - /
+          - --dev-bind
+          - /dev
+          - /dev
+          - --proc
+          - /proc
+          - --tmpfs
+          - /tmp
+          - --bind
+          - "{{ dg_sr2_stage_dir }}"
+          - "{{ dg_sr2_stage_dir }}"
+          - --
+          - python3
+          - "{{ dg_sr2_patcher_script }}"
+          - --install
+          - "{{ dg_sr2_install_iso }}"
+          - "{{ dg_sr2_stage_dir }}"
+          - English
+
+    - name: Rip the original play disc's music tracks
+      ansible.builtin.command:
+        argv:
+          - bwrap
+          - --die-with-parent
+          - --unshare-net
+          - --ro-bind
+          - /
+          - /
+          - --dev-bind
+          - /dev
+          - /dev
+          - --proc
+          - /proc
+          - --tmpfs
+          - /tmp
+          - --bind
+          - "{{ dg_sr2_stage_dir }}"
+          - "{{ dg_sr2_stage_dir }}"
+          - --
+          - python3
+          - "{{ dg_sr2_patcher_script }}"
+          - --rip
+          - "{{ dg_sr2_play_cue }}"
+          - "{{ dg_sr2_stage_dir }}"
+
+    - name: Verify patched game and complete soundtrack
+      ansible.builtin.stat:
+        path: "{{ dg_sr2_stage_dir }}/{{ item }}"
+      loop:
+        - SEGA RALLY 2.exe
+        - SR2.CFG
+        - SR2_SAVE.DAT
+        - music/track02.wav
+        - music/track14.wav
+      register: _sr2_output_checks
+
+    - name: Require complete installer output
+      ansible.builtin.assert:
+        that: item.stat.isreg | default(false)
+        fail_msg: "Sega Rally 2 patcher did not produce {{ item.item }}"
+        quiet: true
+      loop: "{{ _sr2_output_checks.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Record the installed patcher version
+      ansible.builtin.file:
+        path: "{{ dg_sr2_stage_dir }}/.dg-patcher-{{ dg_sr2_version }}"
+        state: touch
+        mode: "0644"
+
+    - name: Publish the complete install atomically
+      ansible.builtin.command:
+        argv: [mv, -T, "{{ dg_sr2_stage_dir }}", "{{ dg_sr2_install_dir }}"]
+  always:
+    - name: Remove disposable installer staging data
+      ansible.builtin.file:
+        path: "{{ dg_sr2_stage_dir }}"
+        state: absent
+      when: not _sr2_installed.stat.exists
+
+- name: Set the original game's native 4K resolution
+  ansible.builtin.lineinfile:
+    path: "{{ dg_sr2_install_dir }}/SR2.CFG"
+    regexp: '^Resolution = '
+    line: "Resolution = {{ dg_sr2_resolution }}"
+  when: not _sr2_installed.stat.exists
+
+- name: Install Sega Rally 2 Wine runtime packages
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sudo pacman -S --needed --noconfirm wine sdl2
+  register: _sr2_pacman
+  changed_when: "'installing' in _sr2_pacman.stdout"
+
+- name: Initialize the dedicated Sega Rally 2 Wine prefix
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sh -lc 'WINEPREFIX="{{ dg_sr2_prefix }}"
+    WINEDEBUG=-all env -u PYTHONHOME -u PYTHONPATH wineboot -u'
+  args:
+    creates: "{{ dg_sr2_prefix }}/system.reg"
+
+- name: Configure Wine's GLX renderer and SDL XInput controller
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      export WINEPREFIX="{{ dg_sr2_prefix }}" WINEDEBUG=-all
+      key="HKCU\\Software\\Wine\\X11 Driver"
+      if ! wine reg query "$key" /v UseEGL 2>/dev/null | grep -Eiq "REG_SZ[[:space:]]+N[[:space:]]*$"; then
+        wine reg add "$key" /v UseEGL /t REG_SZ /d N /f >/dev/null
+        echo changed
+      fi
+      for pair in "DisableHidraw:1" "DisableInput:1" "Enable SDL:1" "Map Controllers:1"; do
+        name=${pair%:*}; value=${pair#*:}
+        key="HKLM\\System\\CurrentControlSet\\Services\\winebus"
+        if ! wine reg query "$key" /v "$name" 2>/dev/null | grep -Eiq "REG_DWORD[[:space:]]+0x$value[[:space:]]*$"; then
+          wine reg add "$key" /v "$name" /t REG_DWORD /d "$value" /f >/dev/null
+          echo changed
+        fi
+      done
+    '
+  register: _sr2_wine_registry
+  changed_when: "'changed' in _sr2_wine_registry.stdout"
+
+- name: Deploy Sega Rally 2 launcher
+  ansible.builtin.template:
+    src: sega-rally-2.sh.j2
+    dest: "{{ dg_sr2_launcher }}"
+    mode: "0755"
+
+- name: Render Sega Rally 2 desktop entry
+  ansible.builtin.template:
+    src: sega-rally-2.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/sega-rally-2.desktop"
+    mode: "0644"
+
+- name: Publish Sega Rally 2 desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _sr2_host_launchers
+  changed_when: >-
+    'installed ' in _sr2_host_launchers.stdout or
+    'removed stale ' in _sr2_host_launchers.stdout

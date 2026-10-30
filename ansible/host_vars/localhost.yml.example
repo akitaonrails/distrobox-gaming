@@ -11,6 +11,9 @@
 # dg_external_games_root: /media/games
 # dg_emudeck_root: "{{ dg_external_games_root }}/EmuDeck"
 # dg_roms_final_root: "{{ dg_external_games_root }}/ROMS_FINAL"
+# Sega Rally 2 needs the original English PC install ISO and play BIN/CUE.
+# The 25th Anniversary executable is not supported by sr2-patcher.
+# dg_sr2_discs_dir: "{{ dg_roms_final_root }}/PC/games/Sega Rally 2 (1999 original PC discs)"
 # Code Veronica X HD recomp uses the US NPUB30467 PSN v01.00 base PKG and
 # matching owner-provided RAP license. Override either path for your layout.
 # dg_cv_pkg: "{{ dg_roms_final_root }}/ps3/Code Veronica/NPUB30467.pkg"

@@ -1,0 +1,21 @@
+---
+dg_sr2_version: "0.9.2"
+dg_sr2_patcher_url: "https://github.com/pairomaniac/sr2-patcher/releases/download/v{{ dg_sr2_version }}/sr2-patcher-v{{ dg_sr2_version }}-python.zip"
+dg_sr2_patcher_archive: "{{ dg_roms_final_root }}/PC/releases/sr2-patcher-v{{ dg_sr2_version }}-python.zip"
+dg_sr2_patcher_sha256: dabf45639671a29d191f4b48f4ff632420adf910d32d86521974ee6f81326178
+dg_sr2_patcher_dir: "{{ dg_box_home }}/tools/sr2-patcher/v{{ dg_sr2_version }}"
+dg_sr2_patcher_script: "{{ dg_sr2_patcher_dir }}/sr2-patcher-{{ dg_sr2_version }}.py"
+
+# User-owned original English PC discs, not the 25th Anniversary repack.
+dg_sr2_discs_dir: "{{ dg_roms_final_root }}/PC/games/Sega Rally 2 (1999 original PC discs)"
+dg_sr2_discs:
+  - { file: SEGARally2Championship-Eng-InstallDisc.iso, sha1: 86d7fc769cb633560e52c4f4d9c8fdd7addbbfdc }
+  - { file: SEGARally2Championship-Eng-PlayDisc.bin, sha1: 19f8970a17e9c2f066a47821ae40ccc1cd2d214d }
+  - { file: SEGARally2Championship-Eng-PlayDisc.cue, sha1: 6f1819194952414ff85db464b6a72a7d2bb484c1 }
+dg_sr2_install_iso: "{{ dg_sr2_discs_dir }}/{{ dg_sr2_discs[0].file }}"
+dg_sr2_play_cue: "{{ dg_sr2_discs_dir }}/{{ dg_sr2_discs[2].file }}"
+dg_sr2_install_dir: "{{ dg_box_home }}/Games/pc-racing/sega-rally-2"
+dg_sr2_stage_dir: "{{ dg_box_home }}/cache/sega-rally-2-install"
+dg_sr2_prefix: "{{ dg_box_home }}/wineprefixes/sega-rally-2"
+dg_sr2_launcher: "{{ dg_box_home }}/bin/sega-rally-2"
+dg_sr2_resolution: 3840X2160

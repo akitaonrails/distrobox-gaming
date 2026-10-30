@@ -607,6 +607,12 @@ dg_ogm_games:
     name: "{{ dg_pc_racing_games | selectattr('slug', 'eq', 'sega-rally-revo') | map(attribute='name') | first }}"
     category: wine
     sgdb_query: "Sega Rally Revo"
+  - desktop_id: sega-rally-2
+    id: sega-rally-2
+    name: Sega Rally 2
+    category: wine
+    sgdb_query: "Sega Rally 2"
+    github: pairomaniac/sr2-patcher
   # Wanszai arcade-to-PC wrappers under Wine (ridge_racer.yml / sega_rally.yml
   # / model1.yml).
   - desktop_id: ridge-racer

@@ -7,7 +7,7 @@ rows are just the index). Contributions welcome if you crack one.
 
 | Game / mod | Why it's unsupported | Issue |
 |---|---|---|
-| Sega Rally 2 (25th-Anniversary repack) | Its modified executable does not match any build supported by [sr2-patcher](https://github.com/pairomaniac/sr2-patcher), despite an exact match for `MGameD3D.dll`. The later GAME-TIME "Portable Edition" is a Cameyo VOS wrapper, not a retail disc image or an accessible original game executable. A supported original PC release is still needed. Re-checked 2026-10-17. | [#3](https://github.com/akitaonrails/distrobox-gaming/issues/3) |
+| ~~Sega Rally 2~~ (25th-Anniversary repack) | ✅ RESOLVED 2026-10-30 with the original European PC release and [sr2-patcher](https://github.com/pairomaniac/sr2-patcher); the opt-in role installs and launches it on the RTX 5090. The Anniversary repack's modified executable remains incompatible. See [setup](sega-rally-2.md). | [#3](https://github.com/akitaonrails/distrobox-gaming/issues/3) |
 | Colin McRae Rally 2005 (PC/GOG) | Wine dead-end (page fault `0041DA27`); use the PS2/PCSX2 version. 🔴 re-checked 2026-10-03: AppDB still Bronze, still blocked | [#4](https://github.com/akitaonrails/distrobox-gaming/issues/4) |
 | DiRT 3 Complete Edition | Fix exists but needs the legit Steam copy (disable Steam Input + in-game V-Sync) — not owned, delisted/unpurchasable; repack's GFWL crash unfixable. ⛔ final 2026-10-03: stays parked | [#5](https://github.com/akitaonrails/distrobox-gaming/issues/5) |
 | DiRT Rally | Fix exists but needs the legit Steam copy (Proton + `WINE_CPU_TOPOLOGY`, or Feral `feral_support_branch`) — not owned, delisted/unpurchasable. ⛔ final 2026-10-03: stays parked | [#6](https://github.com/akitaonrails/distrobox-gaming/issues/6) |

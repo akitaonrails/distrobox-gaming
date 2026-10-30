@@ -115,10 +115,10 @@ Current per-game controller handling:
   conflict with the Tweaks loader.
 - Sega Rally Revo uses `Map Controllers=1`, because this game needs Wine's
   SDL-backed XInput device to see the 8BitDo controller.
-- Sega Rally 2's 25th-Anniversary repack is not managed here. The original PC
-  releases now have a Wine/Proton-capable patcher, but our repack's executable
-  fails its exact build check; see
-  https://github.com/akitaonrails/distrobox-gaming/issues/3 .
+- Sega Rally 2's original European PC release is managed by the opt-in
+  `install_sega_rally_2` role. It uses the patcher's XInput support and Wine's
+  SDL controller mapping. The 25th-Anniversary repack still fails the exact
+  build check; see [setup](sega-rally-2.md).
 
 If `evdev-joystick --listdevs` only shows the Moonlander keyboard and SDL sees
 zero joysticks, the 8BitDo is in a hidraw-only mode such as `2dc8:6013`. Switch
@@ -181,8 +181,8 @@ cd ansible
 ansible-playbook install-sega-rally-revo.yml
 ```
 
-Sega Rally 2 is not installable (Wine dead-end, verified again with the 2.0.0
-repack on 2026-09-13) — see https://github.com/akitaonrails/distrobox-gaming/issues/3 .
+Install the original European PC Sega Rally 2 release with
+`ansible-playbook install-sega-rally-2.yml`; see [setup](sega-rally-2.md).
 
 Install or refresh host menu entries separately from the host:
 
@@ -643,7 +643,7 @@ main-menu path before the offline DirectX runtime was installed.
 
 ## Sega Rally 2
 
-Not managed here — the game's own MGameD3D renderer null-derefs with the 1.9.0
+The Anniversary repack is not managed here — its MGameD3D renderer null-derefs with the 1.9.0
 and 2.0.0 25th-Anniversary repacks on this box. The
 2.0.0 installer payload (SHA-256 verified) is staged on the NAS at
 `ROMS_FINAL/PC/games/Sega Rally 2 ~ 25th Anniversary Edition 2.0.0/` for a future
@@ -667,9 +667,24 @@ than applying its binary offsets to the Anniversary executable.
 The later `ROMS_FINAL/PC/games/SEGA RALLY 2.exe` download is a 632 MB GAME-TIME
 "Portable Edition" packaged with Cameyo VOS virtualization, not a retail PC
 disc image or an accessible original game executable. The patcher cannot
-identify its build from that wrapper. A supported original PC release is still
-needed, preferably the EU retail disc labeled `EI-1183-1` or the US retail
-disc labeled `40924-0919`.
+identify its build from that wrapper.
 
-Play **Sega Rally Championship HD** (`install_sega_rally`) or **Sega Rally Revo**
-(`sega-rally-revo`) instead.
+On 2026-10-30, the original English install ISO and play BIN/CUE linked in
+[issue #3](https://github.com/akitaonrails/distrobox-gaming/issues/3) were
+downloaded to `ROMS_FINAL/PC/games/Sega Rally 2 (1999 original PC discs)/`.
+Their SHA-1 hashes match the Archive.org metadata. Extracting the ISO's old
+InstallShield CAB yields a 1,469,952-byte European Pentium III executable,
+MD5 `51b3da97c3c73611d3516b65bb684cb5`, which matches the supported build
+in [sr2-patcher](https://github.com/pairomaniac/sr2-patcher). Patcher v0.9.2
+installed the ISO, applied its default fixes, and ripped all 13 music tracks
+from the play disc. In an isolated Wine prefix, the patched game reached a live
+Desert race with the Corolla WRC, rendered the car and course, and responded
+to acceleration. This removes the original-disc availability and renderer
+blockers. The headless test used llvmpipe software OpenGL, so accelerated 4K
+performance, audio, controller input, and longer play were not established
+by that first test. The [managed original-disc install](sega-rally-2.md)
+now runs with NVIDIA GLX on the RTX 5090; see its setup notes for the
+remaining verification limits.
+
+**Sega Rally Championship HD** (`install_sega_rally`) and **Sega Rally Revo**
+(`sega-rally-revo`) remain available as separate games.

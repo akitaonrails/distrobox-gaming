@@ -94,6 +94,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | CannonBall-DX | OutRun engine | [Endprodukt/cannonball-dx](https://github.com/Endprodukt/cannonball-dx) · [doc](cannonball.md) |
 | Sega Model 1 (Wanszai) | Virtua Racing / Virtua Fighter | [Virtua-Racing](https://github.com/wanszai/Virtua-Racing---XBOXONE-Windows) · [Virtua-Fighter](https://github.com/wanszai/Virtua-Fighter---XboxOne-Windows) · [doc](sega-arcade.md) |
 | Sega Rally HD (Wanszai) | Model 2 Sega Rally wrapper | [wanszai/Sega-Rally-Championship-…](https://github.com/wanszai/Sega-Rally-Championship-PC-Xbox360-Series-X-) · [doc](sega-arcade.md) |
+| Sega Rally 2 (original PC) | 1999 European PC game, installed from original discs with a Wine-compatible patcher | [pairomaniac/sr2-patcher](https://github.com/pairomaniac/sr2-patcher) · [doc](sega-rally-2.md) |
 | Model 2 Emulator | ElSemi's Model 2 (closed-source) | [SEGA Retro](https://segaretro.org/Model_2_Emulator) · [doc](sega-arcade.md) |
 | Ridge Racer Collection (Wanszai) | System 22 ports | [wanszai/Ridge-Racer-Collection](https://github.com/wanszai/Ridge-Racer-Collection) · [doc](ridge-racer.md) |
 | WipEout Phantom Edition | WipEout (PSX) source port | [wipeout-phantom-edition](https://github.com/wipeout-phantom-edition/wipeout-phantom-edition) · [doc](wipeout-pe.md) |

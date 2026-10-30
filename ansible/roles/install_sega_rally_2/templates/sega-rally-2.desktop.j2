@@ -1,0 +1,11 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Sega Rally 2 (Original PC)
+Exec={{ dg_sr2_launcher }}
+Terminal=false
+Type=Application
+Icon=wine
+Comment=Original Sega Rally 2 PC release with sr2-patcher
+Categories=Game;
+StartupWMClass=SEGA RALLY 2.exe
+{{ ogm_metadata('sega-rally-2') }}
