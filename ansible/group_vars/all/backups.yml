@@ -53,9 +53,12 @@ dg_save_sets:
   - { name: supermodel-nvram,     src: ".supermodel/NVRAM" }
   - { name: dolphin-gba-saves,    src: ".local/share/dolphin-emu/GBA/Saves" }
   - { name: rpcs3-savedata,       src: ".config/rpcs3/dev_hdd0/savedata" }
+  - { name: kytyps5-savedata,     src: "tools/kytyps5/user/_SaveData" }
   - { name: code-veronica-recomp, src: "tools/code-veronica-recomp/user/gamedata" }
   - { name: eden-system-save,     src: ".local/share/eden/nand/system/save" }
   - { name: model1-nvram,         src: ".local/share/mame-model1" }
+  - { name: mame-neogeo-nvram,    src: ".mame/nvram/neogeo" }
+  - { name: mame-neocd-nvram,     src: ".mame/nvram/neocdz" }
   # Xenia: whole content tree (per-title 00000001 = savegames, plus installed
   # TUs/DLC; the big FM DLC entries are symlinks and stay symlinks under -a).
   - { name: xenia-content,        src: "tools/xenia-manager/current/Emulators/Xenia Canary/content" }

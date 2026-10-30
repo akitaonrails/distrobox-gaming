@@ -200,6 +200,18 @@ configured cap from measured gameplay FPS. Keep these choices reproducible in
 `dg_*` variables or role tasks, preserve saves and existing user customization,
 and document any setting that can only be changed inside the game.
 
+## GitHub Release Updates
+
+For every GitHub-backed game, port, recompilation, or emulator release update,
+read the new release notes and any changed upstream setup, performance, and
+configuration guidance before bumping the pin. Check for new launch options,
+settings, environment variables, cache behavior, graphics and frame-pacing
+recommendations, and controller fixes. Compare them with our role and current
+`dg_*` values; apply useful, safe improvements reproducibly, and document the
+chosen settings and any important limitations in the game's page. Verify the
+focused install and its second-run idempotence. A version bump alone does not
+finish a release update.
+
 ## Gamepad: Always Supported (every install)
 
 Every game here is played from the couch with a controller (the reference device
@@ -298,6 +310,15 @@ resources that the playbook, a future rebuild, or the user will not use. Check
 the exact path and its contents before removal; never clean by a broad glob.
 When adding an installer, keep large downloads or extracted copies only if the
 role uses them on later runs or they are needed to reproduce the install.
+
+Track every process started for testing, including processes launched inside the
+gaming distrobox. Run interactive or headless game checks with a finite timeout
+and arrange cleanup on success, failure, and interruption (for example, a shell
+trap that terminates and waits for the test process). Before finishing, verify
+that each test PID and its children have exited; a timeout wrapper exiting is
+not proof that the game or emulator stopped. If one remains, inspect its exact
+command and start time, terminate only the process started for this task, and
+verify it is gone. Never stop an unrelated game, user session, or shared service.
 
 This host runs containers and build jobs for other projects. Inspect Docker
 containers, images, volumes, and build cache before cleanup, and remove only

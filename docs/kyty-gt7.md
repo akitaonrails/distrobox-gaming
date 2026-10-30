@@ -43,16 +43,35 @@ and `_SHA256/` beside it are console-install artifacts.
 ## Run
 
 Walker entry: **Gran Turismo 7 · KytyPS5**; launcher
-`/mnt/data/distrobox/gaming/bin/kyty-gt7`. The wrapper runs
-`kyty_emulator --game <dir>` with the upstream-tested profile: **4K fullscreen,
+`dg_kyty_launcher` (`{{ dg_box_home }}/bin/kyty-gt7`). The wrapper runs
+`kyty_emulator --game <dir>` with a profile based on upstream's tests: **4K fullscreen,
 Mailbox present, vblank 60, tessellation ON, bindless textures ON, shader
-optimization Performance** (tessellation is not the emulator default — without
-it car bodies are drawn wrong; red-zone protection is on by default). Extra
-args pass through to `kyty_emulator`.
+optimization Performance, reflections every other frame**. Tessellation is
+not the emulator default; without it car bodies are drawn wrong. Red-zone
+protection is on by default. Extra args pass through to `kyty_emulator`.
+
+The host script re-enters the gaming box and runs the emulator directly there.
+The older `distrobox-enter -- sh -c` form dropped the positional game path,
+causing Kyty to exit with `game input must be provided with --game` when
+started from Walker. Keep the script re-entrant if changing the launcher.
 
 In-game, use the **performance (frame rate) mode**; the RT mode is not
 recommended yet. Expect pop-in the first time on each track (shaders compile
 while you drive, cached afterwards).
+
+The role keeps `_ShaderCache` and `_PipelineCache` under
+`dg_kyty_cache_root` and links them into the selected release. A new emulator
+release therefore reuses the compiled caches rather than starting empty.
+Driver or shader-translator changes may still require recompilation. These
+caches are rebuildable and are not included in save backups.
+
+The upstream guide describes drawing reflections every other frame as a small
+performance adjustment (roughly 1 FPS in its race test and 4 FPS in its time
+trial test) with no visible difference in its tests. The role sets the matching
+`--reflections-every 2` option. Upstream also recommends 60 Hz
+for GT7; 120 Hz mode did not improve its measurements. Low-VRAM environment
+flags are unnecessary for the RTX 5090. The game folder resides on the NAS,
+which could affect loading, though we have not measured an I/O bottleneck.
 
 ## Status and expectations
 
@@ -63,8 +82,15 @@ measured on this machine. The emulator uses about 20–25 GB RAM in races.
 Known upstream issues: Scapes drift-tutorial softlock (#19, close the emulator),
 livery editor exit error CE-210717, Tokyo night green tint at some angles,
 video/audio sync. The emulator never goes online (online requests fail like a
-PS5 without internet). Not yet launched on this box — first boot is the
-verification step.
+PS5 without internet). A 2026-10-30 launcher smoke test initialized Vulkan
+on the RTX 5090, recognized PPSA01317 v01.710.000 and opened the GT7 window;
+its window title reported 60 FPS during startup. Racing, controller input and
+sustained gameplay frame rate remain unverified.
+
+Kyty stores game saves in `_SaveData` beside the emulator. The role moves that
+directory to `dg_kyty_save_dir` and links it into the selected release so
+updates retain saves. `kytyps5-savedata` in `dg_save_sets` mirrors the shared
+directory to the NAS; shader and pipeline caches are excluded.
 
 Reports: GitHub issues with the zipped `_kyty.txt` log (written next to the
 emulator / in its working dir).

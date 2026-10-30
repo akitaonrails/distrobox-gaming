@@ -374,9 +374,20 @@ dg_esde_systems:
     path: "{{ dg_emudeck_root }}/roms/neogeo"
     extension: ".zip .ZIP .7z .7Z"
     commands:
+      - { label: "Neo Geo (FB Neo / MAME custom)", cmd: "{{ dg_box_home }}/bin/neogeo-launch %ROM%" }
       - { label: "FB Neo (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/fbneo_libretro.so %ROM%" }
     platform: neogeo
     theme: neogeo
+
+  - name: neogeocd
+    fullname: SNK Neo Geo CD
+    path: "{{ dg_emudeck_root }}/roms/neogeocd"
+    extension: ".cue .CUE .chd .CHD"
+    commands:
+      - { label: "MAME (Standalone)", cmd: "mame neocdz -rompath {{ dg_bios_root }}/neocd -cdrom %ROM% -noplugins" }
+      - { label: "NeoCD (RetroArch)", cmd: "%EMULATOR_RETROARCH% -L %CORE_RETROARCH%/neocd_libretro.so %ROM%" }
+    platform: neogeocd
+    theme: neogeocd
 
   - name: cps
     fullname: Capcom Play System

@@ -36,6 +36,107 @@
     remote_src: true
     creates: "{{ dg_kyty_release_dir }}/kyty_emulator"
 
+- name: Inspect the release and shared save directories
+  ansible.builtin.stat:
+    path: "{{ item }}"
+    follow: false
+  loop:
+    - "{{ dg_kyty_release_dir }}/_SaveData"
+    - "{{ dg_kyty_save_dir }}"
+  register: _kyty_save_paths
+
+- name: Refuse to replace a separate release save directory
+  ansible.builtin.assert:
+    that: >-
+      not (_kyty_save_paths.results[0].stat.isdir | default(false)) or
+      not (_kyty_save_paths.results[1].stat.exists | default(false))
+    fail_msg: >-
+      Both the release _SaveData directory and dg_kyty_save_dir exist.
+      Merge the saves into dg_kyty_save_dir before rerunning this role.
+
+- name: Create the shared save parent
+  ansible.builtin.file:
+    path: "{{ dg_kyty_install_dir }}/user"
+    state: directory
+    mode: "0755"
+
+- name: Move existing release saves into stable storage
+  ansible.builtin.command:
+    argv:
+      - mv
+      - "{{ dg_kyty_release_dir }}/_SaveData"
+      - "{{ dg_kyty_save_dir }}"
+  when: _kyty_save_paths.results[0].stat.isdir | default(false)
+
+- name: Create shared save storage on a fresh install
+  ansible.builtin.file:
+    path: "{{ dg_kyty_save_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Link saves into the selected release
+  ansible.builtin.file:
+    src: "{{ dg_kyty_save_dir }}"
+    dest: "{{ dg_kyty_release_dir }}/_SaveData"
+    state: link
+
+- name: Inspect the release caches
+  ansible.builtin.stat:
+    path: "{{ dg_kyty_release_dir }}/{{ item }}"
+    follow: false
+  loop: "{{ dg_kyty_cache_names }}"
+  register: _kyty_release_caches
+
+- name: Inspect the shared caches
+  ansible.builtin.stat:
+    path: "{{ dg_kyty_cache_root }}/{{ item }}"
+    follow: false
+  loop: "{{ dg_kyty_cache_names }}"
+  register: _kyty_shared_caches
+
+- name: Refuse to replace a separate release cache
+  ansible.builtin.assert:
+    that: >-
+      not (_kyty_release_caches.results[_kyty_cache_idx].stat.isdir | default(false)) or
+      not (_kyty_shared_caches.results[_kyty_cache_idx].stat.exists | default(false))
+    fail_msg: >-
+      Both the release {{ item }} directory and its shared cache exist.
+      Merge them before rerunning this role to retain compiled shaders.
+  loop: "{{ dg_kyty_cache_names }}"
+  loop_control:
+    index_var: _kyty_cache_idx
+
+- name: Create the shared cache parent
+  ansible.builtin.file:
+    path: "{{ dg_kyty_cache_root }}"
+    state: directory
+    mode: "0755"
+
+- name: Preserve compiled caches from the selected release
+  ansible.builtin.command:
+    argv:
+      - mv
+      - "{{ dg_kyty_release_dir }}/{{ item }}"
+      - "{{ dg_kyty_cache_root }}/{{ item }}"
+  loop: "{{ dg_kyty_cache_names }}"
+  loop_control:
+    index_var: _kyty_cache_idx
+  when: _kyty_release_caches.results[_kyty_cache_idx].stat.isdir | default(false)
+
+- name: Create shared caches on a fresh install
+  ansible.builtin.file:
+    path: "{{ dg_kyty_cache_root }}/{{ item }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ dg_kyty_cache_names }}"
+
+- name: Link compiled caches into the selected release
+  ansible.builtin.file:
+    src: "{{ dg_kyty_cache_root }}/{{ item }}"
+    dest: "{{ dg_kyty_release_dir }}/{{ item }}"
+    state: link
+  loop: "{{ dg_kyty_cache_names }}"
+
 - name: Install the KytyPS5 GT7 launcher
   ansible.builtin.template:
     src: kyty-gt7.sh.j2

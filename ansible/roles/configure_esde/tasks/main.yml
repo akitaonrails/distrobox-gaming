@@ -1,9 +1,12 @@
 ---
 - name: Create ES-DE custom systems directory
   ansible.builtin.file:
-    path: "{{ dg_box_home }}/ES-DE/custom_systems"
+    path: "{{ item }}"
     state: directory
     mode: "0755"
+  loop:
+    - "{{ dg_box_home }}/ES-DE/custom_systems"
+    - "{{ dg_box_home }}/bin"
 
 - name: Deploy ES-DE custom systems XML
   ansible.builtin.template:
@@ -11,6 +14,12 @@
     dest: "{{ dg_box_home }}/ES-DE/custom_systems/es_systems.xml"
     backup: true
     mode: "0644"
+
+- name: Install Neo Geo cartridge dispatcher
+  ansible.builtin.template:
+    src: neogeo-launch.sh.j2
+    dest: "{{ dg_box_home }}/bin/neogeo-launch"
+    mode: "0755"
 
 - ansible.builtin.include_tasks: media-symlinks.yml
 - ansible.builtin.include_tasks: ps4-gamelist.yml

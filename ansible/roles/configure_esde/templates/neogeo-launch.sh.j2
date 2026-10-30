@@ -1,0 +1,13 @@
+#!/bin/sh
+# ES-DE runs this inside the gaming box.
+set -eu
+rom=$1
+name=${rom##*/}
+name=${name%.*}
+hash_dir='{{ dg_bios_root }}/mame/custom-neogeo/'"$name"
+if [ -f "$hash_dir/neogeo.xml" ]; then
+  exec mame neogeo -cart1 "$name" \
+    -rompath '{{ dg_emudeck_root }}/roms/neogeo;{{ dg_bios_root }}/neogeo' \
+    -hashpath "$hash_dir" -noplugins
+fi
+exec retroarch -L '{{ dg_retroarch_dir }}/cores/fbneo_libretro.so' "$rom"

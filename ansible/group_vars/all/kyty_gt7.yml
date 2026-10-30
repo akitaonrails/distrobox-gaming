@@ -16,9 +16,13 @@ dg_kyty_game_dir: "{{ dg_roms_final_root }}/ps5/Gran.Turismo.7.PS5-PPSA01317[FPK
 
 dg_kyty_install_dir: "{{ dg_box_home }}/tools/kytyps5"
 dg_kyty_release_dir: "{{ dg_kyty_install_dir }}/releases/{{ dg_kyty_version }}"
+dg_kyty_save_dir: "{{ dg_kyty_install_dir }}/user/_SaveData"
+dg_kyty_cache_root: "{{ dg_kyty_install_dir }}/cache"
+dg_kyty_cache_names: [_ShaderCache, _PipelineCache]
 dg_kyty_launcher: "{{ dg_box_home }}/bin/kyty-gt7"
 
-# Upstream-tested GT7 profile (docs/GT7.md): 4K, Mailbox, vblank 60,
+# GT7 profile based on upstream docs/GT7.md, with fullscreen and the optional
+# reflection cadence tweak: 4K, Mailbox, vblank 60,
 # tessellation ON (car bodies break without it), bindless textures ON,
 # shader optimization Performance. Red-zone protection is on by default in
 # the emulator; readback/debugging off.
@@ -31,3 +35,5 @@ dg_kyty_emulator_flags:
   - --tessellation
   - --bindless
   - --shader-optimization-type Performance
+  - --reflections-every
+  - "2"

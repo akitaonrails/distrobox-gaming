@@ -16,6 +16,10 @@ if [ ! -f "$GAME/eboot.bin" ]; then
   exit 1
 fi
 
-exec distrobox-enter -n {{ dg_box_name }} -- sh -c \
-  'cd "$0" && export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}" && exec ./kyty_emulator --game "$1" {% for flag in dg_kyty_emulator_flags %}{{ flag }} {% endfor %}"$@"' \
-  "$R" "$GAME" "$@"
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+
+cd "$R"
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+exec ./kyty_emulator --game "$GAME" {% for flag in dg_kyty_emulator_flags %}{{ flag }} {% endfor %}"$@"

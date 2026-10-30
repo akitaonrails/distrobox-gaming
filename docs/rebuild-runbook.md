@@ -257,8 +257,15 @@ repository publishes no matching GitHub release, and `ERROR` needs a retry.
 For source checkouts and auto-updating installers, `REVIEW` is intentionally
 manual because a GitHub release tag alone cannot establish the installed
 revision. Update each candidate through its focused playbook after checking
-Linux/Windows assets, checksums, and the game's setup notes. GitHub Actions
-artifacts, non-GitHub downloads, and mods are outside this release check.
+Linux/Windows assets, checksums, and the game's setup notes. For every new
+GitHub release, also read the release notes and changed upstream configuration
+guidance. Compare new performance switches, graphics/FPS and frame-pacing
+defaults, cache handling, and controller fixes with our role; apply useful,
+safe changes as `dg_*` values or tasks, update the game documentation, and
+verify a second playbook run reports no unexpected changes. Do this for
+GitHub-backed emulators as well as games, including self-updating roles.
+GitHub Actions artifacts, non-GitHub downloads, and mods are outside this
+release check.
 
 ## Safety
 
