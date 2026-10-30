@@ -53,6 +53,7 @@ dg_save_sets:
   - { name: supermodel-nvram,     src: ".supermodel/NVRAM" }
   - { name: dolphin-gba-saves,    src: ".local/share/dolphin-emu/GBA/Saves" }
   - { name: rpcs3-savedata,       src: ".config/rpcs3/dev_hdd0/savedata" }
+  - { name: code-veronica-recomp, src: "tools/code-veronica-recomp/user/gamedata" }
   - { name: eden-system-save,     src: ".local/share/eden/nand/system/save" }
   - { name: model1-nvram,         src: ".local/share/mame-model1" }
   # Xenia: whole content tree (per-title 00000001 = savegames, plus installed

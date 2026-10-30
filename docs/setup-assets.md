@@ -214,6 +214,15 @@ Source separately — these are not redistributable.
 See `docs/driveclub-shadps4.md` for the full flow. The game lives
 under `dg_ps4_rom_root/CUSA00003/` by default.
 
+## Code Veronica X HD recomp
+
+The Windows port needs the US PSN **NPUB30467** base game with `APP_VER=01.00`
+as a folder containing `PARAM.SFO` and `USRDIR/EBOOT.BIN`. The optional role
+extracts the owner-provided base PKG from `dg_cv_pkg` if `dg_cv_game_dir` is
+absent. A matching owner-provided `.rap` license is required at
+`dg_cv_rap_file`; the separate crack PKG is not a license and is not used.
+See [the installation page](code-veronica-recomp.md).
+
 ## Troubleshooting
 
 If an Ansible task logs `WARNING: missing texture source for ...` or

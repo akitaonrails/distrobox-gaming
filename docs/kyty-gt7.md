@@ -6,6 +6,12 @@ build, tuned specifically for Gran Turismo 7 (PPSA01317, version **01.710** —
 the exact version our dump is). Managed by `install_kyty_gt7` /
 `install-kyty-gt7.yml`; runs inside the gaming distrobox on the RTX 5090, no
 Wine. Release cadence is roughly daily — the GitHub sweep bumps the pin often.
+The current pinned build is
+[KytyPS5-2026-10-28-f908636](https://github.com/usa-ratt/KytyPS5-GT7/releases/tag/KytyPS5-2026-10-28-f908636).
+It includes the prior GT Sophy custom-race crash fix and moves GPU buffer
+cleanup off the graphics thread. The previous October 27 release remains
+installed for rollback. The new release tarball is staged in
+`ROMS_FINAL/PC/releases/` and checked against its GitHub SHA256 digest.
 
 ## Game data (one-time extraction, already done)
 
@@ -50,8 +56,10 @@ while you drive, cached afterwards).
 
 ## Status and expectations
 
-Very early: on an RTX 5090 + 7950X3D the project reports **~21–23 fps in races
-(1% low 19), 40–50 fps in time trials** at 4K, and ~20–25 GB RAM in races.
+Very early: the October 28 upstream notes report **~27–28 fps in a Tokyo race
+against 11 AI cars**, from about 22 in heavy spots to peaks near 40, on an
+RTX 5090 in performance mode. This is an upstream measurement, not a result
+measured on this machine. The emulator uses about 20–25 GB RAM in races.
 Known upstream issues: Scapes drift-tutorial softlock (#19, close the emulator),
 livery editor exit error CE-210717, Tokyo night green tint at some angles,
 video/audio sync. The emulator never goes online (online requests fail like a

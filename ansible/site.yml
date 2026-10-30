@@ -32,6 +32,7 @@
     - { role: install_opencmr2,                tags: [opencmr2, never] }
     - { role: install_gow3_pc,                 tags: [gow3_pc, never] }
     - { role: install_rygt,                    tags: [rygt, never] }
+    - { role: install_code_veronica,           tags: [code_veronica, never] }
     - { role: install_rsc2,                    tags: [rsc2, never] }
     - { role: install_gt4_recomp,              tags: [gt4_recomp, never] }
     - { role: install_mickey_donald,           tags: [mickey_donald, never] }

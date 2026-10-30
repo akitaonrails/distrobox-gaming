@@ -7,7 +7,7 @@
   loop:
     - "{{ dg_kyty_install_dir }}"
     - "{{ dg_kyty_release_dir }}"
-    - "{{ dg_kyty_cache_dir }}"
+    - "{{ dg_roms_final_root }}/PC/releases"
     - "{{ dg_box_home }}/bin"
 
 - name: Require the extracted GT7 game folder
@@ -25,13 +25,13 @@
 - name: Download the pinned KytyPS5-GT7 Linux build
   ansible.builtin.get_url:
     url: "{{ dg_kyty_asset_url }}"
-    dest: "{{ dg_kyty_cache_dir }}/{{ dg_kyty_asset_name }}"
+    dest: "{{ dg_kyty_archive }}"
     checksum: "sha256:{{ dg_kyty_asset_sha256 }}"
     mode: "0644"
 
 - name: Extract KytyPS5 into its versioned release directory
   ansible.builtin.unarchive:
-    src: "{{ dg_kyty_cache_dir }}/{{ dg_kyty_asset_name }}"
+    src: "{{ dg_kyty_archive }}"
     dest: "{{ dg_kyty_release_dir }}"
     remote_src: true
     creates: "{{ dg_kyty_release_dir }}/kyty_emulator"

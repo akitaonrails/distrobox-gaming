@@ -272,6 +272,11 @@ dg_ogm_games:
     category: port
     sgdb_query: "Gran Turismo Sport"
     github: "{{ dg_rygt_repo }}"
+  - desktop_id: gaming-code-veronica-recomp
+    id: code-veronica-recomp
+    category: recomp
+    sgdb_query: "Resident Evil Code: Veronica X"
+    github: "{{ dg_cv_repo }}"
   - desktop_id: gaming-rsc2
     id: rsc2
     category: recomp

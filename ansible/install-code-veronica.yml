@@ -1,0 +1,7 @@
+---
+- name: Install Resident Evil Code Veronica X HD recomp
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_code_veronica

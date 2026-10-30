@@ -1,0 +1,29 @@
+#!/usr/bin/env sh
+# Windows D3D12 port; GE-Proton runs from the host with its own runtime.
+set -eu
+
+APP="{{ dg_cv_current }}"
+PROTON="{{ dg_cv_proton }}"
+if [ ! -f "$APP/Code Veronica.exe" ]; then
+  printf '%s\n' 'Code Veronica recomp is not installed.' >&2
+  exit 1
+fi
+if [ ! -f "{{ dg_cv_game_dir }}/USRDIR/EBOOT.BIN" ]; then
+  printf '%s\n' 'The NPUB30467 game folder is missing.' >&2
+  exit 1
+fi
+if [ ! -x "$PROTON" ]; then
+  printf '%s\n' 'The configured GE-Proton build is missing.' >&2
+  exit 1
+fi
+
+export STEAM_COMPAT_CLIENT_INSTALL_PATH="{{ dg_cv_steam_root }}"
+export STEAM_COMPAT_DATA_PATH="{{ dg_cv_compatdata }}"
+export SteamAppId=0
+export SteamGameId=0
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+mkdir -p "$STEAM_COMPAT_DATA_PATH"
+cd "$APP"
+exec "$PROTON" run "$APP/Code Veronica.exe" "$@"

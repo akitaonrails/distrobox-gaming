@@ -1,0 +1,166 @@
+---
+- name: Check the owned PSN package and configured game folder
+  ansible.builtin.stat:
+    path: "{{ item }}"
+    get_checksum: false
+  loop:
+    - "{{ dg_cv_pkg }}"
+    - "{{ dg_cv_game_dir }}/PARAM.SFO"
+  register: _cv_inputs
+
+- name: Require the US PSN base package
+  ansible.builtin.assert:
+    that: _cv_inputs.results[0].stat.isreg | default(false)
+    fail_msg: "The NPUB30467 base PKG is missing at dg_cv_pkg. Disc ISOs and the separate crack PKG are unsupported."
+
+- name: Create Code Veronica installation directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_cv_root }}"
+    - "{{ dg_cv_release_dir }}"
+    - "{{ dg_cv_user_dir }}/gamedata"
+    - "{{ dg_cv_extract_root }}"
+    - "{{ dg_rpcs3_dev_hdd0_game }}"
+    - "{{ dg_box_home }}/bin"
+    - "{{ dg_roms_final_root }}/PC/releases"
+
+# The existing PS3 PKG helper extracts the free PKG container; it does not
+# decrypt the licensed EBOOT. The port itself requires the owner's RAP later.
+- name: Extract the PSN base package when RPCS3 has not installed it
+  ansible.builtin.command:
+    argv:
+      - distrobox
+      - enter
+      - "{{ dg_box_name }}"
+      - --
+      - python3
+      - "{{ dg_project_root }}/ansible/roles/scripts_in_box/files/extract_ps3_dlc.py"
+      - "{{ dg_cv_pkg }}"
+      - --dest
+      - "{{ dg_cv_extract_root }}"
+  register: _cv_extract
+  changed_when: true
+  failed_when: _cv_extract.rc != 0 or '0 failed' not in _cv_extract.stdout
+  when: not (_cv_inputs.results[1].stat.exists | default(false))
+
+- name: Link a newly extracted game into the standard RPCS3 game location
+  ansible.builtin.file:
+    src: "{{ dg_cv_extracted_game_dir }}"
+    dest: "{{ dg_cv_game_dir }}"
+    state: link
+  when: not (_cv_inputs.results[1].stat.exists | default(false))
+
+- name: Check game files and Proton
+  ansible.builtin.stat:
+    path: "{{ item }}"
+    get_checksum: false
+  loop:
+    - "{{ dg_cv_game_dir }}/PARAM.SFO"
+    - "{{ dg_cv_game_dir }}/USRDIR/EBOOT.BIN"
+    - "{{ dg_cv_proton }}"
+  register: _cv_required
+
+- name: Require the extracted PSN title and GE-Proton
+  ansible.builtin.assert:
+    that:
+      - _cv_required.results[0].stat.isreg | default(false)
+      - _cv_required.results[1].stat.isreg | default(false)
+      - _cv_required.results[2].stat.executable | default(false)
+    fail_msg: "The NPUB30467 game folder or configured GE-Proton build is missing. See docs/code-veronica-recomp.md."
+
+- name: Read the PS3 title ID and application version
+  ansible.builtin.command:
+    argv:
+      - python3
+      - -c
+      - |
+        import struct, sys
+        data = open(sys.argv[1], 'rb').read()
+        keys, values, count = struct.unpack_from('<III', data, 8)
+        fields = {}
+        for i in range(count):
+            key_off, _, length, _, value_off = struct.unpack_from('<HHIII', data, 20 + i * 16)
+            key = data[keys + key_off:].split(b'\0', 1)[0].decode()
+            value = data[values + value_off:values + value_off + length]
+            fields[key] = value.split(b'\0', 1)[0].decode('utf-8', 'replace')
+        print(fields.get('TITLE_ID', ''), fields.get('APP_VER', ''))
+      - "{{ dg_cv_game_dir }}/PARAM.SFO"
+  register: _cv_sfo
+  changed_when: false
+
+- name: Require the supported US PSN v01.00 build
+  ansible.builtin.assert:
+    that: _cv_sfo.stdout == 'NPUB30467 01.00'
+    fail_msg: "Code Veronica recomp requires NPUB30467 APP_VER 01.00; found {{ _cv_sfo.stdout }}."
+
+- name: Download the pinned port release into the PC releases bucket
+  ansible.builtin.get_url:
+    url: "{{ dg_cv_asset_url }}"
+    dest: "{{ dg_cv_archive }}"
+    checksum: "sha256:{{ dg_cv_asset_sha256 }}"
+    mode: "0644"
+
+- name: Extract the port release
+  ansible.builtin.unarchive:
+    src: "{{ dg_cv_archive }}"
+    dest: "{{ dg_cv_release_dir }}"
+    remote_src: true
+    creates: "{{ dg_cv_release_dir }}/Code Veronica.exe"
+
+- name: Seed the game library and quality settings once
+  ansible.builtin.template:
+    src: cv_launcher.ini.j2
+    dest: "{{ dg_cv_user_dir }}/cv_launcher.ini"
+    mode: "0644"
+    force: false
+
+- name: Keep settings and saves outside versioned releases
+  ansible.builtin.file:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    state: link
+  loop:
+    - { src: "{{ dg_cv_user_dir }}/cv_launcher.ini", dest: "{{ dg_cv_release_dir }}/bin/cv_launcher.ini" }
+    - { src: "{{ dg_cv_user_dir }}/gamedata", dest: "{{ dg_cv_release_dir }}/bin/gamedata" }
+
+- name: Select the pinned release
+  ansible.builtin.file:
+    src: "{{ dg_cv_release_dir }}"
+    dest: "{{ dg_cv_current }}"
+    state: link
+
+- name: Install the host launcher and desktop entry
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { src: code-veronica-recomp.sh.j2, dest: "{{ dg_cv_launcher }}", mode: '0755' }
+    - { src: code-veronica-recomp.desktop.j2, dest: "{{ dg_desktop_render_dir }}/gaming-code-veronica-recomp.desktop", mode: '0644' }
+
+- name: Install the host desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _cv_host_launcher
+  changed_when: "'installed ' in _cv_host_launcher.stdout or 'removed stale ' in _cv_host_launcher.stdout"
+
+- name: Check the US PSN license
+  ansible.builtin.stat:
+    path: "{{ dg_cv_rap_file }}"
+    get_checksum: false
+  register: _cv_rap
+
+- name: Require the matching owner-provided RAP before gameplay
+  ansible.builtin.assert:
+    that: _cv_rap.stat.isreg | default(false)
+    fail_msg: >-
+      The port and game are installed, but the NPUB30467 .rap license is missing
+      at dg_cv_rap_file. Place your matching license there (or override the
+      variable) and rerun install-code-veronica.yml. The separate crack PKG
+      is not a RAP and is not used by this role.

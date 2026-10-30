@@ -83,6 +83,7 @@ PIN_VARS = {
     "gaming-roadrash64": ("roadrash64_recomp.yml", "dg_rr64_release_tag"),
     "gaming-rsc2": ("rsc2.yml", "dg_rsc2_version"),
     "gaming-rygt-gt-sport": ("rygt.yml", "dg_rygt_release_tag"),
+    "gaming-code-veronica-recomp": ("code_veronica.yml", "dg_cv_version"),
     "gaming-ship-of-harkinian": ("ship_of_harkinian.yml", "dg_ship_of_harkinian_version"),
     "gaming-smas": ("smas_recomp.yml", "dg_smas_release_tag"),
     "gaming-smb-remastered": ("smb_remastered.yml", "dg_smb_remastered_version"),

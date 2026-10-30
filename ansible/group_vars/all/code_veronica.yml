@@ -1,0 +1,21 @@
+---
+# Resident Evil Code: Veronica X HD, US PSN base release (NPUB30467).
+dg_cv_repo: kastieloficial/RE-Code-Veronica-PS3-HD-Recomp-PC
+dg_cv_version: v1.1.11
+dg_cv_asset_name: CodeVeronica-PC-v1.1.11.zip
+dg_cv_asset_url: "https://github.com/{{ dg_cv_repo }}/releases/download/{{ dg_cv_version }}/{{ dg_cv_asset_name }}"
+dg_cv_asset_sha256: a9c3ec5567ec84628648d689ba08da9aa4db4866b484abce34b532fd6da7fe05
+dg_cv_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_cv_asset_name }}"
+dg_cv_pkg: "{{ dg_roms_final_root }}/ps3/Resident.Evil.Code.Veronica.X.HD.PSN.PS3-DUPLEX/Resident.Evil.Code.Veronica.X.HD.NPUB30467.Install.pkg"
+dg_cv_game_dir: "{{ dg_rpcs3_dev_hdd0_game }}/NPUB30467"
+dg_cv_extract_root: "{{ dg_box_home }}/tools/code-veronica-recomp/game-pkg"
+dg_cv_extracted_game_dir: "{{ dg_cv_extract_root }}/UP0102-NPUB30467_00-CONTENT0000DLPKG"
+dg_cv_rap_file: "{{ dg_rpcs3_config_dir }}/dev_hdd0/home/00000001/exdata/UP0102-NPUB30467_00-CONTENT0000DLPKG.rap"
+dg_cv_root: "{{ dg_box_home }}/tools/code-veronica-recomp"
+dg_cv_release_dir: "{{ dg_cv_root }}/releases/{{ dg_cv_version }}"
+dg_cv_user_dir: "{{ dg_cv_root }}/user"
+dg_cv_current: "{{ dg_cv_root }}/current"
+dg_cv_compatdata: "{{ dg_box_home }}/compatdata/code-veronica-recomp"
+dg_cv_proton: "{{ ansible_facts.env.HOME }}/.steam/steam/compatibilitytools.d/GE-Proton11-1/proton"
+dg_cv_steam_root: "{{ ansible_facts.env.HOME }}/.steam/steam"
+dg_cv_launcher: "{{ dg_box_home }}/bin/code-veronica-recomp"

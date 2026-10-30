@@ -24,7 +24,7 @@ class GithubGameUpdatesTests(unittest.TestCase):
     def test_templated_pin_resolves_from_group_vars(self):
         self.assertEqual(
             GAME_UPDATES.pinned_tag("gaming-banjotooie-recomp", {}),
-            "v0.1.0-alpha.4.3",
+            "v0.1.0-alpha.4.5",
         )
 
     def test_stable_pin_ignores_nightly_and_unrelated_release_streams(self):
