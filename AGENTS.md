@@ -325,11 +325,15 @@ and start time **and** by command line/environment. Include `STAT` and look for
 `Z` (defunct) entries: zombies have lost their command line and environment,
 so a `WINEPREFIX` scan misses them. Verify that each task-created PID and child
 has been reaped, not merely stopped; neither a timeout exiting nor
-`wineserver -k` proves this. Terminate only this task's live processes. If a
-zombie was adopted by the shared container shim, it cannot be killed directly:
-report it explicitly and arrange a safe restart when the container is idle.
-Never restart the shared `gaming` box or stop another game to hide a zombie.
-Never claim cleanup is complete while a task-created zombie remains.
+`wineserver -k` proves this. A `Z` **process leader can still have live
+threads**: inspect `/proc/<pid>/task/*/status` before calling it an inert
+zombie. If any threads are live, signal the exact task-created process ID
+(SIGTERM, then SIGKILL if needed) and verify the entire thread group vanishes.
+Do not assume a signal to a defunct leader is ineffective. If every thread is
+truly defunct and the shared container shim does not reap them, report that
+separately and arrange a safe restart when the container is idle. Never
+restart `gaming` or stop another game to hide a zombie, and never claim
+cleanup is complete while task-created processes or live threads remain.
 
 This host runs containers and build jobs for other projects. Inspect Docker
 containers, images, volumes, and build cache before cleanup, and remove only
