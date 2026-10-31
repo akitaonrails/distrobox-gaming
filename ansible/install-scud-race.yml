@@ -1,0 +1,7 @@
+---
+- name: Install Scud Race PC release
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_scud_race

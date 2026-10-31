@@ -1,0 +1,24 @@
+---
+dg_scud_version: "0.0.14"
+dg_scud_url: "https://github.com/wanszai/Scud-Race/releases/download/{{ dg_scud_version }}/Scud.Race-PC.zip"
+dg_scud_archive: "{{ dg_roms_final_root }}/PC/releases/Scud.Race-PC-{{ dg_scud_version }}.zip"
+dg_scud_sha256: 83f54edea1f03b132948e82cde3d9c1674eeb2cb03e095f9f67ec198770c6bed
+dg_scud_root: "{{ dg_box_home }}/tools/scud-race"
+dg_scud_release_dir: "{{ dg_scud_root }}/releases/{{ dg_scud_version }}"
+dg_scud_game_dir: "{{ dg_box_home }}/Games/scud-race"
+dg_scud_prefix: "{{ dg_box_home }}/wineprefixes/scud-race"
+dg_scud_launcher: "{{ dg_box_home }}/bin/scud-race"
+dg_scud_graphics:
+  scale: 4
+  fullscreen: 1
+  aspect43: 0
+  smooth: 1
+  msaa: 4
+  filter2d: 1
+  filter3d: 1
+  textures: 1
+dg_scud_roms:
+  # The upstream PC build requests scud.zip, but its published MD5 is the
+  # scuda.zip archive in this MAME collection. Link it under the expected name.
+  - { source: "{{ dg_roms_final_root }}/arcade/model3/scuda.zip", name: scud.zip, md5: d2d619b0ee5cbf74596431b28080c420 }
+  - { source: "{{ dg_roms_final_root }}/arcade/model3/dayto2pe.zip", name: dayto2pe.zip, md5: d05ef348c9be8408ef50ea74dae29f71 }

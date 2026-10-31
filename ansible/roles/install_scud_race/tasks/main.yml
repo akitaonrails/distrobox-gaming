@@ -1,0 +1,161 @@
+---
+- name: Verify the Scud Race and optional Hornet ROM archives
+  ansible.builtin.stat:
+    path: "{{ item.source }}"
+    checksum_algorithm: md5
+  loop: "{{ dg_scud_roms }}"
+  register: _scud_rom_stats
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Require the exact supported arcade sets
+  ansible.builtin.assert:
+    that:
+      - item.stat.isreg | default(false)
+      - item.stat.checksum | default('') == item.item.md5
+    fail_msg: "Missing or wrong {{ item.item.name }} source: {{ item.item.source }}"
+    quiet: true
+  loop: "{{ _scud_rom_stats.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+
+- name: Create Scud Race directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_scud_archive | dirname }}"
+    - "{{ dg_scud_release_dir }}"
+    - "{{ dg_scud_game_dir }}"
+    - "{{ dg_scud_prefix }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Install Wine and rsync inside the gaming box
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sudo pacman -S --needed --noconfirm wine sdl2 rsync
+  register: _scud_packages
+  changed_when: "'installing' in _scud_packages.stdout"
+
+- name: Download the pinned Scud Race PC release
+  ansible.builtin.get_url:
+    url: "{{ dg_scud_url }}"
+    dest: "{{ dg_scud_archive }}"
+    checksum: "sha256:{{ dg_scud_sha256 }}"
+    mode: "0644"
+
+- name: Extract immutable Scud Race PC release
+  ansible.builtin.unarchive:
+    src: "{{ dg_scud_archive }}"
+    dest: "{{ dg_scud_release_dir }}"
+    remote_src: true
+    creates: "{{ dg_scud_release_dir }}/ScudRace/scudrace.exe"
+
+- name: Install release files without replacing player data
+  ansible.builtin.shell: >-
+    rsync -a --exclude='scudrace.ini' --exclude='online.ini'
+    --exclude='Music/' --exclude='*.bin'
+    '{{ dg_scud_release_dir }}/ScudRace/' '{{ dg_scud_game_dir }}/'
+    && touch '{{ dg_scud_game_dir }}/.dg-release-{{ dg_scud_version }}'
+  args:
+    creates: "{{ dg_scud_game_dir }}/.dg-release-{{ dg_scud_version }}"
+
+- name: Seed online settings without overwriting player changes
+  ansible.builtin.copy:
+    src: "{{ dg_scud_release_dir }}/ScudRace/online.ini"
+    dest: "{{ dg_scud_game_dir }}/online.ini"
+    remote_src: true
+    force: false
+    mode: "0644"
+
+- name: Seed Scud Race settings without overwriting player changes
+  ansible.builtin.template:
+    src: scudrace.ini.j2
+    dest: "{{ dg_scud_game_dir }}/scudrace.ini"
+    force: false
+    mode: "0644"
+
+- name: Check whether high graphics defaults were applied
+  ansible.builtin.stat:
+    path: "{{ dg_scud_game_dir }}/.dg-graphics-v1"
+  register: _scud_graphics_seeded
+
+- name: Set native widescreen and maximum supported image quality once
+  ansible.builtin.lineinfile:
+    path: "{{ dg_scud_game_dir }}/scudrace.ini"
+    regexp: '^{{ item.key }}='
+    line: "{{ item.key }}={{ item.value }}"
+  loop: "{{ dg_scud_graphics | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  when: not _scud_graphics_seeded.stat.exists
+
+- name: Record first-run graphics setup
+  ansible.builtin.file:
+    path: "{{ dg_scud_game_dir }}/.dg-graphics-v1"
+    state: touch
+    mode: "0644"
+  when: not _scud_graphics_seeded.stat.exists
+
+- name: Link verified Scud Race arcade sets
+  ansible.builtin.file:
+    src: "{{ item.source }}"
+    dest: "{{ dg_scud_game_dir }}/{{ item.name }}"
+    state: link
+    force: true
+    follow: false
+  loop: "{{ dg_scud_roms }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Initialize the dedicated Scud Race Wine prefix
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sh -lc 'WINEPREFIX="{{ dg_scud_prefix }}" WINEDEBUG=-all
+    env -u PYTHONHOME -u PYTHONPATH wineboot -u'
+  args:
+    creates: "{{ dg_scud_prefix }}/system.reg"
+
+- name: Force NVIDIA GLX and SDL XInput in the Scud Race prefix
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      export WINEPREFIX="{{ dg_scud_prefix }}" WINEDEBUG=-all
+      key="HKCU\\Software\\Wine\\X11 Driver"
+      if ! wine reg query "$key" /v UseEGL 2>/dev/null | grep -Eiq "REG_SZ[[:space:]]+N[[:space:]]*$"; then
+        wine reg add "$key" /v UseEGL /t REG_SZ /d N /f >/dev/null
+        echo changed
+      fi
+      key="HKLM\\System\\CurrentControlSet\\Services\\winebus"
+      for pair in "DisableHidraw:1" "DisableInput:1" "Enable SDL:1" "Map Controllers:1"; do
+        name=${pair%:*}; value=${pair#*:}
+        if ! wine reg query "$key" /v "$name" 2>/dev/null | grep -Eiq "REG_DWORD[[:space:]]+0x$value[[:space:]]*$"; then
+          wine reg add "$key" /v "$name" /t REG_DWORD /d "$value" /f >/dev/null
+          echo changed
+        fi
+      done
+    '
+  register: _scud_registry
+  changed_when: "'changed' in _scud_registry.stdout"
+
+- name: Deploy Scud Race launcher
+  ansible.builtin.template:
+    src: scud-race.sh.j2
+    dest: "{{ dg_scud_launcher }}"
+    mode: "0755"
+
+- name: Render Scud Race desktop entry
+  ansible.builtin.template:
+    src: scud-race.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/scud-race.desktop"
+    mode: "0644"
+
+- name: Publish Scud Race desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _scud_host_launchers
+  changed_when: >-
+    'installed ' in _scud_host_launchers.stdout or
+    'removed stale ' in _scud_host_launchers.stdout

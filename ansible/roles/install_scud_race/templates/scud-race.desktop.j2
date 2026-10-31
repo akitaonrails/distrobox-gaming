@@ -1,0 +1,11 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Scud Race
+Exec={{ dg_scud_launcher }}
+Terminal=false
+Type=Application
+Icon=wine
+Comment=Scud Race PC release with verified arcade ROMs
+Categories=Game;
+StartupWMClass=scudrace.exe
+{{ ogm_metadata('scud-race') }}

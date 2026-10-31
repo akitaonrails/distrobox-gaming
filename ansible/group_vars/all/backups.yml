@@ -122,6 +122,9 @@ dg_save_sets:
   - { name: sega-rally-2,        src: ["file:Games/pc-racing/sega-rally-2/SR2_SAVE.DAT",
                                         "file:Games/pc-racing/sega-rally-2/SR2.CFG",
                                         "file:Games/pc-racing/sega-rally-2/SR2.DSP"] }
+  - { name: scud-race,           src: ["file:Games/scud-race/scudrace.nv",
+                                        "file:Games/scud-race/scudrace.ini",
+                                        "file:Games/scud-race/online.ini"] }
   - { name: opensc2k,            src: ".local/share/godot/app_userdata/OpenSC2K/cities" }
   - { name: sonicxg,             src: ".config/Sonic_XG" }
   - { name: sonic-classic,       src: ["file:Games/sonic-classic/S_Classic1Rev03_FULL/ringdata.sav",

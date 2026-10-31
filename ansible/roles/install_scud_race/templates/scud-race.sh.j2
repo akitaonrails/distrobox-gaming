@@ -1,0 +1,32 @@
+#!/usr/bin/env sh
+set -eu
+
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+
+game_dir="{{ dg_scud_game_dir }}"
+prefix="{{ dg_scud_prefix }}"
+if [ "${1:-}" = status ]; then
+  test -f "$game_dir/scudrace.exe"
+  test -f "$game_dir/scud.zip"
+  test -f "$game_dir/dayto2pe.zip"
+  test -f "$prefix/system.reg"
+  printf 'Scud Race ready: %s\n' "$game_dir"
+  exit 0
+fi
+
+export WINEPREFIX="$prefix" WINEDEBUG="${WINEDEBUG:--all}"
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-{{ dg_nvidia_icd }}}"
+export __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1 SDL_JOYSTICK_HIDAPI=0
+export SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT="${SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT:-{{ dg_pc_racing_gamepad_only }}}"
+cd "$game_dir"
+cleanup() {
+  WINEPREFIX="$prefix" wineserver -k >/dev/null 2>&1 || true
+}
+trap cleanup 0
+trap 'exit 143' TERM
+trap 'exit 130' INT
+trap 'exit 129' HUP
+env -u PYTHONHOME -u PYTHONPATH wine scudrace.exe "$@"

@@ -613,6 +613,12 @@ dg_ogm_games:
     category: wine
     sgdb_query: "Sega Rally 2"
     github: pairomaniac/sr2-patcher
+  - desktop_id: scud-race
+    id: scud-race
+    name: Scud Race
+    category: wine
+    sgdb_query: "Scud Race"
+    github: wanszai/Scud-Race
   # Wanszai arcade-to-PC wrappers under Wine (ridge_racer.yml / sega_rally.yml
   # / model1.yml).
   - desktop_id: ridge-racer

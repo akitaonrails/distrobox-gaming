@@ -119,6 +119,10 @@ Current per-game controller handling:
   `install_sega_rally_2` role. It uses the patcher's XInput support and Wine's
   SDL controller mapping. The 25th-Anniversary repack still fails the exact
   build check; see [setup](sega-rally-2.md).
+- Scud Race PC uses the port's SDL/XInput pad input, with
+  `Map Controllers=1`, `Enable SDL=1`, and duplicate raw input disabled in its
+  dedicated prefix. RT/LT drive gas/brake; A/X shift; Y changes view. See
+  [setup](scud-race.md) for the remaining hands-on input check.
 
 If `evdev-joystick --listdevs` only shows the Moonlander keyboard and SDL sees
 zero joysticks, the 8BitDo is in a hidraw-only mode such as `2dc8:6013`. Switch
