@@ -222,7 +222,11 @@ NVIDIA Control Panel / MangoHud.
 - Buy-menu stats mismatch.
 - Street FI upgrades show a no-op aspiration conversion.
 - **Race transmissions + Automatic shifting difficulty → CVT-like
-  behaviour.** Use Manual or Manual+Clutch instead.
+  behaviour.** Caused by PFP-4 setting `CVTShiftTime` to `-0.95` (stock:
+  `-1.0`) on the 412 stock race transmissions in `gamedb.slt` (plus 21 rows
+  in two DLC patch DBs). Fixable with one SQLite `UPDATE`; see
+  [forza-database-editing.md](forza-database-editing.md#fix-race-transmissions-acting-like-a-cvt-on-automatic-pfp-4).
+  Until fixed, use Manual or Manual+Clutch.
 
 ### All three
 - Any graphical glitch is Xenia-side, not a pack bug.
