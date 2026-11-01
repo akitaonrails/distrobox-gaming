@@ -5,8 +5,12 @@ replaces our older Wine setup. The role uses the original PC game in
 `{{ dg_cmr1_source_dir }}` without modifying it. This machine has the supported
 European v1.5 fan-pack `Rally.exe` (SHA256
 `46500c8e22ce3e943b6855eca63ae9288261162347ca76fa36cad77cbb19c0bb`).
-The REA launcher v0.5.0 ZIP is pinned by SHA256 and staged in
+The REA launcher v0.5.1 ZIP is pinned by SHA256 and staged in
 `ROMS_FINAL/PC/releases/`. Future updates come from this GitHub repository.
+v0.5.1 fixes a post-stage crash with this exact community-patched executable
+and applies fixes F20–F27 to it, including the depth-buffer and HD-art fixes.
+No new launch or configuration options were introduced, so the existing
+4K, pacing, graphics, and controller profile remains appropriate.
 
 Run `ansible-playbook install-rea-colin-mcrae.yml` from `ansible/`. The role
 checks the game hash, installs the launcher in its own directory and Wine
@@ -42,5 +46,7 @@ triggers and Start. The migrated `cmRally.cfg` may still have the old keyboard
 mode, so this in-game change is required once. The save backup watches
 `{{ dg_cmr1_saves }}`, the previous config, and the user-edited `launcher.cfg`; the launcher cache
 and game files are reproducible. The bounded launch check logged 4K, 120 FPS
-cap, 3× draw distance, HD art and `game started`. No pad was connected during
-that check (`XInput pads: [0]`), so in-game pad controls still need verification.
+cap, 3× draw distance, HD art and `game started`. On v0.5.1, the log also
+confirmed F20–F27 applied to the community-patched executable. A full stage
+finish was not exercised. No pad was connected during that check, so in-game
+pad controls still need verification.

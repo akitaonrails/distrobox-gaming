@@ -192,3 +192,15 @@
     - "{{ ansible_facts['user_dir'] }}/.local/share/applications/pc-colin-mcrae-rally-1.desktop"
     - "{{ dg_cmr1_old_install }}"
     - "{{ dg_cmr1_old_prefix }}"
+
+- name: Remove superseded REA launcher extracts
+  ansible.builtin.file:
+    path: "{{ dg_cmr1_root }}/CMRLauncher-{{ item }}"
+    state: absent
+  loop: "{{ dg_cmr1_superseded_versions }}"
+
+- name: Remove superseded REA launcher archives
+  ansible.builtin.file:
+    path: "{{ dg_roms_final_root }}/PC/releases/CMRLauncher-{{ item }}.zip"
+    state: absent
+  loop: "{{ dg_cmr1_superseded_versions }}"
