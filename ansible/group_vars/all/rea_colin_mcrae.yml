@@ -1,7 +1,7 @@
 # REA Colin McRae Rally 1 launcher. The owned 1998 PC install is read only.
-dg_cmr1_version: v0.6.0
+dg_cmr1_version: v0.7.0
 dg_cmr1_url: "https://github.com/akitaonrails/rea-colin-mcrae/releases/download/{{ dg_cmr1_version }}/CMRLauncher-{{ dg_cmr1_version }}.zip"
-dg_cmr1_sha256: cfc8f1c0b33a0d25cc6de901ba80302eb5d478992fdcf551e0c7d0c2a8bf4d39
+dg_cmr1_sha256: 59ff841995ad015dccf87459d29763176e8e55fc10a643566509954b91dca716
 dg_cmr1_archive: "{{ dg_roms_final_root }}/PC/releases/CMRLauncher-{{ dg_cmr1_version }}.zip"
 dg_cmr1_source_dir: "{{ dg_roms_final_root }}/PC/games/CMRally"
 dg_cmr1_rally_sha256: 46500c8e22ce3e943b6855eca63ae9288261162347ca76fa36cad77cbb19c0bb
@@ -20,6 +20,7 @@ dg_cmr1_resolution_marker: "{{ dg_cmr1_root }}/.dg-race-resolution-slot-640x480"
 dg_cmr1_superseded_versions:
   - v0.5.0
   - v0.5.1
+  - v0.6.0
 # Pack 3 changed image bytes without changing pack.txt, which is the upstream
 # cache key. Refresh this exact generated BMP cache once for the v0.6 upgrade.
 dg_cmr1_hd_pack_cache_id: 1930b65577384147

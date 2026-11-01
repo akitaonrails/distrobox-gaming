@@ -5,7 +5,7 @@ replaces our older Wine setup. The role uses the original PC game in
 `{{ dg_cmr1_source_dir }}` without modifying it. This machine has the supported
 European v1.5 fan-pack `Rally.exe` (SHA256
 `46500c8e22ce3e943b6855eca63ae9288261162347ca76fa36cad77cbb19c0bb`).
-The REA launcher v0.6.0 ZIP is pinned by SHA256 and staged in
+The REA launcher v0.7.0 ZIP is pinned by SHA256 and staged in
 `ROMS_FINAL/PC/releases/`. Future updates come from this GitHub repository.
 v0.5.1 fixes a post-stage crash with this exact community-patched executable
 and applies fixes F20–F27 to it, including the depth-buffer and HD-art fixes.
@@ -20,6 +20,21 @@ the v0.6.0 launcher rebuilds it from pack 3 on first start. It does not touch
 the game source, saves, or settings. The v0.6.0 launch log confirmed the pack
 was rebuilt (1,450 ms) and loaded. Its generated BMP cache is retained for
 future launches.
+
+v0.7.0 replaces pack 3 with HD art pack 4: redrawn car textures, trackside
+signs, car icons, badges, and flags. It selects the 4× art at our 4K target
+and the lighter 2× art at up to 1080p. The launcher window now supports a
+gamepad: Start plays, the d-pad navigates, A changes a setting, and LB/RB
+switch tabs. New installations default to the Steam Deck look and smooth
+Linux scaling; our existing managed 4K/120 FPS, Smooth scaler, 3× distance,
+and modern controls remain appropriate. The new pack installs on first start;
+the one-time pack 3 cache refresh above remains a historical migration and
+does not need to run again.
+
+The bounded v0.7.0 launch logged pack 4 loaded from its 4× set, 3× draw
+distance, the new `cmrhooks.dll`, and `game started`. The test ended and its
+Wine processes were reaped. The launcher-window gamepad shortcuts and a full
+stage finish were not exercised in that check.
 
 Run `ansible-playbook install-rea-colin-mcrae.yml` from `ansible/`. The role
 checks the game hash, installs the launcher in its own directory and Wine
