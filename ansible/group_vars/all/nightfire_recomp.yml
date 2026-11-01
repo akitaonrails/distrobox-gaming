@@ -1,0 +1,31 @@
+---
+dg_nf_repo: hk21x/nightfire-recomp
+dg_nf_version: v1.0.2
+dg_nf_launcher_url: "https://github.com/{{ dg_nf_repo }}/releases/download/{{ dg_nf_version }}/NightFireLauncher.exe"
+dg_nf_launcher_archive: "{{ dg_roms_final_root }}/PC/releases/NightFireLauncher-{{ dg_nf_version }}.exe"
+dg_nf_launcher_sha256: cd85e43a4799c6edb403e10af90bb8a9115b9d180834ea517513a7e4caeb1298
+dg_nf_compiler_dlls:
+  - name: x64
+    url: https://raw.githubusercontent.com/mozilla/fxc2/807d26f4e4e9e9d0d0d6c1e05493b28eafb20e91/dll/d3dcompiler_47.dll
+    sha256: 4432bbd1a390874f3f0a503d45cc48d346abc3a8c0213c289f4b615bf0ee84f3
+    dest: "{{ dg_box_home }}/wineprefixes/nightfire/drive_c/windows/system32/d3dcompiler_47.dll"
+  - name: x86
+    url: https://raw.githubusercontent.com/mozilla/fxc2/807d26f4e4e9e9d0d0d6c1e05493b28eafb20e91/dll/d3dcompiler_47_32.dll
+    sha256: 2ad0d4987fc4624566b190e747c9d95038443956ed816abfd1e2d389b5ec0851
+    dest: "{{ dg_box_home }}/wineprefixes/nightfire/drive_c/windows/syswow64/d3dcompiler_47.dll"
+dg_nf_iso: "{{ dg_roms_final_root }}/xbox/007 - Nightfire (USA)/007 - Nightfire (USA).xiso.iso"
+dg_nf_iso_sha256: 732868ed01692636f189c015609c5cb4f00f985053af33755a6b1a4e081448f8
+dg_nf_default_xbe_sha1: 7e4b8f8a54bacc61a5897ba5245fdd65bddc0752
+dg_nf_driving_xbe_sha1: 8d46a023dfbd5c89d4ee04fe28b24a9620de546a
+dg_nf_root: "{{ dg_box_home }}/Games/nightfire"
+dg_nf_play: "{{ dg_nf_root }}/NightFire/play"
+dg_nf_prefix: "{{ dg_box_home }}/wineprefixes/nightfire"
+dg_nf_launcher: "{{ dg_box_home }}/bin/nightfire-recomp"
+dg_nf_display_width: 3840
+dg_nf_display_height: 2160
+dg_nf_dxvk_version: 3.1.1
+dg_nf_dxvk_url: "https://github.com/doitsujin/dxvk/releases/download/v{{ dg_nf_dxvk_version }}/dxvk-{{ dg_nf_dxvk_version }}.tar.gz"
+dg_nf_dxvk_archive: "{{ dg_roms_final_root }}/PC/releases/dxvk-{{ dg_nf_dxvk_version }}-nightfire.tar.gz"
+dg_nf_dxvk_sha256: 40565b4a724aadc4433fa4e010b4b23916d9b1f1baeee64e17186db94f54e608
+dg_nf_dxvk_extract: "{{ dg_nf_root }}/runtime"
+dg_nf_dxvk_dlls: [dxgi, d3d8, d3d9, d3d10core, d3d11]

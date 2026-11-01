@@ -1,0 +1,46 @@
+#!/usr/bin/env sh
+set -eu
+
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+
+root="{{ dg_nf_root }}"
+prefix="{{ dg_nf_prefix }}"
+play="{{ dg_nf_play }}"
+if [ "${1:-}" = status ]; then
+  test -f "$play/Nightfire.exe"
+  test -f "$play/NightfireDriving.exe"
+  printf 'NightFire ready: %s\n' "$play"
+  exit 0
+fi
+
+export WINEPREFIX="$prefix" WINEDEBUG="${WINEDEBUG:--all}"
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-{{ dg_nvidia_icd }}}"
+export __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia
+unset PYTHONHOME PYTHONPATH
+cleanup() {
+  if [ -n "${gamescope_group:-}" ]; then
+    kill -TERM -- "-$gamescope_group" 2>/dev/null || true
+  fi
+  WINEPREFIX="$prefix" wineserver -k >/dev/null 2>&1 || true
+  if [ -n "${gamescope_group:-}" ] && kill -0 -- "-$gamescope_group" 2>/dev/null; then
+    kill -KILL -- "-$gamescope_group" 2>/dev/null || true
+  fi
+}
+trap cleanup 0
+trap 'exit 143' TERM
+trap 'exit 130' INT
+trap 'exit 129' HUP
+if [ "${1:-}" = build ] || [ ! -f "$play/Nightfire.exe" ]; then
+  cd "$root"
+  wine NightFireLauncher.exe
+else
+  cd "$play"
+  setsid gamescope \
+    -W {{ dg_nf_display_width }} -H {{ dg_nf_display_height }} \
+    -w {{ dg_nf_display_width }} -h {{ dg_nf_display_height }} -f \
+    -- wine Nightfire.exe "$@" &
+  gamescope_group=$!
+  wait "$gamescope_group"
+fi

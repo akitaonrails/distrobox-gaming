@@ -17,6 +17,10 @@
 # Scud Race needs the exact Model 3 scuda.zip and dayto2pe.zip archives.
 # dg_scud_roms: [{source: /path/to/scuda.zip, name: scud.zip, md5: d2d619b0ee5cbf74596431b28080c420},
 #                {source: /path/to/dayto2pe.zip, name: dayto2pe.zip, md5: d05ef348c9be8408ef50ea74dae29f71}]
+# NightFire recomp requires the supported original Xbox USA XISO. Update the
+# hash as well if your owned dump is a different byte-for-byte XISO of that game.
+# dg_nf_iso: "{{ dg_roms_final_root }}/xbox/007 - Nightfire (USA)/007 - Nightfire (USA).xiso.iso"
+# dg_nf_iso_sha256: 732868ed01692636f189c015609c5cb4f00f985053af33755a6b1a4e081448f8
 # Code Veronica X HD recomp uses the US NPUB30467 PSN v01.00 base PKG and
 # matching owner-provided RAP license. Override either path for your layout.
 # dg_cv_pkg: "{{ dg_roms_final_root }}/ps3/Code Veronica/NPUB30467.pkg"

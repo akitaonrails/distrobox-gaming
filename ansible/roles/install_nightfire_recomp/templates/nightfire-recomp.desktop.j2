@@ -1,0 +1,11 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=007 NightFire Recomp
+Exec={{ dg_nf_launcher }}
+Terminal=false
+Type=Application
+Icon=wine
+Comment=007 NightFire original Xbox recompilation
+Categories=Game;
+StartupWMClass=Nightfire.exe
+{{ ogm_metadata('nightfire-recomp') }}

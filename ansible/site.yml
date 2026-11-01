@@ -58,6 +58,7 @@
     - { role: install_sega_rally,              tags: [sega_rally, never] }
     - { role: install_sega_rally_2,            tags: [sega_rally_2, never] }
     - { role: install_scud_race,               tags: [scud_race, never] }
+    - { role: install_nightfire_recomp,         tags: [nightfire_recomp, never] }
     - { role: install_ridge_racer,             tags: [ridge_racer, never] }
     - { role: install_screamer,                tags: [screamer, never] }
     - { role: install_openbor,                 tags: [openbor, never] }

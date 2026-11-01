@@ -1,0 +1,7 @@
+---
+- name: Install 007 NightFire Xbox recompilation
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_nightfire_recomp

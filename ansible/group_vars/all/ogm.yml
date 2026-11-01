@@ -619,6 +619,12 @@ dg_ogm_games:
     category: wine
     sgdb_query: "Scud Race"
     github: wanszai/Scud-Race
+  - desktop_id: nightfire-recomp
+    id: nightfire-recomp
+    name: 007 NightFire Recomp
+    category: wine
+    sgdb_query: "007 Nightfire"
+    github: hk21x/nightfire-recomp
   # Wanszai arcade-to-PC wrappers under Wine (ridge_racer.yml / sega_rally.yml
   # / model1.yml).
   - desktop_id: ridge-racer
