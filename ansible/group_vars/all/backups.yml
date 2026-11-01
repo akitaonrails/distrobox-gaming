@@ -73,6 +73,22 @@ dg_save_sets:
   - { name: dk64-recomp,          src: ".config/DK64Recompiled" }
   - { name: project-midas,       src: ".local/share/ProjectMidas" }
   - { name: hl360-fm4,           src: ".local/share/hl360-fm4" }
+  - { name: outrunners,           src: ["file:.local/share/OutRunners/outrunners.eeprom",
+                                        "file:.local/share/OutRunners/outrunners.bookkeeping",
+                                        "file:.local/share/OutRunners/orunners.eeprom",
+                                        "file:.local/share/OutRunners/orunners.bookkeeping",
+                                        "file:.local/share/OutRunners/controls.ini",
+                                        "file:.local/share/OutRunners/outrunners.ini",
+                                        "file:.local/share/OutRunners/ghost_0.bin",
+                                        "file:.local/share/OutRunners/ghost_1.bin",
+                                        "file:.local/share/OutRunners/ghost_2.bin",
+                                        "file:.local/share/OutRunners/ghost_3.bin",
+                                        "file:.local/share/OutRunners/ghost_4.bin",
+                                        "file:.local/share/OutRunners/ghost_5.bin",
+                                        "file:.local/share/OutRunners/ghost_6.bin",
+                                        "file:.local/share/OutRunners/ghost_7.bin",
+                                        "file:.local/share/OutRunners/ghost_8.bin",
+                                        "file:.local/share/OutRunners/ghost_9.bin"] }
   - { name: gravity-rush,        src: ".local/share/gravity-rush" }
   - { name: doa2u-re,            src: ".local/share/doa2u-re" }
   - { name: gt3-revisited,        src: ".local/share/GT3Revisited" }
@@ -95,8 +111,17 @@ dg_save_sets:
   - { name: dusk-twilight,       src: ".local/share/TwilitRealm/Dusklight/USA" }
   - { name: fzero-glinux,        src: ".local/share/fzero-glinux/GC" }
   - { name: gow3-pc,             src: ".local/share/gow3/user/savedata" }
+  - { name: sotc-pc,             src: "tools/sotc-pc/user/savedata" }
   - { name: dekui,               src: "tools/dekui/dekui/user/nand" }
   - { name: driveclub-recomp,    src: "tools/driveclub-recomp/data/user" }
+  - { name: fh1-reimagined,      src: [".local/share/forza/B13EBABEBABEBABE",
+                                        ".local/share/forza/save-backups",
+                                        "file:.local/share/forza/live_identity.txt"] }
+  - { name: ttt2-pc,             src: ["tools/ttt2-pc/.compatdata/pfx/drive_c/users/steamuser/AppData/Local/TTT2Recomp/saves",
+                                        "file:tools/ttt2-pc/.compatdata/pfx/drive_c/users/steamuser/AppData/Local/TTT2Recomp/settings.ini",
+                                        "file:tools/ttt2-pc/.compatdata/pfx/drive_c/users/steamuser/AppData/Local/TTT2Recomp/servers.ini",
+                                        "file:tools/ttt2-pc/.compatdata/pfx/drive_c/users/steamuser/AppData/Local/TTT2Recomp/community/known_servers.txt"] }
+  - { name: xerenge,             src: "{{ ansible_facts.env.HOME }}/.local/share/burnout/B13EBABEBABEBABE" }
   - { name: overstrike,          src: ["tools/overstrike/msmm/Profiles", "tools/overstrike/msmr/Profiles"] }
   - { name: project-r,           src: ".config/ProjectR" }
   - { name: doom64-rt,           src: ".config/doom64-rt" }

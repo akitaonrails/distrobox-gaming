@@ -1,0 +1,7 @@
+---
+- name: Install OutRunners native Linux port
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_outrunners

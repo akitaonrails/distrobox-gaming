@@ -1,6 +1,7 @@
 # Donkey Kong Country SNES recompilations (DKC1 / DKC2 / DKC3)
 
 Release sweep 2026-10-23: newer DKC1/2/3 tags exist, but the roles build from pinned source commits with Linux patches tailored to those commits; upstream release archives do not provide supported Linux builds. The installed trilogy stays pinned until each patch is rebased and rebuilt.
+Rechecked 2026-11-01: the newer DKC1/2/3 release assets remain Windows/macOS only. Their source commits include platform-specific host changes, and the Linux patches still target the pinned commits; no Linux upgrade was applied.
 
 [elliotttate](https://github.com/elliotttate)'s **DKC1Recomp** / **DKC2Recomp**
 / **DKC3Recomp** statically recompile the SNES trilogy into native widescreen

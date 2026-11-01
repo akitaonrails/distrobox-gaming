@@ -13,6 +13,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 
 | Project | What it is | Source |
 |---|---|---|
+| Tekken Tag Tournament 2 PC | Xbox 360 static recompilation, Windows build through GE-Proton | [shihabal3amri/tekken-tag-tournament-2-pc](https://github.com/shihabal3amri/tekken-tag-tournament-2-pc) · [doc](ttt2-pc.md) |
 | Ship of Harkinian | Zelda: Ocarina of Time PC port | [HarbourMasters/Shipwright](https://github.com/HarbourMasters/Shipwright) · [doc](ship-of-harkinian.md) |
 | 2 Ship 2 Harkinian | Majora's Mask PC port | [HarbourMasters/2ship2harkinian](https://github.com/HarbourMasters/2ship2harkinian) · [doc](2ship2harkinian.md) |
 | DekUI | Single-screen Majora's Mask 3D via a custom Azahar build | [tgacquin/mm3d-dekui](https://github.com/tgacquin/mm3d-dekui) · [doc](dekui-mm3d.md) |
@@ -30,6 +31,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | Dusk (Twilight Princess) | GameCube Twilight Princess native port | [TwilitRealm/dusklight](https://github.com/TwilitRealm/dusklight) · [doc](dusk-twilight-princess.md) |
 | Project Midas | GoldenEye 007 native PC port from the N64 decompilation (replaced the cblock85 recomp 2026-10-18) | [murkantor/Project-Midas](https://github.com/murkantor/Project-Midas) · [doc](project-midas.md) |
 | FM4 PC Port | Forza Motorsport 4 (Xbox 360) native port via ReXGlue, USA Rev 1 (superseded fm4-recomp 2026-10-27) | [0herculabs/hl360-forza4](https://github.com/0herculabs/hl360-forza4) · [doc](fm4-hl360.md) |
+| OutRunners PC Port | Native Linux port of Sega's arcade racer, console and arcade modes | [cheviman/outrunners-port](https://github.com/cheviman/outrunners-port) · [doc](outrunners.md) |
 | Burnout Revenge · Xerenge | Xbox 360 Burnout Revenge static recompilation (ReXGlue + plume), native Linux | [shipa-2/Xerenge](https://github.com/shipa-2/Xerenge) · [doc](xerenge.md) |
 | Burnout 3 · Takedawn | Original Xbox Burnout 3: Takedown static recompilation, native Linux (needs the NTSC-U retail disc) | [xenophobentx/takedawn](https://github.com/xenophobentx/takedawn) · [doc](takedawn.md) |
 | F-ZERO GX · GLINUX | GameCube F-ZERO GX on a Dolphin-derived runtime (ModernGekko), native widescreen | [Mabec-games/F-ZERO-GLINUX](https://github.com/Mabec-games/F-ZERO-GLINUX) · [doc](fzero-glinux.md) |

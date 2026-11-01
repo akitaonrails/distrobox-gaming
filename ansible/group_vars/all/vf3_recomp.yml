@@ -1,16 +1,16 @@
 ---
 # Virtua Fighter 3 Recomp: official native Linux/Steam Deck release.
 dg_vf3_repo: mr-finster/vf3-recomp
-dg_vf3_release_tag: v0.1.10-alpha
+dg_vf3_release_tag: v0.1.13-alpha
 dg_vf3_asset_name: VirtuaFighter3Recomp-deck.tar.gz
 dg_vf3_asset_url: "https://github.com/{{ dg_vf3_repo }}/releases/download/{{ dg_vf3_release_tag }}/{{ dg_vf3_asset_name }}"
-dg_vf3_asset_sha256: 8a21fef125e2614b2d71e8132e83dc4f12f9b3ffd3dfb193f0d81e16454f2915
+dg_vf3_asset_sha256: e375e1880ba307d212f3a760bdadd5718d321aab0fe8344628b9c63f25c47e06
 
 dg_vf3_rom_dir: "{{ dg_roms_final_root }}/arcade/model3"
 dg_vf3_rom_zip: "{{ dg_vf3_rom_dir }}/vf3.zip"
 dg_vf3_rom_sha256: 99a92b2110e9e5508e8f3951eaac044dd5e1291442e42bc8b69f84533bafce28
 dg_vf3_cache_dir: "{{ dg_box_home }}/cache/vf3-recomp"
-dg_vf3_archive: "{{ dg_vf3_cache_dir }}/VirtuaFighter3Recomp-deck-{{ dg_vf3_release_tag }}.tar.gz"
+dg_vf3_archive: "{{ dg_roms_final_root }}/PC/releases/VirtuaFighter3Recomp-deck-{{ dg_vf3_release_tag }}.tar.gz"
 dg_vf3_root: "{{ dg_box_home }}/tools/vf3-recomp"
 dg_vf3_gamedir: "{{ dg_vf3_root }}/VirtuaFighter3"
 dg_vf3_bin: "{{ dg_vf3_gamedir }}/vf3"

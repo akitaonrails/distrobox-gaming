@@ -61,7 +61,7 @@
     - name: Download the pinned G-Diffuser Linux release
       ansible.builtin.get_url:
         url: "{{ dg_gdiffuser_asset_url }}"
-        dest: "{{ dg_gdiffuser_cache_dir }}/{{ dg_gdiffuser_asset_name }}"
+        dest: "{{ dg_gdiffuser_archive }}"
         checksum: "sha256:{{ dg_gdiffuser_asset_sha256 }}"
         mode: "0644"
 
@@ -77,7 +77,7 @@
              grep -qx "{{ dg_gdiffuser_version }}" "$inst/.dg-installed-ref" 2>/dev/null; then
             exit 0
           fi
-          tar xzf "{{ dg_gdiffuser_cache_dir }}/{{ dg_gdiffuser_asset_name }}" \
+          tar xzf "{{ dg_gdiffuser_archive }}" \
             -C "$inst" --strip-components=1
           chmod 0755 "$inst/{{ dg_gdiffuser_exe }}" "$inst/gdx-extract" 2>/dev/null || true
           printf "%s\n" "{{ dg_gdiffuser_version }}" > "$inst/.dg-installed-ref"
@@ -94,13 +94,20 @@
         {{ dg_in_box }} sh -lc '
           set -eu
           inst="{{ dg_gdiffuser_install_dir }}"
-          [ -f "$inst/baserom.us.rev0.z64" ] || \
+          changed=0
+          if [ ! -f "$inst/baserom.us.rev0.z64" ]; then
             unzip -p "{{ dg_gdiffuser_rom_zip }}" "*.z64" > "$inst/baserom.us.rev0.z64"
-          [ -f "$inst/baserom.translated.ek.ndd" ] || \
+            changed=1
+          fi
+          if [ ! -f "$inst/baserom.translated.ek.ndd" ]; then
             unzip -p "{{ dg_gdiffuser_ek_disk_zip }}" "*.ndd" > "$inst/baserom.translated.ek.ndd"
-          [ -f "$inst/N64DDIPLROM.n64" ] || \
+            changed=1
+          fi
+          if [ ! -f "$inst/N64DDIPLROM.n64" ]; then
             unzip -p "{{ dg_gdiffuser_ipl_zip }}" "*.n64" > "$inst/N64DDIPLROM.n64"
-          printf "%s\n" "staged-gdiffuser-files"
+            changed=1
+          fi
+          [ "$changed" -eq 0 ] || printf "%s\n" "staged-gdiffuser-files"
         '
       register: _gdx_stage
       changed_when: "'staged-gdiffuser-files' in _gdx_stage.stdout"

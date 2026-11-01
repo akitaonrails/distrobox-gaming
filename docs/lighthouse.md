@@ -27,7 +27,7 @@ the launcher, desktop entry and install dir; your ROM is untouched).
 
 The role (see `group_vars/all/lighthouse.yml`):
 
-- downloads the pinned `1.2.1` AppImage (SHA256-pinned) into
+- downloads the pinned `1.2.2` AppImage (SHA256-pinned) into
   `tools/lighthouse/cache/` and installs it into `tools/lighthouse/current/`
   without deleting the generated data or existing controller database;
 - seeds the **baserom next to the appimage** as `baserom.us.v10.z64`, extracted
@@ -70,3 +70,7 @@ changes.
 
 Keybinds (default): A=X B=C L=E R=R Z=Z Start=Space, analog=WASD, C=arrows,
 D-pad=TFGH, F11 fullscreen, ESC menubar.
+
+## 2026-11-01 release update
+
+The 1.2.2 Linux AppImage is pinned and staged in `ROMS_FINAL/PC/releases/`; no new graphics or controller setup is required by its release notes.

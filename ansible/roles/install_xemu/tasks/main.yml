@@ -15,8 +15,15 @@
 - name: Download the pinned xemu AppImage (dev build)
   ansible.builtin.get_url:
     url: "{{ dg_xemu_asset_url }}"
-    dest: "{{ dg_xemu_appimage }}"
+    dest: "{{ dg_xemu_asset_staging }}"
     checksum: "sha256:{{ dg_xemu_asset_sha256 }}"
+    mode: "0644"
+
+- name: Install the verified xemu AppImage
+  ansible.builtin.copy:
+    src: "{{ dg_xemu_asset_staging }}"
+    dest: "{{ dg_xemu_appimage }}"
+    remote_src: true
     mode: "0755"
 
 - name: Remove the superseded AUR xemu-bin if it's still installed

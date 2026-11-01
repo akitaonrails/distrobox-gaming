@@ -8,6 +8,7 @@ of CannonBall-SE, itself based on the original
 plain CannonBall to the DX fork 2026-09-05.
 
 Release sweep 2026-10-23: upstream tag `1.04` is newer than our pinned commit, but the required Linux landscape/fullscreen patch fails to apply to `renderbase.cpp` and `rendersurface.cpp` at that tag. The installed build stays pinned until that patch is ported and tested.
+Rechecked 2026-11-01 against the exact `1.04` tag: `git apply --check` still fails at those two files. The release adds supported 4× rendering, 120 FPS, and controller fixes, so porting this patch remains worthwhile before updating the installed build.
 
 - **Distribution:** **built from source** (native Linux, CMake + SDL2 +
   TinyXML2, **OpenGL ES2 / EGL**) — no Linux release binary. Pinned to

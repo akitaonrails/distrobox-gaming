@@ -2,9 +2,13 @@
 
 [wanszai/Scud-Race](https://github.com/wanszai/Scud-Race) is installed as an
 optional Windows PC game in the `gaming` distrobox. The pinned release is
-`0.0.14`; the release archive is checksum-verified and staged in
+`0.0.15`; the release archive is checksum-verified and staged in
 `ROMS_FINAL/PC/releases/`. Run from the menu's **Scud Race** entry or with
 `scud-race` from the host.
+
+Version 0.0.15 adds sequential/H-pattern shifting options, F11 fullscreen
+toggle and regional/world record boards. The role preserves existing player
+settings so transmission selection remains the player's choice.
 
 ## Required arcade data
 
@@ -52,3 +56,7 @@ change bindings in the game's input menu or the `pad_map_*` entries in
 The generated `scudrace.nv` is the actual save file. It and the two INI files
 are registered in `dg_save_sets` for backup. The release payload, arcade
 archives, and shaders are not backed up as save data.
+
+## 2026-11-01 release update
+
+Version 0.0.15 adds sequential/H-pattern and hold/push shifter choices, a PC F11 fullscreen toggle, a Miami online server, and revised records. The role keeps the existing gamepad and graphics configuration; the new shifter choices are optional and set in-game.

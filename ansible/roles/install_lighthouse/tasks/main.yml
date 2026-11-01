@@ -56,7 +56,7 @@
     - name: Download the pinned Lighthouse AppImage
       ansible.builtin.get_url:
         url: "{{ dg_lighthouse_asset_url }}"
-        dest: "{{ dg_lighthouse_cache_dir }}/{{ dg_lighthouse_asset_name }}"
+        dest: "{{ dg_lighthouse_archive }}"
         checksum: "sha256:{{ dg_lighthouse_asset_sha256 }}"
         mode: "0644"
 
@@ -71,7 +71,7 @@
           fi
 
           mkdir -p "{{ dg_lighthouse_install_dir }}"
-          install -m 0755 "{{ dg_lighthouse_cache_dir }}/{{ dg_lighthouse_asset_name }}" "{{ dg_lighthouse_install_dir }}/lighthouse.appimage"
+          install -m 0755 "{{ dg_lighthouse_archive }}" "{{ dg_lighthouse_install_dir }}/lighthouse.appimage"
           printf "%s\n" "{{ dg_lighthouse_install_id }}" > "{{ dg_lighthouse_install_dir }}/.dg-installed-ref"
           printf "%s\n" "installed-lighthouse {{ dg_lighthouse_install_dir }}"
         '

@@ -1,9 +1,9 @@
 # DriveClub Recomp
 
 [OverkillLabs3/driveclub-recomp](https://github.com/OverkillLabs3/driveclub-recomp)
-v0.3.2 is staged as an optional Windows runtime alongside the working shadPS4
+v0.4.0 is staged as an optional Windows runtime alongside the working shadPS4
 Driveclub installation. The pinned release ZIP is stored under
-`dg_roms_final_root/PC/`; `install-driveclub-recomp.yml` extracts it to
+`dg_roms_final_root/PC/releases/`; `install-driveclub-recomp.yml` extracts it to
 `dg_box_home/tools/driveclub-recomp` without copying or changing game data.
 
 The US PS4 title `CUSA00093` is now present as a base 1.00 PKG and a 1.28
@@ -20,7 +20,7 @@ existing install. Its release notes describe fixes for race-exit hangs,
 rendering errors, and Wine/Proton two-thread defaults, plus DLSS/FSR upscaling
 options. The role retains `launcher.ini`, `data/user`, `mods/`, logs, and the
 Proton prefix. The installed ZIP is SHA256-pinned and kept under
-`dg_roms_final_root/PC/` for rebuilds. These new graphics options are available
+`dg_roms_final_root/PC/releases/` for rebuilds. These new graphics options are available
 in the launcher; existing user settings are left in place.
 
 This 1.28 update is explicitly labeled **Patched 60FPS**, a repack. Upstream
@@ -38,7 +38,7 @@ fixed in 0.3.0 ("endless Downloading on every track and car after the tutorial")
 0000000000000000 at guest offset 0x64db13"), the career event-start freeze
 (#23/#24/#49) and quiet stereo audio. 0.3.1 added DLSS/FSR **upscaling**, HDR10,
 graphics detail/effects options, a Detail tab, wheel support and VRR pacing; the
-role now pins **0.3.2**. The operator's profile (archived during diagnosis) was
+role later advanced to **0.4.0**. The operator's profile (archived during diagnosis) was
 restored — the bug was runtime-side, not save corruption.
 
 **2026-10-18: crash after the intro, diagnosed and fixed.** The first
@@ -89,3 +89,8 @@ that folder and preserves it, as well as settings, logs and saves on future
 updates. The five redundant multipart RAR files were removed after verified
 extraction and decryption, recovering about 36 GB; the two source PKGs and
 decrypted dumps remain on the NAS.
+
+## 2026-11-01 release update
+
+The 0.4.0 release adds private multiplayer and a new launcher. The role retains the existing DLC and graphics baseline; multiplayer under Proton has not been exercised here.
+`DriveClub.exe` selects the classic native launcher under Proton, so the existing launcher command remains valid. The first start rebuilds the shader cache and can stutter for several minutes.

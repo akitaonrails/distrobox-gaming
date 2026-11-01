@@ -319,6 +319,11 @@ interruption. Record the test's PID, process name, start time, parent, and
 container. Do not put `timeout` only around `distrobox enter`, or pipe a live
 launcher into `head` / `rg -m`: terminating the outer wrapper can orphan Wine
 children under `containerd-shim`.
+For host GE-Proton tests, Wine services and the game can detach into separate
+process groups. After the supervisor stops the launcher, scan `/proc/*/environ`
+for the test's exact `STEAM_COMPAT_DATA_PATH`, then terminate and reap only
+those task-created PIDs. Killing the launcher's process group alone is not
+cleanup.
 
 Before finishing, inspect the full process table by exact game/emulator name
 and start time **and** by command line/environment. Include `STAT` and look for

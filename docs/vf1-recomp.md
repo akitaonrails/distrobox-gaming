@@ -1,5 +1,8 @@
 # Virtua Fighter Recompiled (`install_vf1_recomp`)
 
+Release v1.5.0 adds online play and arcade-stick discovery/remapping. The role
+keeps its portable data directory, including existing controls and rankings.
+
 [mr-finster/vf1-recomp](https://github.com/mr-finster/vf1-recomp) is an
 unofficial native PC port of the 1993 SEGA arcade **Virtua Fighter** (Model 1
 hardware). The NEC V60 program is statically recompiled to native code at
@@ -63,3 +66,7 @@ elsewhere or is a different valid `vf` set.
 Bump `dg_vf1_release_tag` / `dg_vf1_asset_name` / `dg_vf1_asset_sha256` (from the
 [releases](https://github.com/mr-finster/vf1-recomp/releases)) and re-run. The
 version gate re-extracts over the top; your `data/` saves survive.
+
+## 2026-11-01 release update
+
+The v1.5.0 release adds online improvements and direct arcade-stick support with button setup under **Menu → Controls → Player 1/2 → Set up buttons**. The existing 8BitDo pad mapping remains the baseline; physical input was not exercised during this update.

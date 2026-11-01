@@ -14,6 +14,13 @@
       FH1 ReImagined needs the Forza Horizon (Xbox 360) disc image at
       dg_fh1r_iso (title 4D5309C9).
 
+- name: Fetch the pinned FH1 ReImagined release
+  ansible.builtin.get_url:
+    url: "{{ dg_fh1r_tarball_url }}"
+    dest: "{{ dg_fh1r_tarball }}"
+    checksum: "sha256:{{ dg_fh1r_tarball_sha256 }}"
+    mode: "0644"
+
 - name: Verify the staged release tarball
   ansible.builtin.stat:
     path: "{{ dg_fh1r_tarball }}"
@@ -50,7 +57,23 @@
       - "{{ dg_fh1r_tarball }}"
       - -C
       - "{{ dg_fh1r_install_dir }}"
-    creates: "{{ dg_fh1r_launcher }}"
+    creates: "{{ dg_fh1r_install_dir }}/.dg-extracted-{{ dg_fh1r_version }}"
+  register: _fh1r_extract
+
+- name: Record the extracted release version
+  ansible.builtin.copy:
+    dest: "{{ dg_fh1r_install_dir }}/.dg-extracted-{{ dg_fh1r_version }}"
+    content: "{{ dg_fh1r_version }}\n"
+    mode: "0644"
+
+- name: Show the required interactive FH1 game rebuild step
+  ansible.builtin.debug:
+    msg: >-
+      FH1 ReImagined {{ dg_fh1r_version }} launcher is installed. Open
+      {{ dg_fh1r_bin }}, choose Setup > Game files, select the owned ISO at
+      {{ dg_fh1r_iso }}, and press Build. The updated game runtime requires
+      this GUI-only rebuild; saves in the box's .local/share/forza are preserved.
+  when: _fh1r_extract.changed
 
 - name: Mark the launcher executable
   ansible.builtin.file:

@@ -13,10 +13,11 @@
 #   https://github.com/xemu-project/xemu/releases  (tag: pre-release)
 
 dg_xemu_release_tag: "pre-release"
-dg_xemu_version: "0.8.139-2-g25e1ee2fd5"
-dg_xemu_asset_name: "xemu-0.8.139-2-g25e1ee2fd5-x86_64.AppImage"
+dg_xemu_version: "0.8.139-8-gdc10b4cea9"
+dg_xemu_asset_name: "xemu-0.8.139-8-gdc10b4cea9-x86_64.AppImage"
 dg_xemu_asset_url: "https://github.com/xemu-project/xemu/releases/download/{{ dg_xemu_release_tag }}/{{ dg_xemu_asset_name }}"
-dg_xemu_asset_sha256: "44d33f7e905149c8028a6f8eb693a4fb3a4aeb4313c2208c7adb1d63d11f5d7a"
+dg_xemu_asset_sha256: "a9d434eb6b719ff5fc0d23b924630d36a79fb1993e09b36eed8b3dc2f764fbaf"
+dg_xemu_asset_staging: "{{ dg_roms_final_root }}/PC/releases/{{ dg_xemu_asset_name }}"
 
 dg_xemu_install_dir: "{{ dg_box_home }}/tools/xemu-appimage"
 dg_xemu_appimage: "{{ dg_xemu_install_dir }}/xemu.AppImage"

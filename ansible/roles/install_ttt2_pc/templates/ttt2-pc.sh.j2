@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+set -eu
+APP="{{ dg_ttt2_install_dir }}"
+PROTON="{{ dg_ttt2_proton }}"
+if [ ! -f "$APP/game/tekken.img" ] || [ ! -f "$APP/Tekken Tag Tournament 2.exe" ]; then
+  printf '%s\n' 'Tekken Tag Tournament 2 PC is not installed; run install-ttt2-pc.yml.' >&2
+  exit 1
+fi
+export STEAM_COMPAT_CLIENT_INSTALL_PATH="{{ dg_ttt2_steam_root }}"
+export STEAM_COMPAT_DATA_PATH="{{ dg_ttt2_compatdata }}"
+export SteamAppId=0
+export SteamGameId=0
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+cd "$APP"
+exec "$PROTON" run "$APP/Tekken Tag Tournament 2.exe" "$@"

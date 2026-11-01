@@ -1,0 +1,17 @@
+---
+# Native Linux port of Sega OutRunners. The World MAME set is verified by
+# upstream's tools/verify_rom.py (17/17 files).
+dg_or_repo: cheviman/outrunners-port
+dg_or_version: v1.1.0
+dg_or_asset_name: "outrunners-linux-x64-{{ dg_or_version }}.tar.gz"
+dg_or_asset_url: "https://github.com/{{ dg_or_repo }}/releases/download/{{ dg_or_version }}/outrunners-linux-x64.tar.gz"
+dg_or_asset_sha256: d88e0d2a5b550e83c90c83020480cfa58add57539e7e57cf9937d24993885763
+dg_or_asset_path: "{{ dg_roms_final_root }}/PC/releases/{{ dg_or_asset_name }}"
+dg_or_rom: "{{ dg_roms_final_root }}/arcade/mame/orunners_dup1.zip"
+dg_or_rom_sha256: e995b160aaa6839d6128e5972bc2d245e9dbdd78a4dc3c7c3f2d1f9e25893df4
+dg_or_root: "{{ dg_box_home }}/tools/outrunners-port"
+dg_or_release_dir: "{{ dg_or_root }}/{{ dg_or_version }}"
+dg_or_game_dir: "{{ dg_or_release_dir }}/outrunners"
+dg_or_user_dir: "{{ dg_box_home }}/.local/share/OutRunners"
+dg_or_launcher: "{{ dg_box_home }}/bin/outrunners"
+dg_or_arcade_launcher: "{{ dg_box_home }}/bin/outrunners-arcade"

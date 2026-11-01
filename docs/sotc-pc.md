@@ -1,7 +1,7 @@
 # Shadow of the Colossus — native PC port (SOTC-PC)
 
 [AjncSystem/ShadowOfTheColossus-PC](https://github.com/AjncSystem/ShadowOfTheColossus-PC)
-`v0.60.6-C3` is a native Windows port of the **PS4 Bluepoint remake** of
+`v0.70` is a native Windows port of the **PS4 Bluepoint remake** of
 Shadow of the Colossus: the game's own x86-64 code runs on the CPU, the PS4
 GPU is translated to Vulkan (bloodborne_pc-style loader + shadPS4 video
 core). Windows x64 exe → GE-Proton. Managed by `install_sotc_pc` /
@@ -51,3 +51,8 @@ stable default (Maximum can crash in wide views).
 
 Not yet launched on this box — first boot is the verification step (plus the
 sound-module copy above).
+
+## 2026-11-01 release update
+
+The 0.70 release improves area-transition performance. Upstream recommends an SSD for both the dump and port because transitions stream hundreds of MB; the NAS-hosted dump may still cause stalls. The 60 FPS mode remains configured.
+The role links each release's `user/` directory to a persistent folder under `tools/sotc-pc/user/`; `user/savedata` is in the save backup manifest. Shader caches stay outside that backup.

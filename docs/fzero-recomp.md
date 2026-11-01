@@ -58,3 +58,7 @@ dump of that revision, `.sfc` or headered `.smc`, works).
 Bump `dg_fzero_release_tag` / `dg_fzero_asset_name` / `dg_fzero_asset_sha256`
 (from the [releases](https://github.com/mstan/FZeroSNESRecomp/releases); take the
 sha256 from the asset's `.sha256` sidecar) and re-run.
+
+## 2026-11-01 update check
+
+The GitHub release listing currently shows v0.14.1, but this tag has no compatible native Linux asset and is from a changed release line. Keep the installed v1.8.3 Linux build until a compatible newer build is available.

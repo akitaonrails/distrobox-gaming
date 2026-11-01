@@ -7,10 +7,11 @@
 # See docs/fm4-hl360.md.
 
 dg_hl360_repo: 0herculabs/hl360-forza4
-dg_hl360_version: v0.3.9
+dg_hl360_version: v0.3.10
 dg_hl360_asset_name: "FM4-{{ dg_hl360_version }}-windows-x64.zip"
 dg_hl360_asset_url: "https://github.com/{{ dg_hl360_repo }}/releases/download/{{ dg_hl360_version }}/{{ dg_hl360_asset_name }}"
-dg_hl360_asset_sha256: 402c55a08f5880f636d5106945cf4bcea6a791231bef8bf74830d5434dec2ebc
+dg_hl360_asset_sha256: 20733dd305e05562c4086b9b239e9313ce338cbdc0774a83823280cee2de6c44
+dg_hl360_asset_path: "{{ dg_roms_final_root }}/PC/releases/{{ dg_hl360_asset_name }}"
 
 # Supported inputs (upstream): Forza Motorsport 4 (USA) Rev 1, multilanguage
 # Play Disc — title ID 4D530910, media ID 33E7B39F, XEX 0.0.0.14.
@@ -26,6 +27,7 @@ dg_hl360_release_dir: "{{ dg_hl360_install_dir }}/releases/{{ dg_hl360_version }
 dg_hl360_app_dir: "{{ dg_hl360_release_dir }}/FM4"
 dg_hl360_cache_dir: "{{ dg_box_home }}/cache/hl360-fm4"
 dg_hl360_user_dir: "{{ dg_box_home }}/.local/share/hl360-fm4"
+dg_hl360_settings_path: "{{ dg_hl360_user_dir }}/fm4.user.toml"
 dg_hl360_launcher: "{{ dg_box_home }}/bin/fm4-port"
 
 dg_hl360_proton: "{{ ansible_facts.env.HOME }}/.steam/steam/compatibilitytools.d/GE-Proton11-1/proton"
@@ -34,19 +36,27 @@ dg_hl360_compatdata: "{{ dg_hl360_install_dir }}/.compatdata"
 
 # Graphics/behaviour keys the role keeps on the validated baseline. Upstream's
 # graphics troubleshooting doc is explicit that the async+none pair drops draws
-# (roads, car thumbnails) and that `vsync` is the guest vblank pacing, not a
-# presentation switch; anisotropic_override 5 was the launcher's own default.
+# (roads, car thumbnails). In v0.3.10, `vsync` keeps the guest vblank at 60 Hz
+# and selects the Vulkan FIFO present mode. The separate host limiter is off.
 # The guest video mode stays 720p: it is a request to the game, and a 4K value
 # there gives a black screen with sound.
 dg_hl360_settings:
-  anisotropic_override: "16"
+  # Upstream encodes 16x as enum 5, not the literal 16 (which it clamps to 5).
+  anisotropic_override: "5"
   async_shader_compilation: "false"
   readback_resolve: "'fast'"
   graphics_preset: "3"
   resolution_scale: "4"
   present_effect: "'fsr'"
   vsync: "true"
-  host_present_fps_limit: "60"
+  vulkan_present_mode: "'fifo'"
+  vulkan_allow_present_mode_immediate: "false"
+  vulkan_allow_present_mode_mailbox: "false"
+  vulkan_allow_present_mode_fifo_relaxed: "false"
+  # v0.3.10's guest vblank is the sole frame clock. A host limit of 60
+  # introduced periodic duplicate/dropped frames when the clocks drifted.
+  host_present_fps_limit: "0"
+  fh1_guest_vblank_hz: "60.0"
   video_mode_width: "1280"
   video_mode_height: "720"
 
@@ -55,14 +65,14 @@ dg_hl360_settings:
 dg_hl360_tool: "{{ dg_hl360_app_dir }}/fm4tool.exe"
 
 # The port stores Windows-style paths and sees the box filesystem as Z:.
-# Both roots live in the versioned release dir next to the settings file, so a
-# version bump has to re-point them (see install_hl360_fm4/tasks/main.yml).
+# The game tree is stable across releases; user/ is a version-local symlink.
+# A version bump must re-point that symlink (see install_hl360_fm4/tasks/main.yml).
 # dg_hl360_bs is one backslash written in YAML only: Ansible's templater passes
 # Jinja string escapes through untouched, so "\\" in a template would land in
 # the settings file doubled.
 dg_hl360_bs: '\'
 dg_hl360_win_root: 'Z:{{ dg_hl360_app_dir | replace("/", dg_hl360_bs) }}'
-dg_hl360_game_dir_win: '{{ dg_hl360_win_root }}{{ dg_hl360_bs }}game'
+dg_hl360_game_dir_win: 'Z:{{ dg_hl360_game_dir | replace("/", dg_hl360_bs) }}'
 dg_hl360_user_dir_win: '{{ dg_hl360_win_root }}{{ dg_hl360_bs }}user'
 
 # Local staging: the NAS mount is NFS, and reading a disc image straight off it
@@ -71,7 +81,9 @@ dg_hl360_user_dir_win: '{{ dg_hl360_win_root }}{{ dg_hl360_bs }}user'
 dg_hl360_disc1_staged: "{{ dg_hl360_cache_dir }}/fm4-disc1.iso"
 dg_hl360_disc2_staged: "{{ dg_hl360_cache_dir }}/fm4-disc2.iso"
 dg_hl360_disc2_extract: "{{ dg_hl360_install_dir }}/disc2"
-dg_hl360_game_dir: "{{ dg_hl360_app_dir }}/game"
+dg_hl360_dlc_marker: "{{ dg_hl360_user_dir }}/user/0000000000000000/4D530910/00000002/4d53091000000001"
+# Keep the 7+ GiB extracted disc across player releases.
+dg_hl360_game_dir: "{{ dg_hl360_install_dir }}/game"
 
 # The same paths as fm4tool.exe (a Windows binary) has to see them.
 dg_hl360_disc1_win: 'Z:{{ dg_hl360_disc1_staged | replace("/", dg_hl360_bs) }}'

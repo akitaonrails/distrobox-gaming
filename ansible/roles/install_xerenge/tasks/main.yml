@@ -17,9 +17,21 @@
 - name: Download the pinned Xerenge installer
   ansible.builtin.get_url:
     url: "{{ dg_xerenge_asset_url }}"
-    dest: "{{ dg_xerenge_cache_dir }}/{{ dg_xerenge_asset_name }}"
+    dest: "{{ dg_xerenge_archive }}"
     checksum: "sha256:{{ dg_xerenge_asset_sha256 }}"
+    mode: "0644"
+
+- name: Deploy the pinned Xerenge installer to the local cache
+  ansible.builtin.copy:
+    src: "{{ dg_xerenge_archive }}"
+    dest: "{{ dg_xerenge_cache_dir }}/{{ dg_xerenge_asset_name }}"
+    remote_src: true
     mode: "0755"
+
+- name: Check the Xerenge installer payload version
+  ansible.builtin.stat:
+    path: "{{ dg_xerenge_payload_root }}/.dg-payload-{{ dg_xerenge_version }}"
+  register: _xerenge_payload_version
 
 # --appimage-extract needs no FUSE. It unpacks next to its working directory as
 # squashfs-root/, which is also what XERENGE_PAYLOAD must point at.
@@ -27,7 +39,13 @@
   ansible.builtin.command:
     cmd: "{{ dg_xerenge_cache_dir }}/{{ dg_xerenge_asset_name }} --appimage-extract"
     chdir: "{{ dg_xerenge_payload_root }}"
-    creates: "{{ dg_xerenge_payload_root }}/squashfs-root/usr/bin/xerenge-installer"
+  when: not _xerenge_payload_version.stat.exists
+
+- name: Record the installer payload version
+  ansible.builtin.copy:
+    dest: "{{ dg_xerenge_payload_root }}/.dg-payload-{{ dg_xerenge_version }}"
+    content: "{{ dg_xerenge_version }}\n"
+    mode: "0644"
 
 # Upstream builds its disc list from two constants compiled into the installer.
 # This box's USA dump is a different mastering, so its hash replaces the USA

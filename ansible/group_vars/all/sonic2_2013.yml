@@ -14,6 +14,7 @@
 dg_s2013_packages: [base-devel, cmake, glew, sdl2, libogg, libvorbis, libtheora, glfw, unzip, p7zip]
 
 dg_s2013_repo: https://github.com/RSDKModding/RSDKv4-Decompilation
+dg_s2013_ref: af95198f93951cc217b43923196e5750667ec1c7
 dg_s2013_src: "{{ dg_box_home }}/tools/sonic2013-decomp"
 dg_s2013_game_dir: "{{ dg_box_home }}/Games/sonic2-2013"
 dg_s2013_bin: "{{ dg_box_home }}/bin/sonic2-2013"

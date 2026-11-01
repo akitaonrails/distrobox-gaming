@@ -1,0 +1,23 @@
+---
+# Tekken Tag Tournament 2 PC recompilation. See docs/ttt2-pc.md.
+dg_ttt2_repo: shihabal3amri/tekken-tag-tournament-2-pc
+dg_ttt2_version: 0.1.7
+dg_ttt2_installer_url: "https://github.com/{{ dg_ttt2_repo }}/releases/download/v{{ dg_ttt2_version }}/ttt2_setup.exe"
+dg_ttt2_installer_sha256: 2649442f5a82122bbb432cad93f612b241aa842c4dfb68330a7ad14b97638941
+dg_ttt2_installer: "{{ dg_roms_final_root }}/PC/releases/ttt2_setup-v{{ dg_ttt2_version }}.exe"
+dg_ttt2_tu_url: https://download.digiex.net/Consoles/Xbox360/TitleUpdates/TekkenTagTournament2_TU3.zip
+dg_ttt2_tu_archive_sha256: bd653b7dad04f4fdf84dbcc1e016b0ccc720095d928b8b6fdfc1493c3e93677e
+dg_ttt2_tu_archive: "{{ dg_roms_final_root }}/PC/releases/TekkenTagTournament2_TU3.zip"
+dg_ttt2_tu_name: TU_174Q22P_0000008000000.00000000000O2
+dg_ttt2_tu_sha256: 61a98cfee1894cfbe0fcd5890e0fae919ac8730fe1686b56d6a0b4216bae71e7
+dg_ttt2_tu_dir: "{{ dg_roms_final_root }}/xbox360-updates/tekken-tag-tournament-2"
+dg_ttt2_tu: "{{ dg_ttt2_tu_dir }}/{{ dg_ttt2_tu_name }}"
+dg_ttt2_iso: "{{ dg_roms_final_root }}/xbox360/Tekken Tag Tournament 2 [RF].iso"
+dg_ttt2_root: "{{ dg_box_home }}/Games/tekken-tag-tournament-2-pc"
+dg_ttt2_install_dir: "{{ dg_ttt2_root }}/releases/{{ dg_ttt2_version }}"
+dg_ttt2_tools: "{{ dg_box_home }}/tools/ttt2-pc"
+dg_ttt2_compatdata: "{{ dg_ttt2_tools }}/.compatdata"
+dg_ttt2_local_appdata: "{{ dg_ttt2_compatdata }}/pfx/drive_c/users/steamuser/AppData/Local/TTT2Recomp"
+dg_ttt2_proton: "{{ ansible_facts.env.HOME }}/.steam/steam/compatibilitytools.d/GE-Proton11-1/proton"
+dg_ttt2_steam_root: "{{ ansible_facts.env.HOME }}/.steam/steam"
+dg_ttt2_launcher: "{{ dg_box_home }}/bin/ttt2-pc"

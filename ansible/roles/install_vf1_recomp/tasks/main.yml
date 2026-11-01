@@ -52,7 +52,7 @@
     - name: Download the pinned VF Recompiled Linux release
       ansible.builtin.get_url:
         url: "{{ dg_vf1_asset_url }}"
-        dest: "{{ dg_vf1_cache_dir }}/{{ dg_vf1_asset_name }}"
+        dest: "{{ dg_vf1_archive }}"
         checksum: "sha256:{{ dg_vf1_asset_sha256 }}"
         mode: "0644"
 
@@ -63,7 +63,7 @@
         if [ -x "{{ dg_vf1_bin }}" ] && grep -qx "{{ dg_vf1_release_tag }}" "$root/.dg-installed-ref" 2>/dev/null; then
           exit 0
         fi
-        tar xzf "{{ dg_vf1_cache_dir }}/{{ dg_vf1_asset_name }}" -C "$root"
+        tar xzf "{{ dg_vf1_archive }}" -C "$root"
         chmod 0755 "{{ dg_vf1_bin }}"
         printf '%s\n' "{{ dg_vf1_release_tag }}" > "$root/.dg-installed-ref"
         printf '%s\n' "installed-vf1"

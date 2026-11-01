@@ -58,8 +58,15 @@
 - name: Install the pinned God of War III Linux AppImage
   ansible.builtin.get_url:
     url: "{{ dg_gow3_pc_asset_url }}"
-    dest: "{{ dg_gow3_pc_appimage }}"
+    dest: "{{ dg_gow3_pc_archive }}"
     checksum: "sha256:{{ dg_gow3_pc_asset_sha256 }}"
+    mode: "0644"
+
+- name: Deploy the pinned God of War III Linux AppImage
+  ansible.builtin.copy:
+    src: "{{ dg_gow3_pc_archive }}"
+    dest: "{{ dg_gow3_pc_appimage }}"
+    remote_src: true
     mode: "0755"
 
 - name: Record the God of War III release

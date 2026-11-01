@@ -1,7 +1,7 @@
 # Gravity Rush Remastered — native PC port
 
 [LucaPazienza/gravityrush_pc](https://github.com/LucaPazienza/gravityrush_pc)
-v0.1.9 is a native Windows x64 port of **Gravity Rush Remastered** (PS4): the
+v0.1.10 is a native Windows x64 port of **Gravity Rush Remastered** (PS4): the
 game's own x86-64 executable runs on the CPU, the PS4 system libraries are
 reimplemented, and the graphics go through the shadPS4 Vulkan video core. No
 emulator. Managed by `install_gravity_rush` / `install-gravity-rush.yml`, run
@@ -47,3 +47,7 @@ using the GPU for other work). First-launch checks to do: the port prepares
 `eboot.bin` and links `libc`/`libSceFios2` on first run (can take a minute),
 DLSS initialises, saves work. Report problems with `user/last_run.log` and an
 F12 capture.
+
+## 2026-11-01 release update
+
+The 0.1.10 release improves crash reporting; its existing game-data, 4K, DLSS and controller setup remains the baseline. Saves and settings stay in the persistent user directory.

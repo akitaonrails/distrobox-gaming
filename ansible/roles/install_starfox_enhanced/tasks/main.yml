@@ -43,20 +43,18 @@
         - "{{ dg_sfe_game_dir }}/starfox_pc.exe"
         - "{{ dg_box_home }}/wineprefixes/starfox-enhanced"
 
-    - name: Reuse the NAS-staged release zip when present
+    - name: Download the pinned release into PC releases
+      ansible.builtin.get_url:
+        url: "{{ dg_sfe_asset_url }}"
+        dest: "{{ dg_sfe_archive_source }}"
+        checksum: "sha256:{{ dg_sfe_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Keep a local install copy of the verified release
       ansible.builtin.copy:
         src: "{{ dg_sfe_archive_source }}"
         dest: "{{ dg_sfe_cache_dir }}/{{ dg_sfe_asset_name }}"
         remote_src: true
-        force: false
-        mode: "0644"
-      when: dg_sfe_archive_source is file
-
-    - name: Download the pinned release (verifies the staged copy)
-      ansible.builtin.get_url:
-        url: "{{ dg_sfe_asset_url }}"
-        dest: "{{ dg_sfe_cache_dir }}/{{ dg_sfe_asset_name }}"
-        checksum: "sha256:{{ dg_sfe_asset_sha256 }}"
         mode: "0644"
 
     - name: Extract the release (version-gated; assets/saves preserved)

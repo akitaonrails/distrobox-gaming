@@ -38,7 +38,7 @@
 - name: Download the pinned Gravity Rush PC release
   ansible.builtin.get_url:
     url: "{{ dg_gr_asset_url }}"
-    dest: "{{ dg_gr_cache_dir }}/{{ dg_gr_asset_name }}"
+    dest: "{{ dg_gr_archive }}"
     checksum: "sha256:{{ dg_gr_asset_sha256 }}"
     mode: "0644"
 
@@ -49,7 +49,7 @@
     argv:
       - python3
       - "{{ dg_project_root }}/scripts/zip-extract-posix.py"
-      - "{{ dg_gr_cache_dir }}/{{ dg_gr_asset_name }}"
+      - "{{ dg_gr_archive }}"
       - "{{ dg_gr_release_dir }}"
     creates: "{{ dg_gr_app_dir }}/Gravity Rush.exe"
 

@@ -51,7 +51,7 @@
     - name: Download the pinned WWHD Linux release
       ansible.builtin.get_url:
         url: "{{ dg_wwhd_asset_url }}"
-        dest: "{{ dg_wwhd_cache_dir }}/{{ dg_wwhd_asset_name }}"
+        dest: "{{ dg_wwhd_archive }}"
         checksum: "sha256:{{ dg_wwhd_asset_sha256 }}"
         mode: "0644"
 
@@ -65,7 +65,7 @@
           exit 0
         fi
         tmp="$(mktemp -d "{{ dg_wwhd_cache_dir }}/x.XXXXXX")"
-        unzip -q -o "{{ dg_wwhd_cache_dir }}/{{ dg_wwhd_asset_name }}" -d "$tmp"
+        unzip -q -o "{{ dg_wwhd_archive }}" -d "$tmp"
         cp -a "$tmp/{{ dg_wwhd_asset_subdir }}/." "{{ dg_wwhd_root }}/"
         rm -rf "$tmp"
         chmod +x "{{ dg_wwhd_front_bin }}" "{{ dg_wwhd_root }}/tools/setup-in-terminal.sh" 2>/dev/null || true
@@ -95,6 +95,28 @@
       register: _wwhd_build
       changed_when: "'wwhd-built' in _wwhd_build.stdout"
       failed_when: _wwhd_build.rc != 0
+
+    - name: Create WWHD settings when absent
+      ansible.builtin.copy:
+        dest: "{{ dg_wwhd_data_dir }}/user/settings.ini"
+        content: ''
+        force: false
+        mode: "0644"
+
+    - name: Read existing WWHD settings
+      ansible.builtin.slurp:
+        src: "{{ dg_wwhd_data_dir }}/user/settings.ini"
+      register: _wwhd_saved_settings
+
+    - name: Seed missing high-quality WWHD graphics settings
+      ansible.builtin.lineinfile:
+        path: "{{ dg_wwhd_data_dir }}/user/settings.ini"
+        line: "{{ item.key }}={{ item.value }}"
+        mode: "0644"
+      loop: "{{ dg_wwhd_graphics_defaults | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
+      when: not ((_wwhd_saved_settings.content | b64decode) is search('(?m)^' ~ item.key ~ '='))
 
     - name: Deploy the WWHD launcher
       ansible.builtin.template:

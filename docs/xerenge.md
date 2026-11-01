@@ -13,9 +13,9 @@ cd ansible && ansible-playbook install-xerenge.yml
 
 | | |
 |---|---|
-| Release | `v0.4.8`, `Burnout_Revenge_Installer-x86_64.AppImage` (pinned + sha256) |
+| Release | `v0.4.10`, `Burnout_Revenge_Installer-x86_64.AppImage` (pinned + sha256) |
 | Disc | `ROMS_FINAL/xbox360/Burnout Revenge [NTSCU].iso` (USA) |
-| Installed tree | `tools/xerenge/releases/v0.4.8/Burnout Revenge/` in the box home (`bin/`, `game/` ≈ 3.6 GB, `xerenge.conf`) |
+| Installed tree | `tools/xerenge/releases/v0.4.10/Burnout Revenge/` in the box home (`bin/`, `game/` ≈ 3.6 GB, `xerenge.conf`) |
 | Launcher | `bin/xerenge` → `burnout_revenge` |
 | Entry | Walker/menu **Burnout Revenge · Xerenge** |
 
@@ -84,3 +84,8 @@ Ultimate 2 (`2dc8:310b`): the device is picked up as `GameControllerType(1)`
 - `install.log` in the install directory is the installer's own transcript.
 - Online play needs the `ealobby` service (`lobby_server` in `xerenge.conf`);
   it is not installed here — local multiplayer works without it.
+
+## 2026-11-01 release update
+
+The 0.4.10 release fixes split-screen rendering and networking across different routers. Its installer can refresh an existing install while preserving settings; this role uses a versioned directory and retains older releases. The existing controller-first setting remains.
+Player files are stored under `~/.local/share/burnout/B13EBABEBABEBABE/` and are included in the save backup manifest; the sibling `cache/` directory is excluded.

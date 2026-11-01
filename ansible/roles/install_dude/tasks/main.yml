@@ -10,11 +10,16 @@
     force: true
   register: _dude_git
 
+- name: Check whether the DUDE binary already exists
+  ansible.builtin.stat:
+    path: "{{ dg_dude_build }}/dude"
+  register: _dude_existing
+
 - name: Build DUDE ({{ 'Vulkan + GL3' if dg_dude_vulkan else 'GL3' }})
   ansible.builtin.shell: >-
     {{ dg_in_box }} bash -lc 'cd "{{ dg_dude_src }}" && ./build.sh {{ '--vulkan' if dg_dude_vulkan else '' }}'
   register: _dude_build
-  changed_when: "'Built target dude' in _dude_build.stdout or _dude_git.changed"
+  when: _dude_git.changed or not _dude_existing.stat.exists
 
 - name: Assert the dude binary was produced
   ansible.builtin.stat:

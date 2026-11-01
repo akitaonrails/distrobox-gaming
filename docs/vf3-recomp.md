@@ -2,7 +2,7 @@
 
 [mr-finster/vf3-recomp](https://github.com/mr-finster/vf3-recomp) recompiles the
 1996 Model 3 arcade game for native Linux. The opt-in install uses upstream's
-`v0.1.10-alpha` x86-64 Steam Deck package, pinned by SHA-256. It does not use
+`v0.1.13-alpha` x86-64 Steam Deck package, pinned by SHA-256. It does not use
 Wine or copy the ROM into the install.
 
 ## Install and assets
@@ -59,3 +59,7 @@ Check [upstream releases](https://github.com/mr-finster/vf3-recomp/releases),
 then bump `dg_vf3_release_tag` and `dg_vf3_asset_sha256` together and rerun the
 playbook. The ROM pin should change only when a different supported dump has
 been verified against upstream's component list.
+
+## 2026-11-01 release update
+
+The v0.1.13-alpha release adds DirectInput arcade-stick detection and per-player button setup under **Menu → Controls → Player 1/2 → Set up buttons**. Team Battle now defaults to 1 vs 1. The existing 8BitDo pad mapping remains; physical input was not exercised during this update.

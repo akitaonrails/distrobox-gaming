@@ -1,12 +1,17 @@
 # Gran Turismo 3 — GT3 Revisited
 
 [matt-pulsipher/GT3-revisited](https://github.com/matt-pulsipher/GT3-revisited)
-`0.3.0` is an open-source **reimplementation of the GT3 A-Spec engine** (not an
+`0.5.0` is an open-source **reimplementation of the GT3 A-Spec engine** (not an
 emulator): native Linux x86_64, Vulkan through SDL_GPU, and it reads your own
 disc image directly at runtime — nothing is extracted or redistributed. This
 sits alongside (not replacing) the [PCSX2 setup](gt3-pcsx2.md). Managed by
 `install_gt3_revisited` / `install-gt3-revisited.yml`; runs in the gaming
 distrobox.
+
+Version 0.5.0 uses PS2-accurate floating-point physics and adds an OpenGL ES
+fallback; Vulkan remains the selected renderer on this RTX 5090. Replays and
+ghosts saved by 0.4.x do not load in 0.5.0, and online peers must also run
+0.5.0. Existing save data is preserved for fallback.
 
 ## Game data
 

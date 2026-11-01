@@ -9,10 +9,11 @@
 # the F-Zero X ROM, the 64DD Expansion Kit disk, and a 64DD IPL ROM.
 
 dg_gdiffuser_repo: Zorkats/G-Diffuser
-dg_gdiffuser_version: v1.1.0
+dg_gdiffuser_version: v1.2.0
 dg_gdiffuser_asset_name: "G-Diffuser-{{ dg_gdiffuser_version }}-linux-x64.tar.gz"
 dg_gdiffuser_asset_url: "https://github.com/{{ dg_gdiffuser_repo }}/releases/download/{{ dg_gdiffuser_version }}/{{ dg_gdiffuser_asset_name }}"
-dg_gdiffuser_asset_sha256: 5b13b89323344bd9a65ba51fe48dfb52c76e84392e12c3e9873e557c359992a4
+dg_gdiffuser_asset_sha256: 5ad538873dbb339acb8bc8ba47a952596a85619e21839122b956a0b031429da1
+dg_gdiffuser_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_gdiffuser_asset_name }}"
 
 # The tarball nests everything under a versioned dir; the role flattens it
 # with --strip-components=1 so the game lives directly in install_dir.

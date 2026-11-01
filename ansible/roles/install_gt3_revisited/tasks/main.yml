@@ -23,13 +23,13 @@
 - name: Download the pinned GT3 Revisited Linux build
   ansible.builtin.get_url:
     url: "{{ dg_gt3r_asset_url }}"
-    dest: "{{ dg_gt3r_cache_dir }}/{{ dg_gt3r_asset_name }}"
+    dest: "{{ dg_gt3r_archive }}"
     checksum: "sha256:{{ dg_gt3r_asset_sha256 }}"
     mode: "0644"
 
 - name: Extract the build into its versioned release directory
   ansible.builtin.unarchive:
-    src: "{{ dg_gt3r_cache_dir }}/{{ dg_gt3r_asset_name }}"
+    src: "{{ dg_gt3r_archive }}"
     dest: "{{ dg_gt3r_release_dir }}"
     remote_src: true
     creates: "{{ dg_gt3r_app_dir }}/bin/gt3r"

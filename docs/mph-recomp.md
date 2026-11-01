@@ -76,3 +76,7 @@ ships only a Windows build** (`MetroidPrimeHuntersRecomp-windows-x64-v0.7.11.zip
 — the Linux AppImage stopped after `v0.7.3-alpha`. The pin intentionally stays
 at **v0.7.3-alpha** (last Linux build). Revisit only if upstream resumes Linux
 artifacts; the Windows zip could run under Proton if that ever becomes worth it.
+
+## 2026-11-01 update check
+
+The latest v0.7.11-alpha release provides a Windows ZIP and source archive but no native Linux AppImage. Keep the existing v0.7.3-alpha Linux build until a compatible asset is released. The new release defaults to 4× internal 3D resolution and 8× SSAA on supported builds.

@@ -5,10 +5,11 @@
 # See docs/xerenge.md.
 
 dg_xerenge_repo: shipa-2/Xerenge
-dg_xerenge_version: v0.4.8
+dg_xerenge_version: v0.4.10
 dg_xerenge_asset_name: Burnout_Revenge_Installer-x86_64.AppImage
 dg_xerenge_asset_url: "https://github.com/{{ dg_xerenge_repo }}/releases/download/{{ dg_xerenge_version }}/{{ dg_xerenge_asset_name }}"
-dg_xerenge_asset_sha256: e81bc3a92346d4fa4e0f3988664e73369173d350d6b5c17f0922c3827a7d6117
+dg_xerenge_asset_sha256: 54cdfb54107ec5c71759a50c17f9c7ddf517482e45e9fd4d75bc65584c51da75
+dg_xerenge_archive: "{{ dg_roms_final_root }}/PC/releases/xerenge-{{ dg_xerenge_version }}-x86_64.AppImage"
 
 # The disc. Upstream supports exactly two images (Europe 34c1bd4d…, USA
 # 7abf689f…). This box's copy is the USA release — it carries

@@ -242,6 +242,9 @@ running" guard can false-trip on the refresh's own AppImage probe — the binary
 still updates; the guard refuses *before* editing `config.toml`, so nothing is
 left half-written. Re-run `reset-configs.yml --tags configs` while idle if you
 want the config re-seeded.
+After activating a QtLauncher release, the role deletes obsolete downloaded
+QtLauncher ZIPs. It keeps extracted older releases for rollback and retains
+the active download for a repeatable rerun.
 
 Sweep statuses: `CURRENT`, `CANDIDATE`, `REVIEW` (no pin resolved), `SOURCE`
 (built from source at a pinned commit — nothing to compare), `AUTO` (role

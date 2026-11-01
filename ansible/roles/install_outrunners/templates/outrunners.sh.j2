@@ -1,0 +1,4 @@
+#!/bin/sh
+export XDG_DATA_HOME="{{ dg_box_home }}/.local/share"
+cd "{{ dg_or_game_dir }}" || exit 1
+exec "./{{ item.binary }}" "$@"

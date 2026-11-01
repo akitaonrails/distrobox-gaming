@@ -1,8 +1,9 @@
 ---
-dg_scud_version: "0.0.14"
-dg_scud_url: "https://github.com/wanszai/Scud-Race/releases/download/{{ dg_scud_version }}/Scud.Race-PC.zip"
+dg_scud_version: "0.0.15"
+dg_scud_asset_subdir: ScudRacePC
+dg_scud_url: "https://github.com/wanszai/Scud-Race/releases/download/{{ dg_scud_version }}/ScudRacePC.zip"
 dg_scud_archive: "{{ dg_roms_final_root }}/PC/releases/Scud.Race-PC-{{ dg_scud_version }}.zip"
-dg_scud_sha256: 83f54edea1f03b132948e82cde3d9c1674eeb2cb03e095f9f67ec198770c6bed
+dg_scud_sha256: a10b296ef6b1241e104cd34bec6d60a89219b456205f9664956b29956a93b0da
 dg_scud_root: "{{ dg_box_home }}/tools/scud-race"
 dg_scud_release_dir: "{{ dg_scud_root }}/releases/{{ dg_scud_version }}"
 dg_scud_game_dir: "{{ dg_box_home }}/Games/scud-race"

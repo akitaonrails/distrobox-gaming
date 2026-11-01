@@ -8,7 +8,7 @@
 # and doc/forza-plus.md).
 
 # 4x internal resolution (5K) downscaled to the 4K output, FSR, 16x AF.
-anisotropic_override = 16
+anisotropic_override = 5
 resolution_scale = 4
 present_effect = 'fsr'
 present_fsr_sharpness_reduction = 0.20000000000000001
@@ -22,10 +22,15 @@ async_shader_compilation = false
 readback_resolve = 'fast'
 readback_memexport = false
 
-# vsync here is the guest vblank pacing, not a presentation switch: with it off
-# the emulated GPU runs a 1000 Hz vblank timer instead of the game's 60 Hz.
+# Keep the v0.3.10 guest vblank at 60 Hz and Vulkan presentation in FIFO mode.
+# The host FPS limit is disabled: two independent 60 Hz clocks can drift.
 vsync = true
-host_present_fps_limit = 60
+vulkan_present_mode = 'fifo'
+vulkan_allow_present_mode_immediate = false
+vulkan_allow_present_mode_mailbox = false
+vulkan_allow_present_mode_fifo_relaxed = false
+host_present_fps_limit = 0
+fh1_guest_vblank_hz = 60.0
 
 # video_mode is the mode requested *from the game* and stays at 720p; output
 # resolution comes from render scale plus the window. Feeding it 4K here gives
@@ -45,7 +50,7 @@ mnk_sensitivity = 1.0
 input_backend = 'sdl'
 
 # Pointed at this install by install_hl360_fm4/tasks/main.yml; both directories
-# are version-local, and user/ is a symlink into ~/.local/share/hl360-fm4.
+# are a stable game tree and a release-local symlink into ~/.local/share/hl360-fm4.
 game_data_root = '{{ dg_hl360_game_dir_win }}'
 user_data_root = '{{ dg_hl360_user_dir_win }}'
 

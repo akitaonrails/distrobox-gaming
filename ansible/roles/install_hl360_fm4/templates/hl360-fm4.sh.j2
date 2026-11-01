@@ -23,7 +23,7 @@ if [ ! -f "$A/$APP" ]; then
   printf 'The FM4 port is not installed (%s missing).\n' "$APP" >&2
   exit 1
 fi
-if [ "$APP" = fm4.exe ] && [ ! -f "$A/game/default.xex" ]; then
+if [ "$APP" = fm4.exe ] && [ ! -f "{{ dg_hl360_game_dir }}/default.xex" ]; then
   printf '%s\n' 'FM4 game data is missing (run install-hl360-fm4.yml).' >&2
   exit 1
 fi

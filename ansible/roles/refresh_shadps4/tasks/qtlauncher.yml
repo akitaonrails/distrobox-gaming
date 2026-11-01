@@ -90,6 +90,7 @@
     src: "{{ dg_shadps4_qtlauncher_root }}/downloads/{{ _qt_tag | trim }}-{{ _qt_asset.name }}"
     dest: "{{ _qt_release_root }}"
     remote_src: true
+    creates: "{{ _qt_release_root }}/squashfs-root/AppRun"
   when: _qt_asset.name.endswith('.zip')
 
 - name: Copy AppImage to release directory
@@ -130,3 +131,26 @@
     dest: "{{ dg_shadps4_qtlauncher_root }}/current"
     state: link
     force: true
+
+- name: Verify the selected QtLauncher is executable before removing old downloads
+  ansible.builtin.stat:
+    path: "{{ dg_shadps4_qtlauncher_root }}/current/AppRun"
+  register: _qt_current_apprun
+  failed_when: not (_qt_current_apprun.stat.executable | default(false))
+
+- name: List completed QtLauncher download archives
+  ansible.builtin.find:
+    paths: "{{ dg_shadps4_qtlauncher_root }}/downloads"
+    patterns: "shadPS4QtLauncher-*.zip"
+    file_type: file
+    recurse: false
+  register: _qt_download_archives
+
+- name: Remove obsolete QtLauncher ZIPs after the current release is active
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ _qt_download_archives.files }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
+  when: item.path != (dg_shadps4_qtlauncher_root ~ '/downloads/' ~ (_qt_tag | trim) ~ '-' ~ _qt_asset.name)

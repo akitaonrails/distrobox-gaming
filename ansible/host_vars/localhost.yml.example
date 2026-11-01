@@ -17,6 +17,8 @@
 # Scud Race needs the exact Model 3 scuda.zip and dayto2pe.zip archives.
 # dg_scud_roms: [{source: /path/to/scuda.zip, name: scud.zip, md5: d2d619b0ee5cbf74596431b28080c420},
 #                {source: /path/to/dayto2pe.zip, name: dayto2pe.zip, md5: d05ef348c9be8408ef50ea74dae29f71}]
+# OutRunners needs the verified World MAME ROM archive.
+# dg_or_rom: "{{ dg_roms_final_root }}/arcade/mame/orunners_dup1.zip"
 # NightFire recomp requires the supported original Xbox USA XISO. Update the
 # hash as well if your owned dump is a different byte-for-byte XISO of that game.
 # dg_nf_iso: "{{ dg_roms_final_root }}/xbox/007 - Nightfire (USA)/007 - Nightfire (USA).xiso.iso"

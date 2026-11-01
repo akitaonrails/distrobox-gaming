@@ -1,6 +1,6 @@
 # Dead or Alive 2 Ultimate — native PC port (doa2u-re)
 
-[NoRain211/doa2u-re](https://github.com/NoRain211/doa2u-re) `0.1.6-Alpha` is a
+[NoRain211/doa2u-re](https://github.com/NoRain211/doa2u-re) `0.1.13-Alpha` is a
 static recompilation of the Xbox DOA2U executable with a hand-written runtime.
 On Linux it renders through **SDL_GPU (Vulkan)** with shaderc-compiled shaders,
 SDL3 audio and controllers — no Wine. Managed by `install_doa2u_re` /
@@ -46,3 +46,7 @@ An unsupported draw stops the game with a message in `private/play-logs`.
 Known niggles: single dropped frame on The Burai Zenin peaks, safari stage
 heat haze static. Sister projects exist for DOA3 and DOAXBV (also in
 `roms_heavy/xbox`).
+
+## 2026-11-01 release update
+
+0.1.13 improves first-fight shader compilation and keeps the existing 4K, 16:9, 8x MSAA and SMAA baseline. The native Linux runner is rebuilt from the owned Disc 2 ISO; this experimental port still has untested modes.

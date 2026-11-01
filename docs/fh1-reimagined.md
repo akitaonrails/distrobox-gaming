@@ -1,7 +1,7 @@
 # Forza Horizon 1: ReImagined
 
 [FH1-ReImagined/ForzaHorizon1-ReImagined](https://github.com/FH1-ReImagined/ForzaHorizon1-ReImagined)
-v0.2.0 is a **native Linux static recompilation** (ReXGlue SDK, same approach
+v0.2.3 is a **native Linux static recompilation** (ReXGlue SDK, same approach
 as hl360-forza4 FM4) of the 2012 Xbox 360 *Forza Horizon*. It is the only Forza
 game not covered by Azimuth (FH2/3, FM5/6) or hl360 (FM4), and the only one of
 those that runs **natively on Linux with Vulkan** — no Wine, no Proton.
@@ -58,3 +58,7 @@ recommended graphics API.
 The tarball stays in `PC/releases/` for rebuilds. The launcher self-updates
 (**About → Launcher updates**); the Ansible pin tracks the launcher version
 only — the game build is produced locally from the disc and never downloaded.
+
+## 2026-11-01 release update
+
+0.2.3 fixes 4K Big Shot photos and enables online sharing for paint jobs and vinyls. The launcher is updated by the role. Rebuild the game from the owned ISO in **Setup → Game files → Build** after opening the new launcher; the upstream release requires a rebuilt game to use the new runtime. The game keeps saves under the box home's `.local/share/forza/B13EBABEBABEBABE/`, with local snapshots under `.local/share/forza/save-backups/`; both and the online identity file are registered for backup. Extracted game data and shader caches are excluded.

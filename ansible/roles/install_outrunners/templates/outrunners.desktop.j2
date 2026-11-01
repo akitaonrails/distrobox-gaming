@@ -1,0 +1,10 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Type=Application
+Name={{ item.name }} · PC Port
+Exec={{ item.launcher }}
+Terminal=false
+Icon={{ dg_or_game_dir }}/outrunners.png
+Categories=Game;
+Keywords=outrunners;sega;racing;arcade;
+{{ ogm_metadata(item.stem) }}

@@ -21,13 +21,14 @@
 # DP-1/RTX (translate 78 files, compile 80 in ~31 s).
 
 dg_wwhd_repo: ZeldaWWHDRecomp/ZeldaWWHDRecomp
-dg_wwhd_release_tag: v0.4.0
-dg_wwhd_asset_name: "WindWakerHD-v0.4.0-linux-x86_64.zip"
+dg_wwhd_release_tag: v0.5.0
+dg_wwhd_asset_name: "WindWakerHD-v0.5.0-linux-x86_64.zip"
 dg_wwhd_asset_url: "https://github.com/{{ dg_wwhd_repo }}/releases/download/{{ dg_wwhd_release_tag }}/{{ dg_wwhd_asset_name }}"
-dg_wwhd_asset_sha256: "7d636b7e60f5adff6f9d0afb152d3d0a4c13ba92d7651c28f4bf8151c66592bc"
+dg_wwhd_asset_sha256: "3584c4fe05ce99fdd460b73777ca34a7ce75ffb5e56bd1a84d89ef363bb69cf9"
+dg_wwhd_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_wwhd_asset_name }}"
 # The zip wraps everything in this version-named dir; the role flattens it into
 # dg_wwhd_root so data/ sits beside the binary and survives a version re-extract.
-dg_wwhd_asset_subdir: "WindWakerHD-v0.4.0-linux-x86_64"
+dg_wwhd_asset_subdir: "WindWakerHD-v0.5.0-linux-x86_64"
 
 dg_wwhd_root: "{{ dg_box_home }}/tools/wwhd-recomp"
 dg_wwhd_cache_dir: "{{ dg_box_home }}/cache/wwhd-recomp"
@@ -43,3 +44,17 @@ dg_wwhd_game_dir: "{{ dg_roms_final_root }}/wiiu/The Legend of Zelda The Wind Wa
 dg_wwhd_build_jobs: 16
 dg_wwhd_main_output: "DP-1"
 dg_wwhd_revert: false
+
+# Seed only missing keys in data/user/settings.ini; later in-game choices win.
+# 3x the 1280x720 base is native 4K. Keep interpolation paced at 60 FPS:
+# true 60 changes game timing and is still experimental upstream.
+dg_wwhd_graphics_defaults:
+  resScale: '3'
+  aoMode: '2'
+  aoHires: '1'
+  aniso: '1'
+  fullLight: '1'
+  fxaa: '1'
+  fps60: '1'
+  interpFps: '60'
+  fps60Paced: '1'

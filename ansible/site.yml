@@ -51,6 +51,7 @@
     - { role: install_gravity_rush,            tags: [gravity_rush, never] }
     - { role: install_kyty_gt7,                tags: [kyty_gt7, never] }
     - { role: install_doa2u_re,                tags: [doa2u, never] }
+    - { role: install_ttt2_pc,                 tags: [ttt2_pc, never] }
     - { role: install_gt3_revisited,           tags: [gt3_revisited, never] }
     - { role: install_gt2_pc,                  tags: [gt2_pc, never] }
     - { role: install_sotc_pc,                 tags: [sotc_pc, never] }
@@ -59,6 +60,7 @@
     - { role: install_sega_rally,              tags: [sega_rally, never] }
     - { role: install_sega_rally_2,            tags: [sega_rally_2, never] }
     - { role: install_scud_race,               tags: [scud_race, never] }
+    - { role: install_outrunners,               tags: [outrunners, never] }
     - { role: install_nightfire_recomp,         tags: [nightfire_recomp, never] }
     - { role: install_ridge_racer,             tags: [ridge_racer, never] }
     - { role: install_screamer,                tags: [screamer, never] }

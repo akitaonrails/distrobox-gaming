@@ -14,8 +14,15 @@
 - name: Download the pinned RPCS3 AppImage
   ansible.builtin.get_url:
     url: "{{ dg_rpcs3_asset_url }}"
-    dest: "{{ dg_rpcs3_appimage }}"
+    dest: "{{ dg_rpcs3_asset_staging }}"
     checksum: "sha256:{{ dg_rpcs3_asset_sha256 }}"
+    mode: "0644"
+
+- name: Install the verified RPCS3 AppImage
+  ansible.builtin.copy:
+    src: "{{ dg_rpcs3_asset_staging }}"
+    dest: "{{ dg_rpcs3_appimage }}"
+    remote_src: true
     mode: "0755"
 
 - name: Deploy the rpcs3-launch wrapper

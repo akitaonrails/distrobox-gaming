@@ -1,0 +1,98 @@
+---
+- name: Check native SDL2 runtime dependency
+  ansible.builtin.command:
+    argv: [ldconfig, -p]
+  register: _or_ldconfig
+  changed_when: false
+
+- name: Require host SDL2
+  ansible.builtin.assert:
+    that: "'libSDL2-2.0.so.0' in _or_ldconfig.stdout"
+    fail_msg: "Install the host SDL2 runtime before running the native OutRunners port."
+
+- name: Stage pinned OutRunners Linux release
+  ansible.builtin.get_url:
+    url: "{{ dg_or_asset_url }}"
+    dest: "{{ dg_or_asset_path }}"
+    checksum: "sha256:{{ dg_or_asset_sha256 }}"
+    mode: "0644"
+
+- name: Verify owned OutRunners World ROM
+  ansible.builtin.stat:
+    path: "{{ dg_or_rom }}"
+    checksum_algorithm: sha256
+  register: _or_rom
+
+- name: Require the verified World ROM
+  ansible.builtin.assert:
+    that: _or_rom.stat.checksum | default('') == dg_or_rom_sha256
+    fail_msg: "Set dg_or_rom to the verified MAME World OutRunners ZIP (SHA256 {{ dg_or_rom_sha256 }})."
+
+- name: Create OutRunners directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_or_release_dir }}"
+    - "{{ dg_or_user_dir }}"
+    - "{{ dg_or_launcher | dirname }}"
+
+- name: Extract OutRunners release
+  ansible.builtin.unarchive:
+    src: "{{ dg_or_asset_path }}"
+    dest: "{{ dg_or_release_dir }}"
+    remote_src: true
+    creates: "{{ dg_or_game_dir }}/OutRunners"
+
+- name: Link owned ROM beside the binaries
+  ansible.builtin.file:
+    path: "{{ dg_or_game_dir }}/orunners.zip"
+    src: "{{ dg_or_rom }}"
+    state: link
+
+- name: Check whether console settings already exist
+  ansible.builtin.stat:
+    path: "{{ dg_or_user_dir }}/outrunners.ini"
+  register: _or_ini
+
+- name: Seed fullscreen widescreen console settings
+  ansible.builtin.copy:
+    dest: "{{ dg_or_user_dir }}/outrunners.ini"
+    mode: "0644"
+    content: |
+      full_screen=1
+      wide=1
+      pixels=smooth
+      fps=1
+      dead_zone=10
+      sensitivity=5
+      steering_speed=5
+  when: not _or_ini.stat.exists
+
+- name: Install OutRunners launchers
+  ansible.builtin.template:
+    src: outrunners.sh.j2
+    dest: "{{ item.path }}"
+    mode: "0755"
+  loop:
+    - { path: "{{ dg_or_launcher }}", binary: OutRunners }
+    - { path: "{{ dg_or_arcade_launcher }}", binary: "OutRunners Arcade" }
+
+- name: Render OutRunners desktop entries
+  ansible.builtin.template:
+    src: outrunners.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/{{ item.stem }}.desktop"
+    mode: "0644"
+  loop:
+    - { stem: gaming-outrunners, name: OutRunners, launcher: "{{ dg_or_launcher }}" }
+    - { stem: gaming-outrunners-arcade, name: "OutRunners Arcade", launcher: "{{ dg_or_arcade_launcher }}" }
+
+- name: Install OutRunners host desktop entries
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _or_host
+  changed_when: "'installed ' in _or_host.stdout or 'removed stale ' in _or_host.stdout"

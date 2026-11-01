@@ -1,6 +1,6 @@
 # DOOM 3 via DUDE
 
-The source checkout is pinned to [v0.9.6](https://github.com/Inkub0/dude/releases/tag/v0.9.6), commit `1948b4e2bef25b55621f0569b72fb3525ed7713a`, for reproducible native Vulkan builds. Re-running `install-dude.yml` updates the binary without changing the owned Doom 3 data.
+The source checkout is pinned to [v0.9.7](https://github.com/Inkub0/dude/releases/tag/v0.9.7), commit `e703ab270064eef8ead6ae3abbb4b0762bddecd8`, for reproducible native Vulkan builds. Re-running `install-dude.yml` updates the binary without changing the owned Doom 3 data.
 
 **DUDE** (Doom3 Unified Development Engine) is a modernized fork of **dhewm3** — the
 classic Doom 3 source port — with new **OpenGL 3.3** and **Vulkan 1.4** renderers and
@@ -51,3 +51,7 @@ removable **STEAM drive** at `/run/media/akitaonrails/STEAM/steamapps/common/Doo
 the launcher auto-detects Steam libraries including removable-drive mounts. BFG
 Edition (also installed) is intentionally not used — DUDE needs the classic data.
 8BitDo works via SDL2 (native gamepad support).
+
+## 2026-11-01 release update
+
+The 0.9.7 release fixes Vulkan and path-tracing cache hitches and applies a default gamepad layout only when no pad buttons are bound. The pinned native build keeps the existing renderer and graphics configuration.

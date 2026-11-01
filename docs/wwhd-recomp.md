@@ -27,7 +27,7 @@ dump is untouched).
 
 ## How it works
 
-- Downloads the pinned `WindWakerHD-v0.4.0-linux-x86_64.zip` (sha256 in
+- Downloads the pinned `WindWakerHD-v0.5.0-linux-x86_64.zip` (sha256 in
   `group_vars/all/wwhd_recomp.yml`) and flattens it into `tools/wwhd-recomp/`
   (so the binary + `tools/` + `portable.txt` sit beside the persistent `data/`;
   a version re-extract never wipes saves).
@@ -64,3 +64,8 @@ Bump `dg_wwhd_release_tag` / `dg_wwhd_asset_name` / `dg_wwhd_asset_sha256` (+
 [releases](https://github.com/ZeldaWWHDRecomp/ZeldaWWHDRecomp/releases) and
 re-run; the flatten is version-gated and the game rebuilds once on the first
 launch after the new binary lands (saves under `data/save` are preserved).
+
+## 2026-11-01 release update
+
+The 0.5.0 release improves shader preparation, interpolation and controller setup, and adds settings in the pause menu. The role preserves the persistent `data/` directory; select graphics and controls in the new pause-menu settings if existing user choices need adjustment.
+The role seeds missing keys in `data/user/settings.ini`: 3× internal resolution (3840×2160), high-quality ambient occlusion, full-size lighting, 16× anisotropic filtering, FXAA, and paced 60 FPS interpolation. Existing keys and later in-game changes are preserved. True 60 FPS remains experimental upstream; the configured 60 FPS is interpolation, not a measured gameplay result.

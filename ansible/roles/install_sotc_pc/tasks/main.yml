@@ -42,6 +42,18 @@
       - "{{ dg_sotc_zip }}"
     creates: "{{ dg_sotc_app_dir }}/SotC.exe"
 
+- name: Keep SOTC user data outside versioned releases
+  ansible.builtin.file:
+    path: "{{ dg_sotc_install_dir }}/user"
+    state: directory
+    mode: "0755"
+
+- name: Link the SOTC release to persistent user data
+  ansible.builtin.file:
+    src: "{{ dg_sotc_install_dir }}/user"
+    dest: "{{ dg_sotc_app_dir }}/user"
+    state: link
+
 - name: Point the port at the game folder and 60 FPS mode
   ansible.builtin.lineinfile:
     path: "{{ dg_sotc_app_dir }}/sotc.ini"
@@ -55,6 +67,12 @@
 # Sound needs two decrypted firmware modules. The box already has a full PS4
 # firmware module set (the shadPS4 tree it uses for GT Sport/DriveClub), so
 # copy them into the port instead of asking the user for a console dump.
+- name: Create the SOTC sound module directory
+  ansible.builtin.file:
+    path: "{{ dg_sotc_app_dir }}/data/sys_modules"
+    state: directory
+    mode: "0755"
+
 - name: Copy the sound modules from the local PS4 firmware set
   ansible.builtin.copy:
     src: "{{ dg_ps4_firmware_modules }}/{{ item }}"

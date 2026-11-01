@@ -297,6 +297,11 @@ dg_ogm_games:
     category: port
     sgdb_query: "Forza Horizon"
     github: "{{ dg_fh1r_repo }}"
+  - desktop_id: gaming-ttt2-pc
+    id: ttt2-pc
+    category: recomp
+    sgdb_query: "Tekken Tag Tournament 2"
+    github: "{{ dg_ttt2_repo }}"
   - desktop_id: gaming-azimuth
     id: azimuth
     category: port
@@ -387,6 +392,10 @@ dg_ogm_games:
     category: wine
     sgdb_query: "Forza Motorsport 4"
     github: "{{ dg_hl360_repo }}"
+  - { desktop_id: gaming-outrunners, id: outrunners, category: port,
+      sgdb_query: "OutRunners", github: "{{ dg_or_repo }}" }
+  - { desktop_id: gaming-outrunners-arcade, id: outrunners-arcade, category: port,
+      sgdb_query: "OutRunners", github: "{{ dg_or_repo }}" }
   - desktop_id: gaming-gt4-recomp
     id: gt4-recomp
     category: recomp

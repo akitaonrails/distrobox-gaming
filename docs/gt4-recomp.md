@@ -175,3 +175,7 @@ The release archives stay in `dg_gt4r_cache` because the role uses them on
 rebuilds. Scratch Cargo output is removed after executable preparation. The
 dedicated Wine prefix and session directory contain settings/saves and should
 be preserved. Change the version and hashes together when upgrading.
+
+## 2026-11-01 update check
+
+The release listing currently shows v1.2.5 as latest stable, while this install is pinned to the newer v1.3.0-rc6 portable build. Do not replace it with the older stable installer.

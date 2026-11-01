@@ -1,0 +1,177 @@
+---
+- name: Check owned TTT2 disc and GE-Proton
+  ansible.builtin.stat:
+    path: "{{ item }}"
+    get_checksum: false
+  loop:
+    - "{{ dg_ttt2_iso }}"
+    - "{{ dg_ttt2_proton }}"
+  register: _ttt2_inputs
+
+- name: Require the retail Xbox 360 disc and Proton runtime
+  ansible.builtin.assert:
+    that:
+      - _ttt2_inputs.results[0].stat.size | default(0) > 8000000000
+      - _ttt2_inputs.results[1].stat.executable | default(false)
+    fail_msg: >-
+      Tekken Tag Tournament 2 PC requires the retail USA/Europe Xbox 360 ISO
+      at dg_ttt2_iso and an executable GE-Proton at dg_ttt2_proton.
+      The installer verifies the exact Default.xex and Title Update 3.
+
+- name: Create Tekken port directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_ttt2_installer | dirname }}"
+    - "{{ dg_ttt2_tu_dir }}"
+    - "{{ dg_ttt2_root }}/releases"
+    - "{{ dg_ttt2_tools }}"
+    - "{{ dg_ttt2_compatdata }}"
+    - "{{ dg_ttt2_launcher | dirname }}"
+
+- name: Download pinned TTT2 installer
+  ansible.builtin.get_url:
+    url: "{{ dg_ttt2_installer_url }}"
+    dest: "{{ dg_ttt2_installer }}"
+    checksum: "sha256:{{ dg_ttt2_installer_sha256 }}"
+    mode: "0644"
+
+- name: Download pinned TTT2 Title Update 3 archive
+  ansible.builtin.get_url:
+    url: "{{ dg_ttt2_tu_url }}"
+    dest: "{{ dg_ttt2_tu_archive }}"
+    checksum: "sha256:{{ dg_ttt2_tu_archive_sha256 }}"
+    mode: "0644"
+
+- name: Extract Title Update 3 beside other Xbox 360 updates
+  ansible.builtin.unarchive:
+    src: "{{ dg_ttt2_tu_archive }}"
+    dest: "{{ dg_ttt2_tu_dir }}"
+    remote_src: true
+    creates: "{{ dg_ttt2_tu }}"
+
+- name: Verify the exact Title Update 3 file
+  ansible.builtin.stat:
+    path: "{{ dg_ttt2_tu }}"
+    checksum_algorithm: sha256
+  register: _ttt2_tu_file
+  failed_when: _ttt2_tu_file.stat.checksum | default('') != dg_ttt2_tu_sha256
+
+- name: Deploy the supervised Proton installer
+  ansible.builtin.copy:
+    src: run-installer.py
+    dest: "{{ dg_ttt2_tools }}/run-installer.py"
+    mode: "0755"
+
+- name: Check whether this release was already built from the disc
+  ansible.builtin.stat:
+    path: "{{ dg_ttt2_install_dir }}/game/tekken.img"
+  register: _ttt2_installed
+
+- name: Build Tekken Tag Tournament 2 from the ISO and Title Update 3
+  ansible.builtin.command:
+    argv:
+      - python3
+      - "{{ dg_ttt2_tools }}/run-installer.py"
+      - --proton
+      - "{{ dg_ttt2_proton }}"
+      - --steam-root
+      - "{{ dg_ttt2_steam_root }}"
+      - --compatdata
+      - "{{ dg_ttt2_compatdata }}"
+      - --installer
+      - "{{ dg_ttt2_installer }}"
+      - --iso
+      - "{{ dg_ttt2_iso }}"
+      - --tu
+      - "{{ dg_ttt2_tu }}"
+      - --output
+      - "{{ dg_ttt2_install_dir }}"
+      - --log
+      - "{{ dg_ttt2_tools }}/install-v{{ dg_ttt2_version }}.log"
+  when: not _ttt2_installed.stat.exists
+
+- name: Verify the installed game payload
+  ansible.builtin.stat:
+    path: "{{ dg_ttt2_install_dir }}/{{ item }}"
+  loop:
+    - game/tekken.img
+    - game/update
+    - Tekken Tag Tournament 2.exe
+    - steam_api64.dll
+  register: _ttt2_payload
+
+- name: Require the complete Tekken port output
+  ansible.builtin.assert:
+    that: _ttt2_payload.results | selectattr('stat.exists') | list | length == 4
+    fail_msg: >-
+      The TTT2 installer did not produce a complete game. Inspect
+      {{ dg_ttt2_tools }}/install-v{{ dg_ttt2_version }}.log and its
+      ttt2_setup.exe.log; the retail ISO and TU3 must match the port.
+
+- name: Check for the installer's log beside the staged download
+  ansible.builtin.stat:
+    path: "{{ dg_ttt2_installer }}.log"
+  register: _ttt2_setup_log
+
+- name: Keep the installer log with the local Tekken tools
+  ansible.builtin.copy:
+    src: "{{ dg_ttt2_installer }}.log"
+    dest: "{{ dg_ttt2_tools }}/setup-v{{ dg_ttt2_version }}.log"
+    remote_src: true
+    mode: "0644"
+  when: _ttt2_setup_log.stat.exists
+
+- name: Remove the copied installer log from the NAS release bucket
+  ansible.builtin.file:
+    path: "{{ dg_ttt2_installer }}.log"
+    state: absent
+  when: _ttt2_setup_log.stat.exists
+
+- name: Create the game settings directory in the dedicated Proton prefix
+  ansible.builtin.file:
+    path: "{{ dg_ttt2_local_appdata }}"
+    state: directory
+    mode: "0755"
+
+- name: Seed 4K display settings while preserving later in-game changes
+  ansible.builtin.copy:
+    dest: "{{ dg_ttt2_local_appdata }}/settings.ini"
+    force: false
+    mode: "0644"
+    content: |
+      [Display]
+      Mode=1
+      Resolution=3840x2160
+      Sharpness=2
+      AntiAliasing=1
+      TextureFilter=4
+      VSync=1
+      Shadows=1
+      [Game]
+      InputDelay=0
+
+- name: Install Tekken launcher
+  ansible.builtin.template:
+    src: ttt2-pc.sh.j2
+    dest: "{{ dg_ttt2_launcher }}"
+    mode: "0755"
+
+- name: Render Tekken desktop entry
+  ansible.builtin.template:
+    src: ttt2-pc.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-ttt2-pc.desktop"
+    mode: "0644"
+
+- name: Install Tekken desktop entry on host
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _ttt2_host_launchers
+  changed_when: >-
+    'installed ' in _ttt2_host_launchers.stdout or
+    'removed stale ' in _ttt2_host_launchers.stdout

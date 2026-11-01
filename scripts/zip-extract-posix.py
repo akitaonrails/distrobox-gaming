@@ -36,7 +36,9 @@ def main(argv: list[str]) -> int:
     dest.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(archive_path) as archive:
         for info in archive.infolist():
-            if info.is_dir():
+            # ZIP's is_dir() only recognises '/', while Windows-built
+            # archives may mark directories with a trailing backslash.
+            if info.is_dir() or info.filename.endswith("\\"):
                 continue
             target = safe_target(dest, info.filename)
             target.parent.mkdir(parents=True, exist_ok=True)

@@ -1,4 +1,11 @@
 ---
+- name: Download the pinned DriveClub Recomp release
+  ansible.builtin.get_url:
+    url: "{{ dg_dcr_archive_url }}"
+    dest: "{{ dg_dcr_archive }}"
+    checksum: "sha256:{{ dg_dcr_archive_sha256 }}"
+    mode: "0644"
+
 - name: Check the pinned DriveClub Recomp release
   ansible.builtin.stat:
     path: "{{ dg_dcr_archive }}"
@@ -39,6 +46,12 @@
       - -C
       - "{{ dg_dcr_install_dir }}"
   when: not _dcr_installed.stat.exists
+
+- name: Verify the updated DriveClub executable is present
+  ansible.builtin.stat:
+    path: "{{ dg_dcr_install_dir }}/DriveClub.exe"
+  register: _dcr_executable
+  failed_when: not _dcr_executable.stat.isreg | default(false)
 
 - name: Record installed DriveClub Recomp version
   ansible.builtin.file:

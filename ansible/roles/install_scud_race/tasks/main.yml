@@ -49,20 +49,20 @@
     src: "{{ dg_scud_archive }}"
     dest: "{{ dg_scud_release_dir }}"
     remote_src: true
-    creates: "{{ dg_scud_release_dir }}/ScudRace/scudrace.exe"
+    creates: "{{ dg_scud_release_dir }}/{{ dg_scud_asset_subdir }}/scudrace.exe"
 
 - name: Install release files without replacing player data
   ansible.builtin.shell: >-
     rsync -a --exclude='scudrace.ini' --exclude='online.ini'
     --exclude='Music/' --exclude='*.bin'
-    '{{ dg_scud_release_dir }}/ScudRace/' '{{ dg_scud_game_dir }}/'
+    '{{ dg_scud_release_dir }}/{{ dg_scud_asset_subdir }}/' '{{ dg_scud_game_dir }}/'
     && touch '{{ dg_scud_game_dir }}/.dg-release-{{ dg_scud_version }}'
   args:
     creates: "{{ dg_scud_game_dir }}/.dg-release-{{ dg_scud_version }}"
 
 - name: Seed online settings without overwriting player changes
   ansible.builtin.copy:
-    src: "{{ dg_scud_release_dir }}/ScudRace/online.ini"
+    src: "{{ dg_scud_release_dir }}/{{ dg_scud_asset_subdir }}/online.ini"
     dest: "{{ dg_scud_game_dir }}/online.ini"
     remote_src: true
     force: false

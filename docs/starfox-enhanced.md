@@ -56,6 +56,10 @@ stylistic post effects this port adds, not higher-fidelity rendering. The file
 is the port's own settings surface: change it in the setup screen or edit the
 keys directly.
 
-Updated to `v0.0.8.8.1` on 2026-10-23. Updating: bump `dg_sfe_version` + `dg_sfe_asset_sha256` (from the release
+Updated to `v0.0.8.8.2` on 2026-11-01. This release fixes widescreen backgrounds and adds a saved keyboard player assignment for co-op. Updating: bump `dg_sfe_version` + `dg_sfe_asset_sha256` (from the release
 `SHA256SUMS.txt`), stage the new zip on the NAS, re-run (extract is
 version-gated). Revert: `-e dg_sfe_revert=true`.
+
+## 2026-11-01 release update
+
+The 0.0.8.8.2 release primarily changes Windows packaging and security checks. The native Linux package, owned ROM import, and current display/controller settings remain the setup.

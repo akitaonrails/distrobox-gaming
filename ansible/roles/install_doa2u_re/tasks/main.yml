@@ -10,6 +10,13 @@
       dg_doa2u_iso — the build hash-verifies the executable and refuses
       other regions, versions and Disc 1.
 
+- name: Fetch the pinned DOA2U release ZIP
+  ansible.builtin.get_url:
+    url: "{{ dg_doa2u_zip_url }}"
+    dest: "{{ dg_doa2u_zip }}"
+    checksum: "sha256:{{ dg_doa2u_zip_sha256 }}"
+    mode: "0644"
+
 - name: Verify the staged release ZIP
   ansible.builtin.stat:
     path: "{{ dg_doa2u_zip }}"

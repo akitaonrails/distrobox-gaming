@@ -1,6 +1,6 @@
 # God of War III Remastered PC port
 
-The Linux AppImage is pinned to [windows-v2.7.0](https://github.com/FelipePrado0/gow3_pc/releases/tag/windows-v2.7.0) (`spartanport-x86_64.AppImage`, SHA256-verified). Existing launcher settings and game files are preserved by the update.
+The Linux AppImage is pinned to [windows-v3.0.0](https://github.com/FelipePrado0/gow3_pc/releases/tag/windows-v3.0.0) (`spartanport-x86_64.AppImage`, SHA256-verified). Existing launcher settings and game files are preserved by the update.
 
 The optional `install_gow3_pc` role installs [FelipePrado0/gow3_pc](https://github.com/FelipePrado0/gow3_pc)'s experimental Linux AppImage alongside shadPS4. It uses the existing PS4 game folder directly and does not copy or alter the dump. The tested local dump is CUSA01623, app version 01.00; upstream lists 01.00 and 01.02 as tested. The upstream Linux instructions specifically mention 01.02, so verify gameplay on this machine before assuming the 01.00 build is fully supported.
 
@@ -15,3 +15,8 @@ left to the player.
 The release is pinned by SHA-256 in `group_vars/all/gow3_pc.yml`. Update the tag, asset hash and installed ref together when upgrading. On first install, the role seeds the game folder and disables the experimental Vulkan pipeline binary cache because the tested NVIDIA driver crashes while initializing it. Existing launcher settings are preserved. The existing PS4 installation and separate patch PKG are not touched by this role.
 
 On 2026-10-13, release 2.1.8 accepted the 01.00 dump and reached the in-game brightness setup screen on the NVIDIA RTX 5090. With the pipeline binary cache enabled it instead crashed during Vulkan initialization. Gameplay beyond the setup screen remains untested.
+
+## 2026-11-01 release update
+
+The 3.0.0 release replaces the Python launcher with Rust and keeps saves and settings. The role continues to seed 4K fullscreen and the tested NVIDIA pipeline settings.
+The new **High Frame Rate Physics Fix** is enabled by default. Keep it enabled in the Performance page if selecting 120 FPS or above; if a traversal or quick-time event stalls, switch to 60 FPS with **F9** or **R3 + L1 + R1**. The first launch rebuilds its shader cache, so initial area stutter is expected. Upstream has not yet validated final-package gameplay on Linux.
