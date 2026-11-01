@@ -50,6 +50,24 @@
     remote_src: true
     creates: "{{ dg_cmr1_release_dir }}/CMRLauncher.exe"
 
+- name: Check whether HD art pack 3 cache has been refreshed
+  ansible.builtin.stat:
+    path: "{{ dg_cmr1_hd_pack_refresh_marker }}"
+  register: _cmr1_hd_pack_refreshed
+
+- name: Remove the exact generated BMP cache that shares pack 3's key
+  ansible.builtin.file:
+    path: "{{ dg_cmr1_prefix }}/drive_c/users/{{ ansible_facts['user_id'] }}/AppData/Local/CMRLauncher/Rally/hd/{{ dg_cmr1_hd_pack_cache_id }}"
+    state: absent
+  when: not _cmr1_hd_pack_refreshed.stat.exists
+
+- name: Record the one-time HD art pack 3 refresh
+  ansible.builtin.file:
+    path: "{{ dg_cmr1_hd_pack_refresh_marker }}"
+    state: touch
+    mode: '0644'
+  when: not _cmr1_hd_pack_refreshed.stat.exists
+
 - name: Ensure Wine and gamescope are installed in the gaming box
   ansible.builtin.shell: >-
     {{ dg_in_box }} sudo pacman -S --needed --noconfirm wine gamescope
