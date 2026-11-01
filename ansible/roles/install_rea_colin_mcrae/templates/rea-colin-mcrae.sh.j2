@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+export CMR_PREFIX='{{ dg_cmr1_prefix }}'
+export CMR_LAUNCHER='{{ dg_cmr1_release_dir }}/CMRLauncher.exe'
+export CMR_WAIT=1
+exec sh '{{ dg_cmr1_release_dir }}/linux/cmr-play' "$@"

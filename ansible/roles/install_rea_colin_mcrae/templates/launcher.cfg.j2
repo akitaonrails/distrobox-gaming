@@ -1,0 +1,16 @@
+# Managed first-run defaults. Later player changes are preserved.
+game = {{ ('Z:' ~ dg_cmr1_source_dir) | replace('/', '\\') }}
+saves = {{ ('Z:' ~ dg_cmr1_saves) | replace('/', '\\') }}
+resolution = 3840x2160
+widescreen = true
+draw_distance = {{ dg_cmr1_draw_distance }}
+smooth_distance = true
+fps_limit = 120
+vsync = true
+texture_filter = smooth
+gamepad_axes = true
+buttons = {{ dg_cmr1_buttons }}
+rumble = 60
+hd_art = on
+close_quits = true
+scaler = {{ dg_cmr1_scaler }}

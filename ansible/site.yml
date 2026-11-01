@@ -28,6 +28,7 @@
     - { role: pcsx2_textures,                  tags: [pcsx2_textures, never] }
     - { role: install_hd_textures,             tags: [hd_textures, never] }
     - { role: install_pc_racing,               tags: [pc_racing, never] }
+    - { role: install_rea_colin_mcrae,          tags: [rea_colin_mcrae, never] }
     - { role: install_gt5_master_mod,          tags: [gt5_master_mod, never] }
     - { role: install_opencmr2,                tags: [opencmr2, never] }
     - { role: install_gow3_pc,                 tags: [gow3_pc, never] }

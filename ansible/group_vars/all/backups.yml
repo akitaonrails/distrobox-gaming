@@ -119,6 +119,8 @@ dg_save_sets:
   - { name: project-reignition,  src: ".local/share/godot/app_userdata/Sonic and the Secret Rings Remake" }
   - { name: starfox-enhanced,    src: "file:tools/starfox-enhanced/game/starfox-ex.srm" }
   - { name: opencmr2,            src: ".local/share/OpenCMR2" }
+  - { name: rea-colin-mcrae,     src: ["Games/rea-colin-mcrae/saves",
+                                       "file:wineprefixes/rea-colin-mcrae/drive_c/users/{{ ansible_facts['user_id'] }}/AppData/Local/CMRLauncher/launcher.cfg"] }
   - { name: sega-rally-2,        src: ["file:Games/pc-racing/sega-rally-2/SR2_SAVE.DAT",
                                         "file:Games/pc-racing/sega-rally-2/SR2.CFG",
                                         "file:Games/pc-racing/sega-rally-2/SR2.DSP"] }

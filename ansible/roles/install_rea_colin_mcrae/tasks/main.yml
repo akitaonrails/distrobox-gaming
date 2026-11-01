@@ -1,0 +1,147 @@
+---
+- name: Check the owned Colin McRae Rally executable
+  ansible.builtin.stat:
+    path: "{{ dg_cmr1_source_dir }}/Rally.exe"
+    checksum_algorithm: sha256
+  register: _cmr1_game
+
+- name: Require the supported 1998 PC v1.5 game
+  ansible.builtin.assert:
+    that:
+      - _cmr1_game.stat.exists
+      - _cmr1_game.stat.checksum == dg_cmr1_rally_sha256
+    fail_msg: "Need a supported v1.5 PC Rally.exe at {{ dg_cmr1_source_dir }}; see docs/colin-mcrae-rally-1.md"
+
+- name: Check for a running Colin McRae Rally session before migration
+  ansible.builtin.command: pgrep -x Rally.exe
+  register: _cmr1_running
+  failed_when: false
+  changed_when: false
+
+- name: Require Colin McRae Rally to be closed for migration
+  ansible.builtin.assert:
+    that: _cmr1_running.rc == 1
+    fail_msg: "Close Colin McRae Rally before replacing its installed copy and Wine prefix."
+
+- name: Create REA release, install, prefix and saves directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - "{{ dg_roms_final_root }}/PC/releases"
+    - "{{ dg_cmr1_root }}"
+    - "{{ dg_cmr1_prefix }}"
+    - "{{ dg_cmr1_saves }}"
+    - "{{ dg_box_home }}/bin"
+    - "{{ dg_desktop_render_dir }}"
+
+- name: Stage pinned REA launcher release
+  ansible.builtin.get_url:
+    url: "{{ dg_cmr1_url }}"
+    dest: "{{ dg_cmr1_archive }}"
+    checksum: "sha256:{{ dg_cmr1_sha256 }}"
+    mode: '0644'
+
+- name: Extract the REA launcher release
+  ansible.builtin.unarchive:
+    src: "{{ dg_cmr1_archive }}"
+    dest: "{{ dg_cmr1_root }}"
+    remote_src: true
+    creates: "{{ dg_cmr1_release_dir }}/CMRLauncher.exe"
+
+- name: Ensure Wine and gamescope are installed in the gaming box
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sudo pacman -S --needed --noconfirm wine gamescope
+  register: _cmr1_packages
+  changed_when: "'installing' in _cmr1_packages.stdout"
+
+- name: Initialize the dedicated REA Wine prefix
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} env WINEPREFIX='{{ dg_cmr1_prefix }}' wineboot -i
+  args:
+    creates: "{{ dg_cmr1_prefix }}/system.reg"
+
+- name: Find saves in the old installed copy
+  ansible.builtin.find:
+    paths: "{{ dg_cmr1_old_install }}/save"
+    patterns:
+      - 'SAVESLOT*.cms'
+      - 'cmRally.cfg'
+    file_type: file
+  register: _cmr1_old_saves
+  when: dg_cmr1_old_install is directory
+
+- name: Preserve old Colin McRae Rally saves and controller settings
+  ansible.builtin.copy:
+    src: "{{ item.path }}"
+    dest: "{{ dg_cmr1_saves }}/{{ item.path | basename }}"
+    remote_src: true
+    force: false
+    mode: '0644'
+  loop: "{{ _cmr1_old_saves.files | default([]) }}"
+
+- name: Create REA launcher settings directory in the prefix
+  ansible.builtin.file:
+    path: "{{ dg_cmr1_prefix }}/drive_c/users/{{ ansible_facts['user_id'] }}/AppData/Local/CMRLauncher"
+    state: directory
+    mode: '0755'
+
+- name: Seed 4K, 120 FPS, gamepad, and save settings
+  ansible.builtin.template:
+    src: launcher.cfg.j2
+    dest: "{{ dg_cmr1_prefix }}/drive_c/users/{{ ansible_facts['user_id'] }}/AppData/Local/CMRLauncher/launcher.cfg"
+    mode: '0644'
+    force: false
+
+- name: Check whether the requested draw distance, scaler and controls are applied
+  ansible.builtin.stat:
+    path: "{{ dg_cmr1_profile_marker }}"
+  register: _cmr1_profile
+
+- name: Apply requested maximal draw distance, Smooth scaler and modern controls once
+  ansible.builtin.lineinfile:
+    path: "{{ dg_cmr1_prefix }}/drive_c/users/{{ ansible_facts['user_id'] }}/AppData/Local/CMRLauncher/launcher.cfg"
+    regexp: '^{{ item.key }}\s*='
+    line: '{{ item.key }} = {{ item.value }}'
+  loop:
+    - { key: draw_distance, value: "{{ dg_cmr1_draw_distance }}" }
+    - { key: scaler, value: "{{ dg_cmr1_scaler }}" }
+    - { key: buttons, value: "{{ dg_cmr1_buttons }}" }
+  when: not _cmr1_profile.stat.exists
+
+- name: Record the applied REA profile
+  ansible.builtin.file:
+    path: "{{ dg_cmr1_profile_marker }}"
+    state: touch
+    mode: '0644'
+  when: not _cmr1_profile.stat.exists
+
+- name: Install reentrant REA launcher
+  ansible.builtin.template:
+    src: rea-colin-mcrae.sh.j2
+    dest: "{{ dg_cmr1_launcher }}"
+    mode: '0755'
+
+- name: Render REA desktop entry
+  ansible.builtin.template:
+    src: rea-colin-mcrae.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/rea-colin-mcrae.desktop"
+    mode: '0644'
+
+- name: Publish REA desktop entry
+  ansible.builtin.command: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  changed_when: false
+
+- name: Remove old CMR1 launchers, desktop entry, installed copy and prefix
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ dg_box_home }}/bin/colin-mcrae-rally-1"
+    - "{{ dg_box_home }}/bin/colin-mcrae-rally-1-host"
+    - "{{ dg_box_home }}/bin/install-colin-mcrae-rally-1"
+    - "{{ dg_desktop_render_dir }}/pc-colin-mcrae-rally-1.desktop"
+    - "{{ ansible_facts['user_dir'] }}/.local/share/applications/pc-colin-mcrae-rally-1.desktop"
+    - "{{ dg_cmr1_old_install }}"
+    - "{{ dg_cmr1_old_prefix }}"

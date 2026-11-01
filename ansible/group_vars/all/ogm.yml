@@ -547,13 +547,13 @@ dg_ogm_games:
       web_url: "https://archive.org/details/sorrv-52-rev-550_202401" }
 
   # ── Windows games under Wine ─────────────────────────────────────
-  # Names come from dg_pc_racing_games; the rendered desktop Name= carries a
-  # "(PC on gaming)" suffix.
-  - desktop_id: pc-colin-mcrae-rally-1
-    id: colin-mcrae-rally-1
-    name: "{{ dg_pc_racing_games | selectattr('slug', 'eq', 'colin-mcrae-rally-1') | map(attribute='name') | first }}"
+  # Most names come from dg_pc_racing_games; REA Colin McRae has its own role.
+  - desktop_id: rea-colin-mcrae
+    id: rea-colin-mcrae
+    name: "Colin McRae Rally (REA)"
     category: wine
     sgdb_query: "Colin McRae Rally"
+    github: akitaonrails/rea-colin-mcrae
   - desktop_id: pc-colin-mcrae-rally-2
     id: colin-mcrae-rally-2
     name: "{{ dg_pc_racing_games | selectattr('slug', 'eq', 'colin-mcrae-rally-2') | map(attribute='name') | first }}"

@@ -1,0 +1,18 @@
+# REA Colin McRae Rally 1 launcher. The owned 1998 PC install is read only.
+dg_cmr1_version: v0.5.0
+dg_cmr1_url: "https://github.com/akitaonrails/rea-colin-mcrae/releases/download/{{ dg_cmr1_version }}/CMRLauncher-{{ dg_cmr1_version }}.zip"
+dg_cmr1_sha256: 3294f422b250260c65966f6d2df8510f7af0694b535b0a2d062e07b5e90c9fe0
+dg_cmr1_archive: "{{ dg_roms_final_root }}/PC/releases/CMRLauncher-{{ dg_cmr1_version }}.zip"
+dg_cmr1_source_dir: "{{ dg_roms_final_root }}/PC/games/CMRally"
+dg_cmr1_rally_sha256: 46500c8e22ce3e943b6855eca63ae9288261162347ca76fa36cad77cbb19c0bb
+dg_cmr1_root: "{{ dg_box_home }}/Games/rea-colin-mcrae"
+dg_cmr1_release_dir: "{{ dg_cmr1_root }}/CMRLauncher-{{ dg_cmr1_version }}"
+dg_cmr1_prefix: "{{ dg_box_home }}/wineprefixes/rea-colin-mcrae"
+dg_cmr1_saves: "{{ dg_cmr1_root }}/saves"
+dg_cmr1_launcher: "{{ dg_box_home }}/bin/rea-colin-mcrae"
+dg_cmr1_old_install: "{{ dg_pc_racing_install_root }}/colin-mcrae-rally-1"
+dg_cmr1_old_prefix: "{{ dg_pc_racing_prefix_root }}/colin-mcrae-rally-1"
+dg_cmr1_draw_distance: '3.0'
+dg_cmr1_scaler: linear
+dg_cmr1_buttons: modern
+dg_cmr1_profile_marker: "{{ dg_cmr1_root }}/.dg-profile-draw3-linear-modern"

@@ -230,3 +230,6 @@
 # dg_atari_st_enabled: true
 # dg_atari_st_rom_dir: "{{ dg_rom_root }}/atarist"
 # dg_atari_st_tos_source: "{{ dg_bios_root }}/tos.img"
+# REA Colin McRae Rally: override if the original PC v1.5 game is elsewhere.
+# dg_cmr1_source_dir: "{{ dg_roms_final_root }}/PC/games/CMRally"
+# dg_cmr1_rally_sha256: "46500c8e22ce3e943b6855eca63ae9288261162347ca76fa36cad77cbb19c0bb"

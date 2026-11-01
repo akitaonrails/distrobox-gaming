@@ -33,7 +33,7 @@ dg_dklr_winetricks_components:
   - dxvk
 
 # NOTE: evsieve (the pad->keyboard bridge) is an AUR package, already installed
-# for the CMR1 / Sega Rally launchers; the launcher degrades to keyboard-only if
+# for the Sega Rally launcher; the launcher degrades to keyboard-only if
 # it's absent. Keep it out of this pacman list (AUR, not in the repos).
 dg_dklr_packages:
   - lib32-vulkan-icd-loader

@@ -1,0 +1,11 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Colin McRae Rally (REA)
+Exec={{ dg_cmr1_launcher }}
+Terminal=false
+Type=Application
+Icon=wine
+Comment=1998 Colin McRae Rally with modern graphics and gamepad support
+Categories=Game;
+StartupWMClass=CMRLauncher.exe
+{{ ogm_metadata('rea-colin-mcrae') }}
