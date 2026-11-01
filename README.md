@@ -516,6 +516,7 @@ Mods, patches & HD textures:
 Windows / Wine games:
 
 - [PC Racing Games](docs/pc-racing.md) — Colin McRae Rally, OutRun 2006, Sega Rally, DiRT
+- [PC racing launcher opportunities](docs/pc-racing-launcher-opportunities.md) — existing community tools and candidates for a simpler setup launcher
 - **[Driveclub shadPS4](docs/driveclub-shadps4.md)** — working v1.00 recipe, all dead ends captured
 - [GT5 Master Mod](docs/gt5-master-mod.md) · [Project Forza Plus (FM2/3/4/FH1 on Xenia)](docs/project-forza.md)
 - [Sonic Project '06](docs/sonic-p06.md) · [Hedge Mod Manager](docs/hedge-mod-manager.md) · [Dusk / Twilight Princess](docs/dusk-twilight-princess.md)
