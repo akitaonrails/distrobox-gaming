@@ -16,3 +16,4 @@ dg_cmr1_draw_distance: '3.0'
 dg_cmr1_scaler: linear
 dg_cmr1_buttons: modern
 dg_cmr1_profile_marker: "{{ dg_cmr1_root }}/.dg-profile-draw3-linear-modern"
+dg_cmr1_resolution_marker: "{{ dg_cmr1_root }}/.dg-race-resolution-slot-640x480"

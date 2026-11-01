@@ -27,12 +27,20 @@ launcher session synchronous so Wine processes can be reaped.
 Upstream notes that long draw distances can reveal distant flicker; lower the
 value in the launcher if that appears in a stage.
 
+The original game's **Options → Settings → Graphics → Resolution** must use
+640×480: REA replaces that slot with 3840×2160 during a race. The migrated
+config selected 800×600, which left the race in a small top-left viewport
+despite the launcher reporting 4K. The role changes only the resolution byte
+(`0x13`, value `3` to `2`) once, preserves the original config as
+`previous-cmRally.cfg`, and leaves the save slot untouched. Later changes made
+in game are preserved on playbook reruns.
+
 In the game, set **Options → Settings → Controller 1 → Joystick 1 → Analogue
 joystick**, then set steering, acceleration and braking to **Analogue**. The
 launcher provides the modern A/B/Y and bumper layout, d-pad menu navigation,
 triggers and Start. The migrated `cmRally.cfg` may still have the old keyboard
-mode, so this in-game change is required once. The save backup watches only
-`{{ dg_cmr1_saves }}` and the user-edited `launcher.cfg`; the launcher cache
+mode, so this in-game change is required once. The save backup watches
+`{{ dg_cmr1_saves }}`, the previous config, and the user-edited `launcher.cfg`; the launcher cache
 and game files are reproducible. The bounded launch check logged 4K, 120 FPS
 cap, 3× draw distance, HD art and `game started`. No pad was connected during
 that check (`XInput pads: [0]`), so in-game pad controls still need verification.

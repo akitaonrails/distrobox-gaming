@@ -81,6 +81,53 @@
     mode: '0644'
   loop: "{{ _cmr1_old_saves.files | default([]) }}"
 
+- name: Check whether the owned source has a Colin McRae Rally config
+  ansible.builtin.stat:
+    path: "{{ dg_cmr1_source_dir }}/save/cmRally.cfg"
+  register: _cmr1_source_cfg
+
+- name: Seed the source game config when no migrated config exists
+  ansible.builtin.copy:
+    src: "{{ dg_cmr1_source_dir }}/save/cmRally.cfg"
+    dest: "{{ dg_cmr1_saves }}/cmRally.cfg"
+    remote_src: true
+    force: false
+    mode: '0644'
+  register: _cmr1_seed_cfg
+  when: _cmr1_source_cfg.stat.exists
+
+- name: Check whether the REA race-resolution slot has been selected
+  ansible.builtin.stat:
+    path: "{{ dg_cmr1_resolution_marker }}"
+  register: _cmr1_resolution_marker
+
+- name: Check for a game settings file to migrate
+  ansible.builtin.stat:
+    path: "{{ dg_cmr1_saves }}/cmRally.cfg"
+  register: _cmr1_save_cfg
+
+- name: Select the 640x480 slot that REA replaces with 4K
+  ansible.builtin.command:
+    argv:
+      - python3
+      - "{{ role_path }}/files/patch-cmr1-resolution.py"
+      - "{{ dg_cmr1_saves }}/cmRally.cfg"
+      - "{{ dg_cmr1_root }}/previous-cmRally.cfg"
+  register: _cmr1_resolution_patch
+  changed_when: "'patched-640x480' in _cmr1_resolution_patch.stdout"
+  when:
+    - not _cmr1_resolution_marker.stat.exists or (_cmr1_seed_cfg.changed | default(false))
+    - _cmr1_save_cfg.stat.exists
+
+- name: Remember the one-time race-resolution migration
+  ansible.builtin.file:
+    path: "{{ dg_cmr1_resolution_marker }}"
+    state: touch
+    mode: '0644'
+  when:
+    - not _cmr1_resolution_marker.stat.exists or (_cmr1_seed_cfg.changed | default(false))
+    - _cmr1_save_cfg.stat.exists
+
 - name: Create REA launcher settings directory in the prefix
   ansible.builtin.file:
     path: "{{ dg_cmr1_prefix }}/drive_c/users/{{ ansible_facts['user_id'] }}/AppData/Local/CMRLauncher"
