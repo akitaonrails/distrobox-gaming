@@ -12,7 +12,7 @@ cd ansible && ansible-playbook install-rea-dirt.yml
 
 | | |
 |---|---|
-| Release | `v0.1.1`, `DiRTLauncher-v0.1.1-x86_64.AppImage` (pinned + sha256) |
+| Release | `v0.2.0`, `DiRTLauncher-v0.2.0-x86_64.AppImage` (pinned + sha256) |
 | Owned source | `ROMS_FINAL/PC/games/DiRT-2007` (official v1.22 + LAA `DiRT.exe`, sha256 `e4b66bd3…`; the vanilla v1.22 `e10268f8…` is equally accepted) |
 | AppImage | `tools/rea-dirt/` |
 | Prefix + private runtime | `~/.local/share/dirt-launcher/` (launcher's own default; `DIRT_PREFIX` can override) |

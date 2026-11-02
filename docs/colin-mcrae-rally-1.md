@@ -5,7 +5,7 @@ replaces our older Wine setup. The role uses the original PC game in
 `{{ dg_cmr1_source_dir }}` without modifying it. This machine has the supported
 European v1.5 fan-pack `Rally.exe` (SHA256
 `46500c8e22ce3e943b6855eca63ae9288261162347ca76fa36cad77cbb19c0bb`).
-The REA launcher v0.7.0 ZIP is pinned by SHA256 and staged in
+The REA launcher v0.8.0 ZIP is pinned by SHA256 and staged in
 `ROMS_FINAL/PC/releases/`. Future updates come from this GitHub repository.
 v0.5.1 fixes a post-stage crash with this exact community-patched executable
 and applies fixes F20–F27 to it, including the depth-buffer and HD-art fixes.
