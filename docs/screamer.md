@@ -64,6 +64,17 @@ rea-screamer stop|status
 CD image and binary patch, and `--controllers` lists pads and their events —
 both headless, both useful after touching the games folder.
 
+## If the games folder ever moves
+
+The launcher's private runtime keeps **symlinks** into the game folder (only
+the patched executables are copied). Moving `tools/rea-screamer/games` — which
+is exactly what replacing the old role did — leaves those links dangling, and
+a game then fails with dosbox's `Stub exec failed: dos4gw.exe` (the stub rides
+in through a broken link). Fix: delete the affected game's folder under
+`~/.local/share/screamer-launcher/runtime/` — it rebuilds on the next Play;
+saves live in `saves/` and are unaffected. The role's move already cleaned the
+Screamer Rally runtime that had been built against the old path.
+
 ## Sources
 
 GOG installers stay in `ROMS_FINAL/PC/ports/Screamer/`
