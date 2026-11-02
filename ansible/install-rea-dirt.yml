@@ -1,0 +1,7 @@
+---
+- name: Install Colin McRae DiRT (REA launcher)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_rea_dirt

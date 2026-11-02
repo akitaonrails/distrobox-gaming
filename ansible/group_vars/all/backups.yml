@@ -101,6 +101,12 @@ dg_save_sets:
   - { name: prboom-data,          src: ".local/share/prboom-plus-rt" }
   - { name: banjo-recompiled,     src: ".config/BanjoRecompiled" }   # legacy BanjoRecomp saves (pre-Lighthouse)
 
+  # REA launchers (2026-11-01): their own prefixes/state keep saves and settings
+  - { name: rea-dirt,             src: [".local/share/dirt-launcher/prefix/drive_c/users/{{ ansible_facts.user_id }}/Documents/Codemasters/DiRT",
+                                       "file:.local/share/dirt-launcher/prefix/drive_c/users/{{ ansible_facts.user_id }}/AppData/Local/DiRTLauncher/launcher.cfg"] }
+  - { name: rea-screamer,         src: [".local/share/screamer-launcher/saves",
+                                       "file:.config/screamer-launcher/launcher.cfg"] }
+
   # ---- 2026-10-28 save-path audit of every installed GitHub port ----
   # Recomps/ports that keep saves in a per-game config or user-data dir.
   # Dusk and Fukami are cut down to their memory cards: their user roots also

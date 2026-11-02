@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+# Screamer trilogy (1995/1996/1997) through the REA launcher: its own hooked
+# dosbox-staging, 3dfx Glide, FSR to the display, Hor+ widescreen and modern
+# gamepad input. No arguments opens the pad-navigable settings window and
+# starts the remembered game; "1", "2" or "rally" pick a game, "--play <game>"
+# skips the window, "stop"/"status" manage a run.
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS="${SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS:-1}"
+exec '{{ dg_screamer_rea_release_dir }}/linux/screamer-play' "$@"

@@ -1,0 +1,132 @@
+---
+# akitaonrails/rea-dirt ships a self-contained AppImage: its own Wine 11.20
+# (WoW64, so the 32-bit game needs no multilib), DXVK, and a dirt-play wrapper
+# that shows the pad-navigable settings window then starts the game. The role
+# stages the pinned AppImage, seeds the launcher's own launcher.cfg, migrates
+# the saves out of the retired pc-racing prefix, and removes that install.
+
+- name: Check the owned Colin McRae DiRT v1.22 source
+  ansible.builtin.stat:
+    path: "{{ dg_dirt_exe }}"
+    checksum_algorithm: sha256
+  register: _dirt_exe
+
+- name: Require the supported official v1.22 executable
+  ansible.builtin.assert:
+    that:
+      - _dirt_exe.stat.exists
+      - _dirt_exe.stat.checksum in [dg_dirt_exe_sha256, dg_dirt_exe_vanilla_sha256]
+    fail_msg: >-
+      Need the official v1.22 DiRT.exe (sha256 e4b66bd3… LAA or e10268f8…
+      vanilla) at {{ dg_dirt_exe }}; see docs/rea-dirt.md.
+
+- name: Check for a running DiRT session before migration
+  ansible.builtin.command: pgrep -x DiRT.exe
+  register: _dirt_running
+  failed_when: false
+  changed_when: false
+
+- name: Require DiRT to be closed for migration
+  ansible.builtin.assert:
+    that: _dirt_running.rc == 1
+    fail_msg: "Close Colin McRae DiRT before replacing the pc-racing install."
+
+- name: Create the REA DiRT directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_dirt_root }}"
+    - "{{ dg_dirt_settings_dir }}"
+    - "{{ dg_dirt_saves_dir | dirname }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Stage the pinned REA DiRT launcher AppImage
+  ansible.builtin.get_url:
+    url: "{{ dg_dirt_asset_url }}"
+    dest: "{{ dg_dirt_appimage }}"
+    checksum: "sha256:{{ dg_dirt_asset_sha256 }}"
+    mode: "0755"
+
+# Migrate the saves and hardware settings from the retired pc-racing install
+# (DiRT kept them under the prefix's Public Documents). force: false keeps
+# anything the launcher already wrote.
+- name: Check for saves in the retired pc-racing prefix
+  ansible.builtin.stat:
+    path: "{{ dg_dirt_old_saves }}"
+  register: _dirt_old_saves
+
+- name: Move the DiRT saves and settings into the REA prefix
+  ansible.builtin.copy:
+    src: "{{ dg_dirt_old_saves }}/"
+    dest: "{{ dg_dirt_saves_dir }}/"
+    remote_src: true
+    force: false
+    mode: "0644"
+  when: _dirt_old_saves.stat.exists
+
+# The settings window fills resolution/aspect from the screen when they are
+# unset; seeding them keeps headless --setup/--play on the 4K panel. force:
+# false — once the launcher or the player writes the file, it is theirs.
+- name: Seed the REA DiRT launcher settings
+  ansible.builtin.copy:
+    dest: "{{ dg_dirt_settings_dir }}/launcher.cfg"
+    mode: "0644"
+    force: false
+    content: |
+      # Colin McRae: DiRT launcher settings (seeded by install_rea_dirt).
+      game = {{ dg_dirt_win_source }}
+      resolution = {{ dg_dirt_settings.resolution }}
+      aspect = {{ dg_dirt_settings.aspect }}
+      quality = {{ dg_dirt_settings.quality }}
+      fullscreen = {{ dg_dirt_settings.fullscreen }}
+      vsync = {{ dg_dirt_settings.vsync }}
+      workers = {{ dg_dirt_settings.workers }}
+      scaler = {{ dg_dirt_settings.scaler }}
+
+- name: Remember the game folder on an already-written config
+  ansible.builtin.lineinfile:
+    path: "{{ dg_dirt_settings_dir }}/launcher.cfg"
+    regexp: "^game *="
+    line: "game = {{ dg_dirt_win_source }}"
+    insertbefore: BOF
+
+- name: Install the reentrant REA DiRT launcher
+  ansible.builtin.template:
+    src: rea-dirt.sh.j2
+    dest: "{{ dg_dirt_launcher }}"
+    mode: "0755"
+
+- name: Render the REA DiRT desktop entry
+  ansible.builtin.template:
+    src: rea-dirt.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/rea-dirt.desktop"
+    mode: "0644"
+
+- name: Publish the REA DiRT desktop entry
+  ansible.builtin.command: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  changed_when: false
+
+# Retire the pc-racing DiRT install: launchers, entries and the whole 11 GB
+# per-game prefix (the game itself now comes from the NAS source).
+- name: Remove the retired pc-racing DiRT launchers and desktop entry
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: "{{ dg_dirt_old_bin + [dg_desktop_render_dir ~ '/' ~ dg_dirt_old_desktop,
+                                dg_host_applications_dir ~ '/' ~ dg_dirt_old_desktop] }}"
+
+- name: Check whether any pc-racing DiRT saves remain unmigrated
+  ansible.builtin.find:
+    paths: "{{ dg_dirt_old_prefix }}/drive_c/users"
+    file_type: file
+    patterns: ['*.cms', '*.xml', '*.sav']
+  register: _dirt_old_leftovers
+  failed_when: false
+
+- name: Remove the retired pc-racing DiRT prefix
+  ansible.builtin.file:
+    path: "{{ dg_dirt_old_prefix }}"
+    state: absent
+  when: _dirt_old_leftovers.matched | default(0) == 0

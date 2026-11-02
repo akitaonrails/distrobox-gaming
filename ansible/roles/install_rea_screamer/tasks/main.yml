@@ -1,0 +1,146 @@
+---
+# akitaonrails/rea-screamer-trilogy ships a self-contained Linux zip: the
+# ScreamerLauncher GUI/CLI binary, a statically hooked dosbox-staging, and a
+# screamer-play wrapper (settings window -> play, plus stop/status). The role
+# stages the pinned zip, moves the trilogy's game folders out of the retired
+# dosbox role, seeds the launcher's own settings, and removes that role's
+# launchers and desktop entries.
+
+- name: Create the REA Screamer directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_screamer_rea_root }}"
+    - "{{ dg_screamer_rea_config_dir }}"
+    - "{{ dg_screamer_rea_saves_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Stage the pinned REA Screamer launcher release
+  ansible.builtin.get_url:
+    url: "{{ dg_screamer_rea_asset_url }}"
+    dest: "{{ dg_roms_final_root }}/PC/releases/{{ dg_screamer_rea_asset_name }}"
+    checksum: "sha256:{{ dg_screamer_rea_asset_sha256 }}"
+    mode: "0644"
+
+- name: Extract the REA Screamer launcher release
+  ansible.builtin.unarchive:
+    src: "{{ dg_roms_final_root }}/PC/releases/{{ dg_screamer_rea_asset_name }}"
+    dest: "{{ dg_screamer_rea_root }}"
+    remote_src: true
+    creates: "{{ dg_screamer_rea_release_dir }}/ScreamerLauncher"
+
+- name: Check for the retired trilogy folder
+  ansible.builtin.stat:
+    path: "{{ dg_screamer_rea_old_root }}/games"
+  register: _screamer_old_games
+
+# Same filesystem: a move, not a copy. The launcher only ever reads the games.
+- name: Move the trilogy games out of the retired role
+  ansible.builtin.command:
+    argv:
+      - mv
+      - "{{ dg_screamer_rea_old_root }}/games"
+      - "{{ dg_screamer_trilogy_dir }}"
+    creates: "{{ dg_screamer_trilogy_dir }}/screamer"
+  when: _screamer_old_games.stat.exists
+
+- name: Require the trilogy games
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop:
+    - "{{ dg_screamer_trilogy_dir }}/screamer"
+    - "{{ dg_screamer_trilogy_dir }}/screamer2"
+    - "{{ dg_screamer_trilogy_dir }}/screamer-rally"
+  register: _screamer_trilogy_dirs
+
+- name: Require the trilogy games to be present
+  ansible.builtin.assert:
+    that: _screamer_trilogy_dirs.results | map(attribute='stat.exists') | select('equalto', false) | list | length == 0
+    fail_msg: >-
+      Expected the trilogy folder {{ dg_screamer_trilogy_dir }} with screamer/,
+      screamer2/ and screamer-rally/ (GOG extraction; see docs/screamer.md).
+
+# The old role kept saves inside the game folders; the launcher syncs its own
+# saves/<game> dir into the runtime on every start, so progress goes there.
+- name: Find existing save files in the trilogy folders
+  ansible.builtin.find:
+    paths: "{{ dg_screamer_trilogy_dir }}"
+    file_type: file
+    patterns: ['*.SAV', '*.sav', 'CHOICE.DAT', 'choice.dat', '*.RPL', '*.rpl']
+    recurse: true
+  register: _screamer_old_saves
+
+- name: Create the per-game saves directories
+  ansible.builtin.file:
+    path: "{{ dg_screamer_rea_saves_dir }}/{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - screamer
+    - screamer2
+    - screamer-rally
+
+- name: Move each save next to the launcher's saves dir for its game
+  vars:
+    _slug: "{{ item.path | relpath(dg_screamer_trilogy_dir) | split('/') | first }}"
+  ansible.builtin.copy:
+    src: "{{ item.path }}"
+    dest: "{{ dg_screamer_rea_saves_dir }}/{{ _slug }}/{{ item.path | basename }}"
+    remote_src: true
+    force: false
+    mode: "0644"
+  loop: "{{ _screamer_old_saves.files }}"
+  loop_control:
+    label: "{{ item.path | relpath(dg_screamer_trilogy_dir) }}"
+
+# Seed the launcher's own settings; force:false so the window's choices win
+# afterwards. `game` (and `which`) are remembered by the launcher itself.
+- name: Seed the REA Screamer launcher settings
+  ansible.builtin.copy:
+    dest: "{{ dg_screamer_rea_config_dir }}/launcher.cfg"
+    mode: "0644"
+    force: false
+    content: |
+      # Screamer Trilogy launcher settings (seeded by install_rea_screamer).
+      game = {{ dg_screamer_trilogy_dir }}
+      {% for key, value in dg_screamer_rea_settings.items() %}{{ key }} = {{ value }}
+      {% endfor %}
+
+- name: Remember the trilogy folder on an already-written config
+  ansible.builtin.lineinfile:
+    path: "{{ dg_screamer_rea_config_dir }}/launcher.cfg"
+    regexp: "^game *="
+    line: "game = {{ dg_screamer_trilogy_dir }}"
+    insertbefore: BOF
+
+- name: Install the reentrant REA Screamer launcher
+  ansible.builtin.template:
+    src: rea-screamer.sh.j2
+    dest: "{{ dg_screamer_rea_launcher }}"
+    mode: "0755"
+
+- name: Render the REA Screamer desktop entry
+  ansible.builtin.template:
+    src: rea-screamer.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/rea-screamer.desktop"
+    mode: "0644"
+
+- name: Publish the REA Screamer desktop entry
+  ansible.builtin.command: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  changed_when: false
+
+- name: Remove the retired Screamer launchers and desktop entries
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: >-
+    {{ dg_screamer_rea_old_bin
+       + dg_screamer_rea_old_desktops | map('regex_replace', '^', dg_desktop_render_dir ~ '/') | list
+       + dg_screamer_rea_old_desktops | map('regex_replace', '^', dg_host_applications_dir ~ '/') | list }}
+
+- name: Remove the retired dosbox-staging Screamer install
+  ansible.builtin.file:
+    path: "{{ dg_screamer_rea_old_root }}"
+    state: absent

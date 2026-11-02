@@ -1,0 +1,10 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Screamer Trilogy (REA)
+Exec={{ dg_screamer_rea_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Screamer, Screamer 2 and Screamer Rally with 3dfx Glide, FSR and analog gamepad input
+Categories=Game;
+{{ ogm_metadata('rea-screamer') }}

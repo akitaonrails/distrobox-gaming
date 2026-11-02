@@ -1,0 +1,63 @@
+---
+# Colin McRae: DiRT (2007) — REA launcher (akitaonrails/rea-dirt).
+# The AppImage bundles Wine 11.20 (WoW64) + DXVK, so it runs self-contained in
+# the box: no pc-racing prefix, no winetricks, no DLL overrides. The owned
+# v1.22 install on the NAS is read-only; the launcher works on a private
+# runtime copy inside its own prefix. See docs/rea-dirt.md.
+
+dg_dirt_repo: akitaonrails/rea-dirt
+dg_dirt_version: v0.1.1
+dg_dirt_asset_name: "DiRTLauncher-{{ dg_dirt_version }}-x86_64.AppImage"
+dg_dirt_asset_url: "https://github.com/{{ dg_dirt_repo }}/releases/download/{{ dg_dirt_version }}/{{ dg_dirt_asset_name }}"
+dg_dirt_asset_sha256: 2c8a47f343e142a2b1e5ab4fec3301a2c5ceb1a0decd48f3b14fa15ddcae5216
+
+# The owned source: official v1.22 (DRM-free — v1.22 removed Starforce). The
+# launcher accepts either v1.22 executable; this copy carries the Large Address
+# Aware one. Staged in ROMS_FINAL/PC/games (AGENTS.md PC-library layout).
+dg_dirt_source_dir: "{{ dg_roms_final_root }}/PC/games/DiRT-2007"
+dg_dirt_exe: "{{ dg_dirt_source_dir }}/DiRT.exe"
+dg_dirt_exe_sha256: e4b66bd39e1a516674e885af7d459751bf87bd85e4f69c17e4ab65f67755aaed  # v1.22 + LAA
+dg_dirt_exe_vanilla_sha256: e10268f8233b90a9c162e097ffa81b272d49824487ec80ca6d0ba6fd3cb4e3c3  # v1.22
+
+dg_dirt_root: "{{ dg_box_home }}/tools/rea-dirt"
+dg_dirt_appimage: "{{ dg_dirt_root }}/{{ dg_dirt_asset_name }}"
+dg_dirt_launcher: "{{ dg_box_home }}/bin/rea-dirt"
+
+# The AppImage keeps its Wine prefix and the private runtime copy here (it
+# defaults to ~/.local/share/dirt-launcher; HOME inside the box is the box
+# home). DIRT_PREFIX could override it, but the launcher's own default keeps
+# upstream behavior.
+dg_dirt_state_dir: "{{ dg_box_home }}/.local/share/dirt-launcher"
+dg_dirt_prefix: "{{ dg_dirt_state_dir }}/prefix"
+dg_dirt_settings_dir: "{{ dg_dirt_prefix }}/drive_c/users/{{ ansible_facts.user_id }}/AppData/Local/DiRTLauncher"
+
+# The launcher's own launcher.cfg, as Windows paths (it runs under Wine).
+# dg_dirt_bs is one backslash written in YAML only: Ansible's templater passes
+# Jinja string escapes through untouched (the hl360 lesson), so '\\' in a
+# template would land doubled.
+dg_dirt_bs: '\'
+dg_dirt_win_source: "Z:{{ dg_dirt_source_dir | replace('/', dg_dirt_bs) }}"
+
+# Graphics baseline (the "Graphics: Always Max Out" ceiling for this game).
+# resolution/aspect are re-detected by the settings window when unset; the
+# role seeds them so headless --setup/--play lands on the 4K panel.
+dg_dirt_settings:
+  resolution: 3840x2160
+  aspect: "16:9"
+  quality: ultra
+  fullscreen: "true"
+  vsync: "true"
+  workers: auto
+  scaler: linear
+
+# DiRT saves/settings in the prefix (moved from the retired pc-racing install).
+dg_dirt_saves_dir: "{{ dg_dirt_prefix }}/drive_c/users/{{ ansible_facts.user_id }}/Documents/Codemasters/DiRT"
+
+# Retired pc-racing DiRT install: its per-game prefix held the whole game
+# (11 GB) plus the Public Documents saves that migrate into the new prefix.
+dg_dirt_old_prefix: "{{ dg_box_home }}/wineprefixes/pc-racing/colin-mcrae-dirt"
+dg_dirt_old_saves: "{{ dg_dirt_old_prefix }}/drive_c/users/Public/Documents/Codemasters/DiRT"
+dg_dirt_old_bin:
+  - "{{ dg_box_home }}/bin/colin-mcrae-dirt"
+  - "{{ dg_box_home }}/bin/install-colin-mcrae-dirt"
+dg_dirt_old_desktop: pc-colin-mcrae-dirt.desktop

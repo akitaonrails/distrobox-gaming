@@ -29,6 +29,8 @@
     - { role: install_hd_textures,             tags: [hd_textures, never] }
     - { role: install_pc_racing,               tags: [pc_racing, never] }
     - { role: install_rea_colin_mcrae,          tags: [rea_colin_mcrae, never] }
+    - { role: install_rea_dirt,                 tags: [dirt, rea_dirt, never] }
+    - { role: install_rea_screamer,            tags: [screamer, rea_screamer, never] }
     - { role: install_gt5_master_mod,          tags: [gt5_master_mod, never] }
     - { role: install_opencmr2,                tags: [opencmr2, never] }
     - { role: install_gow3_pc,                 tags: [gow3_pc, never] }
@@ -63,7 +65,6 @@
     - { role: install_outrunners,               tags: [outrunners, never] }
     - { role: install_nightfire_recomp,         tags: [nightfire_recomp, never] }
     - { role: install_ridge_racer,             tags: [ridge_racer, never] }
-    - { role: install_screamer,                tags: [screamer, never] }
     - { role: install_openbor,                 tags: [openbor, never] }
     - { role: install_starfox_enhanced,        tags: [starfox_enhanced, never] }
     - { role: install_smw_remastered,          tags: [smw_remastered, never] }

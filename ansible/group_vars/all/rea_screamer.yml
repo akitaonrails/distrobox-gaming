@@ -1,0 +1,58 @@
+---
+# Screamer trilogy (1995/1996/1997) — REA launcher
+# (akitaonrails/rea-screamer-trilogy). One native binary + its own hooked
+# dosbox-staging: per-game capability detection, 3dfx Voodoo Glide unlock,
+# 2x internal Voodoo superscale + FSR to the display, Hor+ widescreen,
+# extended draw distance, 100 FPS frame generation, and modern gamepad input
+# with analog triggers. Replaces the old dosbox-staging role. See
+# docs/screamer.md.
+
+dg_screamer_rea_repo: akitaonrails/rea-screamer-trilogy
+dg_screamer_rea_version: v0.6.0
+dg_screamer_rea_asset_name: "ScreamerLauncher-{{ dg_screamer_rea_version }}-linux-x86_64.zip"
+dg_screamer_rea_asset_url: "https://github.com/{{ dg_screamer_rea_repo }}/releases/download/{{ dg_screamer_rea_version }}/{{ dg_screamer_rea_asset_name }}"
+# From the release's own SHA256SUMS.
+dg_screamer_rea_asset_sha256: f90204049062a9fc424eb7436a5aca5657d89617192cefa2b7278a24b9a83800
+
+dg_screamer_rea_root: "{{ dg_box_home }}/tools/rea-screamer"
+dg_screamer_rea_release_dir: "{{ dg_screamer_rea_root }}/ScreamerLauncher-{{ dg_screamer_rea_version }}-linux-x86_64"
+dg_screamer_rea_launcher: "{{ dg_box_home }}/bin/rea-screamer"
+
+# The trilogy root the launcher reads (never modified): the three game folders
+# extracted from the owned GOG installers by the retired dosbox role, moved
+# here when it was uninstalled. GOG sources stay on the NAS for rebuilds.
+dg_screamer_trilogy_dir: "{{ dg_screamer_rea_root }}/games"
+
+# The launcher's own state: ~/.config/screamer-launcher/launcher.cfg plus
+# ~/.local/share/screamer-launcher/{runtime,saves}/<game>.
+dg_screamer_rea_config_dir: "{{ dg_box_home }}/.config/screamer-launcher"
+dg_screamer_rea_data_dir: "{{ dg_box_home }}/.local/share/screamer-launcher"
+dg_screamer_rea_saves_dir: "{{ dg_screamer_rea_data_dir }}/saves"
+
+# Graphics baseline (see AGENTS.md "Graphics: Always Max Out"): fullscreen =
+# the 4K panel, FSR 1.0 as the upscaler (the launcher's quality option over
+# nearest/bilinear), 3dfx auto, Hor+ widescreen, extended draw distance and
+# the 100 FPS optical-flow presentation (game physics stay at the engines'
+# native 50 Hz step). fps_limit = 50 is the fallback if frame gen ever
+# misbehaves on this panel.
+dg_screamer_rea_settings:
+  renderer: auto
+  resolution: fullscreen
+  widescreen: "true"
+  extended_draw_distance: "true"
+  fps_limit: "100"
+  vsync: "true"
+  texture_filter: fsr
+  gamepad_axes: "true"
+  deadzone: "0"
+
+# Retired dosbox-staging role artifacts.
+dg_screamer_rea_old_root: "{{ dg_box_home }}/tools/screamer"
+dg_screamer_rea_old_bin:
+  - "{{ dg_box_home }}/bin/screamer-launch"
+  - "{{ dg_box_home }}/bin/screamer2-launch"
+  - "{{ dg_box_home }}/bin/screamer-rally-launch"
+dg_screamer_rea_old_desktops:
+  - screamer.desktop
+  - screamer2.desktop
+  - screamer-rally.desktop

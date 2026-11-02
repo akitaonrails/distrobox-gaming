@@ -21,6 +21,8 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | RalliSport Challenge 2 Recompiled | Original Xbox native Linux recompilation | [Mortify7612/RallisportChallenge2-decomp](https://github.com/Mortify7612/RallisportChallenge2-decomp) · [doc](rsc2.md) |
 | Gran Turismo 4 Recompiled | PS2 USA retail static recompilation, Windows build under Wine | [moesuito/gt4-staticrecomp](https://github.com/moesuito/gt4-staticrecomp) · [doc](gt4-recomp.md) |
 | OpenCMR2 | Native Colin McRae Rally 2.0 port | [pablocpas/OpenCMR2](https://github.com/pablocpas/OpenCMR2) · [doc](opencmr2.md) |
+| Screamer Trilogy · REA | Screamer / Screamer 2 / Screamer Rally with 3dfx Glide, FSR and analog pads | [akitaonrails/rea-screamer-trilogy](https://github.com/akitaonrails/rea-screamer-trilogy) · [doc](screamer.md) |
+| REA Colin McRae: DiRT | Self-contained launcher for the 2007 PC game (own Wine + DXVK, private runtime copy) | [akitaonrails/rea-dirt](https://github.com/akitaonrails/rea-dirt) · [doc](rea-dirt.md) |
 | REA Colin McRae Rally | Modern launcher for the original 1998 PC game under Wine | [akitaonrails/rea-colin-mcrae](https://github.com/akitaonrails/rea-colin-mcrae) · [doc](colin-mcrae-rally-1.md) |
 | God of War III SpartanPort | PS4 native PC port | [FelipePrado0/gow3_pc](https://github.com/FelipePrado0/gow3_pc) · [doc](gow3-pc.md) |
 | Gran Turismo Sport through RyGT | PS4 recompilation under Wine | [mlgprorektm8/RyGT](https://github.com/mlgprorektm8/RyGT) · [doc](rygt-gt-sport.md) |

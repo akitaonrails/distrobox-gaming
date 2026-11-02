@@ -8,7 +8,7 @@
 # Why a separate list instead of ogm_* fields on the existing launcher data:
 # the launchers ogm consumes are spread across several data structures —
 # dg_emulator_launchers (launchers.yml), dg_pc_racing_games (pc_racing.yml),
-# dg_screamer_games (screamer.yml), dg_dkc_games (dkc_recomp.yml) — plus
+# dg_dkc_games (dkc_recomp.yml) — plus
 # one-off templates in roles/desktop_apps/templates/. Threading ogm_* keys
 # through all of them would duplicate the same concern across six-plus files;
 # one list keyed by desktop stem keeps the ogm contract in a single place and
@@ -563,6 +563,18 @@ dg_ogm_games:
     category: wine
     sgdb_query: "Colin McRae Rally"
     github: akitaonrails/rea-colin-mcrae
+  - desktop_id: rea-dirt
+    id: rea-dirt
+    name: "Colin McRae: DiRT (REA)"
+    category: port
+    sgdb_query: "Colin McRae: DiRT"
+    github: "{{ dg_dirt_repo }}"
+  - desktop_id: rea-screamer
+    id: rea-screamer
+    name: "Screamer Trilogy (REA)"
+    category: port
+    sgdb_query: "Screamer"
+    github: "{{ dg_screamer_rea_repo }}"
   - desktop_id: pc-colin-mcrae-rally-2
     id: colin-mcrae-rally-2
     name: "{{ dg_pc_racing_games | selectattr('slug', 'eq', 'colin-mcrae-rally-2') | map(attribute='name') | first }}"
@@ -578,11 +590,6 @@ dg_ogm_games:
     name: "{{ dg_pc_racing_games | selectattr('slug', 'eq', 'colin-mcrae-rally-04') | map(attribute='name') | first }}"
     category: wine
     sgdb_query: "Colin McRae Rally 04"
-  - desktop_id: pc-colin-mcrae-dirt
-    id: colin-mcrae-dirt
-    name: "{{ dg_pc_racing_games | selectattr('slug', 'eq', 'colin-mcrae-dirt') | map(attribute='name') | first }}"
-    category: wine
-    sgdb_query: "Colin McRae: Dirt"
   - desktop_id: pc-colin-mcrae-dirt-2
     id: colin-mcrae-dirt-2
     name: "{{ dg_pc_racing_games | selectattr('slug', 'eq', 'colin-mcrae-dirt-2') | map(attribute='name') | first }}"
@@ -658,20 +665,3 @@ dg_ogm_games:
     sgdb_query: "Virtua Fighter"
     github: "{{ dg_model1_vf_url | regex_replace('^https://(api\\.)?github\\.com/(repos/)?([^/]+/[^/]+?)(\\.git)?(/.*)?$', '\\3') }}"
 
-  # ── MS-DOS games under dosbox-staging ────────────────────────────
-  # No Wine, no port — ogm's catch-all. Names from dg_screamer_games.
-  - desktop_id: screamer
-    id: screamer
-    name: "{{ dg_screamer_games | selectattr('slug', 'eq', 'screamer') | map(attribute='name') | first }}"
-    category: custom
-    sgdb_query: "Screamer"
-  - desktop_id: screamer2
-    id: screamer2
-    name: "{{ dg_screamer_games | selectattr('slug', 'eq', 'screamer2') | map(attribute='name') | first }}"
-    category: custom
-    sgdb_query: "Screamer 2"
-  - desktop_id: screamer-rally
-    id: screamer-rally
-    name: "{{ dg_screamer_games | selectattr('slug', 'eq', 'screamer-rally') | map(attribute='name') | first }}"
-    category: custom
-    sgdb_query: "Screamer Rally"

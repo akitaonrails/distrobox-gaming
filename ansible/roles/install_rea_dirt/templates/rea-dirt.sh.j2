@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+# Colin McRae: DiRT (2007) through the REA launcher AppImage. The AppImage
+# carries its own Wine (WoW64) and DXVK and keeps its prefix plus the private
+# runtime copy in ~/.local/share/dirt-launcher; gamescope (for true fullscreen)
+# comes from the box. No arguments opens the pad-navigable settings window and
+# then plays; "--play" skips the window, "stop"/"status" manage a run.
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS="${SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS:-1}"
+exec '{{ dg_dirt_appimage }}' "$@"
