@@ -1,6 +1,6 @@
 # Forza on Xbox One via Azimuth
 
-The optional `install_azimuth` role installs [Azimuth](https://almost-there-games.itch.io/azimuth) v1.0.2 and [Extra Options](https://github.com/RokkuDayo/ForzaHorizon2_ExtraOptions/releases/tag/Azimuth_v1.0.0) v0.3.2 (the "Azimuth v1.0.2 compatibility" build) through Proton. Azimuth 1.0 is a **multi-title wrapper**: one install, one prefix and one `azimuth.ini` serve **Forza Horizon 2 (1.0.0.64), FH2 Presents Fast & Furious, Forza Horizon 3 (1.0.125.0), Forza Motorsport 5 (1.0.0.20) and Forza Motorsport 6 (1.0.0.44)** — each from its own dump in `ROMS_FINAL/xboxone`.
+The optional `install_azimuth` role installs [Azimuth](https://almost-there-games.itch.io/azimuth) v1.0.4 and [Extra Options](https://github.com/RokkuDayo/ForzaHorizon2_ExtraOptions/releases/tag/Azimuth_v1.0.0) v0.3.2 (the "Azimuth v1.0.2 compatibility" build, still correct for 1.0.4 — the mod-loader layout is unchanged) through Proton. v1.0.3 added racing-wheel D-pad binding; v1.0.4 fixed picture brightness in dark scenes. Neither touched the mod ABI, settings format or supported game versions. Azimuth 1.0 is a **multi-title wrapper**: one install, one prefix and one `azimuth.ini` serve **Forza Horizon 2 (1.0.0.64), FH2 Presents Fast & Furious, Forza Horizon 3 (1.0.125.0), Forza Motorsport 5 (1.0.0.20) and Forza Motorsport 6 (1.0.0.44)** — each from its own dump in `ROMS_FINAL/xboxone`.
 
 **Azimuth 1.0 (2026-10-27)** rebuilt the wrapper: a new controller/mouse
 launcher that **finds games and content packages automatically** (it scans the

@@ -1,10 +1,10 @@
 ---
 # Azimuth: Xbox One Forza Horizon 2 compatibility wrapper through Proton.
-dg_azimuth_version: 1.0.2
+dg_azimuth_version: 1.0.4
 dg_azimuth_web_url: https://almost-there-games.itch.io/azimuth
 # 1.0.x zips carry a build-date suffix; pin the exact staged name.
-dg_azimuth_zip: "{{ dg_roms_final_root }}/PC/releases/azimuth-windows-1.0.2-20261027.zip"
-dg_azimuth_zip_sha256: 4d5b19812efb5bf0977588ee86182b4647bfc41291230088f5b6aafd21a9a988
+dg_azimuth_zip: "{{ dg_roms_final_root }}/PC/releases/azimuth-windows-1.0.4-20261029.zip"
+dg_azimuth_zip_sha256: f0e603a4548ae7c40c1cef584ce691dbeae0bc178666bed896ab87ab6cd52994
 dg_azimuth_supported_game_version: 1.0.0.64
 dg_azimuth_game_dir: "{{ dg_roms_final_root }}/xboxone/Anthem_1.0.0.64_x64__8wekyb3d8bbwe"
 dg_azimuth_install_dir: "{{ dg_box_home }}/tools/azimuth"
