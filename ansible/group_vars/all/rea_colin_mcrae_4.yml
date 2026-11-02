@@ -15,10 +15,10 @@
 # Wine CMR04 install. See docs/rea-colin-mcrae-4.md.
 
 dg_cmr4_repo: akitaonrails/rea-colin-mcrae-4
-dg_cmr4_version: v0.2.0
+dg_cmr4_version: v0.3.1
 dg_cmr4_asset_name: "CMR4Launcher-{{ dg_cmr4_version }}-x86_64.AppImage"
 dg_cmr4_asset_url: "https://github.com/{{ dg_cmr4_repo }}/releases/download/{{ dg_cmr4_version }}/{{ dg_cmr4_asset_name }}"
-dg_cmr4_asset_sha256: 6533c4641e47e7b6c37df5aed3dadb6d77ab38f92bfa02dc28ceaa41bd74b9ab
+dg_cmr4_asset_sha256: 98e76bd05884353cb513295c9c7745ebafa0c9fd1de3f981dccc774346785be3
 
 # The owned source: a clean install with cmr4.exe next to Data/fonts/shaders,
 # staged under ROMS_FINAL/PC/games from the previous pc-racing install with the
@@ -56,13 +56,14 @@ dg_cmr4_bs: '\'
 dg_cmr4_win_source: "Z:{{ dg_cmr4_source_dir | replace('/', dg_cmr4_bs) }}"
 
 # Graphics baseline (the "Graphics: Always Max Out" ceiling). resolution
-# 3840x2160 drives the 4:3 render at 2880x2160 then the dgVoodoo 16:9 stretch;
-# widescreen on; controller on (Xidi analogue-pedal gamepad). fps_limit off and
-# vsync off match the user's tuned config (dgVoodoo on the RTX runs this 2004
-# game far above 60; the cap is uncapped).
+# 3840x2160 is 16:9, which from v0.3.1 is what gives the widescreen view
+# (4:3 render at 2880x2160 then the dgVoodoo 16:9 stretch); the separate
+# `widescreen` toggle was removed upstream (resolution shape decides), so it
+# is no longer seeded. controller on (Xidi analogue-pedal gamepad). fps_limit
+# off and vsync off match the user's tuned config (dgVoodoo on the RTX runs
+# this 2004 game far above 60; the cap is uncapped).
 dg_cmr4_settings:
   resolution: 3840x2160
-  widescreen: "on"
   fps_limit: "off"
   vsync: "off"
   controller: "on"

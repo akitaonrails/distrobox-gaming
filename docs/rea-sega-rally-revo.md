@@ -15,7 +15,7 @@ cd ansible && ansible-playbook install-rea-sega-rally-revo.yml
 
 | | |
 |---|---|
-| Release | `v0.1.1`, `SRRLauncher-v0.1.1-x86_64.AppImage` (pinned + sha256 `8433fa15…`) |
+| Release | `v0.2.0`, `SRRLauncher-v0.2.0-x86_64.AppImage` (pinned + sha256 `dd255296…`) |
 | Owned source | `ROMS_FINAL/PC/games/SEGA-Rally-Revo_Win_EN-FR-DE-ES-IT-PL_Full-Rip/Sega Rally` (the pristine NAS Full-Rip, `SEGA Rally_SSE1.exe` sha256 `22655a54…` + `SEGA Rally.exe` sha256 `ad84ecea…`, the recognised v4.0.6.0 release) |
 | AppImage | `tools/rea-sega-rally-revo/` |
 | Prefix + private runtime | `~/.local/share/srr-launcher/` (launcher's own default; `SRR_PREFIX` can override) |

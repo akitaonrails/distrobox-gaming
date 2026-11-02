@@ -31,7 +31,10 @@
       see docs/rea-sega-rally-revo.md.
 
 - name: Check for a running Sega Rally Revo session before migration
-  ansible.builtin.shell: "pgrep -f 'SEGA Rally.*\\.exe'"
+  # Anchor the exe name to a path separator so only a real exec'd game process
+  # matches — a bare 'SEGA Rally.*\.exe' also matches any process whose cmdline
+  # merely mentions the name (other shells, audits, even this ansible run).
+  ansible.builtin.shell: "pgrep -f '[/\\\\]SEGA Rally[^/\\\\]*\\.exe'"
   register: _srr_running
   failed_when: false
   changed_when: false

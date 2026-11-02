@@ -14,7 +14,7 @@ cd ansible && ansible-playbook install-rea-colin-mcrae-3.yml
 
 | | |
 |---|---|
-| Release | `v0.1.2`, `CMR3Launcher-v0.1.2-x86_64.AppImage` (pinned + sha256 `cd37e5cc…`) |
+| Release | `v0.2.1`, `CMR3Launcher-v0.2.1-x86_64.AppImage` (pinned + sha256 `9ffe6883…`) |
 | Owned source | `ROMS_FINAL/PC/games/Colin-McRae-Rally-3` (`Rally_3PC.exe` sha256 `c56344b4…`, MD5 `2744404b…` — the launcher's recognised "DRM-free v1.1 variant B, the community repack") |
 | AppImage | `tools/rea-colin-mcrae-3/` |
 | Prefix + private runtime | `~/.local/share/cmr3-launcher/` (launcher's own default; `CMR3_PREFIX` can override) |

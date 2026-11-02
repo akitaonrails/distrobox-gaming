@@ -14,10 +14,10 @@
 # install. See docs/rea-sega-rally-revo.md.
 
 dg_srr_repo: akitaonrails/rea-sega-rally-revo
-dg_srr_version: v0.1.1
+dg_srr_version: v0.2.0
 dg_srr_asset_name: "SRRLauncher-{{ dg_srr_version }}-x86_64.AppImage"
 dg_srr_asset_url: "https://github.com/{{ dg_srr_repo }}/releases/download/{{ dg_srr_version }}/{{ dg_srr_asset_name }}"
-dg_srr_asset_sha256: 8433fa156328f26d9f8dcea90cf9fb8a5029d88a354129c6200e823e7785ae34
+dg_srr_asset_sha256: dd255296ab9fa4cc490a4f66cd82f0e6008748cf0ee4d96693f48352d98553ba
 
 # The owned source is the pristine EN-FR-DE-ES-IT-PL "Full-Rip" folder already
 # on the NAS — the pc-racing slug used install_mode: copy and only ever READ it,

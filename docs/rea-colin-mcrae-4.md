@@ -16,7 +16,7 @@ cd ansible && ansible-playbook install-rea-colin-mcrae-4.yml
 
 | | |
 |---|---|
-| Release | `v0.2.0`, `CMR4Launcher-v0.2.0-x86_64.AppImage` (pinned + sha256 `6533c464…`) |
+| Release | `v0.3.1`, `CMR4Launcher-v0.3.1-x86_64.AppImage` (pinned + sha256 `98e76bd0…`) |
 | Owned source | `ROMS_FINAL/PC/games/Colin-McRae-Rally-04` (`cmr4.exe` sha256 `7dca9f4c…`, the **original un-patched** build) |
 | AppImage | `tools/rea-colin-mcrae-4/` |
 | Prefix + private runtime | `~/.local/share/cmr4-launcher/` (launcher's own default; `CMR4_PREFIX` can override) |
@@ -52,7 +52,9 @@ hand is now **built into the launcher**, which is why the slug was retired:
 ## Graphics
 
 `launcher.cfg` is seeded maxed out: `resolution 3840x2160` (4:3 render at
-2880×2160, dgVoodoo stretch to 4K 16:9), `widescreen on`, `controller on`.
+2880×2160, dgVoodoo stretch to 4K 16:9 — from v0.3.1 the 16:9 resolution is
+what selects the widescreen view; the separate `widescreen` toggle was removed
+upstream and is no longer seeded), `controller on`.
 `fps_limit off` and `vsync off` are the tuned choices — dgVoodoo on the RTX runs
 this 2004 game far above 60.
 

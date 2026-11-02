@@ -16,7 +16,7 @@ cd ansible && ansible-playbook install-rea-outrun-2006.yml
 
 | | |
 |---|---|
-| Release | `v0.1.0`, `OutRunLauncher-v0.1.0-x86_64.AppImage` (pinned + sha256 `870aefaa…`) |
+| Release | `v0.2.1`, `OutRunLauncher-v0.2.1-x86_64.AppImage` (pinned + sha256 `cf561ad2…`) |
 | Owned source | `ROMS_FINAL/PC/games/OutRun-2006-Coast-2-Coast` (`OR2006C2C.exe` sha256 `68ceb386…` — the launcher's recognised OutRun2006Tweaks DRM-free EXE, an already-patched install) |
 | AppImage | `tools/rea-outrun-2006/` |
 | Prefix + private runtime | `~/.local/share/or-launcher/` (launcher's own default; `OR_PREFIX` can override) |
