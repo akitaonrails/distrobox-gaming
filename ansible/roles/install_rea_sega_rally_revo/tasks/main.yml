@@ -1,0 +1,139 @@
+---
+# akitaonrails/rea-sega-rally-revo ships a self-contained AppImage: its own Wine
+# (WoW64) and DXVK, the community stutter fix, the registry/config.ini/Documents
+# setup, the logo-video skip, the 21:9/32:9 aspect patch, the WineBus controller
+# bridge and the NVIDIA Vulkan ICD pin, plus a settings window then the game in
+# an isolated Wine desktop. The role stages the pinned AppImage, seeds the
+# launcher's own launcher.cfg, migrates the config.ini (controller bindings) and
+# the career save from the retired pc-racing prefix, and removes that install.
+# The owned source is the pristine NAS Full-Rip folder — the pc-racing slug only
+# read it (install_mode: copy), so it needs no restaging.
+
+- name: Check the owned Sega Rally Revo source executables
+  ansible.builtin.stat:
+    path: "{{ item }}"
+    checksum_algorithm: sha256
+  register: _srr_exes
+  loop:
+    - "{{ dg_srr_exe_sse1 }}"
+    - "{{ dg_srr_exe_nodvd }}"
+
+- name: Require the supported Sega Rally Revo (v4.0.6.0) executables
+  ansible.builtin.assert:
+    that:
+      - _srr_exes.results[0].stat.exists
+      - _srr_exes.results[0].stat.checksum == dg_srr_exe_sse1_sha256
+      - _srr_exes.results[1].stat.exists
+      - _srr_exes.results[1].stat.checksum == dg_srr_exe_nodvd_sha256
+    fail_msg: >-
+      Need the clean v4.0.6.0 Sega Rally Revo folder (SEGA Rally_SSE1.exe sha256
+      22655a54… and SEGA Rally.exe sha256 ad84ecea…) at {{ dg_srr_source_dir }};
+      see docs/rea-sega-rally-revo.md.
+
+- name: Check for a running Sega Rally Revo session before migration
+  ansible.builtin.shell: "pgrep -f 'SEGA Rally.*\\.exe'"
+  register: _srr_running
+  failed_when: false
+  changed_when: false
+
+- name: Require Sega Rally Revo to be closed for migration
+  ansible.builtin.assert:
+    that: _srr_running.rc == 1
+    fail_msg: "Close Sega Rally Revo before replacing the pc-racing install."
+
+- name: Create the REA Sega Rally Revo directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_srr_root }}"
+    - "{{ dg_srr_settings_dir }}"
+    - "{{ dg_srr_saves_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Stage the pinned REA Sega Rally Revo launcher AppImage
+  ansible.builtin.get_url:
+    url: "{{ dg_srr_asset_url }}"
+    dest: "{{ dg_srr_appimage }}"
+    checksum: "sha256:{{ dg_srr_asset_sha256 }}"
+    mode: "0755"
+
+# Migrate the player's config.ini (its [GameController] mapping is preserved
+# verbatim by the launcher) and the career save (SEGA Rally.dat) from the
+# retired pc-racing prefix into the new prefix's Documents layout. force: false
+# keeps anything the launcher or the player has already written there.
+- name: Find saves in the retired pc-racing prefix
+  ansible.builtin.find:
+    paths: "{{ dg_srr_old_saves_dir }}"
+    patterns:
+      - "config.ini"
+      - "SEGA Rally.dat"
+    file_type: file
+  register: _srr_old_saves
+
+- name: Migrate the Sega Rally Revo config and save into the REA prefix
+  ansible.builtin.copy:
+    src: "{{ item.path }}"
+    dest: "{{ dg_srr_saves_dir }}/{{ item.path | basename }}"
+    remote_src: true
+    force: false
+    mode: "0644"
+  loop: "{{ _srr_old_saves.files }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
+
+# The settings window fills resolution from the screen when unset; seeding the
+# maxed-out values keeps a headless --play on the 4K panel. force: false — once
+# the launcher or the player writes the file, it is theirs.
+- name: Seed the REA Sega Rally Revo launcher settings
+  ansible.builtin.copy:
+    dest: "{{ dg_srr_settings_dir }}/launcher.cfg"
+    mode: "0644"
+    force: false
+    content: |
+      # Sega Rally Revo launcher settings (seeded by install_rea_sega_rally_revo).
+      game = {{ dg_srr_win_source }}
+      {% for key, value in dg_srr_settings.items() %}
+      {{ key }} = {{ value }}
+      {% endfor %}
+
+- name: Remember the game folder on an already-written config
+  ansible.builtin.lineinfile:
+    path: "{{ dg_srr_settings_dir }}/launcher.cfg"
+    regexp: "^game *="
+    line: "game = {{ dg_srr_win_source }}"
+    insertbefore: BOF
+
+- name: Install the reentrant REA Sega Rally Revo launcher
+  ansible.builtin.template:
+    src: rea-sega-rally-revo.sh.j2
+    dest: "{{ dg_srr_launcher }}"
+    mode: "0755"
+
+- name: Render the REA Sega Rally Revo desktop entry
+  ansible.builtin.template:
+    src: rea-sega-rally-revo.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/rea-sega-rally-revo.desktop"
+    mode: "0644"
+
+- name: Publish the REA Sega Rally Revo desktop entry
+  ansible.builtin.command: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  changed_when: false
+
+# Retire the pc-racing Sega Rally Revo install: launchers, entries, the box copy
+# of the game (the owned source stays on the NAS) and its per-game Wine prefix.
+- name: Remove the retired pc-racing Sega Rally Revo launchers and desktop entry
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: "{{ dg_srr_old_bin + [dg_desktop_render_dir ~ '/' ~ dg_srr_old_desktop,
+                              dg_host_applications_dir ~ '/' ~ dg_srr_old_desktop] }}"
+
+- name: Remove the retired pc-racing Sega Rally Revo install and prefix
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ dg_srr_old_install }}"
+    - "{{ dg_srr_old_prefix }}"

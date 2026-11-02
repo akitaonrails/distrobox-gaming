@@ -1,0 +1,110 @@
+---
+# akitaonrails/rea-outrun-2006 ships a self-contained AppImage: its own Wine
+# (WoW64, so the 32-bit game needs no multilib), DXVK, OutRun2006Tweaks, the
+# VC++ runtime and the soundtrack patch, plus a settings window then the game in
+# gamescope. The role stages the pinned AppImage, seeds the launcher's own
+# launcher.cfg, publishes the launcher + desktop entry, and removes the retired
+# pc-racing OutRun 2006 install. The player's save travels in the owned source's
+# SaveGame/ folder, which the launcher mirrors into its prefix on first run, so
+# there is no separate profile migration.
+
+- name: Check the owned OutRun 2006 source executable
+  ansible.builtin.stat:
+    path: "{{ dg_or2006_exe }}"
+    checksum_algorithm: sha256
+  register: _or2006_exe
+
+- name: Require the supported OutRun 2006 executable
+  ansible.builtin.assert:
+    that:
+      - _or2006_exe.stat.exists
+      - _or2006_exe.stat.checksum == dg_or2006_exe_sha256
+    fail_msg: >-
+      Need a clean OutRun 2006 install (OR2006C2C.exe sha256 68ceb386…, the
+      recognised OutRun2006Tweaks DRM-free EXE, next to the game's Stage/Media/
+      Sound/SaveGame data) at {{ dg_or2006_source_dir }}; see
+      docs/rea-outrun-2006.md.
+
+- name: Check for a running OutRun 2006 session before replacing it
+  ansible.builtin.command: pgrep -x OR2006C2C.exe
+  register: _or2006_running
+  failed_when: false
+  changed_when: false
+
+- name: Require OutRun 2006 to be closed for replacement
+  ansible.builtin.assert:
+    that: _or2006_running.rc == 1
+    fail_msg: "Close OutRun 2006 before replacing the pc-racing install."
+
+- name: Create the REA OutRun 2006 directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_or2006_root }}"
+    - "{{ dg_or2006_settings_dir }}"
+    - "{{ dg_or2006_saves_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Stage the pinned REA OutRun 2006 launcher AppImage
+  ansible.builtin.get_url:
+    url: "{{ dg_or2006_asset_url }}"
+    dest: "{{ dg_or2006_appimage }}"
+    checksum: "sha256:{{ dg_or2006_asset_sha256 }}"
+    mode: "0755"
+
+# The settings window fills resolution from the screen when unset; seeding the
+# maxed-out values keeps a headless --play on the 4K panel with DXVK on. force:
+# false — once the launcher or the player writes the file, it is theirs.
+- name: Seed the REA OutRun 2006 launcher settings
+  ansible.builtin.copy:
+    dest: "{{ dg_or2006_settings_dir }}/launcher.cfg"
+    mode: "0644"
+    force: false
+    content: |
+      # OutRun 2006 launcher settings (seeded by install_rea_outrun_2006).
+      game = {{ dg_or2006_win_source }}
+      {% for key, value in dg_or2006_settings.items() %}
+      {{ key }} = {{ value }}
+      {% endfor %}
+
+- name: Remember the game folder on an already-written config
+  ansible.builtin.lineinfile:
+    path: "{{ dg_or2006_settings_dir }}/launcher.cfg"
+    regexp: "^game *="
+    line: "game = {{ dg_or2006_win_source }}"
+    insertbefore: BOF
+
+- name: Install the reentrant REA OutRun 2006 launcher
+  ansible.builtin.template:
+    src: rea-outrun-2006.sh.j2
+    dest: "{{ dg_or2006_launcher }}"
+    mode: "0755"
+
+- name: Render the REA OutRun 2006 desktop entry
+  ansible.builtin.template:
+    src: rea-outrun-2006.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/rea-outrun-2006.desktop"
+    mode: "0644"
+
+- name: Publish the REA OutRun 2006 desktop entry
+  ansible.builtin.command: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  changed_when: false
+
+# Retire the pc-racing OutRun 2006 install: launchers, entries, the installed
+# game copy (now staged clean on the NAS) and its per-game Wine prefix.
+- name: Remove the retired pc-racing OutRun 2006 launchers and desktop entry
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: "{{ dg_or2006_old_bin + [dg_desktop_render_dir ~ '/' ~ dg_or2006_old_desktop,
+                                 dg_host_applications_dir ~ '/' ~ dg_or2006_old_desktop] }}"
+
+- name: Remove the retired pc-racing OutRun 2006 install and prefix
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ dg_or2006_old_install }}"
+    - "{{ dg_or2006_old_prefix }}"

@@ -1,0 +1,11 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Sega Rally Revo (REA)
+Exec={{ dg_srr_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=2007 Sega Rally Revo at 4K with DXVK, the stutter fix and native XInput
+Categories=Game;
+StartupWMClass=SRRLauncher.exe
+{{ ogm_metadata('rea-sega-rally-revo') }}

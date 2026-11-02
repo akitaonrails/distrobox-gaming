@@ -104,8 +104,20 @@ dg_save_sets:
   # REA launchers (2026-11-01): their own prefixes/state keep saves and settings
   - { name: rea-dirt,             src: [".local/share/dirt-launcher/prefix/drive_c/users/{{ ansible_facts.user_id }}/Documents/Codemasters/DiRT",
                                        "file:.local/share/dirt-launcher/prefix/drive_c/users/{{ ansible_facts.user_id }}/AppData/Local/DiRTLauncher/launcher.cfg"] }
+  - { name: rea-colin-mcrae-3,    src: [".local/share/cmr3-launcher/prefix/drive_c/users/{{ ansible_facts.user_id }}/Saved Games/Colin McRae Rally 3",
+                                       "file:.local/share/cmr3-launcher/prefix/drive_c/users/{{ ansible_facts.user_id }}/AppData/Local/CMR3Launcher/launcher.cfg"] }
   - { name: rea-screamer,         src: [".local/share/screamer-launcher/saves",
                                        "file:.config/screamer-launcher/launcher.cfg"] }
+  - { name: rea-outrun-2006,      src: [".local/share/or-launcher/prefix/drive_c/users/{{ ansible_facts.user_id }}/Saved Games/OutRun 2006",
+                                       "file:.local/share/or-launcher/prefix/drive_c/users/{{ ansible_facts.user_id }}/AppData/Local/OutRunLauncher/launcher.cfg"] }
+  - { name: rea-sega-rally-revo,  src: [".local/share/srr-launcher/prefix/drive_c/users/{{ ansible_facts.user_id }}/Documents/SEGA Rally/Saved Games",
+                                       "file:.local/share/srr-launcher/prefix/drive_c/users/{{ ansible_facts.user_id }}/AppData/Local/SRRLauncher/launcher.cfg"] }
+  # CMR04 writes loose save/settings files inside the launcher's private runtime
+  # copy (CMR4/); back up those persistent names, not the ~1 GB game copy.
+  - { name: rea-colin-mcrae-4,    src: ["file:.local/share/cmr4-launcher/prefix/drive_c/users/{{ ansible_facts.user_id }}/AppData/Local/CMR4Launcher/CMR4/OPTIONS",
+                                       "file:.local/share/cmr4-launcher/prefix/drive_c/users/{{ ansible_facts.user_id }}/AppData/Local/CMR4Launcher/CMR4/CHAMPIONSHIP_SLOT_1",
+                                       "file:.local/share/cmr4-launcher/prefix/drive_c/users/{{ ansible_facts.user_id }}/AppData/Local/CMR4Launcher/CMR4/BESTTIMES_GHOSTS",
+                                       "file:.local/share/cmr4-launcher/prefix/drive_c/users/{{ ansible_facts.user_id }}/AppData/Local/CMR4Launcher/launcher.cfg"] }
 
   # ---- 2026-10-28 save-path audit of every installed GitHub port ----
   # Recomps/ports that keep saves in a per-game config or user-data dir.

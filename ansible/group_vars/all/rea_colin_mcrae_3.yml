@@ -1,0 +1,75 @@
+---
+# Colin McRae Rally 3 (2003) — REA launcher (akitaonrails/rea-colin-mcrae-3).
+# Like rea-dirt, the Linux asset is a self-contained AppImage: its own Wine +
+# DXVK, a pad-navigable settings window, and gamescope for true fullscreen. It
+# bundles SilentPatch (widescreen/any aspect, fixed sun/shadows), Xidi (XInput
+# pads through DirectInput), Bekoha's HD UI, and the SilentPatch DRM-free
+# xdelta patch. It never touches the source folder — it works on a private
+# runtime copy in its own prefix. Supersedes the pc-racing Wine CMR3 install
+# (Magipack repack under gamescope). See docs/rea-colin-mcrae-3.md.
+
+dg_cmr3_repo: akitaonrails/rea-colin-mcrae-3
+dg_cmr3_version: v0.1.1
+dg_cmr3_asset_name: "CMR3Launcher-{{ dg_cmr3_version }}-x86_64.AppImage"
+dg_cmr3_asset_url: "https://github.com/{{ dg_cmr3_repo }}/releases/download/{{ dg_cmr3_version }}/{{ dg_cmr3_asset_name }}"
+dg_cmr3_asset_sha256: 29fe8cc7c384c0839b19f658adedf851852cd88e1ac9d929739a5950c90680d6
+
+# The owned source: a clean install with Rally_3PC.exe next to Data/fonts/
+# shaders, staged under ROMS_FINAL/PC/games (AGENTS.md PC-library layout) from
+# the previous pc-racing install, with the pc-racing Xidi/SilentPatch/proxy
+# DLLs, the Inno uninstaller and the CMR3 profile stripped out — the launcher
+# adds its own components and keeps the profile in the prefix. The launcher
+# identifies the edition by the exe's MD5: 2744404b… is its recognised
+# "DRM-free v1.1 (variant B, the community repack)", so it plays as-is with no
+# xdelta patching.
+dg_cmr3_source_dir: "{{ dg_roms_final_root }}/PC/games/Colin-McRae-Rally-3"
+dg_cmr3_exe: "{{ dg_cmr3_source_dir }}/Rally_3PC.exe"
+dg_cmr3_exe_sha256: c56344b4c2a08844cbe8d80cdbcc7f3c22ad1f5eb515474dba7845268812811c  # DRM-free v1.1 variant B
+
+dg_cmr3_root: "{{ dg_box_home }}/tools/rea-colin-mcrae-3"
+dg_cmr3_appimage: "{{ dg_cmr3_root }}/{{ dg_cmr3_asset_name }}"
+dg_cmr3_launcher: "{{ dg_box_home }}/bin/rea-colin-mcrae-3"
+
+# The AppImage keeps its Wine prefix and the private runtime copy here (it
+# defaults to ~/.local/share/cmr3-launcher; HOME inside the box is the box
+# home). CMR3_PREFIX could override it, but the default keeps upstream
+# behavior, matching rea-dirt.
+dg_cmr3_state_dir: "{{ dg_box_home }}/.local/share/cmr3-launcher"
+dg_cmr3_prefix: "{{ dg_cmr3_state_dir }}/prefix"
+dg_cmr3_settings_dir: "{{ dg_cmr3_prefix }}/drive_c/users/{{ ansible_facts.user_id }}/AppData/Local/CMR3Launcher"
+# The player's profile (the game's CMR3 file) lives here in the prefix; the
+# launcher copies it into its runtime copy before each run and back on exit.
+dg_cmr3_saves_dir: "{{ dg_cmr3_prefix }}/drive_c/users/{{ ansible_facts.user_id }}/Saved Games/Colin McRae Rally 3"
+
+# The launcher.cfg game path is a Windows path (the launcher runs under Wine);
+# Wine maps Z: to /. dg_cmr3_bs is one backslash written in YAML only —
+# Ansible passes Jinja string escapes through untouched, so '\\' would double.
+dg_cmr3_bs: '\'
+dg_cmr3_win_source: "Z:{{ dg_cmr3_source_dir | replace('/', dg_cmr3_bs) }}"
+
+# Graphics baseline (the "Graphics: Always Max Out" ceiling). dxvk is the
+# difference between native speed and ~10 FPS at 4K; the gamepad = rally
+# preset is the hardware-validated mapping (triggers are the pedals, resting
+# thumbs can't open the throttle). hd_ui/fsaa/anisotropic are the top picture.
+dg_cmr3_settings:
+  resolution: 3840x2160
+  display_mode: fullscreen
+  vsync: "on"
+  anisotropic: 16
+  fsaa: "on"
+  hd_ui: "on"
+  shadows: sharp
+  gamepad: rally
+  dxvk: "on"
+  scaler: linear
+
+# Retired pc-racing CMR3 install (Magipack repack): its per-game install dir
+# holds the 2.8 GB game plus the loose CMR3 profile that migrates into the new
+# prefix; its own Wine prefix is removed.
+dg_cmr3_old_install: "{{ dg_pc_racing_install_root }}/colin-mcrae-rally-3"
+dg_cmr3_old_prefix: "{{ dg_pc_racing_prefix_root }}/colin-mcrae-rally-3"
+dg_cmr3_old_profile: "{{ dg_cmr3_old_install }}/CMR3"
+dg_cmr3_old_bin:
+  - "{{ dg_box_home }}/bin/colin-mcrae-rally-3"
+  - "{{ dg_box_home }}/bin/install-colin-mcrae-rally-3"
+dg_cmr3_old_desktop: pc-colin-mcrae-rally-3.desktop

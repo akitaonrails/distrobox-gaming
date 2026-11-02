@@ -1,0 +1,11 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Colin McRae Rally 04 (REA)
+Exec={{ dg_cmr4_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=2004 Colin McRae Rally 04 at 4K widescreen (dgVoodoo) with an analogue-pedal pad
+Categories=Game;
+StartupWMClass=CMR4Launcher.exe
+{{ ogm_metadata('rea-colin-mcrae-4') }}

@@ -1,0 +1,78 @@
+---
+# Colin McRae Rally 04 (2004) — REA launcher (akitaonrails/rea-colin-mcrae-4).
+# Like the other REA launchers, the Linux asset is a self-contained AppImage:
+# its own Wine 11.20 (WoW64) and DXVK, a pad-navigable settings window, and
+# gamescope for true fullscreen. It bundles dgVoodoo (D3D8/9 → D3D11), applies
+# the AuToMaNiAk005 "16:9 Low" aspect patch to its private cmr4.exe, renders the
+# game's native 4:3 (2880x2160 for a 4K screen) and has dgVoodoo stretch it to
+# 16:9 (the only correct way to widescreen CMR04 — rendering 16:9 directly makes
+# cars 25% too narrow), sends the game to the largest LANDSCAPE monitor (never
+# portrait DP-2), installs a close hook (cmr4close.dll) for Alt+F4 / Super+W,
+# and sets up a proper Xidi gamepad (stick steers, RT/LT analogue pedals, no
+# keyboard emulation) auto-selected for a never-configured profile. The whole
+# pile of box-specific pc-racing fixes is now upstream. It never touches the
+# source folder — it works on a private runtime copy. Supersedes the pc-racing
+# Wine CMR04 install. See docs/rea-colin-mcrae-4.md.
+
+dg_cmr4_repo: akitaonrails/rea-colin-mcrae-4
+dg_cmr4_version: v0.2.0
+dg_cmr4_asset_name: "CMR4Launcher-{{ dg_cmr4_version }}-x86_64.AppImage"
+dg_cmr4_asset_url: "https://github.com/{{ dg_cmr4_repo }}/releases/download/{{ dg_cmr4_version }}/{{ dg_cmr4_asset_name }}"
+dg_cmr4_asset_sha256: 6533c4641e47e7b6c37df5aed3dadb6d77ab38f92bfa02dc28ceaa41bd74b9ab
+
+# The owned source: a clean install with cmr4.exe next to Data/fonts/shaders,
+# staged under ROMS_FINAL/PC/games from the previous pc-racing install with the
+# pc-racing injections stripped (the Xidi dinput8.dll/Xidi.ini/.dg-xidi marker,
+# the dgVoodoo D3D9.dll/dgVoodoo.conf/dgVoodooCpl.exe, the CMR4_16x9-Low.exe
+# patcher tool, the Inno unins000.*) AND cmr4.exe UN-PATCHED back to the original
+# (the pc-racing 16:9 Low byte patch reversed), so the launcher applies its own
+# patch to its private copy. The launcher patches cmr4.exe by byte signature and
+# is idempotent, so it would also accept an already-patched exe; the clean source
+# keeps it original. The DSOAL audio (dsound.dll/dsoal-aldrv.dll/alsoft.ini) and
+# the loose save files are left in place.
+dg_cmr4_source_dir: "{{ dg_roms_final_root }}/PC/games/Colin-McRae-Rally-04"
+dg_cmr4_exe: "{{ dg_cmr4_source_dir }}/cmr4.exe"
+dg_cmr4_exe_sha256: 7dca9f4cab16bc1a98df8871f3d20aec4cd931a818ea0899db86c83c1f712b41  # original (un-patched) cmr4.exe
+
+dg_cmr4_root: "{{ dg_box_home }}/tools/rea-colin-mcrae-4"
+dg_cmr4_appimage: "{{ dg_cmr4_root }}/{{ dg_cmr4_asset_name }}"
+dg_cmr4_launcher: "{{ dg_box_home }}/bin/rea-colin-mcrae-4"
+
+# The AppImage keeps its Wine prefix and the private runtime copy here (cmr4-play
+# defaults to ~/.local/share/cmr4-launcher; HOME inside the box is the box home).
+# CMR4_PREFIX could override it, but the default keeps upstream behaviour.
+dg_cmr4_state_dir: "{{ dg_box_home }}/.local/share/cmr4-launcher"
+dg_cmr4_prefix: "{{ dg_cmr4_state_dir }}/prefix"
+dg_cmr4_settings_dir: "{{ dg_cmr4_prefix }}/drive_c/users/{{ ansible_facts.user_id }}/AppData/Local/CMR4Launcher"
+# CMR04 writes its saves/settings (OPTIONS, CHAMPIONSHIP_SLOT_*, BESTTIMES_GHOSTS)
+# as loose files beside the exe — inside the launcher's private runtime copy
+# ({{ dg_cmr4_settings_dir }}/CMR4). The launcher treats those names as
+# persistent and never overwrites them from the source once they exist; the
+# backup set (backups.yml) mirrors them.
+
+# The launcher.cfg game path is a Windows path (the launcher runs under Wine);
+# Wine maps Z: to /. dg_cmr4_bs is one backslash written in YAML only.
+dg_cmr4_bs: '\'
+dg_cmr4_win_source: "Z:{{ dg_cmr4_source_dir | replace('/', dg_cmr4_bs) }}"
+
+# Graphics baseline (the "Graphics: Always Max Out" ceiling). resolution
+# 3840x2160 drives the 4:3 render at 2880x2160 then the dgVoodoo 16:9 stretch;
+# widescreen on; controller on (Xidi analogue-pedal gamepad). fps_limit off and
+# vsync off match the user's tuned config (dgVoodoo on the RTX runs this 2004
+# game far above 60; the cap is uncapped).
+dg_cmr4_settings:
+  resolution: 3840x2160
+  widescreen: "on"
+  fps_limit: "off"
+  vsync: "off"
+  controller: "on"
+
+# Retired pc-racing CMR04 install (Magipack repack): its per-game install dir
+# holds the ~1 GB game (now staged clean on the NAS, cmr4.exe un-patched); its
+# own Wine prefix is removed.
+dg_cmr4_old_install: "{{ dg_pc_racing_install_root }}/colin-mcrae-rally-04"
+dg_cmr4_old_prefix: "{{ dg_pc_racing_prefix_root }}/colin-mcrae-rally-04"
+dg_cmr4_old_bin:
+  - "{{ dg_box_home }}/bin/colin-mcrae-rally-04"
+  - "{{ dg_box_home }}/bin/install-colin-mcrae-rally-04"
+dg_cmr4_old_desktop: pc-colin-mcrae-rally-04.desktop

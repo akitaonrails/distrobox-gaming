@@ -1,0 +1,11 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=OutRun 2006: Coast 2 Coast (REA)
+Exec={{ dg_or2006_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=2006 OutRun 2006 at 4K widescreen with DXVK, OutRun2006Tweaks and XInput
+Categories=Game;
+StartupWMClass=OutRunLauncher.exe
+{{ ogm_metadata('rea-outrun-2006') }}

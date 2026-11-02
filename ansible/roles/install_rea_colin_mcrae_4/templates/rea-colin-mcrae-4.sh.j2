@@ -1,0 +1,19 @@
+#!/bin/sh
+set -eu
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+# Colin McRae Rally 04 (2004) through the REA launcher AppImage. The AppImage
+# carries its own Wine (WoW64), DXVK and dgVoodoo, and keeps its prefix plus the
+# private runtime copy in ~/.local/share/cmr4-launcher; gamescope (for true
+# fullscreen) comes from the box. Its AppRun runs the launcher's "cmr4-play":
+# no arguments opens the pad-navigable settings window and then plays; "--play"
+# skips the window, "stop"/"status" manage a run. cmr4-play applies the 16:9 Low
+# aspect patch to the private cmr4.exe, renders 4:3 and has dgVoodoo stretch it
+# to 16:9, sends the game to the largest landscape monitor (never portrait
+# DP-2), installs the Alt+F4/Super+W close hook, and sets up a proper Xidi
+# gamepad (stick steers, RT/LT analogue pedals) auto-selected for a
+# never-configured profile. Picking the controller in the game's own
+# Options > Controllers can freeze under Wine (the choice is saved anyway;
+# restart) — the launcher's auto-setup avoids needing to.
+exec '{{ dg_cmr4_appimage }}' "$@"

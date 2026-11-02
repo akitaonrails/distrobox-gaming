@@ -1,0 +1,7 @@
+---
+- name: Install Sega Rally Revo (REA launcher)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_rea_sega_rally_revo

@@ -1,0 +1,15 @@
+#!/bin/sh
+set -eu
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+# OutRun 2006: Coast 2 Coast (2006) through the REA launcher AppImage. The
+# AppImage carries its own Wine (WoW64), DXVK, OutRun2006Tweaks, the VC++
+# runtime and the soundtrack patch, and keeps its prefix plus the private
+# runtime copy in ~/.local/share/or-launcher; gamescope (for true fullscreen)
+# comes from the box. The AppImage's AppRun runs the launcher's "or-play":
+# no arguments opens the pad-navigable settings window and then plays; "--play"
+# skips the window, "stop"/"status" manage a run. Under Wine the launcher reads
+# the pad through XInput by default and turns on OutRun2006Tweaks' SDL input, so
+# the 8BitDo works without any registry plumbing here.
+exec '{{ dg_or2006_appimage }}' "$@"

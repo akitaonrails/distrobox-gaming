@@ -1,0 +1,11 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Colin McRae Rally 3 (REA)
+Exec={{ dg_cmr3_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=2003 Colin McRae Rally 3 at 4K widescreen with DXVK, HD UI and XInput
+Categories=Game;
+StartupWMClass=CMR3Launcher.exe
+{{ ogm_metadata('rea-colin-mcrae-3') }}

@@ -1,0 +1,17 @@
+#!/bin/sh
+set -eu
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+# Colin McRae Rally 3 (2003) through the REA launcher AppImage. The AppImage
+# carries its own Wine (WoW64), DXVK, SilentPatch, Xidi and the HD UI, and
+# keeps its prefix plus the private runtime copy in ~/.local/share/cmr3-launcher;
+# gamescope (for true fullscreen) comes from the box. No arguments opens the
+# pad-navigable settings window and then plays; "--play" skips the window,
+# "stop"/"status" manage a run.
+# The launcher (cmr3-play, v0.1.1+) sets up the pad itself: it applies the Xidi
+# overrides on top of the AppImage's own WINEDLLOVERRIDES, stops double-counting
+# the pad through SDL, and writes Xidi's controller into a never-configured game
+# profile (Options > Controls) so the Rally mapping takes effect. No controller
+# plumbing is needed here.
+exec '{{ dg_cmr3_appimage }}' "$@"

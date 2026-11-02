@@ -1,0 +1,17 @@
+#!/bin/sh
+set -eu
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+# Sega Rally Revo (2007) through the REA launcher AppImage. The AppImage carries
+# its own Wine (WoW64), DXVK, the community stutter fix and the game setup, and
+# keeps its prefix plus the private runtime copy in ~/.local/share/srr-launcher.
+# Its AppRun runs the launcher's "srr-play": no arguments opens the
+# pad-navigable settings window and then plays; "--play" skips the window,
+# "stop"/"status" manage a run. srr-play seeds Wine's controller bridge
+# (Map Controllers=1), runs winetricks (d3dx9/directplay/d3dcompiler_47 via the
+# box's winetricks), pins the NVIDIA Vulkan ICD and uses an isolated Wine
+# desktop for fullscreen — no gamescope (which would route this DXVK title to
+# the iGPU on this dual-GPU box). The 8BitDo uses the game's native XInput
+# support; bind it in the game's own Controls menu.
+exec '{{ dg_srr_appimage }}' "$@"

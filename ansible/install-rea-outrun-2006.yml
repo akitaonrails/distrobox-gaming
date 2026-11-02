@@ -1,0 +1,7 @@
+---
+- name: Install OutRun 2006 (REA launcher)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_rea_outrun_2006

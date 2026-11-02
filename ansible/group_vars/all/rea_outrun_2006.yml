@@ -1,0 +1,89 @@
+---
+# OutRun 2006: Coast 2 Coast (2006) — REA launcher (akitaonrails/rea-outrun-2006).
+# Like rea-dirt and rea-colin-mcrae-3, the Linux asset is a self-contained
+# AppImage: its own Wine 11 (WoW64, so the 32-bit game needs no multilib), DXVK,
+# a pad-navigable settings window, and gamescope for true fullscreen. It bundles
+# emoose's OutRun2006Tweaks (the DRM-free EXE, SDL input, widescreen, the fixes
+# the PC port needs), the x86 VC++ runtime DLLs, and the soundtrack patch. It
+# never touches the source folder — it works on a private runtime copy in its
+# own prefix. Supersedes the pc-racing Wine OutRun 2006 install (repack +
+# nightly OutRun2006Tweaks CI build). See docs/rea-outrun-2006.md.
+
+dg_or2006_repo: akitaonrails/rea-outrun-2006
+dg_or2006_version: v0.1.0
+dg_or2006_asset_name: "OutRunLauncher-{{ dg_or2006_version }}-x86_64.AppImage"
+dg_or2006_asset_url: "https://github.com/{{ dg_or2006_repo }}/releases/download/{{ dg_or2006_version }}/{{ dg_or2006_asset_name }}"
+dg_or2006_asset_sha256: 870aefaa59dc8d82c54e0db2ba65823e115d0826244934f87f64c47f2782110d
+
+# The owned source: a clean install with OR2006C2C.exe next to the game's data
+# folders (Stage/, Media/, Sound/, SaveGame/ …), staged under ROMS_FINAL/PC/
+# games from the previous pc-racing install with the pc-racing injections
+# stripped — the Tweaks dinput8.dll, the whole OutRun2006Tweaks.* set, the
+# disabled SpecialK d3d9 files, the generated outrun2006.ini, the Inno
+# uninstaller and the runtime logs/CrashDumps. The launcher adds its own
+# OutRun2006Tweaks + DXVK + VC++ and keeps the save in its prefix. The launcher
+# identifies the edition by the exe's SHA-256: 68ceb386… is the OutRun2006Tweaks
+# DRM-free replacement EXE, which it recognises as an already-patched install
+# and refreshes the files it manages (edition.rs TWEAKS, patched: true).
+dg_or2006_source_dir: "{{ dg_roms_final_root }}/PC/games/OutRun-2006-Coast-2-Coast"
+dg_or2006_exe: "{{ dg_or2006_source_dir }}/OR2006C2C.exe"
+dg_or2006_exe_sha256: 68ceb386829066f8455b9d027320af962584321f3e2e8a79c72841495a6134c3  # OutRun2006Tweaks DRM-free EXE
+
+dg_or2006_root: "{{ dg_box_home }}/tools/rea-outrun-2006"
+dg_or2006_appimage: "{{ dg_or2006_root }}/{{ dg_or2006_asset_name }}"
+dg_or2006_launcher: "{{ dg_box_home }}/bin/rea-outrun-2006"
+
+# The AppImage keeps its Wine prefix and the private runtime copy here (it
+# defaults to ~/.local/share/or-launcher; HOME inside the box is the box home).
+# OR_PREFIX could override it, but the default keeps upstream behaviour, like
+# rea-dirt and rea-colin-mcrae-3.
+dg_or2006_state_dir: "{{ dg_box_home }}/.local/share/or-launcher"
+dg_or2006_prefix: "{{ dg_or2006_state_dir }}/prefix"
+dg_or2006_settings_dir: "{{ dg_or2006_prefix }}/drive_c/users/{{ ansible_facts.user_id }}/AppData/Local/OutRunLauncher"
+# The player's save (the game's SaveGame/*.dat) lives here in the prefix; the
+# launcher mirrors it into its runtime copy's SaveGame/ before each run and back
+# on exit. The source's own SaveGame/ seeds this folder on first run.
+dg_or2006_saves_dir: "{{ dg_or2006_prefix }}/drive_c/users/{{ ansible_facts.user_id }}/Saved Games/OutRun 2006"
+
+# The launcher.cfg game path is a Windows path (the launcher runs under Wine);
+# Wine maps Z: to /. dg_or2006_bs is one backslash written in YAML only.
+dg_or2006_bs: '\'
+dg_or2006_win_source: "Z:{{ dg_or2006_source_dir | replace('/', dg_or2006_bs) }}"
+
+# Graphics baseline (the "Graphics: Always Max Out" ceiling) plus the gameplay
+# extras the user ran under pc-racing. The launcher renders at 4K into a
+# borderless window and gamescope scales it to the panel (scaler linear); fps is
+# capped at the game's native 60 (above 60 is experimental frame interpolation).
+# draw_distance/reflections/anisotropy/antialiasing are maxed; sky_glow + the
+# hi-def driver/passenger models are on. input_backend xinput is the Wine
+# default and what the 8BitDo (XInput mode) wants; vibration on. The HD texture
+# pack (a 3.2 GB optional download) is left off — toggle it from the HD Pack tab
+# or with `rea-outrun-2006 --download-hd-pack`.
+dg_or2006_settings:
+  resolution: 3840x2160
+  fullscreen: "off"
+  fps_limit: 60
+  vsync: "on"
+  draw_distance: 8
+  reflections: 2048
+  anisotropy: 16
+  antialiasing: 2
+  sky_glow: "on"
+  hd_characters: "on"
+  scaler: linear
+  input_backend: xinput
+  vibration: "on"
+  cd_switcher: "on"
+  skip_logos: "on"
+  free_drive: "on"
+  random_anims: "on"
+  soundtrack_fix: "on"
+
+# Retired pc-racing OutRun 2006 install (repack): its per-game install dir holds
+# the ~1 GB game (now staged clean on the NAS); its own Wine prefix is removed.
+dg_or2006_old_install: "{{ dg_pc_racing_install_root }}/outrun-2006"
+dg_or2006_old_prefix: "{{ dg_pc_racing_prefix_root }}/outrun-2006"
+dg_or2006_old_bin:
+  - "{{ dg_box_home }}/bin/outrun-2006"
+  - "{{ dg_box_home }}/bin/install-outrun-2006"
+dg_or2006_old_desktop: pc-outrun-2006.desktop

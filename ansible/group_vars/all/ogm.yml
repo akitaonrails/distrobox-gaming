@@ -563,6 +563,18 @@ dg_ogm_games:
     category: wine
     sgdb_query: "Colin McRae Rally"
     github: akitaonrails/rea-colin-mcrae
+  - desktop_id: rea-colin-mcrae-3
+    id: rea-colin-mcrae-3
+    name: "Colin McRae Rally 3 (REA)"
+    category: port
+    sgdb_query: "Colin McRae Rally 3"
+    github: "{{ dg_cmr3_repo }}"
+  - desktop_id: rea-colin-mcrae-4
+    id: rea-colin-mcrae-4
+    name: "Colin McRae Rally 04 (REA)"
+    category: port
+    sgdb_query: "Colin McRae Rally 04"
+    github: "{{ dg_cmr4_repo }}"
   - desktop_id: rea-dirt
     id: rea-dirt
     name: "Colin McRae: DiRT (REA)"
@@ -575,34 +587,28 @@ dg_ogm_games:
     category: port
     sgdb_query: "Screamer"
     github: "{{ dg_screamer_rea_repo }}"
+  - desktop_id: rea-outrun-2006
+    id: rea-outrun-2006
+    name: "OutRun 2006: Coast 2 Coast (REA)"
+    category: port
+    sgdb_query: "OutRun 2006: Coast 2 Coast"
+    github: "{{ dg_or2006_repo }}"
+  - desktop_id: rea-sega-rally-revo
+    id: rea-sega-rally-revo
+    name: "Sega Rally Revo (REA)"
+    category: port
+    sgdb_query: "Sega Rally Revo"
+    github: "{{ dg_srr_repo }}"
   - desktop_id: pc-colin-mcrae-rally-2
     id: colin-mcrae-rally-2
     name: "{{ dg_pc_racing_games | selectattr('slug', 'eq', 'colin-mcrae-rally-2') | map(attribute='name') | first }}"
     category: wine
     sgdb_query: "Colin McRae Rally 2.0"
-  - desktop_id: pc-colin-mcrae-rally-3
-    id: colin-mcrae-rally-3
-    name: "{{ dg_pc_racing_games | selectattr('slug', 'eq', 'colin-mcrae-rally-3') | map(attribute='name') | first }}"
-    category: wine
-    sgdb_query: "Colin McRae Rally 3"
-  - desktop_id: pc-colin-mcrae-rally-04
-    id: colin-mcrae-rally-04
-    name: "{{ dg_pc_racing_games | selectattr('slug', 'eq', 'colin-mcrae-rally-04') | map(attribute='name') | first }}"
-    category: wine
-    sgdb_query: "Colin McRae Rally 04"
   - desktop_id: pc-colin-mcrae-dirt-2
     id: colin-mcrae-dirt-2
     name: "{{ dg_pc_racing_games | selectattr('slug', 'eq', 'colin-mcrae-dirt-2') | map(attribute='name') | first }}"
     category: wine
     sgdb_query: "Colin McRae: Dirt 2"
-  - desktop_id: pc-outrun-2006
-    id: outrun-2006
-    name: "{{ dg_pc_racing_games | selectattr('slug', 'eq', 'outrun-2006') | map(attribute='name') | first }}"
-    category: wine
-    sgdb_query: "OutRun 2006: Coast 2 Coast"
-    # The game is retail (no updates), but the installer layers emoose's
-    # OutRun2006Tweaks on top — badge on the tweak pack's GitHub releases.
-    github: "emoose/OutRun2006Tweaks"
   - desktop_id: pc-prince-of-persia-sot
     id: prince-of-persia-sot
     name: "{{ dg_pc_racing_games | selectattr('slug', 'eq', 'prince-of-persia-sot') | map(attribute='name') | first }}"
@@ -618,11 +624,6 @@ dg_ogm_games:
     # 2026-09-23, first match captures the current version (4.11).
     web_url: "https://rallysimfans.hu"
     update_regex: "rsf_installer_files_V([0-9]+([.][0-9]+)+)"
-  - desktop_id: pc-sega-rally-revo
-    id: sega-rally-revo
-    name: "{{ dg_pc_racing_games | selectattr('slug', 'eq', 'sega-rally-revo') | map(attribute='name') | first }}"
-    category: wine
-    sgdb_query: "Sega Rally Revo"
   - desktop_id: sega-rally-2
     id: sega-rally-2
     name: Sega Rally 2

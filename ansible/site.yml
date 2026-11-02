@@ -29,6 +29,10 @@
     - { role: install_hd_textures,             tags: [hd_textures, never] }
     - { role: install_pc_racing,               tags: [pc_racing, never] }
     - { role: install_rea_colin_mcrae,          tags: [rea_colin_mcrae, never] }
+    - { role: install_rea_colin_mcrae_3,        tags: [rea_colin_mcrae_3, never] }
+    - { role: install_rea_outrun_2006,          tags: [rea_outrun_2006, never] }
+    - { role: install_rea_sega_rally_revo,      tags: [rea_sega_rally_revo, never] }
+    - { role: install_rea_colin_mcrae_4,        tags: [rea_colin_mcrae_4, never] }
     - { role: install_rea_dirt,                 tags: [dirt, rea_dirt, never] }
     - { role: install_rea_screamer,            tags: [screamer, rea_screamer, never] }
     - { role: install_gt5_master_mod,          tags: [gt5_master_mod, never] }

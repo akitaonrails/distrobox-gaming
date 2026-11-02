@@ -1,0 +1,81 @@
+---
+# Sega Rally Revo (2007) — REA launcher (akitaonrails/rea-sega-rally-revo).
+# Like rea-dirt, rea-colin-mcrae-3 and rea-outrun-2006, the Linux asset is a
+# self-contained AppImage: its own Wine 11.20 (WoW64) and DXVK 3.1.1, a
+# pad-navigable settings window, and an isolated Wine desktop for fullscreen.
+# It bundles the community stutter fix (pacer patch), writes the registry +
+# config.ini + Documents layout the game expects, switches off the logo videos,
+# patches 21:9/32:9 aspect, and — crucially for this dual-GPU box — seeds
+# WineBus (Map Controllers=1, raw duplicate devices disabled) and pins the
+# NVIDIA Vulkan ICD itself, so the whole pile of box-specific pc-racing fixes
+# (wine_desktop, gamescope_enabled false, VK_ICD pin, winebus Map Controllers,
+# the wine-11.8 pin) is now upstream. It never touches the source folder — it
+# works on a private runtime copy. Supersedes the pc-racing Wine Sega Rally Revo
+# install. See docs/rea-sega-rally-revo.md.
+
+dg_srr_repo: akitaonrails/rea-sega-rally-revo
+dg_srr_version: v0.1.1
+dg_srr_asset_name: "SRRLauncher-{{ dg_srr_version }}-x86_64.AppImage"
+dg_srr_asset_url: "https://github.com/{{ dg_srr_repo }}/releases/download/{{ dg_srr_version }}/{{ dg_srr_asset_name }}"
+dg_srr_asset_sha256: 8433fa156328f26d9f8dcea90cf9fb8a5029d88a354129c6200e823e7785ae34
+
+# The owned source is the pristine EN-FR-DE-ES-IT-PL "Full-Rip" folder already
+# on the NAS — the pc-racing slug used install_mode: copy and only ever READ it,
+# so no restaging is needed (unlike CMR3/OutRun, whose box installs carried
+# injections). The launcher identifies the game by exact SHA-256 and refuses
+# anything else: SEGA Rally_SSE1.exe (22655a54…, the clean build the stutter fix
+# patches) is the default; SEGA Rally.exe (ad84ecea…, the no-DVD build) is the
+# fallback when the stutter fix is off. Both are the recognised v4.0.6.0 release.
+dg_srr_source_dir: "{{ dg_roms_final_root }}/PC/games/SEGA-Rally-Revo_Win_EN-FR-DE-ES-IT-PL_Full-Rip/Sega Rally"
+dg_srr_exe_sse1: "{{ dg_srr_source_dir }}/SEGA Rally_SSE1.exe"
+dg_srr_exe_sse1_sha256: 22655a54bad6932239ade58325703bd4b5a2020376737748026443fa5aadf76e  # clean SSE1 (stutter-fix target)
+dg_srr_exe_nodvd: "{{ dg_srr_source_dir }}/SEGA Rally.exe"
+dg_srr_exe_nodvd_sha256: ad84ecea6ac5e86e1f1a420f07595866429bba63e7c489b40661a8032ba391d7  # no-DVD fallback
+
+dg_srr_root: "{{ dg_box_home }}/tools/rea-sega-rally-revo"
+dg_srr_appimage: "{{ dg_srr_root }}/{{ dg_srr_asset_name }}"
+dg_srr_launcher: "{{ dg_box_home }}/bin/rea-sega-rally-revo"
+
+# The AppImage keeps its Wine prefix and the private runtime copy here (srr-play
+# defaults to ~/.local/share/srr-launcher; HOME inside the box is the box home).
+# SRR_PREFIX could override it, but the default keeps upstream behaviour, like
+# the other REA launchers.
+dg_srr_state_dir: "{{ dg_box_home }}/.local/share/srr-launcher"
+dg_srr_prefix: "{{ dg_srr_state_dir }}/prefix"
+dg_srr_settings_dir: "{{ dg_srr_prefix }}/drive_c/users/{{ ansible_facts.user_id }}/AppData/Local/SRRLauncher"
+# config.ini (the player's [GameController] mapping + the launcher's managed
+# [Graphics]) and the career save SEGA Rally.dat live here in the prefix; the
+# launcher preserves the [Audio]/[GameController] sections verbatim once the
+# file exists, so the migrated config.ini keeps the controller bindings.
+dg_srr_saves_dir: "{{ dg_srr_prefix }}/drive_c/users/{{ ansible_facts.user_id }}/Documents/SEGA Rally/Saved Games"
+
+# The launcher.cfg game path is a Windows path (the launcher runs under Wine);
+# Wine maps Z: to /. dg_srr_bs is one backslash written in YAML only.
+dg_srr_bs: '\'
+dg_srr_win_source: "Z:{{ dg_srr_source_dir | replace('/', dg_srr_bs) }}"
+
+# Graphics baseline (the "Graphics: Always Max Out" ceiling). quality ultra sets
+# every per-feature slider to 3 (renders at 4K); resolution 3840x2160 at the
+# panel's 16:9; vsync on; the stutter fix on (needs the SSE1 build). frame-limit
+# 120 is the high-refresh choice for this 240 Hz panel (DXVK frame limit; the
+# game's Championship mode self-caps at 62.5 regardless).
+dg_srr_settings:
+  resolution: 3840x2160
+  aspect: "16:9"
+  quality: ultra
+  vsync: "on"
+  stutter-fix: "on"
+  frame-limit: 120
+  language: English
+
+# Retired pc-racing Sega Rally Revo install (install_mode: copy). The box copy
+# of the game is removed (the owned source stays on the NAS); its own Wine
+# prefix — whose Documents/SEGA Rally/Saved Games holds the config.ini and
+# SEGA Rally.dat that migrate into the new prefix — is removed after migration.
+dg_srr_old_install: "{{ dg_pc_racing_install_root }}/sega-rally-revo"
+dg_srr_old_prefix: "{{ dg_pc_racing_prefix_root }}/sega-rally-revo"
+dg_srr_old_saves_dir: "{{ dg_srr_old_prefix }}/drive_c/users/{{ ansible_facts.user_id }}/Documents/SEGA Rally/Saved Games"
+dg_srr_old_bin:
+  - "{{ dg_box_home }}/bin/sega-rally-revo"
+  - "{{ dg_box_home }}/bin/install-sega-rally-revo"
+dg_srr_old_desktop: pc-sega-rally-revo.desktop
