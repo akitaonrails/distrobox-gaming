@@ -14,7 +14,7 @@ cd ansible && ansible-playbook install-rea-colin-mcrae-3.yml
 
 | | |
 |---|---|
-| Release | `v0.1.1`, `CMR3Launcher-v0.1.1-x86_64.AppImage` (pinned + sha256 `29fe8cc7…`) |
+| Release | `v0.1.2`, `CMR3Launcher-v0.1.2-x86_64.AppImage` (pinned + sha256 `cd37e5cc…`) |
 | Owned source | `ROMS_FINAL/PC/games/Colin-McRae-Rally-3` (`Rally_3PC.exe` sha256 `c56344b4…`, MD5 `2744404b…` — the launcher's recognised "DRM-free v1.1 variant B, the community repack") |
 | AppImage | `tools/rea-colin-mcrae-3/` |
 | Prefix + private runtime | `~/.local/share/cmr3-launcher/` (launcher's own default; `CMR3_PREFIX` can override) |
@@ -60,15 +60,23 @@ why the slug was retired rather than kept alongside:
     [rea-colin-mcrae-3#1](https://github.com/akitaonrails/rea-colin-mcrae-3/issues/1).
     **Known limit:** a brand-new player's *very first* session runs before the
     game has created its profile, so the pad is chosen from the second start on
-    (or once by hand in Options → Controls); and in the Controls menu the d-pad
-    moves two rows per press (the menu reads both the hat and the arrow key).
-    Our prefix keeps the migrated `CMR3` profile, so this only bites a
-    from-scratch rebuild.
+    (or once by hand in Options → Controls). Our prefix keeps the migrated `CMR3`
+    profile, so this only bites a from-scratch rebuild.
+  - **v0.1.2 steering/d-pad:** new profiles now steer with the **left stick** and
+    brake/accelerate on the **triggers** with no remapping (the game's own
+    defaults pointed both at the right stick); and the Rally preset's d-pad is
+    the arrow keys only again, so the Controls menu moves **one** row per press
+    (A still presses Enter as well as its button). **Upgrade caveat:** a profile
+    whose pad was bound under *v0.1.1* (d-pad as a hat) steers from the wrong
+    stick now and must be remapped once in Options → Controls; profiles from
+    v0.1.0 — and our hand-configured migrated `CMR3` — are unaffected.
   - `postfx = off` (and `--postfx`, `--shadows`, `--gamepad-log`) were rejected
     by the cfg/CLI parser though documented valid; **fixed in v0.1.1**
     ([#2](https://github.com/akitaonrails/rea-colin-mcrae-3/issues/2), the CLI
     and `launcher.cfg` now share one parser). The role still omits `postfx` to
-    keep post-processing off.
+    keep post-processing off; v0.1.2 added optional **Colour / Cinematic** LUT
+    grades (real blacks, fuller contrast before CAS) and fixed Cinematic's MxAO
+    depth pass — left off by default.
 - **True fullscreen via gamescope** (box-provided, `scaler = linear`); without
   gamescope it falls back to a plain Wine window at the same size.
 
