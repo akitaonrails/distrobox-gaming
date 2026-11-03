@@ -26,6 +26,7 @@ import re
 import ssl
 import struct
 import sys
+import tempfile
 import urllib.request
 from xml.etree import ElementTree as ET
 
@@ -142,8 +143,8 @@ def fetch_psn_versions(tid: str) -> list:
     return out
 
 
-def local_versions(dlc_dir: str, tid: str) -> set:
-    """Return set of patch versions already in local DLC dir."""
+def local_versions(dlc_dir: str, tid: str, expected_sizes: dict) -> set:
+    """Return cached patch versions whose PKGs match the PSN-reported size."""
     p = os.path.join(dlc_dir, tid)
     if not os.path.isdir(p):
         return set()
@@ -151,9 +152,14 @@ def local_versions(dlc_dir: str, tid: str) -> set:
     # Filenames look like ...-A0117-V0100-PE.pkg → "A0117" → "01.17"
     pat = re.compile(r"-A(\d{2})(\d{2})-V")
     for fn in os.listdir(p):
+        path = os.path.join(p, fn)
+        if not fn.lower().endswith(".pkg") or not os.path.isfile(path):
+            continue
         m = pat.search(fn)
         if m:
-            versions.add(f"{m.group(1)}.{m.group(2)}")
+            version = f"{m.group(1)}.{m.group(2)}"
+            if os.path.getsize(path) == expected_sizes.get(version):
+                versions.add(version)
     return versions
 
 
@@ -165,19 +171,31 @@ def ver_tuple(v: str) -> tuple:
 def download(url: str, dest: str, expected_size: int) -> bool:
     if os.path.exists(dest) and os.path.getsize(dest) == expected_size:
         return True
+    temporary = None
     try:
-        with urllib.request.urlopen(url, context=SSL_CTX, timeout=60) as resp, open(dest, "wb") as f:
+        # Keep incomplete transfers out of the .pkg cache and preserve an
+        # existing destination until its replacement has the expected size.
+        with urllib.request.urlopen(url, context=SSL_CTX, timeout=60) as resp, tempfile.NamedTemporaryFile(
+            dir=os.path.dirname(os.path.abspath(dest)), suffix=".part", delete=False
+        ) as f:
+            temporary = f.name
             while True:
                 chunk = resp.read(1 << 20)
                 if not chunk:
                     break
                 f.write(chunk)
-        return os.path.getsize(dest) == expected_size
+        actual_size = os.path.getsize(temporary)
+        if actual_size != expected_size:
+            print(f"    ERROR: expected {expected_size} bytes, received {actual_size}", file=sys.stderr)
+            return False
+        os.replace(temporary, dest)
+        return True
     except Exception as e:
         print(f"    ERROR: {e}", file=sys.stderr)
-        if os.path.exists(dest):
-            os.unlink(dest)
         return False
+    finally:
+        if temporary is not None and os.path.exists(temporary):
+            os.unlink(temporary)
 
 
 def main(argv: list) -> int:
@@ -242,7 +260,7 @@ def main(argv: list) -> int:
         if ver_tuple(latest) <= ver_tuple(installed_ver):
             continue
 
-        cached = local_versions(dlc_dir, tid)
+        cached = local_versions(dlc_dir, tid, {v: s for v, _u, s, _h in psn})
         # All PSN versions newer than installed AND not already cached locally.
         needed = [
             (v, u, s) for (v, u, s, _h) in psn
@@ -287,7 +305,7 @@ def main(argv: list) -> int:
             print(f"\nNext: re-run install_dlcs role to extract them into RPCS3.")
     else:
         print(f"\nRe-run with --download (and optional --download-dir <path>) to fetch them.")
-    return 0
+    return 1 if do_download and total_downloaded != total_missing else 0
 
 
 if __name__ == "__main__":

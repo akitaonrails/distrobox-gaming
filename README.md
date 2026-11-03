@@ -344,6 +344,11 @@ The `extract_ps3_dlc.py` extractor uses the PKG's filename version
 `PARAM.SFO` VERSION to decide whether to re-extract. Re-running after
 all patches are applied is a no-op.
 
+The update checker only publishes a downloaded `.pkg` after its size matches
+the PSN metadata. Incomplete transfers are cleaned up, and cached packages
+with the wrong size are reported as missing so they can be downloaded again.
+`--download` exits nonzero if any requested patch fails to download.
+
 ### Capping a game at a specific patch version
 
 Some PS3 games regress on current RPCS3 when patched to the latest
