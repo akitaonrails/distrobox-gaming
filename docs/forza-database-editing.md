@@ -177,3 +177,61 @@ string tables) can be generated on request.
 
 Reverting a direct edit = restore the `.bak`, or copy the relevant pristine
 `_game_mode_dbs/<Mode>/gamedb.slt` back.
+
+## Fix: race transmissions acting like a CVT on Automatic (PFP-4)
+
+PFP-4's known issue (race transmission + Automatic shifting → the car never
+changes gear, like a CVT; Manual is fine) comes from one column in
+`List_UpgradeDrivetrainTransmission`:
+
+- Stock FM4 sets `CVTShiftTime = -1.0` on every geared transmission. Only the
+  three real factory CVTs (Ids 744000, 771000, 781000) use `1.0`.
+- PFP-4 changed it to **`-0.95`** on the 412 race transmissions (`Level = 3`)
+  carried over from the stock game. The 87 race transmissions PFP-4 adds are
+  at `-1.0` and shift normally.
+- With Automatic shifting the game apparently treats anything other than
+  `-1` as a CVT. Setting the rows back to `-1.0` fixes it (tested in-game). PFP-4's other
+  race-transmission change (`GearShiftTime` 0.05 → 0.025) is unrelated and
+  stays.
+
+Affected rows, identical in every PFP-4 v1.2 DB:
+
+| DB | Rows at `-0.95` |
+|---|---|
+| Every `gamedb.slt` (`Main Game Changes`, each mode and its `Harder AI` variant) | 412 |
+| DLC `34000_merge.slt` (`E3470A83…4D/…/34_pri_65/`) | 19 |
+| DLC `36000_merge.slt` (`4BCFA3FD…4D/…/36_pri_65/`) | 2 |
+
+Close Xenia, then patch the active DB, the live DLC patches **and** the
+`_game_mode_dbs/` masters (otherwise swapping career modes brings the bug
+back). Each touched file is first copied to `<name>.pre-cvt-fix.bak`, so the
+existing `gamedb.slt.bak` from the Sandbox swap is left alone:
+
+```sh
+find "$FM4/Media/db" "$FM4/_game_mode_dbs" "$FM4/_post_boot_to_content_4D530910/00000002" \
+     -name '*.slt' -type f |
+while IFS= read -r DB; do
+  n=$(sqlite3 "$DB" "SELECT COUNT(*) FROM List_UpgradeDrivetrainTransmission
+                     WHERE CVTShiftTime=-0.95;" 2>/dev/null) || continue
+  [ "$n" -gt 0 ] || continue
+  cp -f "$DB" "$DB.pre-cvt-fix.bak"
+  sqlite3 "$DB" "UPDATE List_UpgradeDrivetrainTransmission
+                 SET CVTShiftTime=-1.0 WHERE CVTShiftTime=-0.95;"
+  echo "$n rows fixed: $DB"
+done
+```
+
+Files without the table (most DLC patches) are skipped, and re-running is a
+no-op. Check:
+```sh
+sqlite3 "$FM4/Media/db/gamedb.slt" "SELECT COUNT(*) FROM List_UpgradeDrivetrainTransmission
+                                    WHERE CVTShiftTime=-0.95;"   # expect 0 (412 before)
+```
+
+The patched masters no longer match the md5s in the
+[mode table](#the-careereasy-modes-fm4); the `.pre-cvt-fix.bak` copies do.
+To undo the fix:
+```sh
+find "$FM4" -name '*.slt.pre-cvt-fix.bak' |
+while IFS= read -r b; do cp -f "$b" "${b%.pre-cvt-fix.bak}"; done
+```
