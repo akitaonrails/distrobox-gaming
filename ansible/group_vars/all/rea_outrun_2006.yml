@@ -10,10 +10,10 @@
 # nightly OutRun2006Tweaks CI build). See docs/rea-outrun-2006.md.
 
 dg_or2006_repo: akitaonrails/rea-outrun-2006
-dg_or2006_version: v0.2.1
+dg_or2006_version: v0.3.0
 dg_or2006_asset_name: "OutRunLauncher-{{ dg_or2006_version }}-x86_64.AppImage"
 dg_or2006_asset_url: "https://github.com/{{ dg_or2006_repo }}/releases/download/{{ dg_or2006_version }}/{{ dg_or2006_asset_name }}"
-dg_or2006_asset_sha256: cf561ad2ac3ba37d2daa53f9585a9325d42d2c52029228e087b33140e2ef325e
+dg_or2006_asset_sha256: 0f071af6b031f47c7653ebaef1e691f4b68f13121acaf03465d12c5cb0416496
 
 # The owned source: a clean install with OR2006C2C.exe next to the game's data
 # folders (Stage/, Media/, Sound/, SaveGame/ …), staged under ROMS_FINAL/PC/

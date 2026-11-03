@@ -1,7 +1,7 @@
 # REA Colin McRae Rally 1 launcher. The owned 1998 PC install is read only.
-dg_cmr1_version: v0.8.0
+dg_cmr1_version: v0.9.0
 dg_cmr1_url: "https://github.com/akitaonrails/rea-colin-mcrae/releases/download/{{ dg_cmr1_version }}/CMRLauncher-{{ dg_cmr1_version }}.zip"
-dg_cmr1_sha256: 358fd83c46b087b7ea29e04672160d8577ceb0413b65592ba6de848bb62f17e8
+dg_cmr1_sha256: e7b3d5769f0ff6eabbc27afb923197f9ec645fb4fb36f2f8dfcbd5a70fa5f53d
 dg_cmr1_archive: "{{ dg_roms_final_root }}/PC/releases/CMRLauncher-{{ dg_cmr1_version }}.zip"
 dg_cmr1_source_dir: "{{ dg_roms_final_root }}/PC/games/CMRally"
 dg_cmr1_rally_sha256: 46500c8e22ce3e943b6855eca63ae9288261162347ca76fa36cad77cbb19c0bb
