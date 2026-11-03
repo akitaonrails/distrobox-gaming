@@ -1,0 +1,92 @@
+---
+# akitaonrails/rea-dirt-rally ships a self-contained AppImage for the NATIVE
+# Linux (Feral) port of DiRT Rally: it carries the old Steam-scout libraries the
+# 2017 port needs (scoped to the game process), the exec-implies-read shim for
+# the Ryzen-5000 crash, and gamescope integration — NOT a Wine prefix. The role
+# stages the pinned AppImage, seeds the launcher's native launcher.cfg (4K +
+# Recommended look, pointing at the owned Feral port), and publishes the
+# launcher + desktop entry. The launcher plays from a private copy and never
+# changes the owned game folder.
+
+- name: Check the owned DiRT Rally (Feral Linux) executable
+  ansible.builtin.stat:
+    path: "{{ dg_dirtrally_game_exe }}"
+    checksum_algorithm: sha256
+  register: _dirtrally_exe
+
+- name: Require the supported Feral Linux build
+  ansible.builtin.assert:
+    that:
+      - _dirtrally_exe.stat.exists
+      - _dirtrally_exe.stat.checksum == dg_dirtrally_game_sha256
+    fail_msg: >-
+      Need Feral's native Linux DiRT Rally (bin/DirtRally sha256 de81c75c…,
+      "Linux 1.0 build 31946") at {{ dg_dirtrally_source_dir }}; the Windows
+      build does not run under Wine. See docs/rea-dirt-rally.md.
+
+- name: Check for a running DiRT Rally session before install
+  ansible.builtin.command: pgrep -x DirtRally
+  register: _dirtrally_running
+  failed_when: false
+  changed_when: false
+
+- name: Require DiRT Rally to be closed
+  ansible.builtin.assert:
+    that: _dirtrally_running.rc == 1
+    fail_msg: "Close DiRT Rally before re-running the installer."
+
+- name: Create the REA DiRT Rally directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_dirtrally_root }}"
+    - "{{ dg_dirtrally_config_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Stage the pinned REA DiRT Rally launcher AppImage
+  ansible.builtin.get_url:
+    url: "{{ dg_dirtrally_asset_url }}"
+    dest: "{{ dg_dirtrally_appimage }}"
+    checksum: "sha256:{{ dg_dirtrally_asset_sha256 }}"
+    mode: "0755"
+
+# The launcher fills the resolution from the screen when it is unset; seeding
+# the 4K target pins a headless --play to native 4K on DP-1. force: false — once
+# the launcher or the player writes the file, it is theirs. Only `game` is kept
+# in sync below. This is a native Linux path (no Wine Z:\).
+- name: Seed the REA DiRT Rally launcher settings
+  ansible.builtin.copy:
+    dest: "{{ dg_dirtrally_config_dir }}/launcher.cfg"
+    mode: "0644"
+    force: false
+    content: |
+      # DiRT Rally launcher settings (seeded by install_rea_dirt_rally).
+      game = {{ dg_dirtrally_source_dir }}
+      {% for key, value in dg_dirtrally_settings.items() %}
+      {{ key }} = {{ value }}
+      {% endfor %}
+
+- name: Remember the game folder on an already-written config
+  ansible.builtin.lineinfile:
+    path: "{{ dg_dirtrally_config_dir }}/launcher.cfg"
+    regexp: "^game *="
+    line: "game = {{ dg_dirtrally_source_dir }}"
+    insertbefore: BOF
+
+- name: Install the reentrant REA DiRT Rally launcher
+  ansible.builtin.template:
+    src: rea-dirt-rally.sh.j2
+    dest: "{{ dg_dirtrally_launcher }}"
+    mode: "0755"
+
+- name: Render the REA DiRT Rally desktop entry
+  ansible.builtin.template:
+    src: rea-dirt-rally.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/rea-dirt-rally.desktop"
+    mode: "0644"
+
+- name: Publish the REA DiRT Rally desktop entry
+  ansible.builtin.command: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  changed_when: false

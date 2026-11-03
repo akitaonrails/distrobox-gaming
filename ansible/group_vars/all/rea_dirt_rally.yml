@@ -1,0 +1,50 @@
+---
+# DiRT Rally (2015) — REA launcher (akitaonrails/rea-dirt-rally). Unlike the
+# other REA racing launchers this one is NATIVE: it plays Feral Interactive's
+# native Linux port (bin/DirtRally), not a Windows build under Wine, so the
+# AppImage carries the old Steam-scout libraries the 2017 port needs (scoped to
+# the game process) and the exec-implies-read shim for its crash on Ryzen 5000 /
+# recent CPUs — NOT a Wine prefix. It fixes the "Error while loading shared
+# libraries", skips Feral's unsupported-distro pre-game window, hot-plugs modern
+# pads (8BitDo) as gamepads with the game's ready-made controls, and runs
+# fullscreen on the right monitor via gamescope (box-provided). It plays from a
+# private copy; the owned game folder is only read. This unparks issue #6: the
+# game was delisted in 2022 and the Windows-under-Proton fix needed a legit
+# Steam copy — the native Linux port sidesteps that. See docs/rea-dirt-rally.md.
+
+dg_dirtrally_repo: akitaonrails/rea-dirt-rally
+dg_dirtrally_version: v0.1.0
+dg_dirtrally_asset_name: "DiRTRallyLauncher-{{ dg_dirtrally_version }}-x86_64.AppImage"
+dg_dirtrally_asset_url: "https://github.com/{{ dg_dirtrally_repo }}/releases/download/{{ dg_dirtrally_version }}/{{ dg_dirtrally_asset_name }}"
+dg_dirtrally_asset_sha256: ab9fd8ebb30657b4fa0190766eb072967e0b00ca5c5b6957be644cb4efe0b49f
+
+# The owned source: Feral's native Linux port, the folder that holds
+# bin/DirtRally + share/lib/config. The launcher's EDITIONS table knows this
+# exact build by sha256 ("Linux 1.0 (Feral, build 31946)") — it is the build it
+# was developed and tested against; any other build is refused with its digest.
+# DiRT Rally is no longer sold, so this is a pre-activated copy that runs
+# without the Steam client (the launcher never adds, patches or cracks Steam /
+# DRM files — it runs the copy unchanged). The Windows DX11 build (drt.exe) is a
+# known-but-blocked edition: it stops while loading under Wine.
+dg_dirtrally_source_dir: "{{ dg_roms_final_root }}/PC/games/DiRT.Rally.Linux-ACTiVATED/DiRT.Rally"
+dg_dirtrally_game_exe: "{{ dg_dirtrally_source_dir }}/bin/DirtRally"
+dg_dirtrally_game_sha256: de81c75ce02318d6ba89d3d24c463ac311a823d9eb16e676e7a5fb66d6c9e39e  # Linux 1.0 (Feral, build 31946)
+
+dg_dirtrally_root: "{{ dg_box_home }}/tools/rea-dirt-rally"
+dg_dirtrally_appimage: "{{ dg_dirtrally_root }}/{{ dg_dirtrally_asset_name }}"
+dg_dirtrally_launcher: "{{ dg_box_home }}/bin/rea-dirt-rally"
+
+# Native game, so no Wine prefix. The launcher's settings + log + the private
+# copy live in the box home's XDG dirs (HOME inside the box is the box home);
+# the game's own settings land in feral-interactive/.
+dg_dirtrally_config_dir: "{{ dg_box_home }}/.config/dirtrally-launcher"
+dg_dirtrally_state_dir: "{{ dg_box_home }}/.local/share/dirtrally-launcher"
+
+# launcher.cfg is a NATIVE-path config (no Wine Z:\). Graphics quality is the
+# game's own (Options > Graphics, Ultra; 4K works) — the launcher only sets the
+# screen size, so seed resolution 3840x2160 (the "Graphics: Always Max Out" 4K
+# target on DP-1) and the Recommended look (straight into the race, no Feral
+# pre-game window).
+dg_dirtrally_settings:
+  look: recommended
+  resolution: 3840x2160

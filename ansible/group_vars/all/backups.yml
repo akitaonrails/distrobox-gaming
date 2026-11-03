@@ -123,6 +123,13 @@ dg_save_sets:
   # ~3.6 GB unpacked game copy, which rebuilds from the GOG source on first run).
   - { name: rea-colin-mcrae-2005, src: [".local/share/cmr2005-launcher/prefix/drive_c/users/{{ ansible_facts.user_id }}/AppData/Local/CMR2005Launcher/saves",
                                        "file:.local/share/cmr2005-launcher/prefix/drive_c/users/{{ ansible_facts.user_id }}/AppData/Local/CMR2005Launcher/launcher.cfg"] }
+  # DiRT Rally is a native Linux game (no Wine prefix): the Feral port keeps its
+  # settings in feral-interactive/, and this pre-activated copy keeps the career
+  # /profile saves in the Steam-emu's remote folder. Back up both plus the
+  # launcher.cfg (not the ~43 GB private copy, which rebuilds from the source).
+  - { name: rea-dirt-rally,       src: [".local/share/Steam/ACTiVATED/310560/remote",
+                                       ".local/share/feral-interactive/DiRT Rally",
+                                       "file:.config/dirtrally-launcher/launcher.cfg"] }
 
   # ---- 2026-10-28 save-path audit of every installed GitHub port ----
   # Recomps/ports that keep saves in a per-game config or user-data dir.

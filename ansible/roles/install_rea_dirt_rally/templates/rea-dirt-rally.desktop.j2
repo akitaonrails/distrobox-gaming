@@ -1,0 +1,11 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=DiRT Rally (REA)
+Exec={{ dg_dirtrally_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=2015 DiRT Rally (Feral native Linux port) at 4K via gamescope, 8BitDo pad
+Categories=Game;
+StartupWMClass=DiRT Rally
+{{ ogm_metadata('rea-dirt-rally') }}

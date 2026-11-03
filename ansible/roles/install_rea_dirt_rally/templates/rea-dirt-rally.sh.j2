@@ -1,0 +1,17 @@
+#!/bin/sh
+set -eu
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+# DiRT Rally (2015), Feral's NATIVE Linux port, through the REA launcher
+# AppImage. No Wine: the AppImage carries the old Steam-scout libraries the 2017
+# port needs (given only to the game) and the shim for its crash on Ryzen 5000 /
+# recent CPUs; gamescope (for fullscreen on the right monitor) comes from the
+# box. Its AppRun runs the launcher's "dirtrally-play": no arguments opens the
+# settings window and then plays; "--play" skips the window, "stop"/"status"
+# manage a run. On the very first start the launcher makes a private copy of the
+# game (~43 GB, or near-free when on the same disk as $HOME). Set the 8BitDo up
+# once in the game's own Options > Controls > Controls preset (Controller
+# preset 1); the launcher presents it as a gamepad with ready-made controls.
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS="${SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS:-1}"
+exec '{{ dg_dirtrally_appimage }}' "$@"

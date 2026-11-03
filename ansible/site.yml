@@ -35,6 +35,7 @@
     - { role: install_rea_colin_mcrae_4,        tags: [rea_colin_mcrae_4, never] }
     - { role: install_rea_colin_mcrae_2005,     tags: [rea_colin_mcrae_2005, never] }
     - { role: install_rea_dirt,                 tags: [dirt, rea_dirt, never] }
+    - { role: install_rea_dirt_rally,           tags: [rea_dirt_rally, never] }
     - { role: install_rea_screamer,            tags: [screamer, rea_screamer, never] }
     - { role: install_gt5_master_mod,          tags: [gt5_master_mod, never] }
     - { role: install_opencmr2,                tags: [opencmr2, never] }
