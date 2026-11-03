@@ -1,0 +1,21 @@
+# Project Gotham Racing — graphics + input defaults (ExeDir()/pgr1.toml;
+# the runtime uses value_or for omitted keys). Seeded once by
+# install_pgr1_recomp (force:false — the launcher's own menu edits win after).
+# Maxed for the RTX: true 4K fullscreen inside gamescope, explicit 16:9,
+# 8x MSAA, 16x AF, native d3dcompiler via the prefix. skip_intro bypasses the
+# Bink intro movie (its video freezes under Wine while the audio plays on).
+renderer = "d3d11"
+display_mode = "fullscreen"
+width = {{ dg_pgr1_display_width }}
+height = {{ dg_pgr1_display_height }}
+aspect = "16:9"
+skip_intro = true
+anisotropic_filtering = 16
+msaa = "msaa8"
+fxaa = false
+sharpen = 50
+sharp_2d = true
+render_percent = 100
+vsync = true
+fps_cap = 60
+fov_percent = 100

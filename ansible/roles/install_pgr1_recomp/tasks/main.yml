@@ -1,0 +1,191 @@
+---
+- name: Verify the owned USA Xbox disc image
+  ansible.builtin.stat:
+    path: "{{ dg_pgr1_iso }}"
+    checksum_algorithm: sha256
+  register: _pgr1_iso
+
+- name: Require the supported USA Xbox disc image
+  ansible.builtin.assert:
+    that:
+      - _pgr1_iso.stat.isreg | default(false)
+      - _pgr1_iso.stat.checksum | default('') == dg_pgr1_iso_sha256
+    fail_msg: >-
+      Project Gotham Racing needs the supported USA Xbox disc image at
+      dg_pgr1_iso. Its SHA256 must match dg_pgr1_iso_sha256; see
+      docs/pgr1-recomp.md.
+    quiet: true
+
+- name: Create PGR1 release, install, prefix, and launcher directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_pgr1_launcher_archive | dirname }}"
+    - "{{ dg_pgr1_root }}"
+    - "{{ dg_pgr1_dxvk_extract }}"
+    - "{{ dg_pgr1_prefix }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Ensure Wine and gamescope are installed in the gaming box
+  ansible.builtin.shell: "{{ dg_in_box }} sudo pacman -S --needed --noconfirm wine gamescope"
+  register: _pgr1_packages
+  changed_when: "'installing' in _pgr1_packages.stdout"
+
+- name: Stage the pinned PGR1 build launcher
+  ansible.builtin.get_url:
+    url: "{{ dg_pgr1_launcher_url }}"
+    dest: "{{ dg_pgr1_launcher_archive }}"
+    checksum: "sha256:{{ dg_pgr1_launcher_sha256 }}"
+    mode: "0644"
+
+- name: Install the PGR1 build launcher
+  ansible.builtin.copy:
+    src: "{{ dg_pgr1_launcher_archive }}"
+    dest: "{{ dg_pgr1_root }}/PGR1Launcher.exe"
+    remote_src: true
+    mode: "0644"
+
+- name: Initialize the dedicated PGR1 Wine prefix
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sh -lc 'WINEPREFIX="{{ dg_pgr1_prefix }}" WINEDEBUG=-all
+    env -u PYTHONHOME -u PYTHONPATH wineboot -u'
+  args:
+    creates: "{{ dg_pgr1_prefix }}/system.reg"
+
+- name: Stage native D3D shader compiler DLLs for Wine
+  ansible.builtin.get_url:
+    url: "{{ item.url }}"
+    dest: "{{ dg_roms_final_root }}/PC/releases/PGR1-d3dcompiler_47-{{ item.name }}.dll"
+    checksum: "sha256:{{ item.sha256 }}"
+    mode: "0644"
+  loop: "{{ dg_pgr1_compiler_dlls }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Install native D3D shader compiler DLLs in the PGR1 prefix
+  ansible.builtin.copy:
+    src: "{{ dg_roms_final_root }}/PC/releases/PGR1-d3dcompiler_47-{{ item.name }}.dll"
+    dest: "{{ item.dest }}"
+    remote_src: true
+    mode: "0644"
+  loop: "{{ dg_pgr1_compiler_dlls }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Stage the pinned DXVK release
+  ansible.builtin.get_url:
+    url: "{{ dg_pgr1_dxvk_url }}"
+    dest: "{{ dg_pgr1_dxvk_archive }}"
+    checksum: "sha256:{{ dg_pgr1_dxvk_sha256 }}"
+    mode: "0644"
+
+- name: Extract the pinned DXVK release
+  ansible.builtin.unarchive:
+    src: "{{ dg_pgr1_dxvk_archive }}"
+    dest: "{{ dg_pgr1_dxvk_extract }}"
+    remote_src: true
+    creates: "{{ dg_pgr1_dxvk_extract }}/dxvk-{{ dg_pgr1_dxvk_version }}/x64/d3d11.dll"
+
+- name: Install DXVK DLLs into both Wine architectures
+  ansible.builtin.copy:
+    src: "{{ dg_pgr1_dxvk_extract }}/dxvk-{{ dg_pgr1_dxvk_version }}/{{ item.0 }}/{{ item.1 }}.dll"
+    dest: "{{ dg_pgr1_prefix }}/drive_c/windows/{{ 'system32' if item.0 == 'x64' else 'syswow64' }}/{{ item.1 }}.dll"
+    remote_src: true
+    mode: "0644"
+  loop: "{{ ['x32', 'x64'] | product(dg_pgr1_dxvk_dlls) | list }}"
+  loop_control:
+    label: "{{ item.0 }}/{{ item.1 }}"
+
+- name: Select native shader compiler and SDL-backed Xbox controller mapping
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      export WINEPREFIX="{{ dg_pgr1_prefix }}" WINEDEBUG=-all
+      key="HKCU\\Software\\Wine\\DllOverrides"
+      if ! wine reg query "$key" /v d3dcompiler_47 2>/dev/null | grep -Eiq "REG_SZ[[:space:]]+native[[:space:]]*$"; then
+        wine reg add "$key" /v d3dcompiler_47 /t REG_SZ /d native /f >/dev/null
+        echo changed
+      fi
+      for name in {{ dg_pgr1_dxvk_dlls | join(' ') }}; do
+        if ! wine reg query "$key" /v "$name" 2>/dev/null | grep -Eiq "REG_SZ[[:space:]]+native[[:space:]]*$"; then
+          wine reg add "$key" /v "$name" /t REG_SZ /d native /f >/dev/null
+          echo changed
+        fi
+      done
+      key="HKLM\\System\\CurrentControlSet\\Services\\winebus"
+      for pair in "DisableHidraw:1" "DisableInput:1" "Enable SDL:1" "Map Controllers:1"; do
+        name=${pair%:*}; value=${pair#*:}
+        if ! wine reg query "$key" /v "$name" 2>/dev/null | grep -Eiq "REG_DWORD[[:space:]]+0x$value[[:space:]]*$"; then
+          wine reg add "$key" /v "$name" /t REG_DWORD /d "$value" /f >/dev/null
+          echo changed
+        fi
+      done
+    '
+  register: _pgr1_registry
+  changed_when: "'changed' in _pgr1_registry.stdout"
+
+- name: Install the PGR1 launcher
+  ansible.builtin.template:
+    src: pgr1-recomp.sh.j2
+    dest: "{{ dg_pgr1_launcher }}"
+    mode: "0755"
+
+- name: Render the PGR1 desktop entry
+  ansible.builtin.template:
+    src: pgr1-recomp.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/pgr1-recomp.desktop"
+    mode: "0644"
+
+- name: Publish the PGR1 desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _pgr1_host_launchers
+  changed_when: >-
+    'installed ' in _pgr1_host_launchers.stdout or
+    'removed stale ' in _pgr1_host_launchers.stdout
+
+- name: Check the recompiled executable
+  ansible.builtin.stat:
+    path: "{{ dg_pgr1_play }}/PGR1.exe"
+  register: _pgr1_exe
+
+- name: Require the completed launcher build
+  ansible.builtin.assert:
+    that: _pgr1_exe.stat.isreg | default(false)
+    fail_msg: >-
+      The launcher is installed but the game has not been built. Run
+      {{ dg_pgr1_launcher }} build, choose dg_pgr1_iso (or a folder with the
+      disc's files) in the GUI, accept Microsoft's C++/Windows SDK terms
+      yourself, and press Build. See docs/pgr1-recomp.md.
+    quiet: true
+
+- name: Seed 4K display and controller-friendly graphics defaults
+  ansible.builtin.template:
+    src: pgr1.toml.j2
+    dest: "{{ dg_pgr1_play }}/pgr1.toml"
+    force: false
+    mode: "0644"
+
+- name: Check whether the full-display mode has been applied
+  ansible.builtin.stat:
+    path: "{{ dg_pgr1_play }}/.dg-display-v1"
+  register: _pgr1_fullscreen_seeded
+
+- name: Select true 4K fullscreen once on existing settings files
+  ansible.builtin.lineinfile:
+    path: "{{ dg_pgr1_play }}/pgr1.toml"
+    regexp: '^display_mode = '
+    line: 'display_mode = "fullscreen"'
+  when: not _pgr1_fullscreen_seeded.stat.exists
+
+- name: Record first-run full-display setup
+  ansible.builtin.file:
+    path: "{{ dg_pgr1_play }}/.dg-display-v1"
+    state: touch
+    mode: "0644"
+  when: not _pgr1_fullscreen_seeded.stat.exists

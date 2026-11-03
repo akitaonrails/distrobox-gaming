@@ -654,6 +654,12 @@ dg_ogm_games:
     category: wine
     sgdb_query: "007 Nightfire"
     github: hk21x/nightfire-recomp
+  - desktop_id: pgr1-recomp
+    id: pgr1-recomp
+    name: Project Gotham Racing Recomp
+    category: wine
+    sgdb_query: "Project Gotham Racing"
+    github: hk21x/pgr1-recomp
   # Wanszai arcade-to-PC wrappers under Wine (ridge_racer.yml / sega_rally.yml
   # / model1.yml).
   - desktop_id: ridge-racer

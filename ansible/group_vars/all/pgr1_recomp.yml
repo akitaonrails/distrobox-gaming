@@ -1,0 +1,55 @@
+---
+# Project Gotham Racing (original Xbox) — hk21x's XboxXBERecomp native port,
+# same SDK family as install_nightfire_recomp. The upstream launcher builds a
+# Windows D3D11/D3D12 executable from the owned disc on the user's own machine
+# (the game's code only compiles on Windows; it runs here under Wine). Our
+# opt-in role stages the pinned build launcher, verifies the owned USA disc,
+# creates a dedicated Wine prefix with native d3dcompiler + DXVK, publishes the
+# menu entry, and checks the build completed. Plays through gamescope at 4K on
+# the RTX. See docs/pgr1-recomp.md.
+
+dg_pgr1_repo: hk21x/pgr1-recomp
+dg_pgr1_version: v1.4
+dg_pgr1_launcher_url: "https://github.com/{{ dg_pgr1_repo }}/releases/download/{{ dg_pgr1_version }}/PGR1Launcher.exe"
+dg_pgr1_launcher_archive: "{{ dg_roms_final_root }}/PC/releases/PGR1Launcher-{{ dg_pgr1_version }}.exe"
+dg_pgr1_launcher_sha256: 655f5355460bd890dafb39feba53d70d68c96900a099f29bd14a57ce234a7da7
+
+# mozilla/fxc2 vendors Microsoft's real d3dcompiler_47.dll (x64 + x86); Wine's
+# built-in vkd3d-shader HLSL compiler rejects the title's generated shaders
+# (error E5000, "expecting ')' or ','") and leaves a black/flickering window.
+# Same checksum-pinned DLLs install_nightfire_recomp uses on this SDK.
+dg_pgr1_compiler_dlls:
+  - name: x64
+    url: https://raw.githubusercontent.com/mozilla/fxc2/807d26f4e4e9e9d0d0d6c1e05493b28eafb20e91/dll/d3dcompiler_47.dll
+    sha256: 4432bbd1a390874f3f0a503d45cc48d346abc3a8c0213c289f4b615bf0ee84f3
+    dest: "{{ dg_pgr1_prefix }}/drive_c/windows/system32/d3dcompiler_47.dll"
+  - name: x86
+    url: https://raw.githubusercontent.com/mozilla/fxc2/807d26f4e4e9e9d0d0d6c1e05493b28eafb20e91/dll/d3dcompiler_47_32.dll
+    sha256: 2ad0d4987fc4624566b190e747c9d95038443956ed816abfd1e2d389b5ec0851
+    dest: "{{ dg_pgr1_prefix }}/drive_c/windows/syswow64/d3dcompiler_47.dll"
+
+# The owned USA disc (title id 4D530003). The launcher accepts an .iso image or
+# a folder with the disc's files, and verifies default.xbe's SHA-1 before it
+# builds. On another machine, override dg_pgr1_iso and its checksum in host
+# vars.
+dg_pgr1_iso: "{{ dg_roms_final_root }}/xbox-iso/Project Gotham Racing (USA).iso"
+dg_pgr1_iso_sha256: 7798dd31728676f342e7c17db1b3b336ce00cad0ab77138d46d561cfb712dd9b
+dg_pgr1_default_xbe_sha1: 0d55fff29ceb34ab4dfcfc4820e823d967ca1469
+dg_pgr1_title_id: 4d530003
+
+dg_pgr1_root: "{{ dg_box_home }}/Games/pgr1"
+dg_pgr1_play: "{{ dg_pgr1_root }}/PGR1/play"
+dg_pgr1_prefix: "{{ dg_box_home }}/wineprefixes/pgr1"
+dg_pgr1_launcher: "{{ dg_box_home }}/bin/pgr1-recomp"
+
+dg_pgr1_display_width: 3840
+dg_pgr1_display_height: 2160
+
+# DXVK translates the title's D3D11 to Vulkan on the RTX (WineD3D runs it far
+# too slowly). PGR1's D3D11 backend only needs dxgi + d3d11.
+dg_pgr1_dxvk_version: 3.1.1
+dg_pgr1_dxvk_url: "https://github.com/doitsujin/dxvk/releases/download/v{{ dg_pgr1_dxvk_version }}/dxvk-{{ dg_pgr1_dxvk_version }}.tar.gz"
+dg_pgr1_dxvk_archive: "{{ dg_roms_final_root }}/PC/releases/dxvk-{{ dg_pgr1_dxvk_version }}-pgr1.tar.gz"
+dg_pgr1_dxvk_sha256: 40565b4a724aadc4433fa4e010b4b23916d9b1f1baeee64e17186db94f54e608
+dg_pgr1_dxvk_extract: "{{ dg_pgr1_root }}/runtime"
+dg_pgr1_dxvk_dlls: [dxgi, d3d11]

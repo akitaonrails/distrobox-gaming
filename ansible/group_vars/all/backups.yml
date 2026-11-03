@@ -185,6 +185,9 @@ dg_save_sets:
                                         "file:Games/scud-race/online.ini"] }
   - { name: nightfire-recomp,    src: ["Games/nightfire/NightFire/play/hdd/E/UDATA/45410026",
                                         "file:Games/nightfire/NightFire/play/settings.toml"] }
+  - { name: pgr1-recomp,         src: ["Games/pgr1/PGR1/play/hdd/E/UDATA/4d530003",
+                                        "file:Games/pgr1/PGR1/play/hdd/display.bin",
+                                        "file:Games/pgr1/PGR1/play/pgr1.toml"] }
   - { name: opensc2k,            src: ".local/share/godot/app_userdata/OpenSC2K/cities" }
   - { name: sonicxg,             src: ".config/Sonic_XG" }
   - { name: sonic-classic,       src: ["file:Games/sonic-classic/S_Classic1Rev03_FULL/ringdata.sav",

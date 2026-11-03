@@ -1,0 +1,51 @@
+#!/usr/bin/env sh
+set -eu
+
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+
+root="{{ dg_pgr1_root }}"
+prefix="{{ dg_pgr1_prefix }}"
+play="{{ dg_pgr1_play }}"
+if [ "${1:-}" = status ]; then
+  test -f "$play/PGR1.exe"
+  printf 'PGR1 ready: %s\n' "$play"
+  exit 0
+fi
+
+export WINEPREFIX="$prefix" WINEDEBUG="${WINEDEBUG:--all}"
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-{{ dg_nvidia_icd }}}"
+export __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+unset PYTHONHOME PYTHONPATH
+cleanup() {
+  if [ -n "${gamescope_group:-}" ]; then
+    kill -TERM -- "-$gamescope_group" 2>/dev/null || true
+  fi
+  WINEPREFIX="$prefix" wineserver -k >/dev/null 2>&1 || true
+  if [ -n "${gamescope_group:-}" ] && kill -0 -- "-$gamescope_group" 2>/dev/null; then
+    kill -KILL -- "-$gamescope_group" 2>/dev/null || true
+  fi
+}
+trap cleanup 0
+trap 'exit 143' TERM
+trap 'exit 130' INT
+trap 'exit 129' HUP
+# No PGR1.exe yet (or an explicit "build"): open the upstream GUI launcher so
+# the user picks their disc and builds the game. It builds into PGR1/ beside
+# itself. Otherwise play the built game, presented fullscreen at 4K by
+# gamescope on the RTX (WineD3D-free: the prefix carries DXVK + native
+# d3dcompiler).
+if [ "${1:-}" = build ] || [ ! -f "$play/PGR1.exe" ]; then
+  cd "$root"
+  wine PGR1Launcher.exe
+else
+  cd "$play"
+  setsid gamescope \
+    -W {{ dg_pgr1_display_width }} -H {{ dg_pgr1_display_height }} \
+    -w {{ dg_pgr1_display_width }} -h {{ dg_pgr1_display_height }} -f \
+    -- wine PGR1.exe "$@" &
+  gamescope_group=$!
+  wait "$gamescope_group"
+fi
