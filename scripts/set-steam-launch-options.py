@@ -37,21 +37,25 @@ def find_matching_brace(lines: list[str], open_index: int) -> int:
 def find_steam_apps_block(lines: list[str]) -> tuple[int, int]:
     """Find the canonical Software/Valve/Steam/apps block.
 
-    Steam localconfig.vdf can contain several unrelated `apps` blocks. The one
-    that stores normal launch options is indented under Software -> Valve ->
-    Steam and has app blocks at five tabs.
+    Follow the parent keys: an empty or never-played library may have no
+    LastPlayed or LaunchOptions fields, and other branches can have apps too.
     """
-    for idx, line in enumerate(lines):
-        if line.rstrip() != '\t\t\t\t"apps"':
-            continue
-        if idx + 1 >= len(lines) or lines[idx + 1].strip() != '{':
-            continue
-        end = find_matching_brace(lines, idx + 1)
-        # Prefer the app-state block that already contains common Steam fields.
-        body = ''.join(lines[idx:end])
-        if '"LastPlayed"' in body or '"LaunchOptions"' in body:
-            return idx, end
-    raise ValueError('could not find Software/Valve/Steam/apps block in localconfig.vdf')
+    child_start, end = 0, len(lines)
+    for key in ('UserLocalConfigStore', 'Software', 'Valve', 'Steam', 'apps'):
+        idx = child_start
+        while idx + 1 < end:
+            if lines[idx + 1].strip() != '{':
+                idx += 1
+                continue
+            close = find_matching_brace(lines, idx + 1)
+            if lines[idx].strip().lower() == f'"{key}"'.lower():
+                child_start, end = idx + 2, close
+                break
+            # Skip this entire sibling, including any similarly named children.
+            idx = close + 1
+        else:
+            raise ValueError('could not find Software/Valve/Steam/apps block in localconfig.vdf')
+    return idx, end
 
 
 def set_launch_option(lines: list[str], appid: str, option: str) -> bool:
