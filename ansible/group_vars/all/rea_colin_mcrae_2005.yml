@@ -1,0 +1,70 @@
+---
+# Colin McRae Rally 2005 (2004) — REA launcher (akitaonrails/rea-colin-mcrae-2005).
+# Like the other REA racing launchers, the Linux asset is a self-contained
+# AppImage: its own Wine (WoW64) + DXVK, a settings window, and gamescope for
+# true fullscreen. It unparks a title that was a documented "Wine dead-end":
+# the game crashed at 0x41DA27 before the first menu because it loads its fonts
+# through registry values its installer writes, and the GOG installer itself
+# hangs under Wine. The launcher writes INSTALL_PATH/SAVEGAME_PATH on every
+# start (pointing at its private copy), and unpacks the game from the GOG
+# installer files with bundled innoextract (never running the installer). DXVK
+# takes a stage from ~20 fps to hundreds; a close hook turns a window close into
+# quitting. It never touches the owned source — it works on a private copy.
+# See docs/rea-colin-mcrae-2005.md.
+
+dg_cmr2005_repo: akitaonrails/rea-colin-mcrae-2005
+dg_cmr2005_version: v0.1.0
+dg_cmr2005_asset_name: "CMR2005Launcher-{{ dg_cmr2005_version }}-x86_64.AppImage"
+dg_cmr2005_asset_url: "https://github.com/{{ dg_cmr2005_repo }}/releases/download/{{ dg_cmr2005_version }}/{{ dg_cmr2005_asset_name }}"
+dg_cmr2005_asset_sha256: db9a22ad53263de1e75881603de35dfe35480cf36fe70dce4317b7df07b4b642
+
+# The owned source: the GOG DRM-free offline installer (version 1.1) — the
+# three parts setup_colin2005.exe + setup_colin2005-{1,2}.bin. The launcher
+# verifies the edition itself and refuses an unknown one; the role asserts the
+# same setup exe so a wrong dump fails early with a clear message. The retail
+# DVD (StarForce) is NOT supported. Staged under ROMS_FINAL/PC/games.
+dg_cmr2005_source_dir: "{{ dg_roms_final_root }}/PC/games/Colin-McRae-Rally-2005_Win_EN-FR-DE-IT-ES_DRM-Free"
+dg_cmr2005_setup_exe: "{{ dg_cmr2005_source_dir }}/setup_colin2005.exe"
+dg_cmr2005_setup_sha256: 690a5e3f203e84a49fa0bad1a5e9bb628adce3f0b5a6e0349409484b737a8240  # GOG offline installer v1.1
+
+dg_cmr2005_root: "{{ dg_box_home }}/tools/rea-colin-mcrae-2005"
+dg_cmr2005_appimage: "{{ dg_cmr2005_root }}/{{ dg_cmr2005_asset_name }}"
+dg_cmr2005_launcher: "{{ dg_box_home }}/bin/rea-colin-mcrae-2005"
+
+# The AppImage keeps its Wine prefix here (cmr2005-play defaults to
+# ~/.local/share/cmr2005-launcher/prefix; HOME inside the box is the box home).
+# The launcher's own state — launcher.cfg, launcher.log, the private runtime
+# copy and the game unpacked from the GOG installer (~3.6 GB) — lives under
+# the prefix at AppData/Local/CMR2005Launcher. CMR2005_PREFIX could override
+# the prefix, but the default keeps upstream behaviour.
+dg_cmr2005_state_dir: "{{ dg_box_home }}/.local/share/cmr2005-launcher"
+dg_cmr2005_prefix: "{{ dg_cmr2005_state_dir }}/prefix"
+dg_cmr2005_settings_dir: "{{ dg_cmr2005_prefix }}/drive_c/users/{{ ansible_facts.user_id }}/AppData/Local/CMR2005Launcher"
+# The saves get their own folder, outside the game and the private copy.
+dg_cmr2005_saves_dir: "{{ dg_cmr2005_settings_dir }}/saves"
+
+# The launcher.cfg game path is a Windows path (the launcher runs under Wine);
+# Wine maps Z: to /. dg_cmr2005_bs is one backslash written in YAML only.
+dg_cmr2005_bs: '\'
+dg_cmr2005_win_source: "Z:{{ dg_cmr2005_source_dir | replace('/', dg_cmr2005_bs) }}"
+
+# Graphics baseline (the "Graphics: Always Max Out" ceiling). resolution
+# 3840x2160 is 16:9, which gives the game's WIDESCREENDISPLAY widescreen view
+# at native 4K on DP-1 (the Widescreen look's largest-16:9-that-fits, pinned
+# explicitly so a headless --play does not depend on screen detection). vsync
+# on, and fps_limit off — this 2004 game on the RTX runs far above 60 under
+# DXVK, so the cap stays uncapped. (CMR2005 has no controller key: the game
+# reads the pad itself; it is set up once in the game's own Options menu.)
+dg_cmr2005_settings:
+  resolution: 3840x2160
+  fps_limit: "off"
+  vsync: "on"
+
+# Retire the dead-end experiment Wine prefixes from the earlier (failed)
+# pc-racing attempts (colin-mcrae-rally-2005-*: ge826, wow64, pol320,
+# proton-hotfix, goginstall, win32-test and their timestamped backups). The
+# game never ran then (it crashed at startup), so there are no saves to keep;
+# the owned GOG source on the NAS is untouched. There was never a working
+# pc-racing CMR2005 install dir, bin wrapper or desktop entry to remove.
+dg_cmr2005_old_prefix_root: "{{ dg_pc_racing_prefix_root }}"
+dg_cmr2005_old_prefix_glob: "colin-mcrae-rally-2005*"

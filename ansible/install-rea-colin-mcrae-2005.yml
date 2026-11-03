@@ -1,0 +1,7 @@
+---
+- name: Install Colin McRae Rally 2005 (REA launcher)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_rea_colin_mcrae_2005

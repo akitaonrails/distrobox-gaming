@@ -8,7 +8,7 @@ rows are just the index). Contributions welcome if you crack one.
 | Game / mod | Why it's unsupported | Issue |
 |---|---|---|
 | ~~Sega Rally 2~~ (25th-Anniversary repack) | ✅ RESOLVED 2026-10-30 with the original European PC release and [sr2-patcher](https://github.com/pairomaniac/sr2-patcher); the opt-in role installs and launches it on the RTX 5090. The Anniversary repack's modified executable remains incompatible. See [setup](sega-rally-2.md). | [#3](https://github.com/akitaonrails/distrobox-gaming/issues/3) |
-| Colin McRae Rally 2005 (PC/GOG) | Wine dead-end (page fault `0041DA27`); use the PS2/PCSX2 version. 🔴 re-checked 2026-10-03: AppDB still Bronze, still blocked | [#4](https://github.com/akitaonrails/distrobox-gaming/issues/4) |
+| ~~Colin McRae Rally 2005 (PC/GOG)~~ | ✅ RESOLVED 2026-11-02 — the dead-end crash at `0041DA27` was the game loading its fonts through registry values its installer never got to write; the [REA launcher](rea-colin-mcrae-2005.md) writes them on every start and unpacks the GOG installer with innoextract. Runs natively at 4K via `install_rea_colin_mcrae_2005`. | [#4](https://github.com/akitaonrails/distrobox-gaming/issues/4) |
 | DiRT 3 Complete Edition | Fix exists but needs the legit Steam copy (disable Steam Input + in-game V-Sync) — not owned, delisted/unpurchasable; repack's GFWL crash unfixable. ⛔ final 2026-10-03: stays parked | [#5](https://github.com/akitaonrails/distrobox-gaming/issues/5) |
 | DiRT Rally | Fix exists but needs the legit Steam copy (Proton + `WINE_CPU_TOPOLOGY`, or Feral `feral_support_branch`) — not owned, delisted/unpurchasable. ⛔ final 2026-10-03: stays parked | [#6](https://github.com/akitaonrails/distrobox-gaming/issues/6) |
 | TeknoParrot (arcade) | Parked — Windows-loaders-under-Wine works but is an endless per-game tuning treadmill. 🔴 re-checked 2026-10-03: no structural change | [#7](https://github.com/akitaonrails/distrobox-gaming/issues/7) |
@@ -26,5 +26,4 @@ Notes:
   Wine/distrobox (or Steam+Proton) stack can't run, or mods that need an
   interactive Windows GUI installer.
 - Several have **working alternatives** already in the repo (e.g. Sega Rally
-  Revo / Sega Rally Championship HD for Sega Rally 2; PCSX2 for Colin McRae
-  Rally 2005). See the linked issue.
+  Revo / Sega Rally Championship HD for Sega Rally 2). See the linked issue.

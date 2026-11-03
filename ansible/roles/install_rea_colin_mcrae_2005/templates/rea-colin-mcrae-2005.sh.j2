@@ -1,0 +1,16 @@
+#!/bin/sh
+set -eu
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+# Colin McRae Rally 2005 (2004) through the REA launcher AppImage. The AppImage
+# carries its own Wine (WoW64) and DXVK and keeps its prefix in
+# ~/.local/share/cmr2005-launcher/prefix; gamescope (for true fullscreen) comes
+# from the box. Its AppRun runs the launcher's "cmr2005-play": no arguments
+# opens the settings window and then plays; "--play" skips the window,
+# "stop"/"status" manage a run. On the very first start the launcher unpacks the
+# game (~3.6 GB) from the owned GOG installer with bundled innoextract — later
+# starts are quick. Set the gamepad up once in the game's own Options menu
+# (the game reads the pad itself; the launcher adds nothing for it).
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS="${SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS:-1}"
+exec '{{ dg_cmr2005_appimage }}' "$@"

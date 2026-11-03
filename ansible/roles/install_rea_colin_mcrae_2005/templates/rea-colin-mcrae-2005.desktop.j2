@@ -1,0 +1,11 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Colin McRae Rally 2005 (REA)
+Exec={{ dg_cmr2005_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=2004 Colin McRae Rally 2005 (GOG v1.1) at 4K widescreen via DXVK, pad in-game
+Categories=Game;
+StartupWMClass=CMR2005Launcher.exe
+{{ ogm_metadata('rea-colin-mcrae-2005') }}

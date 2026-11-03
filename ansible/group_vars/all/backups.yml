@@ -118,6 +118,11 @@ dg_save_sets:
                                        "file:.local/share/cmr4-launcher/prefix/drive_c/users/{{ ansible_facts.user_id }}/AppData/Local/CMR4Launcher/CMR4/CHAMPIONSHIP_SLOT_1",
                                        "file:.local/share/cmr4-launcher/prefix/drive_c/users/{{ ansible_facts.user_id }}/AppData/Local/CMR4Launcher/CMR4/BESTTIMES_GHOSTS",
                                        "file:.local/share/cmr4-launcher/prefix/drive_c/users/{{ ansible_facts.user_id }}/AppData/Local/CMR4Launcher/launcher.cfg"] }
+  # CMR2005 keeps the saves in their own folder in the prefix, outside the game
+  # and the private copy; back up that folder plus the launcher.cfg (not the
+  # ~3.6 GB unpacked game copy, which rebuilds from the GOG source on first run).
+  - { name: rea-colin-mcrae-2005, src: [".local/share/cmr2005-launcher/prefix/drive_c/users/{{ ansible_facts.user_id }}/AppData/Local/CMR2005Launcher/saves",
+                                       "file:.local/share/cmr2005-launcher/prefix/drive_c/users/{{ ansible_facts.user_id }}/AppData/Local/CMR2005Launcher/launcher.cfg"] }
 
   # ---- 2026-10-28 save-path audit of every installed GitHub port ----
   # Recomps/ports that keep saves in a per-game config or user-data dir.

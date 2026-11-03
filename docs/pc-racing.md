@@ -439,9 +439,13 @@ that dialog for this game.
 
 ## Colin McRae Rally 2005
 
-Not feasible on the current Wine/distrobox stack (stable page fault `0041DA27`
-under Wine; the GOG installer hangs). Use the **PS2 version via PCSX2** for this
-title. Full attempt log: https://github.com/akitaonrails/distrobox-gaming/issues/4
+Moved to its own self-contained REA launcher
+([`install_rea_colin_mcrae_2005`](rea-colin-mcrae-2005.md), 2026-11-02). The
+dead-end page fault `0041DA27` was the game loading its fonts through registry
+values its installer never wrote under Wine, and the GOG installer hangs; the
+launcher writes those values on every start and unpacks the GOG files with
+bundled innoextract, so it runs natively at 4K. The old attempt log is issue
+[#4](https://github.com/akitaonrails/distrobox-gaming/issues/4).
 ## OutRun 2006
 
 OutRun 2006 uses the Inno Setup repack source under
