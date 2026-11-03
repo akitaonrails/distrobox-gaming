@@ -575,12 +575,24 @@ dg_ogm_games:
     category: port
     sgdb_query: "Colin McRae Rally 04"
     github: "{{ dg_cmr4_repo }}"
+  - desktop_id: rea-colin-mcrae-2005
+    id: rea-colin-mcrae-2005
+    name: "Colin McRae Rally 2005 (REA)"
+    category: wine
+    sgdb_query: "Colin McRae Rally 2005"
+    github: "{{ dg_cmr2005_repo }}"
   - desktop_id: rea-dirt
     id: rea-dirt
     name: "Colin McRae: DiRT (REA)"
     category: port
     sgdb_query: "Colin McRae: DiRT"
     github: "{{ dg_dirt_repo }}"
+  - desktop_id: rea-dirt-rally
+    id: rea-dirt-rally
+    name: "DiRT Rally (REA)"
+    category: port
+    sgdb_query: "DiRT Rally"
+    github: "{{ dg_dirtrally_repo }}"
   - desktop_id: rea-screamer
     id: rea-screamer
     name: "Screamer Trilogy (REA)"

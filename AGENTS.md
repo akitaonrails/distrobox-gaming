@@ -16,6 +16,12 @@ Every new or updated game install MUST keep its `dg_ogm_games` entry current:
 `github` for GitHub-backed projects, otherwise `web_url`/`update_regex` for
 web-page update badges where a pollable page exists (see the field docs in
 `ogm.yml` and `docs/ogm-launcher.md`; verify regexes against the live page).
+A template stem with no `dg_ogm_games` entry renders **no** `X-OGM-*` block, so
+the game installs, appears in the applications menu, and is silently missing
+from omarchy-games-menu. Adding the role or the `.desktop.j2` is therefore not
+enough — registering the stem is the same commit's work. `scripts/check-ogm-coverage.sh`
+fails on an unregistered stem, a duplicate `desktop_id`, or a rendered entry
+without its marker; run it before calling a game install finished.
 The opt-in `ogm_catalog` role (tag `ogm`) renders the same data to a
 `catalog.d` fallback fragment. See `docs/ogm-launcher.md`.
 The PC side of the library (`ROMS_FINAL/PC`) is bucketed as `ports/`,
@@ -43,6 +49,7 @@ ansible-playbook install-sonic-p06.yml     # run optional P-06 setup
 desktop-file-validate ../config/desktop/rendered/*.desktop
 ../scripts/check-box-sonames.sh            # after box updates: sweep for soname-broken AUR binaries
 ../scripts/check-pc-layout.sh "$DG_PC_ROOT"  # after any PC install: flag unfiled PC-root entries
+../scripts/check-ogm-coverage.sh           # after any game install: ogm marker/metadata coverage
 ../scripts/check-launcher-wrappers.sh "$DG_BOX_HOME/bin" "$DG_DESKTOP_RENDER_DIR"  # wine launchers must be boxed
 ```
 
