@@ -8,11 +8,11 @@
 # docs/screamer.md.
 
 dg_screamer_rea_repo: akitaonrails/rea-screamer-trilogy
-dg_screamer_rea_version: v0.8.0
+dg_screamer_rea_version: v0.8.1
 dg_screamer_rea_asset_name: "ScreamerLauncher-{{ dg_screamer_rea_version }}-linux-x86_64.zip"
 dg_screamer_rea_asset_url: "https://github.com/{{ dg_screamer_rea_repo }}/releases/download/{{ dg_screamer_rea_version }}/{{ dg_screamer_rea_asset_name }}"
 # From the release's own SHA256SUMS.
-dg_screamer_rea_asset_sha256: fe7c1edfbf29b7a619173db39a4af6ad0b49f6e214e4d008004e8f7edd5fb649
+dg_screamer_rea_asset_sha256: 02a14b7d8cbf50211f1cbc3d4de3aa88518c7b568361333f247950b282097dc8
 
 dg_screamer_rea_root: "{{ dg_box_home }}/tools/rea-screamer"
 dg_screamer_rea_release_dir: "{{ dg_screamer_rea_root }}/ScreamerLauncher-{{ dg_screamer_rea_version }}-linux-x86_64"

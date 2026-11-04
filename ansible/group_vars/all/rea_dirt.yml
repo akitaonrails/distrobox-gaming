@@ -6,10 +6,10 @@
 # runtime copy inside its own prefix. See docs/rea-dirt.md.
 
 dg_dirt_repo: akitaonrails/rea-dirt
-dg_dirt_version: v0.3.0
+dg_dirt_version: v0.3.1
 dg_dirt_asset_name: "DiRTLauncher-{{ dg_dirt_version }}-x86_64.AppImage"
 dg_dirt_asset_url: "https://github.com/{{ dg_dirt_repo }}/releases/download/{{ dg_dirt_version }}/{{ dg_dirt_asset_name }}"
-dg_dirt_asset_sha256: 90688564abc9d15a5748922dacc749abbc4a928a54f97afe038f5caa4cd37d36
+dg_dirt_asset_sha256: 361f357e75a7d0fb875d2c2be624a2b90cbea88e8ce725d75019b15bb27d3c33
 
 # The owned source: official v1.22 (DRM-free — v1.22 removed Starforce). The
 # launcher accepts either v1.22 executable; this copy carries the Large Address
