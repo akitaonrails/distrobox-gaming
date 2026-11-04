@@ -1,0 +1,183 @@
+---
+# Metroid Prime 4: Beyond — native Linux static recompilation. First run builds
+# the game from the owned base XCI + the v1.1.0 (RS15) update NSP via the
+# bundled SwitchRecomp recompiler. See group_vars/all/mp4_recomp.yml and
+# docs/mp4-recomp.md.
+
+- name: Revert Metroid Prime 4 Recomp when requested
+  when: dg_mp4_revert | bool
+  block:
+    - name: Remove the MP4 launcher, staging + built game + desktop entry
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_mp4_launcher }}"
+        - "{{ dg_mp4_root }}"
+        - "{{ dg_mp4_game }}"
+        - "{{ dg_desktop_render_dir }}/gaming-mp4-recomp.desktop"
+    - name: Refresh host launchers after removing MP4
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      changed_when: true
+    - name: Report MP4 reverted
+      ansible.builtin.debug:
+        msg: >-
+          Metroid Prime 4 Recomp removed (incl. its save under
+          {{ dg_mp4_name }}_data/save — back it up with bin/backup-saves
+          first). Your Switch dump and keys are untouched.
+
+- name: Install Metroid Prime 4 Recomp
+  when: not (dg_mp4_revert | bool)
+  block:
+    - name: Verify the owned base XCI exists
+      ansible.builtin.stat:
+        path: "{{ dg_mp4_base_xci }}"
+      register: _mp4_base
+      failed_when: not _mp4_base.stat.exists
+
+    - name: Verify the owned v1.1.0 update RAR exists
+      ansible.builtin.stat:
+        path: "{{ dg_mp4_update_rar }}"
+      register: _mp4_rar
+      failed_when: not _mp4_rar.stat.exists
+
+    - name: Create MP4 directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_mp4_root }}"
+        - "{{ dg_mp4_root }}/update"
+        - "{{ dg_mp4_game }}"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Download the pinned recomp AppImage
+      ansible.builtin.get_url:
+        url: "{{ dg_mp4_appimage_url }}"
+        dest: "{{ dg_mp4_appimage }}"
+        checksum: "sha256:{{ dg_mp4_appimage_sha256 }}"
+        mode: "0755"
+
+    - name: Extract the AppImage (version-gated; yields squashfs-root/recompiler)
+      ansible.builtin.shell: |
+        set -eu
+        if grep -qx "{{ dg_mp4_release_tag }}" "{{ dg_mp4_root }}/.dg-installed-ref" 2>/dev/null \
+           && [ -d "{{ dg_mp4_recompiler }}" ]; then
+          exit 0
+        fi
+        cd "{{ dg_mp4_root }}"
+        rm -rf squashfs-root
+        "{{ dg_mp4_appimage }}" --appimage-extract >/dev/null
+        printf "%s\n" "{{ dg_mp4_release_tag }}" > "{{ dg_mp4_root }}/.dg-installed-ref"
+        echo mp4-extracted
+      register: _mp4_extract
+      changed_when: "'mp4-extracted' in _mp4_extract.stdout"
+
+    - name: Extract the v1.1.0 update NSP from the owned RAR when absent
+      ansible.builtin.shell: |
+        set -eu
+        if [ -f "{{ dg_mp4_update_nsp }}" ]; then
+          exit 0
+        fi
+        cd "{{ dg_mp4_root }}/update"
+        if command -v unrar >/dev/null 2>&1; then
+          unrar x -o+ "{{ dg_mp4_update_rar }}" ./
+        else
+          7z x -y "{{ dg_mp4_update_rar }}"
+        fi
+        echo mp4-update-extracted
+      register: _mp4_update
+      changed_when: "'mp4-update-extracted' in _mp4_update.stdout"
+
+    # The build is long and one-off: run it only while setup.ok is absent, and
+    # only then pay to verify the 32 GB base + the update NSP + the keys.
+    - name: Check whether the game is already built
+      ansible.builtin.stat:
+        path: "{{ dg_mp4_setup_ok }}"
+      register: _mp4_setup_ok_stat
+
+    - name: Verify base XCI checksum (only when a build is needed)
+      ansible.builtin.stat:
+        path: "{{ dg_mp4_base_xci }}"
+        checksum_algorithm: sha256
+      register: _mp4_base_sum
+      failed_when: _mp4_base_sum.stat.checksum != dg_mp4_base_sha256
+      when: not _mp4_setup_ok_stat.stat.exists
+
+    - name: Verify update NSP checksum (only when a build is needed)
+      ansible.builtin.stat:
+        path: "{{ dg_mp4_update_nsp }}"
+        checksum_algorithm: sha256
+      register: _mp4_update_sum
+      failed_when: _mp4_update_sum.stat.checksum != dg_mp4_update_sha256
+      when: not _mp4_setup_ok_stat.stat.exists
+
+    - name: Require the Switch decryption keys for the build
+      ansible.builtin.stat:
+        path: "{{ dg_mp4_keys }}"
+      register: _mp4_keys
+      failed_when: not _mp4_keys.stat.exists
+      when: not _mp4_setup_ok_stat.stat.exists
+
+    - name: Build the game from the owned dump (recompile; long, one-off)
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          cp -f "{{ dg_mp4_setup_exe }}" "{{ dg_mp4_runtime_exe }}"
+          chmod +x "{{ dg_mp4_runtime_exe }}"
+          export SWR_RECOMPILER="{{ dg_mp4_recompiler }}"
+          export SWR_RUNTIME_EXE="{{ dg_mp4_runtime_exe }}"
+          cd "{{ dg_mp4_game }}"
+          out="$(python3 "{{ dg_mp4_recompiler }}/beyond_setup.py" \
+            --out "{{ dg_mp4_game }}" --name "{{ dg_mp4_name }}" \
+            --base "{{ dg_mp4_base_xci }}" --update "{{ dg_mp4_update_nsp }}" \
+            --keys "{{ dg_mp4_keys }}" --jobs {{ dg_mp4_build_jobs }} 2>&1)"
+          printf "%s\n" "$out" | tail -40
+          # beyond_setup.py reports failures via @@E and still exits 0.
+          if printf "%s\n" "$out" | grep -q "@@E"; then exit 1; fi
+          [ -f "{{ dg_mp4_setup_ok }}" ] || exit 1
+          echo mp4-built
+        '
+      register: _mp4_build
+      changed_when: "'mp4-built' in _mp4_build.stdout"
+      failed_when: _mp4_build.rc != 0
+      when: not _mp4_setup_ok_stat.stat.exists
+
+    - name: Seed maxed graphics defaults when the settings file is absent
+      ansible.builtin.template:
+        src: metroid-prime-4-beyond.ini.j2
+        dest: "{{ dg_mp4_ini }}"
+        mode: "0644"
+        force: false
+
+    - name: Deploy the MP4 launcher
+      ansible.builtin.template:
+        src: metroid-prime-4-recomp.sh.j2
+        dest: "{{ dg_mp4_launcher }}"
+        mode: "0755"
+
+    - name: Render the MP4 desktop entry
+      ansible.builtin.template:
+        src: gaming-mp4-recomp.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-mp4-recomp.desktop"
+        mode: "0644"
+
+    - name: Install the desktop entry into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _mp4_host_launchers
+      changed_when: "'installed' in (_mp4_host_launchers.stdout | default(''))"
+
+    - name: Require the completed build
+      ansible.builtin.stat:
+        path: "{{ dg_mp4_runtime_exe }}"
+      register: _mp4_runtime
+      failed_when: not _mp4_runtime.stat.exists

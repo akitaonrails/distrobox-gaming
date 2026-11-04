@@ -1,0 +1,7 @@
+{% for section, keys in dg_mp4_graphics_defaults.items() %}
+[{{ section }}]
+{% for key, value in keys.items() %}
+{{ key }}={{ value }}
+{% endfor %}
+
+{% endfor %}

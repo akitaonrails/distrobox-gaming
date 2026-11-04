@@ -1,0 +1,80 @@
+---
+# Metroid Prime 4: Beyond — native Linux static recompilation via
+# linuxopt/mp4-recomp (MZ Labs' SwitchRecomp: an ahead-of-time recompiler that
+# turns the owned Switch title into native x86-64 C, compiled here with a
+# bundled GCC into <name>_code.so and run by a native SDL runtime). No Switch
+# emulator at play — the recompiler + runtime ship in an AppImage; the game code
+# is built on this machine from the user's own dump. Opt-in role
+# install_mp4_recomp. See docs/mp4-recomp.md.
+#
+# The recomp REQUIRES the RS15 update (v1.1.0, title version 131072): the
+# base-only dump (E860CBED) is refused by the recompiler's version gate. The
+# first run BUILDS the game headlessly from the owned base XCI + the v1.1.0
+# update NSP via the bundled recompiler:
+#   python3 <recompiler>/beyond_setup.py --out <game> --name "<name>" \
+#       --base <xci> --update <nsp> --keys prod.keys --jobs N
+# Everything built (<name>_code.so, <name>_data/{romfs,exefs,setup.ok,save},
+# <name>_build/) lands under dg_mp4_game. The build is long and one-off; the
+# role runs it only while <name>_data/setup.ok is absent.
+#
+# Runtime is OpenGL/GLX on the NVIDIA dGPU via PRIME offload (this AppImage has
+# no native Vulkan renderer — renderer=vulkan falls back to GL), so the launcher
+# runs native on NVIDIA XWayland and deliberately does NOT use gamescope: that
+# cross-GPU grab flickers the iGPU on this box for SDL+GL NVIDIA apps (same as
+# Supermodel). The runtime still needs SWR_RECOMPILER pointing at the extracted
+# recompiler dir. Verified building (RS15) + booting on DP-1/RTX.
+
+dg_mp4_repo: linuxopt/mp4-recomp
+dg_mp4_release_tag: v2026.11.02
+dg_mp4_appimage_name: "Metroid_Prime_4_Recomp-x86_64.AppImage"
+dg_mp4_appimage_url: "https://github.com/{{ dg_mp4_repo }}/releases/download/{{ dg_mp4_release_tag }}/{{ dg_mp4_appimage_name }}"
+dg_mp4_appimage_sha256: "954747edbb0885421ac8e882f1882fe2b14777db2a30d29a1639ea0e1d74fe05"
+
+# Staging (AppImage + its extracted squashfs-root recompiler + the update NSP).
+dg_mp4_root: "{{ dg_box_home }}/tools/mp4-recomp"
+dg_mp4_appimage: "{{ dg_mp4_root }}/{{ dg_mp4_appimage_name }}"
+dg_mp4_squashfs: "{{ dg_mp4_root }}/squashfs-root"
+dg_mp4_recompiler: "{{ dg_mp4_squashfs }}/usr/share/metroid-prime-4-recomp/recompiler"
+dg_mp4_setup_exe: "{{ dg_mp4_squashfs }}/usr/bin/metroid-prime-4-recomp"
+
+# Built game (the runtime binary finds <name>_code.so + <name>_data beside it).
+dg_mp4_name: "Metroid Prime 4 Beyond"
+dg_mp4_game: "{{ dg_box_home }}/.local/share/MetroidPrime4Recomp"
+dg_mp4_runtime_exe: "{{ dg_mp4_game }}/{{ dg_mp4_name }}"
+dg_mp4_data_dir: "{{ dg_mp4_game }}/{{ dg_mp4_name }}_data"
+dg_mp4_setup_ok: "{{ dg_mp4_data_dir }}/setup.ok"
+dg_mp4_ini: "{{ dg_mp4_game }}/{{ dg_mp4_name }}.ini"
+
+# Owned dump — the base XCI (NSW-HR) and the v1.1.0 (RS15) update, the latter
+# inside a multipart RAR set in ROMS_FINAL. The role extracts the NSP from the
+# RAR when absent; both checksums are verified only when a build is needed
+# (gated behind setup.ok), so a normal run never re-hashes the 32 GB base.
+dg_mp4_base_xci: "{{ dg_rom_heavy_root }}/switch/Metroid_Prime_4_Beyond_NSW-HR/hr-bgw5a.xci"
+dg_mp4_base_sha256: "1f86f467221eab57b88c87003b9cf885afcde2063164197e2f41e5c009fd8a00"
+dg_mp4_update_rar: "{{ dg_roms_final_root }}/switch/Metroid_Prime_4_Beyond_Update_v1.1.0_NSW-HR/hr-bgw5av131072.rar"
+dg_mp4_update_nsp: "{{ dg_mp4_root }}/update/hr-bgw5av131072.nsp"
+dg_mp4_update_sha256: "6646db8081bbbd96647a30f0de4f36dd2e26759cd8d24e0bec841d46b2a6753f"
+dg_mp4_keys: "{{ dg_eden_data_dir }}/keys/prod.keys"
+
+dg_mp4_launcher: "{{ dg_box_home }}/bin/metroid-prime-4-recomp"
+dg_mp4_build_jobs: 24
+dg_mp4_main_output: "DP-1"
+dg_mp4_revert: false
+
+# Seeded into dg_mp4_ini only when absent; later in-game choices (the runtime
+# rewrites this file) win. Maxed for this box: internal 3D resolution x2.4
+# (supersamples far above the panel), FSR upscaler, 16x AF, the port's AA on.
+# The recomp exposes no output-resolution key — it runs at its own fullscreen
+# mode on DP-1 with that heavy internal supersampling as the quality ceiling.
+# fast_forward lets the stick fast-forward; ps4 button glyphs suit the 8BitDo.
+dg_mp4_graphics_defaults:
+  Graphics:
+    resolution: "2.4"
+    upscaler: fsr
+    renderer: vulkan
+    antialiasing: "1"
+    anisotropy: "16"
+  Performance:
+    fast_forward: "1"
+  Input:
+    button_icons: ps4

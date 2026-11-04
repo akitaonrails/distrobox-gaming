@@ -1,0 +1,37 @@
+#!/usr/bin/env sh
+set -eu
+# Metroid Prime 4: Beyond Recompiled launcher — native SwitchRecomp runtime,
+# opens fullscreen on DP-1. Managed by install_mp4_recomp. This AppImage build
+# runs OpenGL/GLX on the NVIDIA dGPU via PRIME offload (it has no native Vulkan
+# renderer), so we run native on NVIDIA XWayland and do NOT wrap it in
+# gamescope: that cross-GPU grab flickers the iGPU on this box for SDL+GL NVIDIA
+# apps (same as Supermodel). The runtime needs SWR_RECOMPILER to find the
+# recompiler dir extracted from the AppImage. 8BitDo via SDL.
+
+GAME="{{ dg_mp4_game }}"
+EXE="{{ dg_mp4_runtime_exe }}"
+if [ ! -x "$EXE" ] || [ ! -f "{{ dg_mp4_setup_ok }}" ]; then
+  printf '%s\n' "ERROR: Metroid Prime 4 Recomp not built ($GAME)." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-mp4-recomp.yml" >&2
+  exit 1
+fi
+
+# Focus the main landscape 4K monitor (Hyprland Lua IPC form).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_mp4_main_output }}" }))'); s.recv(256); s.close()
+PY
+
+# OpenGL/GLX on the NVIDIA dGPU via PRIME offload (not the AMD iGPU).
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+export SWR_RECOMPILER="{{ dg_mp4_recompiler }}"
+
+cd "$GAME"
+exec "$EXE" "$@"

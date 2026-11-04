@@ -1,0 +1,7 @@
+---
+- name: Install Metroid Prime 4 Beyond Recompiled (native Switch recomp, built from your dump)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_mp4_recomp
