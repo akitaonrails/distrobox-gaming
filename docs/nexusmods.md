@@ -56,6 +56,7 @@ Steam appids resolved 2026-08-06 by scanning all libraries (189 apps).
 | Yakuza 0 (Director's Cut) | yakuza0 | `2988580` | 10 | ⏸️ deferred (edition mismatch / RMM) |
 | The Witcher 3: Wild Hunt (Next-Gen) | witcher3 | `292030` | 13 | ✅ 12/13 (see below) |
 | WRC 7 | wrc7 | `621830` | 1 | ✅ 1/1 (EVOlution Mod 4.0, see below) |
+| WRC 4 FIA World Rally Championship | wrc4fiaworldrallychampionship | `256330` | 1 | ✅ 1/1 (loose camera + realistic tyres, see below) |
 
 ### ✅ Revisited after later installs (2026-08-07)
 
@@ -629,6 +630,22 @@ ships a mirror of the game tree and **overwrites the game's data-chunk PKGs**
 | Mod | Notes |
 |---|---|
 | [1 EVOlution MOD](https://www.nexusmods.com/wrc7/mods/1) | total overhaul; overwrites core data PKGs. **Revert = Steam → WRC 7 → Properties → Installed Files → Verify integrity** (re-downloads the originals), then `-e dg_wrc7_revert=true` to drop the manifest. |
+
+## ✅ WRC 4 — `install_wrc4_mods`
+
+Role: `install_wrc4_mods` · appid `256330` (delisted; lives in the USB Steam
+library, `dg_wrc4_steam_library_root`). One mod, Sal's
+**[1 Loose camera + realistic tyres](https://www.nexusmods.com/wrc4fiaworldrallychampionship/mods/1)**
+— a single `DATA.MIX` container that replaces the game's own (no loader, no
+script hook): more realistic tyre physics, rebalanced grip/difficulty, untilted
+cockpit cams, slightly lowered chase cams. The role backs the stock file up to
+`DATA.MIX.dg-orig` and writes a `.dg-wrc4-1` marker (idempotent). The exe is
+version-gated to `1.0.0.0`; the archive is preserved under
+`ROMS_FINAL/PC/mods/NexusMods/wrc4/`. See [wrc4-mods.md](wrc4-mods.md).
+
+| Mod | Notes |
+|---|---|
+| [1 Loose camera + realistic tyres](https://www.nexusmods.com/wrc4fiaworldrallychampionship/mods/1) | Two MAIN variants: **file 2 = "Loose camera 0.7"** (default, looser) and **file 4 = "0.78"** (tighter). Switch with `file:` in `wrc4_mods.yml`. **Revert = `-e dg_wrc4_revert=true`** (restores the stock `DATA.MIX`). |
 
 ## ⚠️ WRC 5 — flagged, not installed
 
