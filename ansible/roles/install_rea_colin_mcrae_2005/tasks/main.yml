@@ -46,11 +46,17 @@
     - "{{ dg_box_home }}/bin"
 
 - name: Stage the pinned REA CMR2005 launcher AppImage
-  ansible.builtin.get_url:
-    url: "{{ dg_cmr2005_asset_url }}"
-    dest: "{{ dg_cmr2005_appimage }}"
-    checksum: "sha256:{{ dg_cmr2005_asset_sha256 }}"
-    mode: "0755"
+  ansible.builtin.include_role:
+    name: stage_rea_appimage
+  vars:
+    dg_rea_stage_asset_url: "{{ dg_cmr2005_asset_url }}"
+    dg_rea_stage_asset_name: "{{ dg_cmr2005_asset_name }}"
+    dg_rea_stage_asset_sha256: "{{ dg_cmr2005_asset_sha256 }}"
+    dg_rea_stage_install_dir: "{{ dg_cmr2005_root }}"
+    dg_rea_stage_retired_names:
+      - CMR2005Launcher-v0.1.0-x86_64.AppImage
+      - CMR2005Launcher-v0.2.0-x86_64.AppImage
+      - CMR2005Launcher-v0.2.1-x86_64.AppImage
 
 # The Widescreen look fills the resolution from the screen when it is unset;
 # seeding the maxed-out values pins a headless --play to native 4K. force:

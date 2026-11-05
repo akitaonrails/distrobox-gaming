@@ -1,0 +1,30 @@
+---
+# Keep the pinned release on the NAS for rebuilds and an executable local copy.
+- name: Create REA release and local launcher directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_roms_final_root }}/PC/releases"
+    - "{{ dg_rea_stage_install_dir }}"
+
+- name: Stage the pinned REA AppImage in the PC release bucket
+  ansible.builtin.get_url:
+    url: "{{ dg_rea_stage_asset_url }}"
+    dest: "{{ dg_roms_final_root }}/PC/releases/{{ dg_rea_stage_asset_name }}"
+    checksum: "sha256:{{ dg_rea_stage_asset_sha256 }}"
+    mode: "0644"
+
+- name: Install the pinned REA AppImage locally
+  ansible.builtin.copy:
+    src: "{{ dg_roms_final_root }}/PC/releases/{{ dg_rea_stage_asset_name }}"
+    dest: "{{ dg_rea_stage_install_dir }}/{{ dg_rea_stage_asset_name }}"
+    remote_src: true
+    mode: "0755"
+
+- name: Remove superseded local REA AppImages
+  ansible.builtin.file:
+    path: "{{ dg_rea_stage_install_dir }}/{{ item }}"
+    state: absent
+  loop: "{{ dg_rea_stage_retired_names }}"

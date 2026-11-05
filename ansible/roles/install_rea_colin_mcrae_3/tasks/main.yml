@@ -44,11 +44,17 @@
     - "{{ dg_box_home }}/bin"
 
 - name: Stage the pinned REA CMR3 launcher AppImage
-  ansible.builtin.get_url:
-    url: "{{ dg_cmr3_asset_url }}"
-    dest: "{{ dg_cmr3_appimage }}"
-    checksum: "sha256:{{ dg_cmr3_asset_sha256 }}"
-    mode: "0755"
+  ansible.builtin.include_role:
+    name: stage_rea_appimage
+  vars:
+    dg_rea_stage_asset_url: "{{ dg_cmr3_asset_url }}"
+    dg_rea_stage_asset_name: "{{ dg_cmr3_asset_name }}"
+    dg_rea_stage_asset_sha256: "{{ dg_cmr3_asset_sha256 }}"
+    dg_rea_stage_install_dir: "{{ dg_cmr3_root }}"
+    dg_rea_stage_retired_names:
+      - CMR3Launcher-v0.2.1-x86_64.AppImage
+      - CMR3Launcher-v0.3.0-x86_64.AppImage
+      - CMR3Launcher-v0.3.1-x86_64.AppImage
 
 # Migrate the player's profile (the loose CMR3 file) from the retired
 # pc-racing install into the launcher's Saved Games folder. force: false keeps

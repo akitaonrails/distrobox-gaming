@@ -14,12 +14,19 @@ cd ansible && ansible-playbook install-rea-colin-mcrae-2005.yml
 
 | | |
 |---|---|
-| Release | `v0.1.0`, `CMR2005Launcher-v0.1.0-x86_64.AppImage` (pinned + sha256 `db9a22ad…`) |
+| Release | `v0.2.2`, `CMR2005Launcher-v0.2.2-x86_64.AppImage` (SHA256 pinned; archived in `ROMS_FINAL/PC/releases/`) |
 | Owned source | `ROMS_FINAL/PC/games/Colin-McRae-Rally-2005_Win_EN-FR-DE-IT-ES_DRM-Free` — the **GOG v1.1 offline installer** (`setup_colin2005.exe` sha256 `690a5e3f…` + `setup_colin2005-{1,2}.bin`). Retail DVD (StarForce) is **not** supported. |
 | AppImage | `tools/rea-colin-mcrae-2005/` |
 | Prefix + private runtime | `~/.local/share/cmr2005-launcher/prefix` (the launcher's own default; `CMR2005_PREFIX` can override) |
 | Launcher | `bin/rea-colin-mcrae-2005` → AppImage: settings window, then play |
 | Entry | Walker **Colin McRae Rally 2005 (REA)** |
+
+v0.2.2 adds Windows executable metadata and changes the private game copy to
+load `rea_close_hook.dll` itself, avoiding a live-process hook. Upstream says
+closing the window or using the game's Exit still quits, while Alt+F4 works
+when the mouse moves because the game captures the keyboard. The existing
+4K, graphics and pad profile stays appropriate. The verified AppImage is
+staged on the NAS before being copied to its local executable path.
 
 ## What the launcher handles
 

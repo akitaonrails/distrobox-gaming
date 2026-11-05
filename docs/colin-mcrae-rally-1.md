@@ -5,7 +5,7 @@ replaces our older Wine setup. The role uses the original PC game in
 `{{ dg_cmr1_source_dir }}` without modifying it. This machine has the supported
 European v1.5 fan-pack `Rally.exe` (SHA256
 `46500c8e22ce3e943b6855eca63ae9288261162347ca76fa36cad77cbb19c0bb`).
-The REA launcher v0.8.0 ZIP is pinned by SHA256 and staged in
+The REA launcher v0.9.2 ZIP is pinned by SHA256 and staged in
 `ROMS_FINAL/PC/releases/`. Future updates come from this GitHub repository.
 v0.5.1 fixes a post-stage crash with this exact community-patched executable
 and applies fixes F20–F27 to it, including the depth-buffer and HD-art fixes.
@@ -35,6 +35,14 @@ The bounded v0.7.0 launch logged pack 4 loaded from its 4× set, 3× draw
 distance, the new `cmrhooks.dll`, and `game started`. The test ended and its
 Wine processes were reaped. The launcher-window gamepad shortcuts and a full
 stage finish were not exercised in that check.
+
+v0.9.2 patches the launcher's private `Rally.exe` on disk and makes it import
+`cmrhooks.dll` when the game starts. It no longer changes the running game's
+memory. The owned game folder stays untouched, and upstream verified a 4K
+race, HD art and window closing. The release adds Windows version metadata to
+the launcher and hook DLL. Our 4K/120 FPS, 3× distance and modern controller
+settings need no changes. Downgrading later requires deleting the private
+`Rally.exe` first; a normal role rerun never removes player saves or settings.
 
 Run `ansible-playbook install-rea-colin-mcrae.yml` from `ansible/`. The role
 checks the game hash, installs the launcher in its own directory and Wine

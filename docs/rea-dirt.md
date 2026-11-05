@@ -12,12 +12,17 @@ cd ansible && ansible-playbook install-rea-dirt.yml
 
 | | |
 |---|---|
-| Release | `v0.2.0`, `DiRTLauncher-v0.2.0-x86_64.AppImage` (pinned + sha256) |
+| Release | `v0.3.2`, `DiRTLauncher-v0.3.2-x86_64.AppImage` (SHA256 pinned; archived in `ROMS_FINAL/PC/releases/`) |
 | Owned source | `ROMS_FINAL/PC/games/DiRT-2007` (official v1.22 + LAA `DiRT.exe`, sha256 `e4b66bd3…`; the vanilla v1.22 `e10268f8…` is equally accepted) |
 | AppImage | `tools/rea-dirt/` |
 | Prefix + private runtime | `~/.local/share/dirt-launcher/` (launcher's own default; `DIRT_PREFIX` can override) |
 | Launcher | `bin/rea-dirt` → AppImage: settings window, then play |
 | Entry | Walker **Colin McRae: DiRT (REA)** |
+
+v0.3.2 adds Windows executable metadata and shared SDK v0.4.3 to reduce
+antivirus false positives. It introduces no new graphics, frame pacing, or
+controller setting; the role keeps the existing 4K profile and stages the
+verified AppImage on the NAS before installing its local executable copy.
 
 ## What the launcher handles
 

@@ -13,12 +13,18 @@ cd ansible && ansible-playbook install-rea-screamer.yml
 
 | | |
 |---|---|
-| Release | `v0.7.0`, `ScreamerLauncher-v0.7.0-linux-x86_64.zip` (pinned + sha256 from the release `SHA256SUMS`) |
-| Installed at | `tools/rea-screamer/ScreamerLauncher-v0.7.0-linux-x86_64/` (launcher + hooked dosbox + resources) |
+| Release | `v0.8.2`, `ScreamerLauncher-v0.8.2-linux-x86_64.zip` (pinned + sha256 from the release `SHA256SUMS`; archived in `ROMS_FINAL/PC/releases/`) |
+| Installed at | `tools/rea-screamer/ScreamerLauncher-v0.8.2-linux-x86_64/` (launcher + hooked dosbox + resources) |
 | Trilogy games | `tools/rea-screamer/games/{screamer,screamer2,screamer-rally}` — read-only, moved from the retired role |
 | Settings | `~/.config/screamer-launcher/launcher.cfg` |
 | Runtime + saves | `~/.local/share/screamer-launcher/{runtime,saves}/<game>` |
 | Launcher | `bin/rea-screamer`; entry **Screamer Trilogy (REA)** |
+
+v0.8.2 updates the shared launcher SDK to v0.4.3 and adds Windows executable
+metadata and a manifest to reduce antivirus false positives. The Linux ZIP
+remains the managed install; the existing graphics and controller settings do
+not require changes. The role removes only the explicitly listed older
+launcher extracts and release ZIPs, preserving `games/`, saves and settings.
 
 ## What it does that the old role could not
 

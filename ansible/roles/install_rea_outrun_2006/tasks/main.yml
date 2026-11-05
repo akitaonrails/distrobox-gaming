@@ -48,11 +48,17 @@
     - "{{ dg_box_home }}/bin"
 
 - name: Stage the pinned REA OutRun 2006 launcher AppImage
-  ansible.builtin.get_url:
-    url: "{{ dg_or2006_asset_url }}"
-    dest: "{{ dg_or2006_appimage }}"
-    checksum: "sha256:{{ dg_or2006_asset_sha256 }}"
-    mode: "0755"
+  ansible.builtin.include_role:
+    name: stage_rea_appimage
+  vars:
+    dg_rea_stage_asset_url: "{{ dg_or2006_asset_url }}"
+    dg_rea_stage_asset_name: "{{ dg_or2006_asset_name }}"
+    dg_rea_stage_asset_sha256: "{{ dg_or2006_asset_sha256 }}"
+    dg_rea_stage_install_dir: "{{ dg_or2006_root }}"
+    dg_rea_stage_retired_names:
+      - OutRunLauncher-v0.2.1-x86_64.AppImage
+      - OutRunLauncher-v0.3.0-x86_64.AppImage
+      - OutRunLauncher-v0.3.1-x86_64.AppImage
 
 # The settings window fills resolution from the screen when unset; seeding the
 # maxed-out values keeps a headless --play on the 4K panel with DXVK on. force:

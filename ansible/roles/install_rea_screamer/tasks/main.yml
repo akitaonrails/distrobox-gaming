@@ -144,3 +144,15 @@
   ansible.builtin.file:
     path: "{{ dg_screamer_rea_old_root }}"
     state: absent
+
+- name: Remove superseded REA Screamer release extracts
+  ansible.builtin.file:
+    path: "{{ dg_screamer_rea_root }}/ScreamerLauncher-{{ item }}-linux-x86_64"
+    state: absent
+  loop: "{{ dg_screamer_rea_superseded_versions }}"
+
+- name: Remove superseded REA Screamer release archives
+  ansible.builtin.file:
+    path: "{{ dg_roms_final_root }}/PC/releases/ScreamerLauncher-{{ item }}-linux-x86_64.zip"
+    state: absent
+  loop: "{{ dg_screamer_rea_superseded_versions }}"

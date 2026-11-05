@@ -14,12 +14,17 @@ cd ansible && ansible-playbook install-rea-colin-mcrae-3.yml
 
 | | |
 |---|---|
-| Release | `v0.2.1`, `CMR3Launcher-v0.2.1-x86_64.AppImage` (pinned + sha256 `9ffe6883…`) |
+| Release | `v0.3.2`, `CMR3Launcher-v0.3.2-x86_64.AppImage` (SHA256 pinned; archived in `ROMS_FINAL/PC/releases/`) |
 | Owned source | `ROMS_FINAL/PC/games/Colin-McRae-Rally-3` (`Rally_3PC.exe` sha256 `c56344b4…`, MD5 `2744404b…` — the launcher's recognised "DRM-free v1.1 variant B, the community repack") |
 | AppImage | `tools/rea-colin-mcrae-3/` |
 | Prefix + private runtime | `~/.local/share/cmr3-launcher/` (launcher's own default; `CMR3_PREFIX` can override) |
 | Launcher | `bin/rea-colin-mcrae-3` → AppImage: settings window, then play |
 | Entry | Walker **Colin McRae Rally 3 (REA)** |
+
+v0.3.2 adds Windows executable metadata and shared SDK v0.4.3. Upstream lists
+no graphics, frame pacing, or controller changes for this release. The role
+keeps the existing profile and copies the verified release asset from the NAS
+to its local executable path.
 
 ## What the launcher handles
 

@@ -47,11 +47,17 @@
     - "{{ dg_box_home }}/bin"
 
 - name: Stage the pinned REA CMR04 launcher AppImage
-  ansible.builtin.get_url:
-    url: "{{ dg_cmr4_asset_url }}"
-    dest: "{{ dg_cmr4_appimage }}"
-    checksum: "sha256:{{ dg_cmr4_asset_sha256 }}"
-    mode: "0755"
+  ansible.builtin.include_role:
+    name: stage_rea_appimage
+  vars:
+    dg_rea_stage_asset_url: "{{ dg_cmr4_asset_url }}"
+    dg_rea_stage_asset_name: "{{ dg_cmr4_asset_name }}"
+    dg_rea_stage_asset_sha256: "{{ dg_cmr4_asset_sha256 }}"
+    dg_rea_stage_install_dir: "{{ dg_cmr4_root }}"
+    dg_rea_stage_retired_names:
+      - CMR4Launcher-v0.3.1-x86_64.AppImage
+      - CMR4Launcher-v0.4.0-x86_64.AppImage
+      - CMR4Launcher-v0.4.1-x86_64.AppImage
 
 # The settings window fills resolution from the screen when unset; seeding the
 # maxed-out values keeps a headless --play on the 4K panel. force: false — once

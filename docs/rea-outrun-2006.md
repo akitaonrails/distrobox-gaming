@@ -16,12 +16,17 @@ cd ansible && ansible-playbook install-rea-outrun-2006.yml
 
 | | |
 |---|---|
-| Release | `v0.2.1`, `OutRunLauncher-v0.2.1-x86_64.AppImage` (pinned + sha256 `cf561ad2…`) |
+| Release | `v0.3.2`, `OutRunLauncher-v0.3.2-x86_64.AppImage` (SHA256 pinned; archived in `ROMS_FINAL/PC/releases/`) |
 | Owned source | `ROMS_FINAL/PC/games/OutRun-2006-Coast-2-Coast` (`OR2006C2C.exe` sha256 `68ceb386…` — the launcher's recognised OutRun2006Tweaks DRM-free EXE, an already-patched install) |
 | AppImage | `tools/rea-outrun-2006/` |
 | Prefix + private runtime | `~/.local/share/or-launcher/` (launcher's own default; `OR_PREFIX` can override) |
 | Launcher | `bin/rea-outrun-2006` → AppImage (`or-play`): settings window, then play |
 | Entry | Walker **OutRun 2006: Coast 2 Coast (REA)** |
+
+v0.3.2 adds Windows executable metadata and shared SDK v0.4.3 to reduce
+antivirus false positives. The release does not change graphics, frame pacing,
+or controller options; the role preserves the existing profile and stages the
+verified AppImage on the NAS before installing its local executable copy.
 
 ## What the launcher handles
 

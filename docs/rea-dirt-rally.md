@@ -15,13 +15,17 @@ cd ansible && ansible-playbook install-rea-dirt-rally.yml
 
 | | |
 |---|---|
-| Release | `v0.1.0`, `DiRTRallyLauncher-v0.1.0-x86_64.AppImage` (pinned + sha256 `ab9fd8eb…`) |
+| Release | `v0.2.0`, `DiRTRallyLauncher-v0.2.0-x86_64.AppImage` (SHA256 pinned; archived in `ROMS_FINAL/PC/releases/`) |
 | Owned source | `ROMS_FINAL/PC/games/DiRT.Rally.Linux-ACTiVATED/DiRT.Rally` — Feral's **Linux 1.0 (build 31946)**, `bin/DirtRally` sha256 `de81c75c…`, the launcher's known-good edition. A pre-activated copy that runs without Steam (the game is delisted; the launcher never patches/cracks Steam or DRM files). |
 | AppImage | `tools/rea-dirt-rally/` |
 | Private runtime copy | `~/.local/share/dirtrally-launcher/runtime` (the launcher's default) |
 | Launcher settings/log | `~/.config/dirtrally-launcher/` (`launcher.cfg`, `launcher.log`, `play.log`, `known-pads.json`) |
 | Launcher | `bin/rea-dirt-rally` → AppImage: settings window, then play |
 | Entry | Walker **DiRT Rally (REA)** |
+
+v0.2.0 remains the latest release in the 2026-11-05 sweep. The role now also
+archives its SHA256-verified AppImage in `ROMS_FINAL/PC/releases/` before
+installing the executable locally, and removes the unused v0.1.0 local copy.
 
 ## What the launcher handles
 

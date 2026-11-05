@@ -9,10 +9,10 @@
 # (Magipack repack under gamescope). See docs/rea-colin-mcrae-3.md.
 
 dg_cmr3_repo: akitaonrails/rea-colin-mcrae-3
-dg_cmr3_version: v0.3.1
+dg_cmr3_version: v0.3.2
 dg_cmr3_asset_name: "CMR3Launcher-{{ dg_cmr3_version }}-x86_64.AppImage"
 dg_cmr3_asset_url: "https://github.com/{{ dg_cmr3_repo }}/releases/download/{{ dg_cmr3_version }}/{{ dg_cmr3_asset_name }}"
-dg_cmr3_asset_sha256: dc570dcc4cc1e9313e5d48294cd17e1af25b562614d70201650c8b8b338738ac
+dg_cmr3_asset_sha256: 45b53175d6a86515d5c5f11ed73eba65ea631f53c96b17f435266170023fdaea
 
 # The owned source: a clean install with Rally_3PC.exe next to Data/fonts/
 # shaders, staged under ROMS_FINAL/PC/games (AGENTS.md PC-library layout) from

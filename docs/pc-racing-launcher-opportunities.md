@@ -6,6 +6,10 @@ The search covered GitHub projects, Lutris installer scripts, and game-specific
 patch pages. “No launcher found” means none surfaced in that search; it does not
 prove that none exists.
 
+Update, 2026-11-05: this table is historical. REA launchers now cover CMR04,
+Sega Rally Revo, DiRT 2007, CMR3, and OutRun 2006. Their current installation
+notes and release inventory are in [external installers](external-installers.md).
+
 | Priority | Game | Existing tool and its scope | Remaining setup problem |
 | --- | --- | --- | --- |
 | 1 | Colin McRae Rally 04 | [CMR04 Widescreen Fix](https://community.pcgamingwiki.com/files/file/2536-colin-mcrae-rally-04-widescreen-fix/) patches the aspect ratio. No modern setup launcher surfaced. | A reliable setup must coordinate the executable patch, 4K registry resolution, dgVoodoo, and controller mapping. The in-game graphics menu can overwrite the working resolution; see [our install notes](pc-racing.md#colin-mcrae-rally-04). |

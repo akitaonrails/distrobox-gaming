@@ -16,12 +16,19 @@ cd ansible && ansible-playbook install-rea-colin-mcrae-4.yml
 
 | | |
 |---|---|
-| Release | `v0.3.1`, `CMR4Launcher-v0.3.1-x86_64.AppImage` (pinned + sha256 `98e76bd0…`) |
+| Release | `v0.4.2`, `CMR4Launcher-v0.4.2-x86_64.AppImage` (SHA256 pinned; archived in `ROMS_FINAL/PC/releases/`) |
 | Owned source | `ROMS_FINAL/PC/games/Colin-McRae-Rally-04` (`cmr4.exe` sha256 `7dca9f4c…`, the **original un-patched** build) |
 | AppImage | `tools/rea-colin-mcrae-4/` |
 | Prefix + private runtime | `~/.local/share/cmr4-launcher/` (launcher's own default; `CMR4_PREFIX` can override) |
 | Launcher | `bin/rea-colin-mcrae-4` → AppImage (`cmr4-play`): settings window, then play |
 | Entry | Walker **Colin McRae Rally 04 (REA)** |
+
+v0.4.2 gives the Windows executable version metadata and changes the private
+`cmr4.exe` to import `rea_close_hook.dll` when the game starts. The launcher
+no longer installs that hook into a running process. Upstream reports the
+Alt+F4/window-close behavior is preserved; no new graphics, pacing or pad
+setting is required for our profile. The role stages the verified AppImage on
+the NAS and keeps a local executable copy.
 
 ## What the launcher handles
 

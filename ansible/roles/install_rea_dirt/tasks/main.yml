@@ -43,11 +43,17 @@
     - "{{ dg_box_home }}/bin"
 
 - name: Stage the pinned REA DiRT launcher AppImage
-  ansible.builtin.get_url:
-    url: "{{ dg_dirt_asset_url }}"
-    dest: "{{ dg_dirt_appimage }}"
-    checksum: "sha256:{{ dg_dirt_asset_sha256 }}"
-    mode: "0755"
+  ansible.builtin.include_role:
+    name: stage_rea_appimage
+  vars:
+    dg_rea_stage_asset_url: "{{ dg_dirt_asset_url }}"
+    dg_rea_stage_asset_name: "{{ dg_dirt_asset_name }}"
+    dg_rea_stage_asset_sha256: "{{ dg_dirt_asset_sha256 }}"
+    dg_rea_stage_install_dir: "{{ dg_dirt_root }}"
+    dg_rea_stage_retired_names:
+      - DiRTLauncher-v0.2.0-x86_64.AppImage
+      - DiRTLauncher-v0.3.0-x86_64.AppImage
+      - DiRTLauncher-v0.3.1-x86_64.AppImage
 
 # Migrate the saves and hardware settings from the retired pc-racing install
 # (DiRT kept them under the prefix's Public Documents). force: false keeps
