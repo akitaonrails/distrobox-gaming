@@ -1,0 +1,56 @@
+---
+# The Legend of Zelda: Tears of the Kingdom — UltraTears, a native static
+# recompilation (kuraeow/ultratears). An MZ-Labs-style ahead-of-time recompiler
+# turns the owned Switch title (1.4.3) into native C, built here into a Linux
+# game by the builder bundled in the AppImage; a native SDL3 + Vulkan runtime
+# plays it on the RTX. No Switch emulator at play — the game code is built on
+# this machine from the user's own dump. Opt-in role install_ultratears. See
+# docs/ultratears.md.
+#
+# UltraTears REFUSES encrypted packages (.xci/.nsp/.nca) and reads no keys: it
+# needs a pre-extracted exefs/romfs dump of TOTK with update 1.4.3 applied
+# (verified by the SHA-256 of its code modules). That dump is produced once from
+# the owned base XCI + 1.4.3 update NSP by scripts/totk-dump-extractor (LibHac
+# from NuGet merges the BKTR update patch — hactool cannot), staged on the NAS,
+# and consumed here like a ROM. See docs/ultratears.md "Producing the dump".
+#
+# The first run BUILDS the game headlessly from the dump via the bundled builder:
+#   deps/python/bin/python3.14 tools/setup.py --dump <dump>
+# It is long (~30-40 min) and one-off; the role runs it only while the built
+# game binary (linux/ultratears) is absent or the AppImage version changed.
+# setup.py is resumable/idempotent and rebuilds only what changed on an update.
+
+dg_ut_repo: kuraeow/ultratears
+dg_ut_version: v0.3.1
+dg_ut_commit: c741e9b                       # VERSION.txt, informational
+dg_ut_asset_name: UltraTears.AppImage
+dg_ut_asset_url: "https://github.com/{{ dg_ut_repo }}/releases/download/{{ dg_ut_version }}/{{ dg_ut_asset_name }}"
+# From the release's asset digest (gh release view --json assets).
+dg_ut_asset_sha256: 4ff9c878253a4a70882f66d2a512e04fa72efd4fd5828a86cea2cb96f9bc7bf1
+
+# The builder package (the AppImage's own tree) is laid down here and the game
+# is BUILT IN PLACE beside it: data/ (romfs image, generated C, shaders,
+# textures), linux/ultratears (the game binary), ultratears.cfg, and userdata/
+# (saves). Kept on the NVMe box home — ~40 GB of streamed open-world assets want
+# fast local disk for a stable 60 FPS, unlike the read-once dump on the NAS.
+dg_ut_root: "{{ dg_box_home }}/tools/ultratears"
+dg_ut_cache_dir: "{{ dg_box_home }}/cache/ultratears"
+dg_ut_appimage: "{{ dg_ut_cache_dir }}/{{ dg_ut_asset_name }}"
+dg_ut_launcher_bin: "{{ dg_ut_root }}/ultratears-launcher"   # AppRun execs this; --play = the game, past the launcher
+dg_ut_game_bin: "{{ dg_ut_root }}/linux/ultratears"          # built game binary = the build-done marker
+dg_ut_data_dir: "{{ dg_ut_root }}/data"
+dg_ut_userdata_dir: "{{ dg_ut_root }}/userdata"              # saves (kept across rebuilds/updates)
+dg_ut_cfg: "{{ dg_ut_root }}/ultratears.cfg"
+dg_ut_installed_ref: "{{ dg_ut_root }}/.dg-installed-ref"
+dg_ut_python: "{{ dg_ut_root }}/deps/python/bin/python3.14"
+
+dg_ut_launcher: "{{ dg_box_home }}/bin/ultratears"
+
+# Owned dump: the ExeFS + RomFS of TOTK with update 1.4.3 applied, as plain
+# files (exefs/ + romfs/). Produced by scripts/totk-dump-extractor from the
+# owned base XCI + 1.4.3 update NSP, staged on the NAS. setup.py --check-dump
+# cryptographically confirms it is TOTK 1.4.3, so no size-based sha256 pin.
+dg_ut_dump_dir: "{{ dg_rom_heavy_root }}/switch/UltraTears-TOTK-1.4.3-dump"
+
+dg_ut_main_output: "DP-1"
+dg_ut_revert: false

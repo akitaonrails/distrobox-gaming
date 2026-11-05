@@ -1,0 +1,7 @@
+---
+- name: "Install UltraTears (The Legend of Zelda: Tears of the Kingdom, native recomp, built from your dump)"
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_ultratears

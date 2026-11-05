@@ -1,0 +1,44 @@
+#!/usr/bin/env sh
+set -eu
+# UltraTears (The Legend of Zelda: Tears of the Kingdom) — native static
+# recompilation launcher, native on the RTX, DP-1. Managed by install_ultratears.
+# The game is prebuilt from the owned 1.4.3 dump; --play skips the launcher GUI
+# and boots straight into the game (its RTX shaders are already compiled).
+#
+# CRITICAL: SDL_VIDEODRIVER=wayland. The bundled SDL3 otherwise picks x11
+# (XWayland), where the Vulkan swapchain present throttles to ~2-14 FPS on this
+# fractional-scale (1.5) 4K panel. Native Wayland presents the Vulkan WSI
+# directly and locks a clean 60 FPS at true 4K (the game boots fullscreen on its
+# own). 8BitDo works natively via the bundled SDL3 (Switch button layout).
+
+BIN="{{ dg_ut_launcher_bin }}"
+GAME="{{ dg_ut_game_bin }}"
+if [ ! -x "$BIN" ] || [ ! -x "$GAME" ]; then
+  printf '%s\n' "ERROR: UltraTears not built at {{ dg_ut_root }}. Run: ansible-playbook install-ultratears.yml" >&2
+  exit 1
+fi
+
+# Focus the main landscape 4K monitor so the game fullscreens on it. Hyprland
+# >= 0.56 (Omarchy Lua parser) rejects the legacy socket "dispatch" form — eval.
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_ut_main_output }}" }))'); s.recv(256); s.close()
+PY
+
+# The game renders NVN -> Vulkan — pin the nvidia ICD (not the AMD/Intel iGPU).
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+# Native Wayland present path (see the header) — the 60 FPS / true-4K fix.
+export SDL_VIDEODRIVER="${SDL_VIDEODRIVER:-wayland}"
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+# Run from the install root — ultratears.cfg, data/ and userdata/ (saves) are
+# resolved relative to the launcher's own folder.
+cd "{{ dg_ut_root }}"
+exec ./ultratears-launcher --play "$@"

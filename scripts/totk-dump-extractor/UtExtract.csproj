@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- Built and verified with the .NET 10 SDK; any recent SDK LibHac 0.19.0
+         supports works. prod.keys/title.keys are read at runtime, never baked. -->
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- From nuget.org (independent of the DMCA'd GitHub mirrors). This is the
+         only tooling that applies the TOTK 1.4.3 BKTR update patch. -->
+    <PackageReference Include="LibHac" Version="0.19.0" />
+  </ItemGroup>
+
+</Project>

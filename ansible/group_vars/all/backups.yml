@@ -219,3 +219,4 @@ dg_save_sets:
                                         "file:tools/vf1-recomp/VirtuaFighter/ranking_names.txt"] }
   - { name: vf3-recomp,           src: "{{ dg_vf3_data_rel }}" }  # VF3 settings, EEPROM, rankings, screenshots and logs; separate from release files
   - { name: smas-recomp,          src: "tools/smas-recomp/SuperMarioAllStars-Linux" }  # SMAS recomp config.ini/keybinds.ini + *.srm battery + *.sav states (anchored to exe dir, no save subdir; binary/assets re-extracted on rebuild)
+  - { name: ultratears,           src: "tools/ultratears/userdata" }  # UltraTears (TOTK) recomp saves + account.uid (game rebuilt from the NAS dump on rebuild)

@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Tears of the Kingdom · UltraTears (on {{ dg_box_name }})
+Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_ut_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=The Legend of Zelda: Tears of the Kingdom (1.4.3) native static recompilation — SDL3 + Vulkan on the RTX, native Wayland 4K/60.
+Categories=Game;
+Keywords=zelda;tears of the kingdom;totk;switch;recomp;ultratears;
+StartupWMClass=ultratears;
+{{ ogm_metadata('gaming-ultratears') }}

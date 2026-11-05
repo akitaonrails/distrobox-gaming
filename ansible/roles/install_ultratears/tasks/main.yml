@@ -1,0 +1,155 @@
+---
+# The Legend of Zelda: Tears of the Kingdom — UltraTears native static
+# recompilation. The first run builds the game headlessly from the owned,
+# pre-extracted 1.4.3 exefs/romfs dump via the builder bundled in the AppImage.
+# See group_vars/all/ultratears.yml and docs/ultratears.md.
+
+- name: Revert UltraTears when requested
+  when: dg_ut_revert | bool
+  block:
+    - name: Remove the UltraTears launcher, install tree + desktop entry
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_ut_launcher }}"
+        - "{{ dg_ut_root }}"
+        - "{{ dg_desktop_render_dir }}/gaming-ultratears.desktop"
+    - name: Refresh host launchers after removing UltraTears
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      changed_when: true
+    - name: Report UltraTears reverted
+      ansible.builtin.debug:
+        msg: >-
+          UltraTears removed (incl. its saves under {{ dg_ut_userdata_dir }} —
+          back them up with bin/backup-saves first). Your Switch dump on the NAS
+          is untouched.
+
+- name: Install UltraTears
+  when: not (dg_ut_revert | bool)
+  block:
+    - name: Verify the owned 1.4.3 exefs/romfs dump exists
+      ansible.builtin.stat:
+        path: "{{ dg_ut_dump_dir }}/romfs"
+      register: _ut_dump
+      failed_when: not _ut_dump.stat.exists
+
+    - name: Create UltraTears directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_ut_cache_dir }}"
+        - "{{ dg_ut_root }}"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Download the pinned UltraTears AppImage
+      ansible.builtin.get_url:
+        url: "{{ dg_ut_asset_url }}"
+        dest: "{{ dg_ut_appimage }}"
+        checksum: "sha256:{{ dg_ut_asset_sha256 }}"
+        mode: "0755"
+
+    # The AppImage is a builder package: setup.py builds the game IN PLACE in
+    # the package root. Lay the package down in dg_ut_root WITHOUT --delete so an
+    # AppImage version bump refreshes the builder files while preserving the
+    # built data/ and the player's userdata/ (saves). setup.py then rebuilds
+    # only the steps the new version changed.
+    - name: Extract + stage the builder package (version-gated)
+      ansible.builtin.shell: |
+        set -eu
+        if [ -x "{{ dg_ut_launcher_bin }}" ] \
+           && grep -qx "{{ dg_ut_version }}" "{{ dg_ut_installed_ref }}" 2>/dev/null; then
+          exit 0
+        fi
+        tmp="$(mktemp -d)"
+        trap 'rm -rf "$tmp"' EXIT
+        cd "$tmp"
+        "{{ dg_ut_appimage }}" --appimage-extract >/dev/null
+        rsync -a "$tmp/squashfs-root"/ "{{ dg_ut_root }}"/
+        printf '%s\n' "{{ dg_ut_version }}" > "{{ dg_ut_installed_ref }}"
+        echo ut-staged
+      register: _ut_stage
+      changed_when: "'ut-staged' in _ut_stage.stdout"
+
+    - name: Check whether the game is already built
+      ansible.builtin.stat:
+        path: "{{ dg_ut_game_bin }}"
+      register: _ut_game_stat
+
+    # Validate the dump cryptographically (SHA-256 of the code modules) only
+    # when a build is pending — this is cheap and never re-hashes the 16 GB tree.
+    - name: Validate the dump is TOTK 1.4.3 (only when a build is needed)
+      ansible.builtin.command:
+        cmd: "{{ dg_in_box }} {{ dg_ut_python }} {{ dg_ut_root }}/tools/setup.py --check-dump {{ dg_ut_dump_dir }}"
+      register: _ut_check
+      changed_when: false
+      failed_when: "'Tears of the Kingdom 1.4.3' not in _ut_check.stdout"
+      when: (not _ut_game_stat.stat.exists) or _ut_stage.changed
+
+    # The build is long (~15-40 min) and one-off; run it only when the game
+    # binary is missing or the builder was just updated. setup.py is resumable
+    # and rebuilds only what changed.
+    - name: Build the game from the owned dump (recompile; long, one-off)
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -lc '
+          set -eu
+          cd "{{ dg_ut_root }}"
+          export ULTRS_SKIP_GPU_CHECK=1
+          out="$(deps/python/bin/python3.14 tools/setup.py --dump "{{ dg_ut_dump_dir }}" 2>&1)"
+          printf "%s\n" "$out" | tail -30
+          [ -x "{{ dg_ut_game_bin }}" ] || exit 1
+          echo ut-built
+        '
+      register: _ut_build
+      changed_when: "'ut-built' in _ut_build.stdout"
+      failed_when: _ut_build.rc != 0
+      when: (not _ut_game_stat.stat.exists) or _ut_stage.changed
+
+    - name: Assert the game binary links inside the box
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} sh -c 'ldd "{{ dg_ut_game_bin }}" | grep -c "not found" || true'
+      register: _ut_ldd
+      changed_when: false
+      failed_when: (_ut_ldd.stdout | trim) != "0"
+
+    - name: Deploy the UltraTears launcher
+      ansible.builtin.template:
+        src: ultratears.sh.j2
+        dest: "{{ dg_ut_launcher }}"
+        mode: "0755"
+
+    - name: Render the UltraTears desktop entry
+      ansible.builtin.template:
+        src: gaming-ultratears.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-ultratears.desktop"
+        mode: "0644"
+
+    - name: Install the desktop entry into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _ut_host_launchers
+      changed_when: >-
+        'installed ' in _ut_host_launchers.stdout or
+        'removed stale ' in _ut_host_launchers.stdout
+
+    - name: Require the completed build
+      ansible.builtin.stat:
+        path: "{{ dg_ut_game_bin }}"
+      register: _ut_game_final
+      failed_when: not _ut_game_final.stat.exists
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          UltraTears {{ dg_ut_version }} at {{ dg_ut_root }}; launcher
+          {{ dg_ut_launcher }}. Native Wayland 4K/60 on {{ dg_ut_main_output }};
+          saves in {{ dg_ut_userdata_dir }}. Revert: -e dg_ut_revert=true.
