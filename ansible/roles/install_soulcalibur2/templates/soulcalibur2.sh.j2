@@ -1,0 +1,48 @@
+#!/usr/bin/env sh
+set -eu
+# Soulcalibur II (tmcleroy/soulcalibur2-recomp) — native original-Xbox recomp,
+# native on the RTX, DP-1. Managed by install_soulcalibur2. Runs the game binary
+# directly (no GUI launcher): it reads the owned USA disc image and boots into
+# the attract/menu. 8BitDo works natively via the bundled SDL3.
+#
+# SDL_VIDEODRIVER=wayland (the UltraTears lesson): the bundled SDL3 otherwise
+# picks x11 (XWayland), where the Vulkan swapchain present throttles badly on
+# this fractional-scale 4K panel. Native Wayland locks 60 FPS at true 4K.
+
+BIN="{{ dg_sc2_game_bin }}"
+DISC="{{ dg_sc2_disc }}"
+if [ ! -x "$BIN" ]; then
+  printf '%s\n' "ERROR: Soulcalibur II not installed at $BIN. Run: ansible-playbook install-soulcalibur2.yml" >&2
+  exit 1
+fi
+if [ ! -f "$DISC" ]; then
+  printf '%s\n' "ERROR: Soulcalibur II (USA) disc image missing at $DISC" >&2
+  exit 1
+fi
+mkdir -p "{{ dg_sc2_storage_dir }}"
+
+# Focus the main landscape 4K monitor so the game fullscreens on it (Hyprland
+# >= 0.56 Lua IPC form).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_sc2_main_output }}" }))'); s.recv(256); s.close()
+PY
+
+# NVN/D3D -> Vulkan — pin the nvidia ICD (not the AMD/Intel iGPU).
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_VIDEODRIVER="${SDL_VIDEODRIVER:-wayland}"
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+cd "{{ dg_sc2_root }}"
+exec ./soulcalibur2 \
+  --disc "$DISC" \
+  --storage "{{ dg_sc2_storage_dir }}" \
+  --settings "{{ dg_sc2_settings }}" \
+  --fullscreen --widescreen --skip-intro "$@"

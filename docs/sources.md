@@ -74,6 +74,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | Wind Waker HD Recompiled | Zelda WWHD (Wii U) static recomp, native Linux (Vulkan); builds from your dump | [ZeldaWWHDRecomp/ZeldaWWHDRecomp](https://github.com/ZeldaWWHDRecomp/ZeldaWWHDRecomp) · [doc](wwhd-recomp.md) |
 | Metroid Prime 4 Beyond Recompiled | Switch MP4 Beyond static recomp (SwitchRecomp), native Linux (OpenGL); builds from your base dump + the v1.1.0/RS15 update | [linuxopt/mp4-recomp](https://github.com/linuxopt/mp4-recomp) · [doc](mp4-recomp.md) |
 | UltraTears | Zelda: Tears of the Kingdom (Switch) static recomp, native Linux (SDL3 + Vulkan); builds from your pre-extracted 1.4.3 exefs/romfs dump | [kuraeow/ultratears](https://github.com/kuraeow/ultratears) · [doc](ultratears.md) |
+| Soulcalibur II Recomp | Soulcalibur II (original Xbox) static recomp, native Linux (SDL3 + Vulkan); reads your own USA/EU retail disc image; Spawn/Link/Heihachi guests | [tmcleroy/soulcalibur2-recomp](https://github.com/tmcleroy/soulcalibur2-recomp) · [doc](soulcalibur2.md) |
 | TriAevum | Zelda OoT 3D recomp (Wine) | [coccofresco/TriAevum](https://github.com/coccofresco/TriAevum) · [doc](triaevum.md) |
 | PrBoom-Plus RT | Ray-traced Doom / Doom II | [tomboylover93/prboom-plus-rt](https://github.com/tomboylover93/prboom-plus-rt) · [doc](doom2-ray-traced.md) |
 | DUDE | Doom 3 (dhewm3 fork, GL3/Vulkan) | [Inkub0/dude](https://github.com/Inkub0/dude) · [doc](dude.md) |

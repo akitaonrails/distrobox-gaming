@@ -1,0 +1,122 @@
+---
+# Soulcalibur II — tmcleroy/soulcalibur2-recomp native Xbox recompilation.
+# Prebuilt Linux tarball; the game reads the owned USA disc image directly.
+# See group_vars/all/soulcalibur2.yml and docs/soulcalibur2.md.
+
+- name: Revert Soulcalibur II when requested
+  when: dg_sc2_revert | bool
+  block:
+    - name: Remove the Soulcalibur II launcher, install dir + desktop entry
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_sc2_launcher }}"
+        - "{{ dg_sc2_root }}"
+        - "{{ dg_desktop_render_dir }}/gaming-soulcalibur2.desktop"
+    - name: Refresh host launchers after removing Soulcalibur II
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      changed_when: true
+    - name: Report Soulcalibur II reverted
+      ansible.builtin.debug:
+        msg: >-
+          Soulcalibur II removed. Saves/config under {{ dg_sc2_storage_dir }} and
+          your Xbox disc on the NAS are untouched (back up saves with
+          bin/backup-saves if you also want to clear the storage dir).
+
+- name: Install Soulcalibur II
+  when: not (dg_sc2_revert | bool)
+  block:
+    - name: Verify the owned USA Xbox disc image exists
+      ansible.builtin.stat:
+        path: "{{ dg_sc2_disc }}"
+      register: _sc2_disc
+      failed_when: not _sc2_disc.stat.exists
+
+    - name: Create Soulcalibur II directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_sc2_cache_dir }}"
+        - "{{ dg_sc2_root }}"
+        - "{{ dg_sc2_storage_dir }}"
+        - "{{ dg_box_home }}/bin"
+
+    - name: Download the pinned Soulcalibur II Linux release
+      ansible.builtin.get_url:
+        url: "{{ dg_sc2_asset_url }}"
+        dest: "{{ dg_sc2_tarball }}"
+        checksum: "sha256:{{ dg_sc2_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Extract the release (strips the Soulcalibur2Recomp/ wrapper; version-gated)
+      ansible.builtin.shell: |
+        set -eu
+        if [ -x "{{ dg_sc2_game_bin }}" ] \
+           && grep -qx "{{ dg_sc2_version }}" "{{ dg_sc2_installed_ref }}" 2>/dev/null; then
+          exit 0
+        fi
+        tar xzf "{{ dg_sc2_tarball }}" -C "{{ dg_sc2_root }}" --strip-components=1
+        chmod 0755 "{{ dg_sc2_game_bin }}"
+        printf '%s\n' "{{ dg_sc2_version }}" > "{{ dg_sc2_installed_ref }}"
+        echo sc2-extracted
+      register: _sc2_extract
+      changed_when: "'sc2-extracted' in _sc2_extract.stdout"
+
+    - name: Assert the game binary links inside the box
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} sh -c 'ldd "{{ dg_sc2_game_bin }}" | grep -c "not found" || true'
+      register: _sc2_ldd
+      changed_when: false
+      failed_when: (_sc2_ldd.stdout | trim) != "0"
+
+    - name: Seed maxed graphics settings when settings.ini is absent
+      ansible.builtin.template:
+        src: settings.ini.j2
+        dest: "{{ dg_sc2_settings }}"
+        mode: "0644"
+        force: false
+
+    - name: Deploy the Soulcalibur II launcher
+      ansible.builtin.template:
+        src: soulcalibur2.sh.j2
+        dest: "{{ dg_sc2_launcher }}"
+        mode: "0755"
+
+    - name: Render the Soulcalibur II desktop entry
+      ansible.builtin.template:
+        src: gaming-soulcalibur2.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-soulcalibur2.desktop"
+        mode: "0644"
+
+    - name: Install the desktop entry into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _sc2_host_launchers
+      changed_when: >-
+        'installed ' in _sc2_host_launchers.stdout or
+        'removed stale ' in _sc2_host_launchers.stdout
+
+    - name: Require the installed game binary
+      ansible.builtin.stat:
+        path: "{{ dg_sc2_game_bin }}"
+      register: _sc2_game_final
+      failed_when: not _sc2_game_final.stat.exists
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Soulcalibur II {{ dg_sc2_version }} at {{ dg_sc2_root }}; launcher
+          {{ dg_sc2_launcher }}. Native Wayland 4K/60 widescreen on
+          {{ dg_sc2_main_output }}; saves in {{ dg_sc2_storage_dir }}. Guests
+          (Link/Heihachi) need USA/EU GameCube + PS2 discs — see docs. Revert:
+          -e dg_sc2_revert=true.

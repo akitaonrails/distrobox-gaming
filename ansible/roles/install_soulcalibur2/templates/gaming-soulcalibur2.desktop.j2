@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Soulcalibur II · Recomp (on {{ dg_box_name }})
+Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_sc2_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Soulcalibur II (Xbox) native static recompilation — SDL3 + Vulkan on the RTX, native Wayland 4K/60 widescreen (8x supersampled).
+Categories=Game;
+Keywords=soulcalibur;soul calibur;xbox;recomp;fighting;namco;
+StartupWMClass=soulcalibur2;
+{{ ogm_metadata('gaming-soulcalibur2') }}

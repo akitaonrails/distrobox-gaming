@@ -1,0 +1,7 @@
+---
+- name: "Install Soulcalibur II (native Xbox recompilation, from your own USA disc)"
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_soulcalibur2

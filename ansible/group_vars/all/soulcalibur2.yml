@@ -1,0 +1,54 @@
+---
+# Soulcalibur II — tmcleroy/soulcalibur2-recomp, a native static recompilation
+# of the original-Xbox game (C++, GPL-3). The Xbox program is translated ahead
+# of time into C and runs on a native SDL3 + Vulkan runtime — no emulator. It
+# adds training, rollback online, a free camera, widescreen, higher resolutions
+# and shaders, and puts all three console-exclusive guests (Spawn from Xbox, Link
+# from GameCube, Heihachi from PS2) on one roster. Opt-in role install_soulcalibur2.
+# See docs/soulcalibur2.md.
+#
+# Prebuilt Linux x86_64 tarball (game binary + GUI launcher + bundled SDL3 +
+# RetroArch shader presets) — no build step. The game reads the owned USA (or EU)
+# retail Xbox disc image directly; only the small writable Xbox HDD partitions
+# (saves/config) land in the storage dir. The user supplies the disc (like a ROM).
+
+dg_sc2_repo: tmcleroy/soulcalibur2-recomp
+dg_sc2_version: v0.2.2-beta.1
+dg_sc2_asset_name: Soulcalibur2Recomp-linux-x86_64.tar.gz
+dg_sc2_asset_url: "https://github.com/{{ dg_sc2_repo }}/releases/download/{{ dg_sc2_version }}/{{ dg_sc2_asset_name }}"
+# From the release's asset digest (gh release view --json assets).
+dg_sc2_asset_sha256: 50689ae0481dedf929fc7d678e99f89a11cec02faffa46fd6eb9caa72f3de086
+
+dg_sc2_root: "{{ dg_box_home }}/tools/soulcalibur2"       # extracted Soulcalibur2Recomp/
+dg_sc2_cache_dir: "{{ dg_box_home }}/cache/soulcalibur2"
+dg_sc2_tarball: "{{ dg_sc2_cache_dir }}/{{ dg_sc2_asset_name }}"
+dg_sc2_game_bin: "{{ dg_sc2_root }}/soulcalibur2"         # the game (--disc/--storage/--settings)
+dg_sc2_installed_ref: "{{ dg_sc2_root }}/.dg-installed-ref"
+dg_sc2_launcher: "{{ dg_box_home }}/bin/soulcalibur2"
+
+# Owned USA retail Xbox disc image. The recomp validates Default.xbe itself and
+# accepts only the USA retail dump: SHA-256 d7c2e1fc… as on the disc, or
+# 7ce12851… with extract-xiso's media patch (= "the program target"). The user's
+# ROMS_FINAL/xbox/Soulcalibur II (USA)/ ISO extracts to 7ce12851…, region 0x01
+# (North America) — accepted. (An EU disc is also supported upstream.)
+dg_sc2_disc: "{{ dg_roms_final_root }}/xbox/Soulcalibur II (USA)/Soulcalibur II (USA).iso"
+
+# The game's writable Xbox HDD partitions + saves + the settings it reads. This
+# is upstream's documented location (~/.local/share/Soulcalibur II); --disc
+# requires an explicit --storage, so the launcher passes it.
+dg_sc2_storage_dir: "{{ dg_box_home }}/.local/share/Soulcalibur II"
+dg_sc2_settings: "{{ dg_sc2_storage_dir }}/settings.ini"
+
+dg_sc2_main_output: "DP-1"
+dg_sc2_revert: false
+
+# Graphics baseline (the "Graphics: Always Max Out" ceiling). resolution=6 is 8x
+# (5120x3840, 6827x3840 in widescreen) — supersampled far above the 4K panel, the
+# RTX's quality ceiling for this Xbox-era fighter (verified 60 FPS). widescreen is
+# the game's own 16:9. shader off (the clean picture; CRT/scanline presets are in
+# the in-game menu). Seeded only when settings.ini is absent; later in-game /
+# launcher changes win.
+dg_sc2_settings_features:
+  resolution: "6"
+  widescreen: "1"
+  shader: "0"
