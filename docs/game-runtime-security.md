@@ -83,6 +83,17 @@ the container and reopens the class of risk the migration closed, so it stays
 off; the extraction workaround costs about a second on a launcher's first run
 and no permanent space outside `/tmp`.
 
+The extracted copies live in the container's writable layer, one per AppImage
+(roughly 0.5–0.8 GB: `eden`/`rpcs3` are the big ones), and are reused on later
+launches. They also disappear when the container is recreated. To reclaim them
+by hand:
+
+```sh
+docker exec gaming rm -rf /tmp/appimage_extracted_*
+```
+
+Only caches go; the next launch of that title extracts again.
+
 ## Narrower Lichii runtime
 
 Run `ansible-playbook install-lichii-sandbox.yml` from `ansible/`. It builds
