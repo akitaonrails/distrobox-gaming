@@ -6,7 +6,9 @@ x86-32 code lifted to C and rebuilt as a 64-bit Windows program with a new
 D3D11/12 + DLSS/FSR graphics layer, 144 fps and ultrawide support. v0.1.0
 (2026-11-06) is the first playable release.
 
-**Status on this box: blocked, nothing installed.** Two independent reasons:
+**Status on this box: parked (2026-11-06), nothing installed.** Resuming it
+needs a Windows (MSVC) build, or a cross-compile effort — see *Staged for a
+future attempt* at the end. Two independent reasons it cannot be built here:
 
 ## 1. The build is Windows/MSVC only
 
