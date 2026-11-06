@@ -56,6 +56,7 @@ if [[ $nvidia_enabled == 1 ]]; then
 fi
 
 source_id=$(docker inspect --format '{{.Id}}' "$name")
+source_image=$(docker inspect --format '{{.Image}}' "$name")
 privileged=$(docker inspect --format '{{.HostConfig.Privileged}}' "$name")
 if [[ $privileged == false && $recreate == 0 ]]; then
   echo "$name is already restricted"
@@ -233,7 +234,14 @@ docker start "$name" >/dev/null
 migration_stage=done
 trap - EXIT
 if (( recreate )); then
-  echo "Recreated $name with the current device set; previous container: $previous; snapshot: $snapshot"
+  # The verified replacement is running and all state lives in the bind-mounted
+  # home, so the superseded container and its snapshot tag are redundant. Keep
+  # only the image the new container was built from.
+  docker rm "$previous" >/dev/null 2>&1 || true
+  if [[ -n $source_image && $source_image != $(docker inspect --format '{{.Image}}' "$name") ]]; then
+    docker rmi "$source_image" >/dev/null 2>&1 || true
+  fi
+  echo "Recreated $name with the current device set; superseded container and snapshot removed"
 else
   echo "Migrated $name; rollback container: $legacy; snapshot: $snapshot"
 fi

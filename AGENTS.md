@@ -331,8 +331,11 @@ confirm the second run reports no unexpected changes.
 The `gaming` name must resolve to the restricted Docker container produced by
 `migrate_box` after package bootstrap. Do not recreate it directly with
 `distrobox create`: that grants privilege, the real host home, and a writable
-`/run/host` root. The old Distrobox is retained as stopped `gaming-legacy`
-for rollback; never start it alongside the restricted box. Keep NAS game
+`/run/host` root. The privileged Distrobox that preceded it was
+removed on 2026-11-06 once normal play was verified; rollback is now
+`migrate_gaming_box.sh --recreate` (`dg_box_recreate=true`), which rebuilds from
+a snapshot of the current container — all state lives in the bind-mounted box
+home, so the container itself is disposable. Keep NAS game
 assets read-only and the save-backup NAS unmounted. A per-game runtime such as
 `install_lichii_sandbox` can narrow access further. Save backup and restore
 run on the host through `~/.local/bin/{backup-saves,restore-saves}`; see

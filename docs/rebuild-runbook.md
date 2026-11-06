@@ -33,7 +33,9 @@ Use this when recreating the gaming distrobox from scratch.
 
    After package bootstrap, `migrate_box` replaces the privileged setup
    Distrobox with a restricted container under the same `gaming` name. The
-   original is stopped as `gaming-legacy`; no game data is moved. The
+   original (the privileged Distrobox) is removed once normal play is verified;
+   no game data is moved, and later container changes are applied with
+   `-e dg_box_recreate=true`. The
    canonical Steam library mount (`dg_steam_iscsi_root`) and Emulators mount
    must be present before migration. See [runtime security](game-runtime-security.md).
 

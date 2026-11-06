@@ -3,8 +3,10 @@
 The `gaming` name now points to a Docker container created by `migrate_box`.
 It was migrated from the package-filled Distrobox without moving game files,
 Steam data, ROMs, prefixes, or saves. The original privileged container is
-stopped as `gaming-legacy` for rollback. Do not start both containers at once:
-they share the same writable game home.
+stopped as `gaming-legacy` for rollback while the migration was being
+validated. That container was removed on 2026-11-06, once normal play in the
+restricted runtime was confirmed: everything it held beyond the bind-mounted
+home was package state that `site.yml` rebuilds.
 
 The new runtime uses private PID/IPC namespaces, Docker's default capabilities,
 a narrow extension of the Moby seccomp profile, and bridge networking. Steam's
@@ -58,10 +60,11 @@ ansible-playbook migrate-gaming-box.yml -e dg_box_recreate=true
 
 It snapshots the running container, creates the replacement with the current
 device/capability set, runs the same filesystem and runtime checks, and only
-then swaps the names; the old container stays stopped as `gaming-previous`
-until you delete it (rollback is the `dg-gaming-snapshot` image it came from).
-This is also the switch for `dg_box_fuse` and for any later device change —
-stop games first, the box restarts. Test the pad in-game after such a change.
+then swaps the names. On success the superseded container is deleted and its
+snapshot tag untagged, so the only image left is the one the new container was
+built from (`dg-gaming-snapshot:<id>`) — see the rollback note below. This is
+also the switch for `dg_box_fuse` and for any later device change — stop games
+first, the box restarts. Test the pad in-game after such a change.
 
 The Wayland socket is also bound as one file rather than granting the entire
 host runtime directory (which contains credential sockets). After a compositor
@@ -72,11 +75,21 @@ socket bound into it. `migrate_box` also removes gamescope's `cap_sys_nice`
 file capability, which otherwise makes `execve` fail under the restricted
 Docker capability set; gamescope can run without that scheduling privilege.
 
-To roll back, stop `gaming`, rename it aside, rename `gaming-legacy` to
-`gaming`, and start it. Do this only when both containers are idle. The
-rollback box has the old broad host access; return to the restricted runtime
-after diagnosing the regression. Keep the snapshot image and stopped rollback
-container until the main game paths have been exercised in normal play.
+The container is disposable: game data, saves, prefixes and the Steam library
+all live in bind mounts, so a broken container is repaired by rebuilding it
+rather than by restoring an old privileged one:
+
+```sh
+cd ansible
+ansible-playbook migrate-gaming-box.yml -e dg_box_recreate=true
+```
+
+That snapshots the running container, builds a replacement with the current
+device/capability set, runs the mount and runtime checks, and swaps the names.
+On success the superseded container and its snapshot tag are removed, so
+repeated rebuilds do not pile up 18 GB images; the image the new container
+was built from stays as `dg-gaming-snapshot:<id>`. The privileged Distrobox
+that preceded the migration is gone — do not recreate it.
 
 ## FUSE and AppImages (2026-11-05)
 
