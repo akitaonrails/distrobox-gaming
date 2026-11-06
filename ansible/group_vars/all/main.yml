@@ -77,6 +77,13 @@ dg_project_root: "{{ playbook_dir | dirname }}"
 
 # Helper for running commands inside the distrobox.
 dg_in_box: "distrobox-enter -n {{ dg_box_name }} --"
+# Opt-in FUSE in the box: AppImages can then mount instead of extracting, at
+# the cost of CAP_SYS_ADMIN (see scripts/migrate-gaming-box.sh). Off means
+# every in-box AppImage launcher must set APPIMAGE_EXTRACT_AND_RUN=1.
+dg_box_fuse: false
+# Re-run the container rebuild (with the current device/capability set) even
+# when the box is already restricted — used after changing the options above.
+dg_box_recreate: false
 
 # Backup location for backup/restore playbooks.
 dg_backup_dir: "{{ dg_box_home }}/backups"

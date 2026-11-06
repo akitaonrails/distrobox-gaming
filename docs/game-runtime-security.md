@@ -66,6 +66,23 @@ rollback box has the old broad host access; return to the restricted runtime
 after diagnosing the regression. Keep the snapshot image and stopped rollback
 container until the main game paths have been exercised in normal play.
 
+## FUSE and AppImages (2026-11-05)
+
+The restricted container keeps Docker's default capability bounding set, which
+excludes `CAP_SYS_ADMIN`. `fusermount3` is setuid inside the image and the
+seccomp profile allows `mount`, but a FUSE mount still fails with
+`Operation not permitted` — so AppImages **cannot** mount here and every in-box
+AppImage launcher exports `APPIMAGE_EXTRACT_AND_RUN=1` (the runtime unpacks to
+`/tmp/appimage_extracted_<hash>` and reuses that copy). Lichii predates the
+flag, so its role pre-extracts the AppImage and runs `AppRun`.
+
+`dg_box_fuse: true` (plus `ansible-playbook migrate-gaming-box.yml -e
+dg_box_recreate=true`) rebuilds the container with `--device /dev/fuse --cap-add
+SYS_ADMIN` and makes mounting work again. That capability is close to root in
+the container and reopens the class of risk the migration closed, so it stays
+off; the extraction workaround costs about a second on a launcher's first run
+and no permanent space outside `/tmp`.
+
 ## Narrower Lichii runtime
 
 Run `ansible-playbook install-lichii-sandbox.yml` from `ansible/`. It builds

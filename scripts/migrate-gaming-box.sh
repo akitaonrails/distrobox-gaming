@@ -3,8 +3,15 @@
 # Keep the original container, renamed to NAME-legacy, for rollback.
 set -euo pipefail
 
+recreate=0
+if [[ ${1:-} == --recreate ]]; then
+  recreate=1
+  shift
+fi
+
 if (( $# != 8 )); then
-  echo "usage: $0 NAME BOX_HOME DATA_ROOT ROM_ROOT STEAM_LIBRARY UID BACKUP_MOUNT NVIDIA_ENABLED" >&2
+  echo "usage: $0 [--recreate] NAME BOX_HOME DATA_ROOT ROM_ROOT STEAM_LIBRARY UID BACKUP_MOUNT NVIDIA_ENABLED" >&2
+  echo "  --recreate  rebuild an already-restricted container with the current device set" >&2
   exit 2
 fi
 
@@ -12,6 +19,7 @@ name=$1 box_home=$2 data_root=$3 rom_root=$4 steam_library=$5 uid=$6 backup_moun
 [[ $nvidia_enabled == 0 || $nvidia_enabled == 1 ]] || { echo "NVIDIA_ENABLED must be 0 or 1" >&2; exit 2; }
 candidate="${name}-restricted-candidate"
 legacy="${name}-legacy"
+previous="${name}-previous"
 seccomp_profile=$(realpath "$(dirname "$0")/../config/docker/gaming-seccomp.json")
 [[ -f $seccomp_profile ]] || { echo "Missing seccomp profile: $seccomp_profile" >&2; exit 1; }
 username=$(getent passwd "$uid" | cut -d: -f1)
@@ -49,12 +57,18 @@ fi
 
 source_id=$(docker inspect --format '{{.Id}}' "$name")
 privileged=$(docker inspect --format '{{.HostConfig.Privileged}}' "$name")
-if [[ $privileged == false ]]; then
+if [[ $privileged == false && $recreate == 0 ]]; then
   echo "$name is already restricted"
   exit 0
 fi
-[[ $privileged == true ]] || { echo "Cannot inspect $name" >&2; exit 1; }
-if docker container inspect "$legacy" >/dev/null 2>&1; then
+[[ $privileged == true || $privileged == false ]] || {
+  echo "Cannot inspect $name" >&2; exit 1; }
+if (( recreate )); then
+  if docker container inspect "$previous" >/dev/null 2>&1; then
+    docker rm "$previous" >/dev/null 2>&1 || {
+      echo "Previous container $previous is running; stop it first" >&2; exit 1; }
+  fi
+elif docker container inspect "$legacy" >/dev/null 2>&1; then
   echo "Rollback container $legacy already exists; inspect it before migrating" >&2
   exit 1
 fi
@@ -112,6 +126,15 @@ if [[ $nvidia_enabled == 1 ]]; then
 fi
 [[ ! -S ${xsocket}_ ]] || args+=(--mount "type=bind,src=${xsocket}_,dst=${xsocket}_,readonly")
 [[ ! -e /dev/kvm ]] || args+=(--device /dev/kvm)
+# AppImages mount themselves over FUSE, but a FUSE mount needs CAP_SYS_ADMIN in
+# the container's bounding set (fusermount3 is setuid, yet the default Docker
+# bounding set excludes SYS_ADMIN, so it fails with "Operation not permitted").
+# Opt in with DG_BOX_FUSE=1, which trades that privilege for mount-based
+# AppImages; the default keeps the restricted box and launchers extract instead.
+if [[ ${DG_BOX_FUSE:-0} == 1 ]]; then
+  [[ ! -e /dev/fuse ]] || args+=(--device /dev/fuse)
+  args+=(--cap-add SYS_ADMIN)
+fi
 [[ ! -e /run/udev ]] || args+=(--mount type=bind,src=/run/udev,dst=/run/udev,readonly)
 
 # Steam and SDL need input nodes. Docker's default device cgroup blocks new
@@ -135,7 +158,7 @@ cleanup_failed_migration() {
     # At this point the old box has the legacy name. Any container still
     # named $name is the failed replacement and can be removed safely.
     docker rm -f "$name" >/dev/null 2>&1 || true
-    docker rename "$legacy" "$name" || true
+    if (( recreate )); then docker rename "$previous" "$name" || true; else docker rename "$legacy" "$name" || true; fi
   fi
   docker start "$name" >/dev/null 2>&1 || true
   exit "$rc"
@@ -199,10 +222,18 @@ fi
 # checks. The old one stays stopped and available for a fast rollback.
 docker stop "$name" >/dev/null
 docker stop "$candidate" >/dev/null
-docker rename "$name" "$legacy"
+if (( recreate )); then
+  docker rename "$name" "$previous"
+else
+  docker rename "$name" "$legacy"
+fi
 migration_stage=cutover
 docker rename "$candidate" "$name"
 docker start "$name" >/dev/null
 migration_stage=done
 trap - EXIT
-echo "Migrated $name; rollback container: $legacy; snapshot: $snapshot"
+if (( recreate )); then
+  echo "Recreated $name with the current device set; previous container: $previous; snapshot: $snapshot"
+else
+  echo "Migrated $name; rollback container: $legacy; snapshot: $snapshot"
+fi

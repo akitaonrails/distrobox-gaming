@@ -111,8 +111,13 @@ only finished when re-running the repo produces it again from a clean box:
 
 ### AppImages inside the box (hard rule)
 
-The migrated `gaming` runtime has **no `/dev/fuse`**, so an AppImage cannot be
-mounted there: the launcher prints `fuse: device not found` and exits. Every
+The migrated `gaming` runtime keeps Docker's default capability bounding set,
+which excludes `CAP_SYS_ADMIN`, so an AppImage cannot mount itself there
+(`fusermount3` is setuid, but `mount` returns `Operation not permitted`; without
+the device node it is `fuse: device not found`). `dg_box_fuse: true` in
+`group_vars/all/main.yml` recreates the box with `--device /dev/fuse --cap-add
+SYS_ADMIN` if you ever want mounting back — that hands the container a
+near-root capability, which is what the migration removed. Default: off. Every
 launcher that executes an AppImage *inside* the box must either export
 `APPIMAGE_EXTRACT_AND_RUN=1` before the exec (the runtime extracts to
 `/tmp/appimage_extracted_*` and runs from there) or, for builds whose runtime

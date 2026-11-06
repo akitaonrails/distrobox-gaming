@@ -12,17 +12,15 @@
 
 - name: Migrate gaming container to restricted runtime
   ansible.builtin.command:
-    argv:
-      - "{{ playbook_dir }}/../scripts/migrate-gaming-box.sh"
-      - "{{ dg_box_name }}"
-      - "{{ dg_box_home }}"
-      - "{{ dg_data_root }}"
-      - "{{ dg_external_games_root }}"
-      - "{{ dg_steam_iscsi_root }}"
-      - "{{ dg_host_uid | string }}"
-      - "{{ dg_save_backup_nas_mount }}"
-      - "{{ '1' if dg_nvidia_enabled | bool else '0' }}"
-  when: _dg_box_privileged.stdout == 'true'
+    argv: >-
+      {{ [playbook_dir ~ '/../scripts/migrate-gaming-box.sh']
+         + (['--recreate'] if (dg_box_recreate | bool) else [])
+         + [dg_box_name, dg_box_home, dg_data_root, dg_external_games_root,
+            dg_steam_iscsi_root, dg_host_uid | string, dg_save_backup_nas_mount,
+            ('1' if dg_nvidia_enabled | bool else '0')] }}
+  environment:
+    DG_BOX_FUSE: "{{ '1' if dg_box_fuse | bool else '0' }}"
+  when: _dg_box_privileged.stdout == 'true' or (dg_box_recreate | bool)
 
 - name: Verify restricted gaming container mounts
   ansible.builtin.command:
