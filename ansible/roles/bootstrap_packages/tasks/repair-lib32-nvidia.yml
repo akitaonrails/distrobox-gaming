@@ -31,6 +31,9 @@
       f=$(readlink -f /usr/lib32/libGLX_nvidia.so.0 2>/dev/null) || exit 1
       head -c 5 "$f" | od -A n -t x1 | grep -q "7f 45 4c 46 01" || exit 1
       mount | grep -E "/usr/lib32/lib[^ ]*(nvidia|cuda)" >/dev/null && exit 1
+      for source in "{{ dg_nvidia_lib32_lib_dir }}"/lib*; do
+        test -s "/usr/lib32/$(basename "$source")" || exit 1
+      done
       exit 0
     '
   register: _lib32_glx_class

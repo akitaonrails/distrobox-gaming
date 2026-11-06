@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Ocarina of Time (Lichii Experimental)
+Exec={{ dg_lichii_launcher }} --game
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Launch the owned Switch 2 NUP in Lichii
+Categories=Game;Emulator;
+Keywords=zelda;ocarina;switch2;lichii;
+StartupWMClass=lichii
+{{ ogm_metadata('gaming-lichii-oot') }}

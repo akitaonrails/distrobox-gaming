@@ -55,5 +55,5 @@ ansible-playbook install-ttt2-pc.yml  # expect changed=0
 ../scripts/check-pc-layout.sh "$DG_PC_ROOT"
 ../scripts/check-launcher-wrappers.sh "$DG_BOX_HOME/bin" ../config/desktop/rendered
 ansible-playbook site.yml --tags backup_saves
-distrobox enter gaming -- backup-saves --dry-run
+~/.local/bin/backup-saves --dry-run
 ```

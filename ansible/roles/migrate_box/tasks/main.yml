@@ -1,0 +1,96 @@
+---
+- name: Check current gaming container privileges
+  ansible.builtin.command:
+    argv:
+      - docker
+      - inspect
+      - --format
+      - "{{ '{{.HostConfig.Privileged}}' }}"
+      - "{{ dg_box_name }}"
+  register: _dg_box_privileged
+  changed_when: false
+
+- name: Migrate gaming container to restricted runtime
+  ansible.builtin.command:
+    argv:
+      - "{{ playbook_dir }}/../scripts/migrate-gaming-box.sh"
+      - "{{ dg_box_name }}"
+      - "{{ dg_box_home }}"
+      - "{{ dg_data_root }}"
+      - "{{ dg_external_games_root }}"
+      - "{{ dg_steam_iscsi_root }}"
+      - "{{ dg_host_uid | string }}"
+      - "{{ dg_save_backup_nas_mount }}"
+      - "{{ '1' if dg_nvidia_enabled | bool else '0' }}"
+  when: _dg_box_privileged.stdout == 'true'
+
+- name: Verify restricted gaming container mounts
+  ansible.builtin.command:
+    argv:
+      - docker
+      - exec
+      - --user
+      - "{{ dg_host_uid }}:{{ dg_host_gid }}"
+      - "{{ dg_box_name }}"
+      - sh
+      - -ec
+      - >-
+        test ! -e /run/host/etc/shadow &&
+        test ! -e /home/{{ dg_box_username }}/.ssh &&
+        test ! -e {{ dg_save_backup_nas_mount | quote }} &&
+        test ! -e /var/run/docker.sock &&
+        test ! -w {{ dg_external_games_root | quote }} &&
+        {{ 'test -s /usr/share/vulkan/icd.d/nvidia_icd.json && test -s /usr/share/vulkan/implicit_layer.d/nvidia_layers.json &&' if dg_nvidia_enabled | bool else '' }}
+        test -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY"
+  changed_when: false
+
+- name: Repair 32-bit NVIDIA libraries after container migration
+  ansible.builtin.include_role:
+    name: bootstrap_packages
+    tasks_from: repair-lib32-nvidia
+  when: dg_nvidia_lib32_workaround_enabled | bool
+
+- name: Restore NVIDIA EGL platform soname links from package files
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sudo sh -c '
+      changed=0
+      for platform in gbm wayland xcb xlib; do
+        base="/usr/lib/libnvidia-egl-$platform.so"
+        versioned=$(find /usr/lib -maxdepth 1 -type f -name "libnvidia-egl-$platform.so.*.*" -size +0c | sort -V | tail -1)
+        [ -n "$versioned" ] || continue
+        if [ ! -s "$base.1" ]; then
+          ln -sfn "$(basename "$versioned")" "$base.1"
+          changed=$((changed+1))
+        fi
+        if [ ! -s "$base" ]; then
+          ln -sfn "$(basename "$base.1")" "$base"
+          changed=$((changed+1))
+        fi
+      done
+      echo "nvidia-egl-links: changed=$changed"
+    '
+  register: _dg_nvidia_egl_links
+  changed_when: "'nvidia-egl-links: changed=0' not in _dg_nvidia_egl_links.stdout"
+  when: dg_nvidia_enabled | bool
+
+- name: Check gamescope file capability in restricted container
+  ansible.builtin.command:
+    argv:
+      - docker
+      - exec
+      - "{{ dg_box_name }}"
+      - getcap
+      - /usr/sbin/gamescope
+  register: _dg_gamescope_cap
+  changed_when: false
+
+- name: Remove gamescope scheduling file capability
+  ansible.builtin.command:
+    argv:
+      - docker
+      - exec
+      - "{{ dg_box_name }}"
+      - setcap
+      - -r
+      - /usr/sbin/gamescope
+  when: "'cap_sys_nice' in _dg_gamescope_cap.stdout"

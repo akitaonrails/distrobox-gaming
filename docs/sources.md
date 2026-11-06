@@ -9,6 +9,12 @@ NAS-staged); this page is just the provenance. **No ROMs, BIOS, keys or game
 data are provided or linked here** — recomps and hacks need your own legal dump.
 `[doc]` links the detailed write-up we keep for each.
 
+## Experimental emulators
+
+| Project | What it is | Source |
+|---|---|---|
+| Lichii | Experimental Switch 2 emulator, installed alongside Eden with an isolated profile and optional restricted runtime | [zortos293/Lichii](https://github.com/zortos293/Lichii) · [doc](lichii.md) |
+
 ## Recompilations / decomps / native source ports
 
 | Project | What it is | Source |

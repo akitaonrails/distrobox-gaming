@@ -7,12 +7,15 @@
     - { role: check_host,                      tags: [check] }
     - { role: create_box,                      tags: [create] }
     - { role: bootstrap_packages,              tags: [bootstrap] }
+    - { role: migrate_box,                     tags: [bootstrap, migrate_box] }
     - { role: refresh_shadps4,                 tags: [shadps4] }
     - { role: install_rpcs3,                   tags: [rpcs3] }
     - { role: install_xemu,                    tags: [xemu] }
     - { role: install_hedgemodmanager,         tags: [hedgemodmanager] }
     - { role: install_eden_cheats_manager,     tags: [eden_cheats_manager] }
     - { role: install_azahar,                  tags: [azahar, never] }
+    - { role: install_lichii,                  tags: [lichii, never] }
+    - { role: install_lichii_sandbox,          tags: [lichii_sandbox, never] }
     - { role: install_xenia,                   tags: [xenia, never] }
     - { role: link_storage,                    tags: [configure, storage] }
     - { role: seed_configs,                    tags: [configure, configs, reset_configs] }

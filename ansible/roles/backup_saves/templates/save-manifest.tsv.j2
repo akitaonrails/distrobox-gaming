@@ -2,8 +2,8 @@
 # Save sets: <name><TAB><kind><TAB><path>
 #   kind  dir  — mirror the directory's contents into <name>/
 #         file — copy that one file into <name>/
-#   path  relative to the box $HOME, or absolute for the native ports that run
-#         on the host and keep their saves in the host home.
+#   path  relative to dg_box_home, or absolute for native ports that run on
+#         the host and keep their saves in the host home.
 # One set may list several sources; they all mirror into the same <name> dir.
 # Edit dg_save_sets in group_vars/all/backups.yml and re-run the role.
 {% for s in dg_save_sets %}

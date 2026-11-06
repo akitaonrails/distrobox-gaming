@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Lichii Switch 2 (Experimental)
+Exec={{ dg_lichii_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Experimental Switch 2 emulator with an isolated profile
+Categories=Game;Emulator;
+Keywords=lichii;switch;switch2;emulator;
+StartupWMClass=lichii
+{{ ogm_metadata('gaming-lichii') }}

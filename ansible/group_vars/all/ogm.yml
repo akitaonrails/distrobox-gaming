@@ -60,6 +60,12 @@ dg_ogm_games:
   - { desktop_id: gaming-rpcs3, id: rpcs3, category: emulator }
   - { desktop_id: gaming-xemu, id: xemu, category: emulator }
   - { desktop_id: gaming-eden, id: eden, category: emulator }
+  - { desktop_id: gaming-lichii, id: lichii, category: emulator,
+      github: "{{ dg_lichii_repo }}" }
+  - { desktop_id: gaming-lichii-oot, id: lichii-oot, category: emulator,
+      sgdb_query: "The Legend of Zelda: Ocarina of Time", github: "{{ dg_lichii_repo }}" }
+  - { desktop_id: gaming-lichii-sandbox, id: lichii-oot-restricted, category: emulator,
+      sgdb_query: "The Legend of Zelda: Ocarina of Time", github: "{{ dg_lichii_repo }}" }
   - { desktop_id: gaming-cemu, id: cemu, category: emulator }
   - { desktop_id: gaming-vita3k, id: vita3k, category: emulator }
   - { desktop_id: gaming-retroarch, id: retroarch, category: emulator }

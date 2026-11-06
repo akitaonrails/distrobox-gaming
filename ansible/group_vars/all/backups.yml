@@ -1,13 +1,13 @@
 ---
 # Save-data backup/restore configuration.
 #
-# `dg_backup_root` is where the box's emulator + PC-port save data is mirrored
-# on the NAS (one subdir per set, named by `name`). Override in
-# host_vars/localhost.yml if your NAS layout differs.
+# dg_backup_root is where host-side helpers mirror emulator and PC-port saves
+# on the NAS (one subdir per set). The game runtime does not need write access
+# to this mount. Override both NAS paths in host_vars/localhost.yml if needed.
 #
 # `dg_save_sets` is the data-driven inventory of what to back up. Each entry:
 #   name : unique label -> becomes the backup subdir (no spaces)
-#   src  : path RELATIVE TO the box $HOME of a directory holding save data
+#   src  : path RELATIVE TO dg_box_home of a directory holding save data
 # The backup-saves / restore-saves helpers (role backup_saves) iterate this
 # list; a src that doesn't exist locally is silently skipped, so it's safe to
 # list a save dir a game only creates once you've played it.
@@ -20,6 +20,7 @@
 # capacity: the QNAP pool was ~85 TB used while the new Synology pool was
 # nearly empty. The restic machine repos live beside it.
 dg_save_backup_nas_root: /mnt/gigachad/restic
+dg_save_backup_nas_mount: /mnt/gigachad
 
 dg_backup_root: "{{ dg_save_backup_nas_root }}/dg-save"
 
@@ -48,6 +49,8 @@ dg_save_sets:
   - { name: azahar-nand,          src: ".local/share/azahar-emu/nand" }
   - { name: melonds,              src: ".config/melonDS" }
   - { name: eden-saves,           src: ".local/share/eden/nand/user/save" }
+  - { name: lichii-saves,         src: "tools/lichii/profile/data/eden/nand/user/save" }
+  - { name: lichii-system-save,   src: "tools/lichii/profile/data/eden/nand/system/save" }
   - { name: cemu,                 src: ".local/share/Cemu" }
   - { name: shadps4-savedata,     src: ".local/share/shadPS4/home" }   # per-user <uid>/savedata lives under home/
   - { name: supermodel-nvram,     src: ".supermodel/NVRAM" }

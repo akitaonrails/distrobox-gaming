@@ -66,7 +66,7 @@
   # routes through Flatpak's HostCommand portal — this Hyprland host
   # doesn't run that portal so the chain dead-ends. The shim bypasses
   # everything and calls org.freedesktop.portal.OpenURI on the host
-  # session bus (mounted via /run/host) directly, which
+  # session bus (mounted as one socket in the restricted runtime) directly, which
   # xdg-desktop-portal-hyprland services natively. URLs land in the
   # host's default browser without any Flatpak or host-spawn deps.
   #

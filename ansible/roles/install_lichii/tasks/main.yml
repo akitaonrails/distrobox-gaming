@@ -1,0 +1,82 @@
+---
+- name: Check the owned Switch 2 NUP package
+  ansible.builtin.stat:
+    path: "{{ dg_lichii_game }}"
+    get_checksum: false
+  register: _lichii_game
+
+- name: Require the selected Switch 2 game file
+  ansible.builtin.assert:
+    that:
+      - _lichii_game.stat.isreg | default(false)
+      - _lichii_game.stat.size | default(0) == dg_lichii_game_size
+    fail_msg: "Expected the owned Ocarina of Time NUP at {{ dg_lichii_game }} ({{ dg_lichii_game_size }} bytes). Override dg_lichii_game for another dump."
+
+- name: Validate the NUP container header and table of contents
+  ansible.builtin.command:
+    argv:
+      - python3
+      - "{{ role_path }}/files/check_nup.py"
+      - "{{ dg_lichii_game }}"
+  changed_when: false
+
+- name: Create Lichii install, isolated profile and launcher directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_roms_final_root }}/PC/releases"
+    - "{{ dg_lichii_root }}/{{ dg_lichii_release }}"
+    - "{{ dg_lichii_profile }}/config/eden"
+    - "{{ dg_lichii_profile }}/data"
+    - "{{ dg_lichii_profile }}/cache"
+    - "{{ dg_box_home }}/bin"
+    - "{{ dg_desktop_render_dir }}"
+
+- name: Stage the pinned Lichii PGO AppImage on the NAS
+  ansible.builtin.get_url:
+    url: "{{ dg_lichii_asset_url }}"
+    dest: "{{ dg_lichii_archive }}"
+    checksum: "sha256:{{ dg_lichii_asset_sha256 }}"
+    mode: "0644"
+
+- name: Install the pinned Lichii AppImage locally
+  ansible.builtin.copy:
+    src: "{{ dg_lichii_archive }}"
+    dest: "{{ dg_lichii_appimage }}"
+    remote_src: true
+    mode: "0755"
+
+- name: Seed isolated docked, graphics and controller configuration
+  ansible.builtin.template:
+    src: qt-config.ini.j2
+    dest: "{{ dg_lichii_config }}"
+    mode: "0644"
+    force: false
+
+- name: Install Lichii launcher
+  ansible.builtin.template:
+    src: lichii.sh.j2
+    dest: "{{ dg_lichii_launcher }}"
+    mode: "0755"
+
+- name: Render Lichii desktop entries
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ dg_desktop_render_dir }}/{{ item }}"
+    mode: "0644"
+  loop:
+    - gaming-lichii.desktop
+    - gaming-lichii-oot.desktop
+
+- name: Publish Lichii desktop entries
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _lichii_host_launchers
+  changed_when: >-
+    'installed ' in _lichii_host_launchers.stdout or
+    'removed stale ' in _lichii_host_launchers.stdout

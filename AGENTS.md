@@ -274,7 +274,7 @@ missing from that list is silently unprotected.
   beside its 36 KB memory card; Fukami a 461 MB extracted disc beside `mc/`.
 - **Verify both ends**: re-run `ansible-playbook site.yml --tags backup_saves`
   to re-render the manifest, then
-  `distrobox enter gaming -- backup-saves --dry-run` and confirm the new set
+  `~/.local/bin/backup-saves --dry-run` on the host and confirm the new set
   appears (or reports "no local data" until the game is first played).
 
 ## Documentation & Inventory Updates
@@ -310,6 +310,16 @@ validate rendered `.desktop` files. For idempotent roles, rerun the playbook and
 confirm the second run reports no unexpected changes.
 
 ## Temporary Resources & Cleanup
+
+The `gaming` name must resolve to the restricted Docker container produced by
+`migrate_box` after package bootstrap. Do not recreate it directly with
+`distrobox create`: that grants privilege, the real host home, and a writable
+`/run/host` root. The old Distrobox is retained as stopped `gaming-legacy`
+for rollback; never start it alongside the restricted box. Keep NAS game
+assets read-only and the save-backup NAS unmounted. A per-game runtime such as
+`install_lichii_sandbox` can narrow access further. Save backup and restore
+run on the host through `~/.local/bin/{backup-saves,restore-saves}`; see
+`docs/game-runtime-security.md` and `docs/save-backups.md`.
 
 Track temporary files, extraction directories, test profiles, source checkouts,
 and Docker resources created while working. After verification, remove scratch

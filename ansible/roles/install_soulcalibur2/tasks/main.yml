@@ -26,7 +26,7 @@
         msg: >-
           Soulcalibur II removed. Saves/config under {{ dg_sc2_storage_dir }} and
           your Xbox disc on the NAS are untouched (back up saves with
-          bin/backup-saves if you also want to clear the storage dir).
+          ~/.local/bin/backup-saves on the host if you also want to clear the storage dir).
 
 - name: Install Soulcalibur II
   when: not (dg_sc2_revert | bool)

@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+# Restricted, separate runtime for the owned Lichii Ocarina NUP.
+set -euo pipefail
+
+image='{{ dg_lichii_sandbox_image }}'
+appimage='{{ dg_lichii_appimage }}'
+game='{{ dg_lichii_game }}'
+profile='{{ dg_lichii_profile }}'
+expected_uid='{{ dg_host_uid }}'
+expected_gid='{{ dg_host_gid }}'
+
+[ "$(id -u)" = "$expected_uid" ] && [ "$(id -g)" = "$expected_gid" ] || {
+  echo 'lichii-sandbox: run as the configured gaming user' >&2; exit 1; }
+[ -f "$appimage" ] && [ -f "$game" ] && [ -d "$profile" ] || {
+  echo 'lichii-sandbox: AppImage, owned NUP, or profile is missing' >&2; exit 1; }
+
+args=(
+  --rm --init
+  --name "dg-lichii-sandbox-$$"
+  --gpus all
+  --user "$expected_uid:$expected_gid"
+  --network none
+  --read-only
+  --cap-drop ALL
+  --security-opt no-new-privileges
+  --pids-limit 512
+  --tmpfs /tmp:rw,nosuid,nodev,exec,size=1g
+  --mount "type=bind,src=$profile,dst=/game-home"
+  --mount "type=bind,src=$appimage,dst=/opt/lichii.AppImage,readonly"
+  --mount "type=bind,src=$game,dst=/games/oot.nup,readonly"
+  --env HOME=/game-home
+  --env XDG_CONFIG_HOME=/game-home/config
+  --env XDG_DATA_HOME=/game-home/data
+  --env XDG_CACHE_HOME=/game-home/cache
+  --env XDG_RUNTIME_DIR=/tmp/runtime
+  --env LANG=C.UTF-8
+)
+
+if [ "${1:-}" = '--check' ]; then
+  exec docker run "${args[@]}" "$image" sh -c '
+    test ! -e {{ ansible_facts.env.HOME | quote }}
+    test ! -e /run/host
+    test ! -e /var/run/docker.sock
+    test ! -e /mnt/terachad
+    test ! -e /mnt/gigachad
+    test ! -e /mnt/megachad
+    test -r /games/oot.nup
+    test ! -w /games/oot.nup
+    test -w /game-home
+    nvidia-smi -L
+    printf "%s\n" "Restricted mounts and GPU: OK"
+  '
+fi
+
+# Never run two emulators against the same NAND/save profile at once.
+if pgrep -u "$expected_uid" -f "$appimage" >/dev/null; then
+  echo 'lichii-sandbox: close the regular Lichii session first (shared profile)' >&2
+  exit 1
+fi
+
+display="${DISPLAY:-:0}"
+[ -S /tmp/.X11-unix/X"${display##*:}" ] || {
+  echo "lichii-sandbox: X11 display $display is unavailable" >&2; exit 1; }
+args+=(
+  --mount type=bind,src=/tmp/.X11-unix,dst=/tmp/.X11-unix,readonly
+  --env "DISPLAY=$display"
+)
+
+if [ -S "/run/user/$expected_uid/pulse/native" ]; then
+  args+=(
+    --mount "type=bind,src=/run/user/$expected_uid/pulse/native,dst=/tmp/pulse/native,readonly"
+    --env PULSE_SERVER=unix:/tmp/pulse/native
+  )
+fi
+
+# Pass only the reference controller's nodes. No keyboard/mouse input devices
+# and no blanket /dev/input bind. Reconnect the pad before launch if it was off.
+pad_nodes=0
+for node in /dev/input/event* /dev/input/js* /dev/hidraw*; do
+  [ -e "$node" ] || continue
+  properties="$(udevadm info --query=property --name="$node" 2>/dev/null)" || continue
+  if [[ "$properties" == *'ID_VENDOR_ID=2dc8'* &&
+        "$properties" == *'ID_MODEL_ID=310b'* ]]; then
+    args+=(--device "$node:$node:r" --group-add "$(stat -c %g "$node")")
+    pad_nodes=$((pad_nodes + 1))
+  fi
+done
+if [ "$pad_nodes" -gt 0 ]; then
+  args+=(--mount type=bind,src=/run/udev,dst=/run/udev,readonly)
+else
+  echo 'lichii-sandbox: 8BitDo controller is off; reconnect it and relaunch for gamepad input' >&2
+fi
+
+exec docker run "${args[@]}" "$image" sh -c '
+  mkdir -p /tmp/runtime
+  chmod 700 /tmp/runtime
+  exec /opt/lichii.AppImage -g /games/oot.nup "$@"
+' lichii "$@"

@@ -1,6 +1,5 @@
 [Unit]
-Description=Back up gaming distrobox emulator/PC-port saves to the NAS
-Documentation=file://%h/Projects/distrobox-gaming/docs/save-backups.md
+Description=Back up gaming emulator and PC-port saves to the NAS
 After=network-online.target
 Wants=network-online.target
 

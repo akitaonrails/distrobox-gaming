@@ -9,6 +9,7 @@ set -euo pipefail
 SRC="$(cd "$(dirname "$0")" && pwd)"
 BIN="$HOME/.local/bin/dg-save-backup"
 UNIT_DIR="$HOME/.config/systemd/user"
+CONF="$HOME/.config/distrobox-gaming/backup.env"
 
 if [ "${1:-}" = "--uninstall" ]; then
   systemctl --user disable --now dg-save-backup.timer 2>/dev/null || true
@@ -16,6 +17,11 @@ if [ "${1:-}" = "--uninstall" ]; then
   systemctl --user daemon-reload
   echo "dg-save-backup timer removed."
   exit 0
+fi
+
+if [ ! -f "$CONF" ] || [ ! -x "$HOME/.local/bin/backup-saves" ]; then
+  echo "Run 'ansible-playbook site.yml --tags backup_saves' from ansible/ first." >&2
+  exit 1
 fi
 
 install -Dm755 "$SRC/dg-save-backup.sh" "$BIN"

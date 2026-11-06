@@ -31,6 +31,12 @@ Use this when recreating the gaming distrobox from scratch.
    ansible-playbook site.yml
    ```
 
+   After package bootstrap, `migrate_box` replaces the privileged setup
+   Distrobox with a restricted container under the same `gaming` name. The
+   original is stopped as `gaming-legacy`; no game data is moved. The
+   canonical Steam library mount (`dg_steam_iscsi_root`) and Emulators mount
+   must be present before migration. See [runtime security](game-runtime-security.md).
+
 5. Optional: install Xenia Manager:
 
    ```sh
@@ -55,6 +61,7 @@ Use this when recreating the gaming distrobox from scratch.
 ansible-playbook site.yml --tags check       # validate host paths and UID/GID
 ansible-playbook site.yml --tags create      # create the distrobox
 ansible-playbook site.yml --tags bootstrap   # install packages
+ansible-playbook migrate-gaming-box.yml       # migrate an existing privileged box
 ansible-playbook site.yml --tags shadps4     # install/update shadPS4
 ansible-playbook site.yml --tags hedgemodmanager # install/update Hedge Mod Manager
 ansible-playbook site.yml --tags pc_racing   # optional Windows PC racing setup
@@ -158,7 +165,7 @@ bind mount are untouched.
 
   It's safe (never overwrites a save already present). See
   [docs/save-backups.md](save-backups.md). Get in the habit of running
-  `distrobox enter gaming -- bash -lc '$HOME/bin/backup-saves'` periodically
+  `~/.local/bin/backup-saves` on the host periodically
   so this backup is current.
 - **Standalone installer playbooks.** 30 `ansible/install-*.yml`
   playbooks exist outside `site.yml`, one role each, for the

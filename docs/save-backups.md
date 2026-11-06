@@ -1,11 +1,10 @@
 # Save-data backup & restore
 
-Emulators and PC ports scatter their save games, memory cards, save states and
-NAND user-saves across `~/.config` and `~/.local/share` inside the box (and, for
-libultraship ports, next to the app). Because the box's `$HOME` is a bind-mount
-that survives a container rebuild, those saves usually persist — but if you ever
-wipe or re-provision from scratch you'd lose them. This system mirrors them to
-the NAS and restores them on demand.
+Emulators and PC ports scatter saves across the box's persistent home and, for
+some native ports, the host home. The backup and restore commands run on the
+host. They read the box's persistent files directly, so the game runtime does
+not need NAS write access or the host home. The NAS copy supports recovery
+after a lost home or a fresh machine.
 
 ## Where it goes
 
@@ -22,8 +21,8 @@ writer to a fixed uid:gid, so group preservation only ever fails.
 Best with games closed. From the host:
 
 ```sh
-distrobox enter gaming -- bash -lc '$HOME/bin/backup-saves'            # back up everything
-distrobox enter gaming -- bash -lc '$HOME/bin/backup-saves --dry-run'  # preview
+~/.local/bin/backup-saves            # back up everything
+~/.local/bin/backup-saves --dry-run  # preview
 ```
 
 It rsyncs every save set that has local data to `dg_backup_root/<name>/`. Sets
@@ -41,8 +40,8 @@ scripts/install-save-backup-timer.sh            # install + enable
 scripts/install-save-backup-timer.sh --uninstall
 ```
 
-It deploys `~/.local/bin/dg-save-backup` (an env-robust wrapper: absolute PATH,
-NAS-mount guard, `distrobox enter gaming -- backup-saves`) plus the
+It deploys `~/.local/bin/dg-save-backup` (an env-robust host wrapper: absolute
+PATH and NAS-mount guard) plus the
 `dg-save-backup.{service,timer}` user units, then enables the timer. Check /
 run / read it:
 
@@ -64,7 +63,7 @@ cd ansible
 ansible-playbook site.yml                    # rebuild the box first
 ansible-playbook restore-saves.yml           # then pull saves back from the NAS
 # or directly:
-distrobox enter gaming -- bash -lc '$HOME/bin/restore-saves'
+~/.local/bin/restore-saves
 ```
 
 **Safe by default:** `restore-saves` uses `--ignore-existing`, so a save already
@@ -87,7 +86,7 @@ The inventory is **data-driven** — `dg_save_sets` in
 
 | Form | Meaning |
 |---|---|
-| `.config/Game/x` | directory, relative to the box `$HOME` (the box home is the `gaming` distrobox's home) |
+| `.config/Game/x` | directory, relative to `dg_box_home`, the persistent box home |
 | `/home/you/.local/share/Game` | absolute — the native ports that run on the **host** (Fukami, Takedawn) keep saves in the host home |
 | `file:.local/share/Game/save.bin` | one loose save file (EEPROM/SRAM/`.sav`/`.xml` beside the executable) |
 | `[a, b, file:c]` | several sources; they all mirror into the same `<name>` directory |
@@ -110,16 +109,18 @@ Star Fox 64 / Enhanced / Pilotwings / MPH-adjacent recomps, SoRR, CannonBall,
 OpenCMR2, OpenSC2K, Project R, SOtC, Midnight Club LA, Road Rash 64, F-Zero
 (SNES + GLINUX), WipEout-adjacent, and the rest of the 2026-10-28 audit.
 
-The `backup_saves` role renders the manifest to
-`~/.config/distrobox-gaming/save-manifest.tsv` and the root to `backup.env`,
-then deploys the two helpers — it runs as part of `site.yml` (tag
-`backup_saves`), so the tooling is always present.
+The `backup_saves` role renders the manifest to the **host**
+`~/.config/distrobox-gaming/save-manifest.tsv` and the root, mount guard, and
+box-home base into `backup.env`. It deploys both helpers to host
+`~/.local/bin/` and removes the retired in-box copies. It runs as part of
+`site.yml` (tag `backup_saves`).
 
 ## Adding a new emulator or game
 
 When you install anything with save data, **add its save dir(s) to
 `dg_save_sets`** in `group_vars/all/backups.yml` and re-run
-`ansible-playbook site.yml --tags backup_saves`. A wrong or not-yet-created path
+`ansible-playbook site.yml --tags backup_saves`, then
+`~/.local/bin/backup-saves --dry-run`. A wrong or not-yet-created path
 is harmlessly skipped, so err toward listing it. This keeps the backup complete
 as the library grows.
 

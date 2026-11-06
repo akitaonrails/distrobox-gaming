@@ -26,7 +26,7 @@
       ansible.builtin.debug:
         msg: >-
           UltraTears removed (incl. its saves under {{ dg_ut_userdata_dir }} —
-          back them up with bin/backup-saves first). Your Switch dump on the NAS
+          back them up with ~/.local/bin/backup-saves on the host first). Your Switch dump on the NAS
           is untouched.
 
 - name: Install UltraTears

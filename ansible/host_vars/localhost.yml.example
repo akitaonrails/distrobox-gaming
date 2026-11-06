@@ -4,6 +4,7 @@
 # UID/GID used inside the container (match your NAS / file-owner uid).
 # dg_host_uid: 1000
 # dg_host_gid: 1000
+# dg_box_username: me  # host account name for the gaming UID
 #
 # Host data/ROM layout. Defaults assume this maintainer's local mounts;
 # point these at your own writable storage and game/BIOS library.
@@ -52,6 +53,7 @@
 # container exists, so `site.yml` needs working host sudo (--ask-become-pass
 # or a NOPASSWD entry) the first time it runs.
 # dg_steam_root: "{{ dg_data_root }}/steam"
+# dg_steam_iscsi_root: /media/me/SteamLibrary  # canonical Steam library mount
 # dg_alyx_novr_steam_library_root: /path/to/SteamLibrary  # contains steamapps/
 # ForzaInfinity online client defaults to its public community server.
 # dg_azimuth_infinity_server: https://infinity.anarqz.dev
@@ -128,6 +130,16 @@
 # SMM2 offline levels (opt-in role install_smm2_levels). Profile UUID is
 # machine-specific: ls <eden>/nand/user/save/0000000000000000/.
 # dg_smm2_eden_profile: <YOUR-EDEN-PROFILE-UUID>
+
+# Optional Lichii Switch 2 experiment: point at your own NUP if it differs
+# from the default filename, and select your SDL controller GUID if needed.
+# dg_lichii_game: "{{ dg_roms_final_root }}/switch2/<YOUR-GAME>.nup"
+# dg_lichii_game_size: <SIZE-IN-BYTES>
+# dg_lichii_controller_guid: <SDL-GUID>
+
+# Host-side save backup location. Override both when the NAS mount differs.
+# dg_save_backup_nas_root: /mnt/your-nas/restic
+# dg_save_backup_nas_mount: /mnt/your-nas
 # dg_smm2_levels_max_uploaded: "2019-10-01"   # "" once game updated to 3.x
 #
 # SDL controller allow-list for the pc-racing games (comma-separated

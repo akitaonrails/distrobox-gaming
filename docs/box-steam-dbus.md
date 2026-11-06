@@ -44,6 +44,10 @@ deployed by the `scripts_in_box` role) links the box's expected system-bus path
 to the **host's** system bus (which has NetworkManager) right before it execs
 Steam:
 
+The migrated restricted runtime binds the individual host system-bus socket
+directly to `/run/dbus/system_bus_socket`; the following wrapper fallback is
+for an older Distrobox or a fresh privileged bootstrap box.
+
 ```sh
 host_system_bus="/run/host/run/dbus/system_bus_socket"   # host bus, mounted into the box
 box_system_bus="/run/dbus/system_bus_socket"
@@ -64,7 +68,7 @@ Deploy / re-apply:
 cd ansible
 ansible-playbook site.yml --tags scripts        # redeploys bin/steam-launch
 # verify:
-distrobox-enter -n gaming -- /mnt/data/distrobox/gaming/bin/steam-launch --diagnose
+distrobox-enter -n gaming -- sh -lc '$HOME/bin/steam-launch --diagnose'
 #   -> system_bus=ok  session_bus=ok
 ```
 

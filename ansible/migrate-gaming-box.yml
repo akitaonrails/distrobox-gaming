@@ -1,0 +1,7 @@
+---
+- name: Migrate gaming box to restricted runtime
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  roles:
+    - migrate_box

@@ -9,8 +9,7 @@
 # Flatpak's portal running on the Hyprland host.
 #
 # We bypass that and call org.freedesktop.portal.OpenURI directly
-# on the host's session bus (mounted at /run/host/run/user/$UID/bus
-# by distrobox). xdg-desktop-portal-hyprland implements OpenURI, so
+# on the mounted session bus. xdg-desktop-portal-hyprland implements OpenURI, so
 # the URL lands in the host's default browser without any Flatpak
 # or host-spawn machinery.
 set -eu
@@ -30,8 +29,14 @@ case "$target" in
     ;;
 esac
 
-# Aim at the host's session DBus, regardless of how we were spawned.
-DBUS_SESSION_BUS_ADDRESS="unix:path=/run/host/run/user/$(id -ru)/bus"
+# The restricted container binds only the bus socket. Older Distrobox
+# rebuilds expose the same socket below /run/host.
+runtime="/run/user/$(id -ru)"
+if [ -S "$runtime/bus" ]; then
+  DBUS_SESSION_BUS_ADDRESS="unix:path=$runtime/bus"
+else
+  DBUS_SESSION_BUS_ADDRESS="unix:path=/run/host$runtime/bus"
+fi
 export DBUS_SESSION_BUS_ADDRESS
 
 exec busctl --user call \

@@ -27,7 +27,7 @@
       ansible.builtin.debug:
         msg: >-
           Metroid Prime 4 Recomp removed (incl. its save under
-          {{ dg_mp4_name }}_data/save — back it up with bin/backup-saves
+          {{ dg_mp4_name }}_data/save — back it up with ~/.local/bin/backup-saves on the host
           first). Your Switch dump and keys are untouched.
 
 - name: Install Metroid Prime 4 Recomp

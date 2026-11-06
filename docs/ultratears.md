@@ -93,7 +93,8 @@ TFGH=d-pad, F11/Alt+Enter fullscreen).
 
 Saves live in `tools/ultratears/userdata` (`account.uid`, `save/<hash>`),
 registered as the `ultratears` set in `dg_save_sets` — backed up by
-`bin/backup-saves`, restored by `bin/restore-saves` / `restore-saves.yml`. The
+`~/.local/bin/backup-saves` on the host, restored by
+`~/.local/bin/restore-saves` / `restore-saves.yml`. The
 game is rebuilt from the NAS dump on a from-scratch rebuild; only `userdata`
 carries real state.
 
@@ -104,7 +105,7 @@ ansible-playbook install-ultratears.yml -e dg_ut_revert=true
 ```
 
 Removes the launcher, the install tree and the desktop entry. **The saves under
-`userdata` go with it** — run `bin/backup-saves` first. The NAS dump is
+`userdata` go with it** — run `~/.local/bin/backup-saves` first. The NAS dump is
 untouched.
 
 ## Gotchas

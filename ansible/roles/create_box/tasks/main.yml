@@ -11,6 +11,11 @@
     state: directory
     mode: "0755"
 
+- name: Inspect Steam library root ownership
+  ansible.builtin.stat:
+    path: "{{ dg_steam_root }}"
+  register: _dg_steam_root_stat
+
 - name: Ensure Steam library root is writable by the box user
   become: true
   ansible.builtin.file:
@@ -19,6 +24,11 @@
     owner: "{{ dg_host_uid }}"
     group: "{{ dg_host_gid }}"
     mode: "0755"
+  when: >-
+    not _dg_steam_root_stat.stat.exists or
+    _dg_steam_root_stat.stat.uid != dg_host_uid | int or
+    _dg_steam_root_stat.stat.gid != dg_host_gid | int or
+    _dg_steam_root_stat.stat.mode != '0755'
 
 - name: Build distrobox create command
   # Note on :ro for NFS paths: when the host has the same NFS share

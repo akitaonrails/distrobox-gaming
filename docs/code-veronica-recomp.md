@@ -50,4 +50,4 @@ The role links `bin/gamedata` to the stable `dg_cv_user_dir/gamedata` so saves
 survive release changes. `dg_save_sets` backs up only that save directory;
 the extracted game, shaders and EBOOT cache are reproducible. Re-render the
 backup manifest with `ansible-playbook site.yml --tags backup_saves`, then
-check `distrobox enter gaming -- sh -lc '$HOME/bin/backup-saves --dry-run'`.
+check `~/.local/bin/backup-saves --dry-run` on the host.

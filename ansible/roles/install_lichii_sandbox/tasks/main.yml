@@ -1,0 +1,66 @@
+---
+- name: Check the Lichii AppImage and owned game used by the restricted runtime
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop:
+    - "{{ dg_lichii_appimage }}"
+    - "{{ dg_lichii_game }}"
+  register: _lichii_sandbox_inputs
+
+- name: Require installed Lichii and its game
+  ansible.builtin.assert:
+    that:
+      - _lichii_sandbox_inputs.results[0].stat.isreg | default(false)
+      - _lichii_sandbox_inputs.results[1].stat.isreg | default(false)
+      - _lichii_sandbox_inputs.results[1].stat.size == dg_lichii_game_size
+    fail_msg: "Run install-lichii.yml and provide the owned NUP before the restricted runtime."
+
+- name: Inspect the existing restricted Lichii image
+  ansible.builtin.command:
+    argv: [docker, image, inspect, "--format={{ '{{.Id}}' }}", "{{ dg_lichii_sandbox_image }}"]
+  register: _lichii_sandbox_before
+  failed_when: false
+  changed_when: false
+
+- name: Build the pinned-base restricted Lichii image
+  ansible.builtin.command:
+    argv:
+      - docker
+      - build
+      - --quiet
+      - --build-arg
+      - "DG_UID={{ dg_host_uid }}"
+      - --build-arg
+      - "DG_GID={{ dg_host_gid }}"
+      - --label
+      - org.akitaonrails.distrobox-gaming=lichii-sandbox
+      - -t
+      - "{{ dg_lichii_sandbox_image }}"
+      - -f
+      - "{{ dg_project_root }}/config/docker/lichii-sandbox/Dockerfile"
+      - "{{ dg_project_root }}/config/docker/lichii-sandbox"
+  register: _lichii_sandbox_built
+  changed_when: _lichii_sandbox_before.stdout | trim != _lichii_sandbox_built.stdout | trim
+
+- name: Install restricted Lichii host launcher
+  ansible.builtin.template:
+    src: lichii-sandbox.sh.j2
+    dest: "{{ ansible_facts.env.HOME }}/.local/bin/lichii-sandbox"
+    mode: "0755"
+
+- name: Render restricted Lichii desktop entry
+  ansible.builtin.template:
+    src: gaming-lichii-sandbox.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-lichii-sandbox.desktop"
+    mode: "0644"
+
+- name: Publish restricted Lichii desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _lichii_sandbox_launchers
+  changed_when: >-
+    'installed ' in _lichii_sandbox_launchers.stdout or
+    'removed stale ' in _lichii_sandbox_launchers.stdout

@@ -1,0 +1,40 @@
+; Seeded once. Lichii fills missing defaults and later player changes survive.
+[System]
+use_docked_mode\default=false
+use_docked_mode=1
+
+[Core]
+memory_layout_mode\default=false
+memory_layout_mode={{ dg_lichii_memory_layout_mode }}
+
+[Renderer]
+backend\default=false
+backend=1
+resolution_setup\default=false
+resolution_setup={{ dg_lichii_resolution_setup }}
+
+[Controls]
+player_0_type\default=false
+player_0_type=0
+player_0_connected\default=false
+player_0_connected=true
+player_0_vibration_enabled\default=false
+player_0_vibration_enabled=true
+{% set guid = dg_lichii_controller_guid -%}
+{% set buttons = {'a': 1, 'b': 0, 'x': 3, 'y': 2, 'lstick': 9, 'rstick': 10, 'l': 4, 'r': 5, 'plus': 7, 'minus': 6, 'home': 8} -%}
+{% for name, button in buttons.items() %}
+player_0_button_{{ name }}\default=false
+player_0_button_{{ name }}="button:{{ button }},guid:{{ guid }},port:0,engine:sdl"
+{% endfor %}
+player_0_button_zl\default=false
+player_0_button_zl="threshold:0.500000,axis:2,guid:{{ guid }},port:0,invert:+,engine:sdl"
+player_0_button_zr\default=false
+player_0_button_zr="threshold:0.500000,axis:5,guid:{{ guid }},port:0,invert:+,engine:sdl"
+{% for direction in ['left', 'up', 'right', 'down'] %}
+player_0_button_d{{ direction }}\default=false
+player_0_button_d{{ direction }}="hat:0,direction:{{ direction }},guid:{{ guid }},port:0,engine:sdl"
+{% endfor %}
+player_0_lstick\default=false
+player_0_lstick="deadzone:0.150000,invert_y:+,invert_x:+,axis_y:1,axis_x:0,guid:{{ guid }},port:0,engine:sdl"
+player_0_rstick\default=false
+player_0_rstick="deadzone:0.150000,invert_y:+,invert_x:+,axis_y:4,axis_x:3,guid:{{ guid }},port:0,engine:sdl"

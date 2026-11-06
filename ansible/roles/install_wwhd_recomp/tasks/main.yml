@@ -24,7 +24,7 @@
       ansible.builtin.debug:
         msg: >-
           Wind Waker HD Recomp removed (incl. data/save — back it up with
-          bin/backup-saves first). Your Wii U dump is untouched.
+          ~/.local/bin/backup-saves on the host first). Your Wii U dump is untouched.
 
 - name: Install Wind Waker HD Recomp
   when: not (dg_wwhd_revert | bool)

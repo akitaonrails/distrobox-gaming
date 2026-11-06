@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# backup-saves — mirror the box's emulator + PC-port save data to the NAS.
+# backup-saves — mirror the box's emulator + PC-port save data from the host.
 #
 # Reads the manifest rendered by the backup_saves role — one
 # `name<TAB>kind<TAB>path` line per save source — and rsyncs each existing
@@ -9,20 +9,30 @@
 # skipped. Nothing is deleted from the backup, so it only ever accumulates.
 # Run it from time to time (with games closed is safest):
 #
-#   distrobox enter gaming -- backup-saves            # back up everything
-#   distrobox enter gaming -- backup-saves --dry-run  # show what would change
+#   ~/.local/bin/backup-saves            # back up everything
+#   ~/.local/bin/backup-saves --dry-run  # show what would change
 #
-# Managed by the distrobox-gaming backup_saves role.
+# Managed by the distrobox-gaming backup_saves role. No Distrobox entry needed.
 set -eu
 
 CONF_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/distrobox-gaming"
 [ -f "$CONF_DIR/backup.env" ] && . "$CONF_DIR/backup.env"
 MANIFEST="${DG_SAVE_MANIFEST:-$CONF_DIR/save-manifest.tsv}"
 : "${DG_BACKUP_ROOT:?DG_BACKUP_ROOT not set (rendered into $CONF_DIR/backup.env by the backup_saves role)}"
+: "${DG_SAVE_BASE:?DG_SAVE_BASE not set (rendered into $CONF_DIR/backup.env by the backup_saves role)}"
+: "${DG_BACKUP_MOUNT:?DG_BACKUP_MOUNT not set (rendered into $CONF_DIR/backup.env by the backup_saves role)}"
 [ -f "$MANIFEST" ] || { echo "backup-saves: no manifest at $MANIFEST" >&2; exit 1; }
+[ -d "$DG_SAVE_BASE" ] || { echo "backup-saves: box home absent: $DG_SAVE_BASE" >&2; exit 1; }
+mountpoint -q "$DG_BACKUP_MOUNT" || {
+  echo "backup-saves: NAS is not mounted at $DG_BACKUP_MOUNT" >&2; exit 1; }
 
 DRY=""
-[ "${1:-}" = "--dry-run" ] && DRY="--dry-run"
+case "${1:-}" in
+  "") ;;
+  --dry-run) DRY="--dry-run" ;;
+  *) echo "backup-saves: unknown option $1" >&2; exit 2 ;;
+esac
+[ "$#" -le 1 ] || { echo "backup-saves: too many arguments" >&2; exit 2; }
 
 mkdir -p "$DG_BACKUP_ROOT" 2>/dev/null || {
   echo "backup-saves: cannot reach backup root $DG_BACKUP_ROOT (NAS mounted?)" >&2; exit 1; }
@@ -36,7 +46,7 @@ while IFS="$TAB" read -r name kind rel; do
   n=$((n + 1))
   case "$rel" in
     /*) src="$rel" ;;       # absolute: native ports running on the host
-    *)  src="$HOME/$rel" ;;
+    *)  src="$DG_SAVE_BASE/$rel" ;;
   esac
   case "$kind" in
     dir)

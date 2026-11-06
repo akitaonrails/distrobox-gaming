@@ -4,7 +4,7 @@
 # The counterpart to backup-saves. Reads the same manifest and rsyncs each
 # $DG_BACKUP_ROOT/<name>/ back to its original location (a directory, or the
 # parent directory of a single-file source). Intended for a from-scratch
-# distrobox remount: run it once after `ansible-playbook site.yml`.
+# distrobox remount: run it once after `ansible-playbook site.yml` on the host.
 #
 # SAFE BY DEFAULT: uses --ignore-existing, so a save already present on the box
 # is never overwritten (a fresh box gets everything; an existing box only gains
@@ -13,8 +13,8 @@
 #   --force     overwrite local saves with the backup unconditionally
 #   --dry-run   show what would change
 #
-#   distrobox enter gaming -- restore-saves
-#   distrobox enter gaming -- restore-saves --dry-run
+#   ~/.local/bin/restore-saves
+#   ~/.local/bin/restore-saves --dry-run
 #
 # Managed by the distrobox-gaming backup_saves role.
 set -eu
@@ -23,7 +23,12 @@ CONF_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/distrobox-gaming"
 [ -f "$CONF_DIR/backup.env" ] && . "$CONF_DIR/backup.env"
 MANIFEST="${DG_SAVE_MANIFEST:-$CONF_DIR/save-manifest.tsv}"
 : "${DG_BACKUP_ROOT:?DG_BACKUP_ROOT not set (rendered into $CONF_DIR/backup.env by the backup_saves role)}"
+: "${DG_SAVE_BASE:?DG_SAVE_BASE not set (rendered into $CONF_DIR/backup.env by the backup_saves role)}"
+: "${DG_BACKUP_MOUNT:?DG_BACKUP_MOUNT not set (rendered into $CONF_DIR/backup.env by the backup_saves role)}"
 [ -f "$MANIFEST" ] || { echo "restore-saves: no manifest at $MANIFEST" >&2; exit 1; }
+[ -d "$DG_SAVE_BASE" ] || { echo "restore-saves: box home absent: $DG_SAVE_BASE" >&2; exit 1; }
+mountpoint -q "$DG_BACKUP_MOUNT" || {
+  echo "restore-saves: NAS is not mounted at $DG_BACKUP_MOUNT" >&2; exit 1; }
 
 MODE="--ignore-existing"   # default: never clobber a save already on the box
 DRY=""
@@ -49,7 +54,7 @@ while IFS="$TAB" read -r name kind rel; do
   fi
   case "$rel" in
     /*) target="$rel" ;;
-    *)  target="$HOME/$rel" ;;
+    *)  target="$DG_SAVE_BASE/$rel" ;;
   esac
   case "$kind" in
     dir)  dst="$target" ;;

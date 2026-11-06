@@ -1,0 +1,11 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context %}
+[Desktop Entry]
+Type=Application
+Name=Ocarina of Time (Lichii Restricted)
+Exec={{ ansible_facts.env.HOME }}/.local/bin/lichii-sandbox
+Terminal=false
+Categories=Game;Emulator;
+Comment=Experimental Lichii in a restricted runtime
+Keywords=zelda;ocarina;switch2;lichii;
+StartupWMClass=lichii
+{{ ogm_metadata('gaming-lichii-sandbox') }}

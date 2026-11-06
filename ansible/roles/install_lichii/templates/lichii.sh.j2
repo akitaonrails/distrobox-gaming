@@ -1,0 +1,23 @@
+#!/bin/sh
+set -eu
+
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+
+if [ "${1:-}" = "--game" ]; then
+  shift
+  set -- -g "{{ dg_lichii_game }}" "$@"
+fi
+
+export XDG_CONFIG_HOME="{{ dg_lichii_profile }}/config"
+export XDG_DATA_HOME="{{ dg_lichii_profile }}/data"
+export XDG_CACHE_HOME="{{ dg_lichii_profile }}/cache"
+export QT_QPA_PLATFORM=xcb
+{% if dg_nvidia_enabled %}
+export VK_ICD_FILENAMES="{{ dg_nvidia_icd }}"
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+{% endif %}
+unset QT_STYLE_OVERRIDE
+
+exec "{{ dg_lichii_appimage }}" "$@"
