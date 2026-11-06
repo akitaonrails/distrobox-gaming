@@ -86,6 +86,28 @@ six-axis capability reporting, Mii `BuildRandom` 32-bit reads, save UID
 alignment and a game-list scan-order fix. `Star Fox` (RTX 50 device-loss) and
 `Mario Kart World` notes in build 70 do not apply to this NUP.
 
+## Shaders: no precompile, but a persistent pipeline cache
+
+Lichii has **no offline "precompile all shaders" option** — no setting, no CLI
+flag (build 83: `src/common/settings.h`, the Graphics → Advanced page and the
+`eden-cli` flags were checked). What it does have, all on by default except the
+last:
+
+| Key in `eden/qt-config.ini` | Value here | Effect |
+|---|---|---|
+| `use_disk_shader_cache` | `true` | writes compiled pipelines to `cache/eden/shader/<title id>/vulkan.fork-vNN.bin` while you play; later launches load them |
+| `use_vulkan_driver_pipeline_cache` | `true` | keeps the driver's own cache too (`cache/nvidia/GLCache`) |
+| `use_asynchronous_shaders` | `false` | compiles on background threads — less hitching, but draws can be missing or wrong until each pipeline lands |
+| `dump_guest_shaders`, `gpu_log_shader_dumps` | `false` | debug-only, for bug reports |
+
+So the nearest thing to precompiling is **one warm-up pass**: play or spectate
+the content once and the pipelines are cached. The cache is per title and
+versioned by pipeline-cache format — this box's first sessions produced
+`vulkan.fork-v50.bin` (build 75) and `vulkan.fork-v52.bin` (build 83), so a
+build bump rebuilds once. Delete the title's directory under
+`cache/eden/shader/` to force a clean rebuild; the cache is deliberately not in
+`dg_save_sets` (it is derived data, and it grows to tens of MB).
+
 ## Local smoke test (2026-11-05)
 
 The NUP booted with the NVIDIA RTX 5090 Vulkan device and reached a fully
