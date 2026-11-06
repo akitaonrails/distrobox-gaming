@@ -47,9 +47,21 @@ check in `ansible-playbook reset-configs.yml --tags gpu` after a driver update.
 Direct input nodes are mounted for gamepads. The migration adds the box user
 to the host input and hidraw numeric groups, and passes connected 8BitDo
 hidraw devices. If the controller receives a different hidraw node after a
-reconnect, the container must be recreated while idle so Docker passes the
-new node. The current playbook does not refresh device mounts on an already
-restricted container. Test the pad in-game after such a change.
+reconnect, the container has to be rebuilt while idle so Docker passes the new
+node — `migrate_gaming_box.sh` refuses to touch an already-restricted box, so
+use its recreate mode:
+
+```sh
+cd ansible
+ansible-playbook migrate-gaming-box.yml -e dg_box_recreate=true
+```
+
+It snapshots the running container, creates the replacement with the current
+device/capability set, runs the same filesystem and runtime checks, and only
+then swaps the names; the old container stays stopped as `gaming-previous`
+until you delete it (rollback is the `dg-gaming-snapshot` image it came from).
+This is also the switch for `dg_box_fuse` and for any later device change —
+stop games first, the box restarts. Test the pad in-game after such a change.
 
 The Wayland socket is also bound as one file rather than granting the entire
 host runtime directory (which contains credential sockets). After a compositor
