@@ -104,6 +104,10 @@ dg_save_sets:
   - { name: prboom-data,          src: ".local/share/prboom-plus-rt" }
   - { name: banjo-recompiled,     src: ".config/BanjoRecompiled" }   # legacy BanjoRecomp saves (pre-Lighthouse)
 
+  # Original-Xbox recompilations: emulated hard disks
+  - { name: pgr2-recomp,          src: ["Games/pgr2/hdd/E/UDATA",
+                                       "file:Games/pgr2/pgr2.toml"] }
+
   # REA launchers (2026-11-01): their own prefixes/state keep saves and settings
   - { name: rea-dirt,             src: [".local/share/dirt-launcher/prefix/drive_c/users/{{ ansible_facts.user_id }}/Documents/Codemasters/DiRT",
                                        "file:.local/share/dirt-launcher/prefix/drive_c/users/{{ ansible_facts.user_id }}/AppData/Local/DiRTLauncher/launcher.cfg"] }

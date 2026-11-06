@@ -9,7 +9,7 @@ backwards-compat layer.
 | Game | Title ID | Location | Emulator |
 |---|---|---|---|
 | Project Gotham Racing | — | `roms_heavy/xbox/Project Gotham Racing (USA).iso` | xemu |
-| Project Gotham Racing 2 | — | `roms_heavy/xbox/Project Gotham Racing 2 (USA, Japan).iso` | xemu |
+| Project Gotham Racing 2 | native recomp | `EmuDeck/roms_heavy/xbox/Project Gotham Racing 2 (USA, Japan).iso` (NTSC, media-patched `default.xbe`) | **hk21x/pgr2-recomp** — see [pgr2-recomp.md](pgr2-recomp.md); the xemu copy is still there |
 | **Project Gotham Racing 3** | `4D5307D1` | `roms_heavy/xbox360/Project Gotham Racing 3 (USA)...iso` | Xenia Canary |
 | **Project Gotham Racing 4** | `4D5307F9` | `roms_heavy/xbox360/Project Gotham Racing 4 [RF].iso` | Xenia Canary |
 

@@ -1,0 +1,7 @@
+---
+- name: Install Project Gotham Racing 2 (hk21x recomp)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_pgr2_recomp

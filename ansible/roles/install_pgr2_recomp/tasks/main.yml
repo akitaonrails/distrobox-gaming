@@ -1,0 +1,228 @@
+---
+# PGR2's v1.6.0 release is a Windows program plus a compiler package: on first
+# start PGR2.exe recompiles the disc's default.xbe and links PGR2.dll locally
+# (no game code is downloaded). Runs under Wine with DXVK for its Direct3D 11
+# backend. See docs/pgr2-recomp.md.
+
+- name: Check whether the game tree is already extracted
+  ansible.builtin.stat:
+    path: "{{ dg_pgr2_assets }}/default.xbe"
+  register: _pgr2_assets
+
+- name: Check the owned Xbox disc image
+  ansible.builtin.stat:
+    path: "{{ dg_pgr2_iso }}"
+    checksum_algorithm: sha256
+    get_checksum: "{{ not _pgr2_assets.stat.exists }}"
+  register: _pgr2_iso
+
+- name: Require the supported disc image
+  ansible.builtin.assert:
+    that:
+      - _pgr2_iso.stat.isreg | default(false)
+      - _pgr2_assets.stat.exists or (_pgr2_iso.stat.checksum | default('') == dg_pgr2_iso_sha256)
+    fail_msg: >-
+      Project Gotham Racing 2 needs the supported Xbox disc image at
+      dg_pgr2_iso (sha256 {{ dg_pgr2_iso_sha256 }}); see docs/pgr2-recomp.md.
+    quiet: true
+
+- name: Create PGR2 directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_pgr2_staging }}"
+    - "{{ dg_pgr2_root }}"
+    - "{{ dg_pgr2_prefix }}"
+    - "{{ dg_pgr2_dxvk_extract }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Stage the pinned PGR2 launcher and package
+  ansible.builtin.get_url:
+    url: "{{ item.url }}"
+    dest: "{{ dg_pgr2_staging }}/{{ item.name }}"
+    checksum: "sha256:{{ item.sha256 }}"
+    mode: "0644"
+  loop:
+    - { name: "{{ dg_pgr2_launcher_name }}", url: "{{ dg_pgr2_launcher_url }}", sha256: "{{ dg_pgr2_launcher_sha256 }}" }
+    - { name: "{{ dg_pgr2_package_name }}", url: "{{ dg_pgr2_package_url }}", sha256: "{{ dg_pgr2_package_sha256 }}" }
+  loop_control:
+    label: "{{ item.name }}"
+
+# The package holds PGR2.exe, compiler/ (clang, lld-link, xbe_recomp, XDK,
+# PGR2.lib) and the MSVC runtime DLLs, plus d3dcompiler_47 for the prefix.
+- name: Install the PGR2 program and compiler package
+  ansible.builtin.unarchive:
+    src: "{{ dg_pgr2_staging }}/{{ dg_pgr2_package_name }}"
+    dest: "{{ dg_pgr2_root }}"
+    remote_src: true
+    creates: "{{ dg_pgr2_root }}/PGR2.exe"
+
+- name: Install the launcher executable beside the package
+  ansible.builtin.copy:
+    src: "{{ dg_pgr2_staging }}/{{ dg_pgr2_launcher_name }}"
+    dest: "{{ dg_pgr2_root }}/{{ dg_pgr2_launcher_name }}"
+    remote_src: true
+    mode: "0644"
+
+- name: Extract the disc's files for the recompiler
+  ansible.builtin.command:
+    argv:
+      - python3
+      - "{{ dg_project_root }}/scripts/xiso-extract.py"
+      - "{{ dg_pgr2_iso }}"
+      - "{{ dg_pgr2_assets }}"
+    creates: "{{ dg_pgr2_assets }}/default.xbe"
+
+- name: Check the extracted game executable
+  ansible.builtin.stat:
+    path: "{{ dg_pgr2_assets }}/default.xbe"
+    checksum_algorithm: sha1
+  register: _pgr2_xbe
+
+- name: Require the supported PGR2 executable
+  ansible.builtin.assert:
+    that: _pgr2_xbe.stat.checksum | default('') == dg_pgr2_default_xbe_sha1
+    fail_msg: >-
+      The disc's default.xbe ({{ _pgr2_xbe.stat.checksum | default('missing') }})
+      is not one the port supports; see docs/pgr2-recomp.md.
+    quiet: true
+
+- name: Ensure Wine and gamescope are installed in the gaming box
+  ansible.builtin.shell: "{{ dg_in_box }} sudo pacman -S --needed --noconfirm wine gamescope"
+  register: _pgr2_packages
+  changed_when: "'installing' in _pgr2_packages.stdout"
+
+- name: Initialize the dedicated PGR2 Wine prefix
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sh -lc 'WINEPREFIX="{{ dg_pgr2_prefix }}" WINEDEBUG=-all
+    env -u PYTHONHOME -u PYTHONPATH wineboot -u'
+  args:
+    creates: "{{ dg_pgr2_prefix }}/system.reg"
+
+- name: Stage the pinned DXVK release
+  ansible.builtin.get_url:
+    url: "{{ dg_pgr2_dxvk_url }}"
+    dest: "{{ dg_pgr2_dxvk_archive }}"
+    checksum: "sha256:{{ dg_pgr2_dxvk_sha256 }}"
+    mode: "0644"
+  when: not (dg_pgr2_dxvk_archive is file)
+
+- name: Extract DXVK
+  ansible.builtin.unarchive:
+    src: "{{ dg_pgr2_dxvk_archive }}"
+    dest: "{{ dg_pgr2_dxvk_extract }}"
+    remote_src: true
+    creates: "{{ dg_pgr2_dxvk_extract }}/dxvk-{{ dg_pgr2_dxvk_version }}/x64/d3d11.dll"
+
+- name: Install DXVK DLLs into both Wine architectures
+  ansible.builtin.copy:
+    src: "{{ dg_pgr2_dxvk_extract }}/dxvk-{{ dg_pgr2_dxvk_version }}/{{ item.0 }}/{{ item.1 }}.dll"
+    dest: "{{ dg_pgr2_prefix }}/drive_c/windows/{{ 'system32' if item.0 == 'x64' else 'syswow64' }}/{{ item.1 }}.dll"
+    remote_src: true
+    mode: "0644"
+  loop: "{{ ['x32', 'x64'] | product(dg_pgr2_dxvk_dlls) | list }}"
+  loop_control:
+    label: "{{ item.0 }}/{{ item.1 }}"
+
+# Wine's built-in vkd3d-shader HLSL compiler rejects the title's generated
+# shaders; the package ships Microsoft's d3dcompiler_47.dll for this.
+- name: Install the port's native shader compiler next to the game
+  ansible.builtin.copy:
+    src: "{{ dg_pgr2_root }}/d3dcompiler_47.dll"
+    dest: "{{ dg_pgr2_prefix }}/drive_c/windows/system32/d3dcompiler_47.dll"
+    remote_src: true
+    mode: "0644"
+
+- name: Select native Direct3D translation and shader compiler in the prefix
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      export WINEPREFIX="{{ dg_pgr2_prefix }}" WINEDEBUG=-all
+      key="HKCU\\Software\\Wine\\DllOverrides"
+      for name in d3d11 dxgi d3dcompiler_47; do
+        if ! wine reg query "$key" /v "$name" 2>/dev/null | grep -Eiq "REG_SZ[[:space:]]+native[[:space:]]*$"; then
+          wine reg add "$key" /v "$name" /t REG_SZ /d native /f >/dev/null
+          echo changed
+        fi
+      done
+      key="HKLM\\System\\CurrentControlSet\\Services\\winebus"
+      for pair in "DisableHidraw:1" "DisableInput:1" "Enable SDL:1" "Map Controllers:1"; do
+        name=${pair%:*}; value=${pair#*:}
+        if ! wine reg query "$key" /v "$name" 2>/dev/null | grep -Eiq "REG_DWORD[[:space:]]+0x$value[[:space:]]*$"; then
+          wine reg add "$key" /v "$name" /t REG_DWORD /d "$value" /f >/dev/null
+          echo changed
+        fi
+      done
+    '
+  register: _pgr2_registry
+  changed_when: "'changed' in _pgr2_registry.stdout"
+
+# The settings window (F1, or in game Options > General Options > PC Settings)
+# edits this same file, so seed it once and leave later changes alone.
+- name: Seed the PGR2 graphics settings
+  ansible.builtin.template:
+    src: pgr2.toml.j2
+    dest: "{{ dg_pgr2_settings }}"
+    force: false
+    mode: "0644"
+
+# First start recompiles the disc's code into PGR2.dll (about two minutes for
+# the 65 translation units) and then plays; later starts reuse the DLL.
+- name: Check whether the game code has been built
+  ansible.builtin.stat:
+    path: "{{ dg_pgr2_built_dll }}"
+  register: _pgr2_dll
+
+- name: Build the game code from the disc
+  ansible.builtin.command:
+    argv:
+      - "{{ dg_in_box }}"
+      - sh
+      - -c
+      - >-
+        cd "{{ dg_pgr2_root }}" && WINEPREFIX="{{ dg_pgr2_prefix }}" WINEDEBUG=-all
+        timeout 900 wine ./PGR2.exe
+  register: _pgr2_build
+  changed_when: true
+  failed_when: false
+  when: not _pgr2_dll.stat.exists
+
+- name: Require the completed game-code build
+  ansible.builtin.stat:
+    path: "{{ dg_pgr2_built_dll }}"
+  register: _pgr2_dll_after
+  when: not _pgr2_dll.stat.exists
+
+- name: Record the build result
+  ansible.builtin.assert:
+    that: _pgr2_dll_after.stat.isreg | default(false)
+    fail_msg: >-
+      PGR2.dll was not built. Start {{ dg_pgr2_launcher }} once and read
+      {{ dg_pgr2_root }}/logs/compile.log; see docs/pgr2-recomp.md.
+    quiet: true
+  when: not _pgr2_dll.stat.exists
+
+- name: Install the PGR2 launcher
+  ansible.builtin.template:
+    src: pgr2-recomp.sh.j2
+    dest: "{{ dg_pgr2_launcher }}"
+    mode: "0755"
+
+- name: Render the PGR2 desktop entry
+  ansible.builtin.template:
+    src: pgr2-recomp.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/pgr2-recomp.desktop"
+    mode: "0644"
+
+- name: Publish the PGR2 desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _pgr2_host_launchers
+  changed_when: >-
+    'installed ' in _pgr2_host_launchers.stdout or
+    'removed stale ' in _pgr2_host_launchers.stdout

@@ -1,0 +1,47 @@
+#!/usr/bin/env sh
+set -eu
+
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+
+root="{{ dg_pgr2_root }}"
+prefix="{{ dg_pgr2_prefix }}"
+
+export WINEPREFIX="$prefix" WINEDEBUG="${WINEDEBUG:--all}"
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+unset PYTHONHOME PYTHONPATH
+
+cleanup() {
+  if [ -n "${gamescope_group:-}" ]; then
+    kill -TERM -- "-$gamescope_group" 2>/dev/null || true
+  fi
+  WINEPREFIX="$prefix" wineserver -k >/dev/null 2>&1 || true
+  if [ -n "${gamescope_group:-}" ] && kill -0 -- "-$gamescope_group" 2>/dev/null; then
+    kill -KILL -- "-$gamescope_group" 2>/dev/null || true
+  fi
+}
+trap cleanup 0
+trap 'exit 143' TERM
+trap 'exit 130' INT
+trap 'exit 129' HUP
+
+if [ ! -f "$root/PGR2.dll" ]; then
+  printf '%s\n' 'PGR2 has not been built yet; run install-pgr2-recomp.yml.' >&2
+  exit 1
+fi
+if [ "${1:-}" = "--build" ] || [ "${1:-}" = "build" ]; then
+  # Re-do the local build of the game's code from the disc.
+  shift
+  cd "$root" && exec wine ./PGR2.exe "$@"
+fi
+
+cd "$root"
+setsid gamescope \
+  -W {{ dg_pgr2_display_width }} -H {{ dg_pgr2_display_height }} \
+  -w {{ dg_pgr2_display_width }} -h {{ dg_pgr2_display_height }} -f \
+  -- wine ./PGR2.exe "$@" &
+gamescope_group=$!
+wait "$gamescope_group"

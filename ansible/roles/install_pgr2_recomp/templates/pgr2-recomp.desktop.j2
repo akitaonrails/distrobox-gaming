@@ -1,0 +1,11 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Project Gotham Racing 2 (Recomp)
+Exec={{ dg_pgr2_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Original Xbox PGR2, recompiled: 4K, 8x MSAA, 60 fps races
+Categories=Game;
+StartupWMClass=PGR2.exe
+{{ ogm_metadata('pgr2-recomp') }}

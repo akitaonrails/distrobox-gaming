@@ -1,0 +1,45 @@
+---
+# Project Gotham Racing 2 (original Xbox) — hk21x's XboxXBERecomp native port,
+# same SDK family as install_pgr1_recomp / install_nightfire_recomp.
+# The v1.6.0 "package" release carries a prebuilt Windows launcher plus clang,
+# lld-link, xbe_recomp and the Xbox XDK: the game's own code is recompiled and
+# linked into PGR2.dll from the owned disc on first start, on this machine.
+# It runs under Wine with DXVK (Direct3D 11 backend). See docs/pgr2-recomp.md.
+
+dg_pgr2_repo: hk21x/pgr2-recomp
+dg_pgr2_version: v1.6.0
+dg_pgr2_launcher_name: PGR2Launcher.exe
+dg_pgr2_launcher_url: "https://github.com/{{ dg_pgr2_repo }}/releases/download/{{ dg_pgr2_version }}/{{ dg_pgr2_launcher_name }}"
+dg_pgr2_launcher_sha256: fcf422cd58b08daff78a32d5c7a53eaf7f0feb12dbd36130adecf513c8b2008c
+dg_pgr2_package_name: PGR2-package.zip
+dg_pgr2_package_url: "https://github.com/{{ dg_pgr2_repo }}/releases/download/{{ dg_pgr2_version }}/{{ dg_pgr2_package_name }}"
+dg_pgr2_package_sha256: 4ab8072a40c68d58c4ae6035ca2e6ecfc23d035eb74287795d11a0e117250b8c
+dg_pgr2_staging: "{{ dg_roms_final_root }}/PC/ports/pgr2-recomp/{{ dg_pgr2_version }}"
+
+# The owned NTSC disc (title id 4D53004B). The port accepts PAL or NTSC; this
+# library copy is the "NTSC (USA), media patched" build, which the port lists as
+# supported (its executable is recompiled from the PAL image; the code is the
+# same). default.xbe SHA-1 identifies it, so a different disc is refused here.
+dg_pgr2_iso: "{{ dg_emudeck_root }}/roms_heavy/xbox/Project Gotham Racing 2 (USA, Japan) (En,Ja,Fr,De,Es,It,Zh,Ko).iso"
+dg_pgr2_iso_sha256: f9f86b058f3513dd3e684fa9a5e0a6b1bf4d46095075e9ac4163d72d640d3f84
+dg_pgr2_default_xbe_sha1: 702b79fd3bc844a413cbc26404718b1bf7e44e87
+dg_pgr2_title_id: 4d53004b
+
+dg_pgr2_root: "{{ dg_box_home }}/Games/pgr2"
+dg_pgr2_assets: "{{ dg_pgr2_root }}/assets"
+dg_pgr2_prefix: "{{ dg_box_home }}/wineprefixes/pgr2"
+dg_pgr2_launcher: "{{ dg_box_home }}/bin/pgr2-recomp"
+dg_pgr2_built_dll: "{{ dg_pgr2_root }}/PGR2.dll"
+dg_pgr2_settings: "{{ dg_pgr2_root }}/pgr2.toml"
+
+dg_pgr2_display_width: 3840
+dg_pgr2_display_height: 2160
+
+# DXVK turns the port's Direct3D 11 backend into Vulkan on the RTX. Same pinned
+# release (and staged archive) install_pgr1_recomp already uses.
+dg_pgr2_dxvk_version: 3.1.1
+dg_pgr2_dxvk_archive: "{{ dg_roms_final_root }}/PC/releases/dxvk-{{ dg_pgr2_dxvk_version }}-pgr1.tar.gz"
+dg_pgr2_dxvk_url: "https://github.com/doitsujin/dxvk/releases/download/v{{ dg_pgr2_dxvk_version }}/dxvk-{{ dg_pgr2_dxvk_version }}.tar.gz"
+dg_pgr2_dxvk_sha256: 40565b4a724aadc4433fa4e010b4b23916d9b1f1baeee64e17186db94f54e608
+dg_pgr2_dxvk_extract: "{{ dg_pgr2_root }}/runtime"
+dg_pgr2_dxvk_dlls: [dxgi, d3d11]
