@@ -20,4 +20,6 @@ export __GLX_VENDOR_LIBRARY_NAME=nvidia
 {% endif %}
 unset QT_STYLE_OVERRIDE
 
-exec "{{ dg_lichii_appimage }}" "$@"
+# The container has no /dev/fuse: run the pre-extracted AppRun.
+export APPDIR="{{ dg_lichii_appdir }}"
+exec "{{ dg_lichii_apprun }}" "$@"

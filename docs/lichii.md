@@ -1,10 +1,18 @@
 # Lichii Switch 2 experiment
 
 Lichii is an experimental Switch 2 emulator. The optional install uses
-[upstream build 75](https://github.com/zortos293/Lichii/releases/tag/build-75),
+[upstream build 83](https://github.com/zortos293/Lichii/releases/tag/build-83),
 the PGO Linux x86_64 AppImage. Its SHA256-pinned release stays in
-`ROMS_FINAL/PC/releases/`; the executable copy lives in `tools/lichii/build-75/`.
+`ROMS_FINAL/PC/releases/`; the executable copy lives in `tools/lichii/build-83/`.
 The regular Eden installation, keys, settings, saves and caches are separate.
+
+**No FUSE in the migrated container.** The `gaming` runtime codex built from
+`migrate_box` exposes no `/dev/fuse`, so an AppImage cannot be mounted there.
+The role therefore unpacks the AppImage once with `--appimage-extract` and both
+launchers run `squashfs-root/AppRun` (`dg_lichii_appdir` / `dg_lichii_apprun`);
+the stored `.AppImage` stays as the provenance/rebuild artifact. Upgrading the
+release also deletes the replaced `tools/lichii/<release>/` tree and NAS archive
+(`dg_lichii_superseded_releases`).
 
 Run from `ansible/`:
 
@@ -54,7 +62,7 @@ the game.
 
 The restricted runtime is a pilot, not a claim that GUI applications are fully
 sandboxed: the X11 and audio sockets still link it to the desktop session.
-The NUP and save behavior is the same experimental build 75 described below.
+The NUP and save behavior is the same experimental build described below.
 The 2026-11-05 bounded launch reached the game with normal menu fonts after
 adding Noto/DejaVu fonts; controller input and sustained gameplay in this
 runtime still need live verification.
@@ -64,6 +72,19 @@ documents a black 3D scene in handheld mode. Switching to docked mode fixed
 that symptom for two NVIDIA users, but stutter and exposure problems remained.
 There is no supported 60 FPS or 4K gameplay claim for this build. Raise the
 resolution scale only after verifying stable gameplay on this machine.
+
+## What build 83 changed (upstream, since build 75)
+
+No settings keys changed and `src/common/settings.h` is byte-identical between
+the two tags, so the seeded profile (`memory_layout_mode 4` = the 12 GB enum
+maximum, `resolution_setup 3` = 1x, docked, Vulkan) stays valid. The 178
+commits are rendering and input work: more NVIDIA shader lowering (guarded
+`UISETP`/`FSETP`, `I2F` from 8/16-bit, `IMNMX` with wide immediates, `SHF.L`,
+uniform `MOV`/`STS`), a guard against draws with a garbage vertex/index count,
+`vk_buffer_cache` no longer aborting on an unmapped texture buffer, HID
+six-axis capability reporting, Mii `BuildRandom` 32-bit reads, save UID
+alignment and a game-list scan-order fix. `Star Fox` (RTX 50 device-loss) and
+`Mario Kart World` notes in build 70 do not apply to this NUP.
 
 ## Local smoke test (2026-11-05)
 

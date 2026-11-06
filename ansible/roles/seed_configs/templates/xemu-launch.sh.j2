@@ -37,6 +37,9 @@ fi
 # recurse into our own wrapper. The repo-managed AppImage (install_xemu,
 # a newer dev build than the AUR stable) is preferred; the /opt and /usr
 # paths remain as a fallback.
+# No /dev/fuse in the migrated gaming container: let the AppImage runtime
+# extract and run itself instead of mounting the image.
+export APPIMAGE_EXTRACT_AND_RUN=1
 for cand in "{{ dg_xemu_appimage }}" /opt/xemu/bin/xemu /usr/bin/xemu /usr/local/bin/xemu; do
   if [ -x "$cand" ]; then
     exec "$cand" "$@"

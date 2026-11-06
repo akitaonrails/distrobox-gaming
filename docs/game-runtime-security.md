@@ -69,7 +69,7 @@ container until the main game paths have been exercised in normal play.
 ## Narrower Lichii runtime
 
 Run `ansible-playbook install-lichii-sandbox.yml` from `ansible/`. It builds
-`dg-lichii-sandbox:build-75` from the pinned Arch base in
+`dg-lichii-sandbox:build-83` from the pinned Arch base in
 `config/docker/lichii-sandbox/Dockerfile`, installs a host launcher, and
 publishes a separate desktop entry. It does not remove the regular Lichii
 entry or move game data. The image holds only system runtime libraries and

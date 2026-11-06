@@ -12,4 +12,7 @@ fi
 # skips the window, "stop"/"status" manage a run. Under Wine the launcher reads
 # the pad through XInput by default and turns on OutRun2006Tweaks' SDL input, so
 # the 8BitDo works without any registry plumbing here.
+# The migrated gaming container has no /dev/fuse, so the AppImage runtime
+# extracts itself and runs from that copy (one extra second per launch).
+export APPIMAGE_EXTRACT_AND_RUN=1
 exec '{{ dg_or2006_appimage }}' "$@"

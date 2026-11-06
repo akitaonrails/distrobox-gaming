@@ -11,4 +11,7 @@ if [ ! -f "{{ dg_gow3_pc_game_dir }}/eboot.bin" ]; then
 fi
 
 export GOW3_GAME_DIR="{{ dg_gow3_pc_game_dir }}"
+# No /dev/fuse in the migrated gaming container: let the AppImage runtime
+# extract and run itself instead of mounting the image.
+export APPIMAGE_EXTRACT_AND_RUN=1
 exec "{{ dg_gow3_pc_appimage }}" "$@"

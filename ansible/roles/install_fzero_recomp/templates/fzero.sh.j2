@@ -39,4 +39,7 @@ export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
 # Run from the install dir so config.ini, rom.cfg and saves/ land here (they are
 # written relative to the working directory) — keeps them stable and backed up.
 cd "{{ dg_fzero_root }}"
+# No /dev/fuse in the migrated gaming container: let the AppImage runtime
+# extract and run itself instead of mounting the image.
+export APPIMAGE_EXTRACT_AND_RUN=1
 exec "$APPIMAGE" "$ROM" "$@"

@@ -14,4 +14,7 @@ fi
 # desktop for fullscreen — no gamescope (which would route this DXVK title to
 # the iGPU on this dual-GPU box). The 8BitDo uses the game's native XInput
 # support; bind it in the game's own Controls menu.
+# The migrated gaming container has no /dev/fuse, so the AppImage runtime
+# extracts itself and runs from that copy (one extra second per launch).
+export APPIMAGE_EXTRACT_AND_RUN=1
 exec '{{ dg_srr_appimage }}' "$@"

@@ -6,4 +6,7 @@ if [ ! -x "$target" ]; then
   printf '%s\n' "Install or update the {{ dg_shadps4_channel }} build from shadPS4 QtLauncher first." >&2
   exit 1
 fi
+# No /dev/fuse in the migrated gaming container: let the AppImage runtime
+# extract and run itself instead of mounting the image.
+export APPIMAGE_EXTRACT_AND_RUN=1
 exec "$target" "$@"

@@ -6,4 +6,7 @@ fi
 export CMR_PREFIX='{{ dg_cmr1_prefix }}'
 export CMR_LAUNCHER='{{ dg_cmr1_release_dir }}/CMRLauncher.exe'
 export CMR_WAIT=1
+# The migrated gaming container has no /dev/fuse, so the AppImage runtime
+# extracts itself and runs from that copy (one extra second per launch).
+export APPIMAGE_EXTRACT_AND_RUN=1
 exec sh '{{ dg_cmr1_release_dir }}/linux/cmr-play' "$@"

@@ -109,6 +109,18 @@ only finished when re-running the repo produces it again from a clean box:
   Inventory Updates*) and a second `ansible-playbook` run reports `changed=0`
   (or only the known Wine-registry churn).
 
+### AppImages inside the box (hard rule)
+
+The migrated `gaming` runtime has **no `/dev/fuse`**, so an AppImage cannot be
+mounted there: the launcher prints `fuse: device not found` and exits. Every
+launcher that executes an AppImage *inside* the box must either export
+`APPIMAGE_EXTRACT_AND_RUN=1` before the exec (the runtime extracts to
+`/tmp/appimage_extracted_*` and runs from there) or, for builds whose runtime
+predates that flag, unpack once with `--appimage-extract` and exec the
+`AppRun` — the Lichii role does the latter. Launchers that run on the **host**
+keep the plain exec (the host has FUSE). Verify with a bounded CLI probe such
+as `--version` (`xemu`, `shadps4`, `eden`, `rpcs3`) rather than launching a game.
+
 ## Reuse And Wine Game Patterns
 
 ### Wine runs inside the box (hard rule — this broke twice)

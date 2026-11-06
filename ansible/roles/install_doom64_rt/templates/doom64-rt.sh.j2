@@ -26,4 +26,7 @@ export __GLX_VENDOR_LIBRARY_NAME=nvidia
 export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
 
 cd "{{ dg_d64rt_install_dir }}"
+# No /dev/fuse in the migrated gaming container: let the AppImage runtime
+# extract and run itself instead of mounting the image.
+export APPIMAGE_EXTRACT_AND_RUN=1
 exec "$APPIMAGE" "$@"

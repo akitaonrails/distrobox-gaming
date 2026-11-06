@@ -64,3 +64,13 @@
   changed_when: >-
     'installed ' in _lichii_sandbox_launchers.stdout or
     'removed stale ' in _lichii_sandbox_launchers.stdout
+
+# Older tags point at the same layers (the image recipe does not depend on the
+# emulator build); drop them so only the current release tag remains.
+- name: Remove superseded restricted-runtime image tags
+  ansible.builtin.command:
+    argv: [docker, rmi, "dg-lichii-sandbox:{{ item }}"]
+  loop: "{{ dg_lichii_superseded_releases }}"
+  register: _lichii_sandbox_rmi
+  failed_when: false
+  changed_when: _lichii_sandbox_rmi.rc == 0

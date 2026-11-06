@@ -30,4 +30,7 @@ if paths:
     s.sendall(b"/dispatch focusmonitor DP-1"); s.recv(64); s.close()
 PY
 
+# No /dev/fuse in the migrated gaming container: let the AppImage runtime
+# extract and run itself instead of mounting the image.
+export APPIMAGE_EXTRACT_AND_RUN=1
 exec "$appimage" "$@"

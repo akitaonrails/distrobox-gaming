@@ -48,6 +48,14 @@
     remote_src: true
     mode: "0755"
 
+# No /dev/fuse in the migrated gaming container: unpack the AppImage once and
+# run its AppRun (idempotent; ~360 MB beside the 140 MB image).
+- name: Unpack the Lichii AppImage for FUSE-free launching
+  ansible.builtin.command:
+    cmd: "{{ dg_lichii_appimage }} --appimage-extract"
+    chdir: "{{ dg_lichii_root }}/{{ dg_lichii_release }}"
+    creates: "{{ dg_lichii_apprun }}"
+
 - name: Seed isolated docked, graphics and controller configuration
   ansible.builtin.template:
     src: qt-config.ini.j2
@@ -80,3 +88,17 @@
   changed_when: >-
     'installed ' in _lichii_host_launchers.stdout or
     'removed stale ' in _lichii_host_launchers.stdout
+
+# Replaced builds: drop the old local copy and its NAS archive. The isolated
+# profile (config, nand saves, caches) and the NUP are untouched.
+- name: Remove superseded Lichii installs
+  ansible.builtin.file:
+    path: "{{ dg_lichii_root }}/{{ item }}"
+    state: absent
+  loop: "{{ dg_lichii_superseded_releases }}"
+
+- name: Remove superseded Lichii NAS archives
+  ansible.builtin.file:
+    path: "{{ dg_roms_final_root }}/PC/releases/lichii-{{ item }}-linux-x86_64-pgo.AppImage"
+    state: absent
+  loop: "{{ dg_lichii_superseded_releases }}"

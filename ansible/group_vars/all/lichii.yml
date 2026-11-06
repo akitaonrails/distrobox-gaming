@@ -1,13 +1,17 @@
 ---
 # Experimental Switch 2 emulator; intentionally separate from the Eden profile.
 dg_lichii_repo: zortos293/Lichii
-dg_lichii_release: build-75
+dg_lichii_release: build-83
 dg_lichii_asset_name: lichii-linux-x86_64-pgo.AppImage
 dg_lichii_asset_url: "https://github.com/{{ dg_lichii_repo }}/releases/download/{{ dg_lichii_release }}/{{ dg_lichii_asset_name }}"
-dg_lichii_asset_sha256: 7459a50dbf16418e6b5d3cab61e70a86e60e4d7d479283bdd3f82e003587547f
+dg_lichii_asset_sha256: 86d6616b6a4c67304d2cc8f4a9d28ea669f6ced9cd799ced2fa768a26e1d0712
 dg_lichii_archive: "{{ dg_roms_final_root }}/PC/releases/lichii-{{ dg_lichii_release }}-linux-x86_64-pgo.AppImage"
 dg_lichii_root: "{{ dg_box_home }}/tools/lichii"
 dg_lichii_appimage: "{{ dg_lichii_root }}/{{ dg_lichii_release }}/lichii.AppImage"
+# The migrated gaming container has no /dev/fuse, so both launchers run the
+# AppImage's extracted tree (AppRun) instead of mounting the image.
+dg_lichii_appdir: "{{ dg_lichii_root }}/{{ dg_lichii_release }}/squashfs-root"
+dg_lichii_apprun: "{{ dg_lichii_appdir }}/AppRun"
 dg_lichii_launcher: "{{ dg_box_home }}/bin/lichii"
 dg_lichii_profile: "{{ dg_lichii_root }}/profile"
 dg_lichii_config: "{{ dg_lichii_profile }}/config/eden/qt-config.ini"
@@ -18,4 +22,10 @@ dg_lichii_game_size: 25622267860
 dg_lichii_controller_guid: 03000000c82d00000b31000014010000
 dg_lichii_resolution_setup: 3  # 1x. Higher scales are not yet stable for this title.
 dg_lichii_memory_layout_mode: 4  # 12 GB; see upstream Switch 2 reports.
+# Installs this role replaces: their tools/lichii/<release>/ copy and NAS
+# archive are deleted on the next run (the profile, saves and NUP stay).
+dg_lichii_superseded_releases:
+  - build-75
+  - build-70
+  - build-65
 dg_lichii_sandbox_image: "dg-lichii-sandbox:{{ dg_lichii_release }}"

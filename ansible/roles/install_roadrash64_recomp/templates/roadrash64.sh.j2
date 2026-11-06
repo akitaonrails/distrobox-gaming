@@ -34,4 +34,7 @@ export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
 
 # Run from the AppImage dir so the optional music/ folder beside it is found.
 cd "{{ dg_rr64_root }}"
+# No /dev/fuse in the migrated gaming container: let the AppImage runtime
+# extract and run itself instead of mounting the image.
+export APPIMAGE_EXTRACT_AND_RUN=1
 exec "$APPIMAGE" --auto-rom "$ROM" --force-vulkan "$@"

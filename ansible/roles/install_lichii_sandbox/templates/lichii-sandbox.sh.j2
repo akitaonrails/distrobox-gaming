@@ -3,7 +3,7 @@
 set -euo pipefail
 
 image='{{ dg_lichii_sandbox_image }}'
-appimage='{{ dg_lichii_appimage }}'
+appdir='{{ dg_lichii_appdir }}'
 game='{{ dg_lichii_game }}'
 profile='{{ dg_lichii_profile }}'
 expected_uid='{{ dg_host_uid }}'
@@ -11,8 +11,8 @@ expected_gid='{{ dg_host_gid }}'
 
 [ "$(id -u)" = "$expected_uid" ] && [ "$(id -g)" = "$expected_gid" ] || {
   echo 'lichii-sandbox: run as the configured gaming user' >&2; exit 1; }
-[ -f "$appimage" ] && [ -f "$game" ] && [ -d "$profile" ] || {
-  echo 'lichii-sandbox: AppImage, owned NUP, or profile is missing' >&2; exit 1; }
+[ -x "$appdir/AppRun" ] && [ -f "$game" ] && [ -d "$profile" ] || {
+  echo 'lichii-sandbox: extracted AppImage, owned NUP, or profile is missing' >&2; exit 1; }
 
 args=(
   --rm --init
@@ -26,7 +26,7 @@ args=(
   --pids-limit 512
   --tmpfs /tmp:rw,nosuid,nodev,exec,size=1g
   --mount "type=bind,src=$profile,dst=/game-home"
-  --mount "type=bind,src=$appimage,dst=/opt/lichii.AppImage,readonly"
+  --mount "type=bind,src=$appdir,dst=/opt/lichii,readonly"
   --mount "type=bind,src=$game,dst=/games/oot.nup,readonly"
   --env HOME=/game-home
   --env XDG_CONFIG_HOME=/game-home/config
@@ -44,6 +44,7 @@ if [ "${1:-}" = '--check' ]; then
     test ! -e /mnt/terachad
     test ! -e /mnt/gigachad
     test ! -e /mnt/megachad
+    test -x /opt/lichii/AppRun
     test -r /games/oot.nup
     test ! -w /games/oot.nup
     test -w /game-home
@@ -53,7 +54,7 @@ if [ "${1:-}" = '--check' ]; then
 fi
 
 # Never run two emulators against the same NAND/save profile at once.
-if pgrep -u "$expected_uid" -f "$appimage" >/dev/null; then
+if pgrep -u "$expected_uid" -f "$appdir" >/dev/null; then
   echo 'lichii-sandbox: close the regular Lichii session first (shared profile)' >&2
   exit 1
 fi
@@ -94,5 +95,5 @@ fi
 exec docker run "${args[@]}" "$image" sh -c '
   mkdir -p /tmp/runtime
   chmod 700 /tmp/runtime
-  exec /opt/lichii.AppImage -g /games/oot.nup "$@"
+  exec /opt/lichii/AppRun -g /games/oot.nup "$@"
 ' lichii "$@"
