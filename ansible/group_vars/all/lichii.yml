@@ -1,11 +1,12 @@
 ---
 # Experimental Switch 2 emulator; intentionally separate from the Eden profile.
 dg_lichii_repo: zortos293/Lichii
-dg_lichii_release: build-83
-dg_lichii_asset_name: lichii-linux-x86_64-pgo.AppImage
+dg_lichii_release: build-88
+# build-88 ships no PGO variant (build-83 did); plain AppImage here.
+dg_lichii_asset_name: lichii-linux-x86_64.AppImage
 dg_lichii_asset_url: "https://github.com/{{ dg_lichii_repo }}/releases/download/{{ dg_lichii_release }}/{{ dg_lichii_asset_name }}"
-dg_lichii_asset_sha256: 86d6616b6a4c67304d2cc8f4a9d28ea669f6ced9cd799ced2fa768a26e1d0712
-dg_lichii_archive: "{{ dg_roms_final_root }}/PC/releases/lichii-{{ dg_lichii_release }}-linux-x86_64-pgo.AppImage"
+dg_lichii_asset_sha256: 8ddfcb03cffb9761d1532751eb6e68a1cb8a225da38ac1a55b6fe5b190691be0
+dg_lichii_archive: "{{ dg_roms_final_root }}/PC/releases/lichii-{{ dg_lichii_release }}-linux-x86_64.AppImage"
 dg_lichii_root: "{{ dg_box_home }}/tools/lichii"
 dg_lichii_appimage: "{{ dg_lichii_root }}/{{ dg_lichii_release }}/lichii.AppImage"
 # The migrated gaming container has no /dev/fuse, so both launchers run the
@@ -25,6 +26,7 @@ dg_lichii_memory_layout_mode: 4  # 12 GB; see upstream Switch 2 reports.
 # Installs this role replaces: their tools/lichii/<release>/ copy and NAS
 # archive are deleted on the next run (the profile, saves and NUP stay).
 dg_lichii_superseded_releases:
+  - build-83
   - build-75
   - build-70
   - build-65

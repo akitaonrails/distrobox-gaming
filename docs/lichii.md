@@ -1,9 +1,10 @@
 # Lichii Switch 2 experiment
 
 Lichii is an experimental Switch 2 emulator. The optional install uses
-[upstream build 83](https://github.com/zortos293/Lichii/releases/tag/build-83),
-the PGO Linux x86_64 AppImage. Its SHA256-pinned release stays in
-`ROMS_FINAL/PC/releases/`; the executable copy lives in `tools/lichii/build-83/`.
+[upstream build 88](https://github.com/zortos293/Lichii/releases/tag/build-88),
+the Linux x86_64 AppImage (build 88 has no PGO variant; build 83 was the last
+one). Its SHA256-pinned release stays in `ROMS_FINAL/PC/releases/`; the
+executable copy lives in `tools/lichii/build-88/`.
 The regular Eden installation, keys, settings, saves and caches are separate.
 
 **No FUSE in the migrated container.** The `gaming` runtime codex built from
@@ -73,40 +74,28 @@ that symptom for two NVIDIA users, but stutter and exposure problems remained.
 There is no supported 60 FPS or 4K gameplay claim for this build. Raise the
 resolution scale only after verifying stable gameplay on this machine.
 
-## What build 83 changed (upstream, since build 75)
+## What build 88 changed (upstream, since build 83)
 
-No settings keys changed and `src/common/settings.h` is byte-identical between
-the two tags, so the seeded profile (`memory_layout_mode 4` = the 12 GB enum
-maximum, `resolution_setup 3` = 1x, docked, Vulkan) stays valid. The 178
-commits are rendering and input work: more NVIDIA shader lowering (guarded
-`UISETP`/`FSETP`, `I2F` from 8/16-bit, `IMNMX` with wide immediates, `SHF.L`,
-uniform `MOV`/`STS`), a guard against draws with a garbage vertex/index count,
-`vk_buffer_cache` no longer aborting on an unmapped texture buffer, HID
-six-axis capability reporting, Mii `BuildRandom` 32-bit reads, save UID
-alignment and a game-list scan-order fix. `Star Fox` (RTX 50 device-loss) and
-`Mario Kart World` notes in build 70 do not apply to this NUP.
+No settings keys changed (`src/common/settings.h` is identical between the
+tags), so the seeded profile stays valid. From the release notes:
 
-## Shaders: no precompile, but a persistent pipeline cache
+- **Zelda: Ocarina of Time Dynamic FPS** — Dark's mod, ported by Frizti, is now
+  bundled and **enabled by default for Ocarina**; disable it in the game's
+  Add-Ons settings. It patches only the supported build (with instruction,
+  padding and timer checks), and the notes recommend **CPU Clock Normal** while
+  evaluating it — our profile never raises the clock.
+- Frizti's performance ports: cached storage-buffer bindings, direct native
+  uniform-bank uploads, batched command-page readbacks, less writer tracking,
+  earlier GPU submission, and explicit GPU-to-host visibility before readback.
+- Vulkan pipeline cache v53 (keeps compatible v52 caches; interrupted cache
+  migrations are retryable) and bounded background preparation of cached
+  pipelines and task/mesh shader state.
+- FSR3 frame generation fixes (still off by default).
 
-Lichii has **no offline "precompile all shaders" option** — no setting, no CLI
-flag (build 83: `src/common/settings.h`, the Graphics → Advanced page and the
-`eden-cli` flags were checked). What it does have, all on by default except the
-last:
-
-| Key in `eden/qt-config.ini` | Value here | Effect |
-|---|---|---|
-| `use_disk_shader_cache` | `true` | writes compiled pipelines to `cache/eden/shader/<title id>/vulkan.fork-vNN.bin` while you play; later launches load them |
-| `use_vulkan_driver_pipeline_cache` | `true` | keeps the driver's own cache too (`cache/nvidia/GLCache`) |
-| `use_asynchronous_shaders` | `false` | compiles on background threads — less hitching, but draws can be missing or wrong until each pipeline lands |
-| `dump_guest_shaders`, `gpu_log_shader_dumps` | `false` | debug-only, for bug reports |
-
-So the nearest thing to precompiling is **one warm-up pass**: play or spectate
-the content once and the pipelines are cached. The cache is per title and
-versioned by pipeline-cache format — this box's first sessions produced
-`vulkan.fork-v50.bin` (build 75) and `vulkan.fork-v52.bin` (build 83), so a
-build bump rebuilds once. Delete the title's directory under
-`cache/eden/shader/` to force a clean rebuild; the cache is deliberately not in
-`dg_save_sets` (it is derived data, and it grows to tens of MB).
+The four commits on `nx2` after the build-88 tag are AMD shader/depth fixes, a
+MinGW-only AV1 change and one SSBO-alignment fix upstream has not released yet;
+the notes say the AMD work lands in the next build, so build 88 is the newest
+usable version for this NVIDIA box.
 
 ## Local smoke test (2026-11-05)
 
