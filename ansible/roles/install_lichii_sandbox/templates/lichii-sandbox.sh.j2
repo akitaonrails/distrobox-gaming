@@ -3,16 +3,21 @@
 set -euo pipefail
 
 image='{{ dg_lichii_sandbox_image }}'
-appdir='{{ dg_lichii_appdir }}'
+appdir='{{ dg_lichii_sandbox_appdir }}'
 game='{{ dg_lichii_game }}'
 profile='{{ dg_lichii_profile }}'
 expected_uid='{{ dg_host_uid }}'
 expected_gid='{{ dg_host_gid }}'
+icd='{{ dg_lichii_sandbox_icd }}'
 
 [ "$(id -u)" = "$expected_uid" ] && [ "$(id -g)" = "$expected_gid" ] || {
   echo 'lichii-sandbox: run as the configured gaming user' >&2; exit 1; }
 [ -x "$appdir/AppRun" ] && [ -f "$game" ] && [ -d "$profile" ] || {
   echo 'lichii-sandbox: extracted AppImage, owned NUP, or profile is missing' >&2; exit 1; }
+# The image carries the Vulkan loader; the GPU ICD descriptor comes from the host
+# driver. --gpus all mounts the driver libraries but not this manifest file.
+[ -r "$icd" ] || {
+  echo "lichii-sandbox: NVIDIA Vulkan ICD not readable at $icd" >&2; exit 1; }
 
 args=(
   --rm --init
@@ -28,6 +33,7 @@ args=(
   --mount "type=bind,src=$profile,dst=/game-home"
   --mount "type=bind,src=$appdir,dst=/opt/lichii,readonly"
   --mount "type=bind,src=$game,dst=/games/oot.nup,readonly"
+  --mount "type=bind,src=$icd,dst=/usr/share/vulkan/icd.d/nvidia_icd.json,readonly"
   --env HOME=/game-home
   --env XDG_CONFIG_HOME=/game-home/config
   --env XDG_DATA_HOME=/game-home/data
@@ -49,12 +55,15 @@ if [ "${1:-}" = '--check' ]; then
     test ! -w /games/oot.nup
     test -w /game-home
     nvidia-smi -L
+    vulkaninfo --summary 2>/dev/null | grep -E '^[[:space:]]*deviceName' | head -1
     printf "%s\n" "Restricted mounts and GPU: OK"
   '
 fi
 
-# Never run two emulators against the same NAND/save profile at once.
-if pgrep -u "$expected_uid" -f "$appdir" >/dev/null; then
+# Never run two emulators against the same NAND/save profile at once. The
+# regular session runs the source build now, so check both paths (the AppImage
+# tree also matches a sandbox container's own docker command line).
+if pgrep -u "$expected_uid" -f --quiet "{{ dg_lichii_bin }}" || pgrep -u "$expected_uid" -f --quiet "$appdir"; then
   echo 'lichii-sandbox: close the regular Lichii session first (shared profile)' >&2
   exit 1
 fi

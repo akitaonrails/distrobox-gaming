@@ -1,18 +1,49 @@
 ---
 # Experimental Switch 2 emulator; intentionally separate from the Eden profile.
+# Built from upstream source (branch nx2) at a pinned commit: the released
+# AppImages trail the branch, and this box runs the newest Ocarina fixes. The
+# build uses clang, not gcc: GCC 16 fails upstream's -Werror=shadow on
+# src/shader_recompiler/backend/spirv/emit_spirv_tensor.cpp (lambda parameter
+# shadowing the enclosing one), which clang does not warn about.
 dg_lichii_repo: zortos293/Lichii
-dg_lichii_release: build-88
-# build-88 ships no PGO variant (build-83 did); plain AppImage here.
-dg_lichii_asset_name: lichii-linux-x86_64.AppImage
-dg_lichii_asset_url: "https://github.com/{{ dg_lichii_repo }}/releases/download/{{ dg_lichii_release }}/{{ dg_lichii_asset_name }}"
-dg_lichii_asset_sha256: 8ddfcb03cffb9761d1532751eb6e68a1cb8a225da38ac1a55b6fe5b190691be0
-dg_lichii_archive: "{{ dg_roms_final_root }}/PC/releases/lichii-{{ dg_lichii_release }}-linux-x86_64.AppImage"
+dg_lichii_branch: nx2
+dg_lichii_commit: d5494116902d15f9616efbe7668bbcec33a93f9c
+dg_lichii_short: d549411
+dg_lichii_source_url: "https://github.com/{{ dg_lichii_repo }}/archive/{{ dg_lichii_commit }}.tar.gz"
+dg_lichii_source_sha256: 66fae46d9f8c8c332792dcf5e4a8df0362536a123dcb6a52bdddc398ceb41318
+dg_lichii_source_archive: "{{ dg_roms_final_root }}/PC/ports/lichii/lichii-{{ dg_lichii_short }}.tar.gz"
+dg_lichii_packages:
+  - clang
+  - cmake
+  - ninja
+  - boost
+  - catch2
+  - enet
+  - ffmpeg
+  - fmt
+  - glslang
+  - libzip
+  - lz4
+  - nlohmann-json
+  - openssl
+  - opus
+  - qt6-base
+  - qt6-multimedia
+  - qt6-charts
+  - sdl3
+  - zstd
+  - unzip
+  - vulkan-headers
+  - vulkan-utility-libraries
+  - libusb
+  - spirv-tools
+  - spirv-headers
+
 dg_lichii_root: "{{ dg_box_home }}/tools/lichii"
-dg_lichii_appimage: "{{ dg_lichii_root }}/{{ dg_lichii_release }}/lichii.AppImage"
-# The migrated gaming container has no /dev/fuse, so both launchers run the
-# AppImage's extracted tree (AppRun) instead of mounting the image.
-dg_lichii_appdir: "{{ dg_lichii_root }}/{{ dg_lichii_release }}/squashfs-root"
-dg_lichii_apprun: "{{ dg_lichii_appdir }}/AppRun"
+dg_lichii_build_root: "{{ dg_lichii_root }}/build-{{ dg_lichii_short }}"
+dg_lichii_src_dir: "{{ dg_lichii_build_root }}/src"
+dg_lichii_build_dir: "{{ dg_lichii_build_root }}/build-clang"
+dg_lichii_bin: "{{ dg_lichii_build_dir }}/bin/lichii"
 dg_lichii_launcher: "{{ dg_box_home }}/bin/lichii"
 dg_lichii_profile: "{{ dg_lichii_root }}/profile"
 dg_lichii_config: "{{ dg_lichii_profile }}/config/eden/qt-config.ini"
@@ -22,12 +53,40 @@ dg_lichii_game_size: 25622267860
 # Eden mapping. Another machine can override it in host_vars/localhost.yml.
 dg_lichii_controller_guid: 03000000c82d00000b31000014010000
 dg_lichii_resolution_setup: 3  # 1x. Higher scales are not yet stable for this title.
-dg_lichii_memory_layout_mode: 4  # 12 GB; see upstream Switch 2 reports.
-# Installs this role replaces: their tools/lichii/<release>/ copy and NAS
-# archive are deleted on the next run (the profile, saves and NUP stay).
+# Seeded into a fresh profile by templates/qt-config.ini.j2 (the Ocarina
+# baseline below re-applies it to existing profiles).
+dg_lichii_memory_layout_mode: 2  # Memory_8Gb, the game's own memory size
+# Ocarina-tuned baseline, mirroring the Frizti fork's defaults: 8 GB memory (the
+# game's own size), GPU accuracy Low ("Fast"), GPU video decoding, asynchronous
+# shaders and presentation, mailbox pacing, docked. The in-game settings win
+# afterwards; the role only seeds keys that do not exist yet.
+dg_lichii_profile_settings:
+  memory_layout_mode: "2"     # Memory_8Gb
+  gpu_accuracy: "0"           # Low / Fast
+  nvdec_emulation: "2"        # GPU video decoding
+  use_asynchronous_shaders: "true"
+  async_presentation: "true"
+  vsync_mode: "1"             # Mailbox
+  use_docked_mode: "1"
+  resolution_setup: "{{ dg_lichii_resolution_setup }}"
+  use_disk_shader_cache: "true"
+
+# The restricted runtime still runs the released AppImage (its image carries no
+# Qt6, and the AppImage bundles it), independently of the source build above.
+dg_lichii_sandbox_release: build-88
+dg_lichii_sandbox_asset_name: lichii-linux-x86_64.AppImage
+dg_lichii_sandbox_asset_url: "https://github.com/{{ dg_lichii_repo }}/releases/download/{{ dg_lichii_sandbox_release }}/{{ dg_lichii_sandbox_asset_name }}"
+dg_lichii_sandbox_asset_sha256: 8ddfcb03cffb9761d1532751eb6e68a1cb8a225da38ac1a55b6fe5b190691be0
+dg_lichii_sandbox_archive: "{{ dg_roms_final_root }}/PC/releases/lichii-{{ dg_lichii_sandbox_release }}-linux-x86_64.AppImage"
+dg_lichii_sandbox_appimage: "{{ dg_lichii_root }}/{{ dg_lichii_sandbox_release }}/lichii.AppImage"
+dg_lichii_sandbox_appdir: "{{ dg_lichii_root }}/{{ dg_lichii_sandbox_release }}/squashfs-root"
+# Host NVIDIA Vulkan ICD manifest, bind-mounted into the runtime (--gpus all
+# mounts the driver libraries but not this file). Override on another machine.
+dg_lichii_sandbox_icd: /usr/share/vulkan/icd.d/nvidia_icd.json
+dg_lichii_sandbox_image: "dg-lichii-sandbox:{{ dg_lichii_sandbox_release }}"
+# Released builds this role no longer uses (their AppImage trees and archives).
 dg_lichii_superseded_releases:
   - build-83
   - build-75
   - build-70
   - build-65
-dg_lichii_sandbox_image: "dg-lichii-sandbox:{{ dg_lichii_release }}"

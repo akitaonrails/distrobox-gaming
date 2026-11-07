@@ -1,4 +1,11 @@
 ---
+# Lichii is built from upstream source at a pinned commit: the released
+# AppImages trail branch nx2, and Ocarina fixes land there first. clang is the
+# compiler on purpose — GCC 16 fails upstream's -Werror=shadow in
+# src/shader_recompiler/backend/spirv/emit_spirv_tensor.cpp, which clang accepts.
+# The released AppImage is still installed for the restricted runtime, whose
+# image bundles no Qt6. See docs/lichii.md.
+
 - name: Check the owned Switch 2 NUP package
   ansible.builtin.stat:
     path: "{{ dg_lichii_game }}"
@@ -20,41 +27,102 @@
       - "{{ dg_lichii_game }}"
   changed_when: false
 
-- name: Create Lichii install, isolated profile and launcher directories
+- name: Create Lichii build, profile and launcher directories
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     mode: "0755"
   loop:
-    - "{{ dg_roms_final_root }}/PC/releases"
-    - "{{ dg_lichii_root }}/{{ dg_lichii_release }}"
+    - "{{ dg_lichii_source_archive | dirname }}"
+    - "{{ dg_lichii_root }}"
+    - "{{ dg_lichii_build_root }}"
     - "{{ dg_lichii_profile }}/config/eden"
     - "{{ dg_lichii_profile }}/data"
     - "{{ dg_lichii_profile }}/cache"
     - "{{ dg_box_home }}/bin"
     - "{{ dg_desktop_render_dir }}"
 
-- name: Stage the pinned Lichii PGO AppImage on the NAS
+- name: Install the Lichii build dependencies
+  ansible.builtin.shell: "{{ dg_in_box }} sudo pacman -S --needed --noconfirm {{ dg_lichii_packages | join(' ') }}"
+  register: _lichii_packages
+  changed_when: "'installing' in _lichii_packages.stdout"
+
+- name: Stage the pinned Lichii source archive
   ansible.builtin.get_url:
-    url: "{{ dg_lichii_asset_url }}"
-    dest: "{{ dg_lichii_archive }}"
-    checksum: "sha256:{{ dg_lichii_asset_sha256 }}"
+    url: "{{ dg_lichii_source_url }}"
+    dest: "{{ dg_lichii_source_archive }}"
+    checksum: "sha256:{{ dg_lichii_source_sha256 }}"
     mode: "0644"
 
-- name: Install the pinned Lichii AppImage locally
-  ansible.builtin.copy:
-    src: "{{ dg_lichii_archive }}"
-    dest: "{{ dg_lichii_appimage }}"
-    remote_src: true
-    mode: "0755"
-
-# No /dev/fuse in the migrated gaming container: unpack the AppImage once and
-# run its AppRun (idempotent; ~360 MB beside the 140 MB image).
-- name: Unpack the Lichii AppImage for FUSE-free launching
+- name: Extract the Lichii source
   ansible.builtin.command:
-    cmd: "{{ dg_lichii_appimage }} --appimage-extract"
-    chdir: "{{ dg_lichii_root }}/{{ dg_lichii_release }}"
-    creates: "{{ dg_lichii_apprun }}"
+    argv:
+      - tar
+      - -xzf
+      - "{{ dg_lichii_source_archive }}"
+      - -C
+      - "{{ dg_lichii_src_dir }}"
+      - --strip-components=1
+    creates: "{{ dg_lichii_src_dir }}/CMakeLists.txt"
+
+- name: Check for a configured Lichii build tree
+  ansible.builtin.stat:
+    path: "{{ dg_lichii_build_dir }}/build.ninja"
+  register: _lichii_configured
+
+- name: Configure the Lichii build with clang
+  ansible.builtin.command:
+    argv:
+      - distrobox-enter
+      - -n
+      - "{{ dg_box_name }}"
+      - --
+      - cmake
+      - -S
+      - "{{ dg_lichii_src_dir }}"
+      - -B
+      - "{{ dg_lichii_build_dir }}"
+      - -G
+      - Ninja
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DYUZU_TESTS=OFF
+      - -DCMAKE_C_COMPILER=clang
+      - -DCMAKE_CXX_COMPILER=clang++
+  when: not _lichii_configured.stat.exists
+
+- name: Check for a built Lichii binary
+  ansible.builtin.stat:
+    path: "{{ dg_lichii_bin }}"
+  register: _lichii_bin
+
+# 1,816 ninja targets: about twelve minutes on this 32-thread CPU.
+- name: Build Lichii
+  ansible.builtin.command:
+    argv:
+      - distrobox-enter
+      - -n
+      - "{{ dg_box_name }}"
+      - --
+      - sh
+      - -c
+      - >-
+        cd "{{ dg_lichii_build_dir }}" && timeout 5400 cmake --build . -j 30
+  register: _lichii_build
+  changed_when: true
+  when: not _lichii_bin.stat.exists
+
+- name: Require the built Lichii binary
+  ansible.builtin.stat:
+    path: "{{ dg_lichii_bin }}"
+  register: _lichii_bin_after
+
+- name: Record the build result
+  ansible.builtin.assert:
+    that: _lichii_bin_after.stat.isreg | default(false)
+    fail_msg: >-
+      Lichii did not build at {{ dg_lichii_commit }}; see the ninja output above
+      (recorded when the role ran) and docs/lichii.md.
+    quiet: true
 
 - name: Seed isolated docked, graphics and controller configuration
   ansible.builtin.template:
@@ -62,6 +130,64 @@
     dest: "{{ dg_lichii_config }}"
     mode: "0644"
     force: false
+
+# The Ocarina baseline (see dg_lichii_profile_settings) is applied once, then
+# recorded by a marker: a rerun must not undo whatever was chosen in the
+# settings window afterwards.
+- name: Check whether the Ocarina baseline was already applied
+  ansible.builtin.stat:
+    path: "{{ dg_lichii_profile }}/.baseline-applied"
+  register: _lichii_baseline
+
+- name: Apply the Ocarina baseline settings
+  ansible.builtin.lineinfile:
+    path: "{{ dg_lichii_config }}"
+    regexp: "^{{ item.key }}="
+    line: "{{ item.key }}={{ item.value }}"
+    insertafter: EOF
+  loop: "{{ dg_lichii_profile_settings | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  when: not _lichii_baseline.stat.exists
+
+- name: Record the Ocarina baseline as applied
+  ansible.builtin.copy:
+    content: "{{ dg_lichii_profile_settings | to_nice_json }}\n"
+    dest: "{{ dg_lichii_profile }}/.baseline-applied"
+    mode: "0644"
+  when: not _lichii_baseline.stat.exists
+
+# The restricted runtime still runs the released AppImage (its image bundles no
+# Qt6): keep that copy staged and unpacked for the sandbox role.
+- name: Stage the pinned Lichii AppImage for the restricted runtime
+  ansible.builtin.get_url:
+    url: "{{ dg_lichii_sandbox_asset_url }}"
+    dest: "{{ dg_lichii_sandbox_archive }}"
+    checksum: "sha256:{{ dg_lichii_sandbox_asset_sha256 }}"
+    mode: "0644"
+
+- name: Install the sandbox AppImage locally
+  ansible.builtin.copy:
+    src: "{{ dg_lichii_sandbox_archive }}"
+    dest: "{{ dg_lichii_sandbox_appimage }}"
+    remote_src: true
+    mode: "0755"
+
+- name: Unpack the sandbox AppImage for FUSE-free launching
+  ansible.builtin.command:
+    cmd: "{{ dg_lichii_sandbox_appimage }} --appimage-extract"
+    chdir: "{{ dg_lichii_sandbox_appimage | dirname }}"
+    creates: "{{ dg_lichii_sandbox_appdir }}/AppRun"
+
+- name: Remove superseded released builds
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: >-
+    {{ dg_lichii_superseded_releases
+       | map('regex_replace', '^', dg_lichii_root ~ '/') | list
+       + dg_lichii_superseded_releases
+       | map('regex_replace', '^', dg_roms_final_root ~ '/PC/releases/lichii-') | map('regex_replace', '$', '-linux-x86_64.AppImage') | list }}
 
 - name: Install Lichii launcher
   ansible.builtin.template:
@@ -88,17 +214,3 @@
   changed_when: >-
     'installed ' in _lichii_host_launchers.stdout or
     'removed stale ' in _lichii_host_launchers.stdout
-
-# Replaced builds: drop the old local copy and its NAS archive. The isolated
-# profile (config, nand saves, caches) and the NUP are untouched.
-- name: Remove superseded Lichii installs
-  ansible.builtin.file:
-    path: "{{ dg_lichii_root }}/{{ item }}"
-    state: absent
-  loop: "{{ dg_lichii_superseded_releases }}"
-
-- name: Remove superseded Lichii NAS archives
-  ansible.builtin.file:
-    path: "{{ dg_roms_final_root }}/PC/releases/lichii-{{ item }}-linux-x86_64-pgo.AppImage"
-    state: absent
-  loop: "{{ dg_lichii_superseded_releases }}"

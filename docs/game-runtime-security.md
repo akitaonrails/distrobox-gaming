@@ -126,14 +126,16 @@ Run `ansible-playbook install-lichii-sandbox.yml` from `ansible/`. It builds
 `config/docker/lichii-sandbox/Dockerfile`, installs a host launcher, and
 publishes a separate desktop entry. It does not remove the regular Lichii
 entry or move game data. The image holds only system runtime libraries and
-fonts; the 24 GB owned NUP is bound read-only at launch.
+fonts (including `vulkan-icd-loader`, which the AppImage does not bundle); the
+24 GB owned NUP is bound read-only at launch.
 
 The launcher grants:
 
 | Path or interface | Access | Reason |
 | --- | --- | --- |
 | Lichii profile under `dg_box_home` | Read/write | Settings, shader cache and saves |
-| Lichii AppImage | Read-only | Executable |
+| Lichii program tree (unpacked AppImage) | Read-only | Executable |
+| Host NVIDIA Vulkan ICD (`dg_lichii_sandbox_icd`) | Read-only file | Lets the image's Vulkan loader see the GPU (`--gpus all` does not provide the manifest) |
 | The selected NUP | Read-only | Owned game data |
 | NVIDIA GPU | Device access | Vulkan rendering |
 | X11 and PulseAudio sockets | Socket access | Display and sound |

@@ -1,19 +1,18 @@
 # Lichii Switch 2 experiment
 
-Lichii is an experimental Switch 2 emulator. The optional install uses
-[upstream build 88](https://github.com/zortos293/Lichii/releases/tag/build-88),
-the Linux x86_64 AppImage (build 88 has no PGO variant; build 83 was the last
-one). Its SHA256-pinned release stays in `ROMS_FINAL/PC/releases/`; the
-executable copy lives in `tools/lichii/build-88/`.
-The regular Eden installation, keys, settings, saves and caches are separate.
+Lichii is an experimental Switch 2 emulator. It is installed from
+[upstream source](https://github.com/zortos293/Lichii) at a pinned commit on
+branch `nx2`, because the released AppImages trail the branch by roughly a
+hundred commits — and those commits are the Ocarina of Time performance and
+stability work this box wants:
 
-**No FUSE in the migrated container.** The `gaming` runtime codex built from
-`migrate_box` exposes no `/dev/fuse`, so an AppImage cannot be mounted there.
-The role therefore unpacks the AppImage once with `--appimage-extract` and both
-launchers run `squashfs-root/AppRun` (`dg_lichii_appdir` / `dg_lichii_apprun`);
-the stored `.AppImage` stays as the provenance/rebuild artifact. Upgrading the
-release also deletes the replaced `tools/lichii/<release>/` tree and NAS archive
-(`dg_lichii_superseded_releases`).
+| | |
+|---|---|
+| Commit | `d5494116902d15f9616efbe7668bbcec33a93f9c` (`d549411`, branch `nx2`, 2026-11-07) |
+| Source | `Lichii-<commit>.tar.gz`, SHA256-pinned, staged in `ROMS_FINAL/PC/ports/lichii/` |
+| Build tree | `tools/lichii/build-d549411/{src,build-clang}` |
+| Binary | `tools/lichii/build-d549411/build-clang/bin/lichii` (42 MB), plus `eden-cli` |
+| Launcher | `bin/lichii`; entries **Lichii Switch 2 (Experimental)** and **Ocarina of Time (Lichii Experimental)** |
 
 Run from `ansible/`:
 
@@ -21,100 +20,165 @@ Run from `ansible/`:
 ansible-playbook install-lichii.yml
 ```
 
+The regular Eden installation, its keys, settings, saves and caches stay
+separate; Lichii has its own profile under `tools/lichii/profile/`.
+
+## Building it
+
+The role installs the documented Arch dependencies from `docs/Deps.md`
+(`clang`, `cmake`, `ninja`, Qt6, sdl3, Vulkan headers, spirv-tools, boost…;
+`zlib` is left out because this box already carries `zlib-ng-compat`, which
+conflicts), extracts the pinned tarball once, configures with CMake + Ninja and
+builds 1,816 targets (`-j 30`, about twelve minutes here). It then checks the
+binary exists; a failed build is reported as a failure, not skipped.
+
+**clang, not gcc.** GCC 16 rejects the build at
+`src/shader_recompiler/backend/spirv/emit_spirv_tensor.cpp:55`: the lambda
+parameter `columns` shadows the enclosing function's parameter and upstream
+builds with `-Werror=shadow`. clang does not warn there (verified with a
+minimal repro of both compilers), so the configure step pins
+`-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++`. Upstream's own
+"Fix Linux builds with GCC shadow warnings" commit predates the code that
+still trips it. The running window reports the build:
+`Lichii | d549411690-nx2 | Clang 23.1.4`.
+
+## The game file
+
 The role checks the owned
 `ROMS_FINAL/switch2/The Legend of Zelda Ocarina of Time [0400486024dec000][v131072].nup`
-by exact length, NUP v1 header fields, and table-of-contents SHA256 without
-unpacking its 24 GB payload. It publishes **Lichii Switch 2 (Experimental)**
-and **Ocarina of Time (Lichii Experimental)** menu entries. The latter runs
-the same file directly with Lichii's `-g` option. Override `dg_lichii_game`
-and `dg_lichii_game_size` in `host_vars/localhost.yml` for another owned dump.
+by exact length, NUP v1 header fields and table-of-contents SHA256 without
+unpacking its 24 GB payload. The **Ocarina of Time** entry runs that file
+directly with Lichii's `-g` option. Override `dg_lichii_game` and
+`dg_lichii_game_size` in `host_vars/localhost.yml` for another owned dump.
+Lichii's firmware and keys are not bundled; the unencrypted NUP format opens
+without Switch 1 decryption keys.
 
-The isolated profile is `tools/lichii/profile/`, under separate XDG config,
-data and cache roots. The first-run config requests docked mode, Vulkan on
-the NVIDIA ICD, a 12 GB memory layout, and 1x internal resolution. 1x is an
-intentional starting point: upstream reports low speed and rendering issues
-even on RTX 50-series GPUs. The USB 8BitDo Ultimate 2 SDL GUID and all core
-controls (sticks, triggers, shoulders, face buttons, Start/Back, d-pad and
-rumble) are seeded from this machine's working Eden mapping. The file is
-seeded only when absent, so later in-app settings survive role reruns.
-The wrapper requests Qt's X11 backend because Lichii warns that its Wayland
-backend has significant performance problems.
+## Settings
+
+The profile is `tools/lichii/profile/` under its own XDG config, data and cache
+roots. A fresh profile is rendered from `templates/qt-config.ini.j2` (docked
+mode, Vulkan on the NVIDIA ICD, the 8BitDo mapping, Qt's X11 backend — Lichii
+warns that its Wayland backend has significant performance problems). The
+GPU/graphics baseline below mirrors the defaults of the Frizti fork (a
+Windows-only build, tested here under Wine and removed), applied to the source
+build as `dg_lichii_profile_settings`:
+
+| Key | Value | Why |
+|---|---|---|
+| `memory_layout_mode` | `2` (8 GB) | the game's own memory size |
+| `gpu_accuracy` | `0` (Low / "Fast") | Frizti's GPU Mode |
+| `nvdec_emulation` | `2` (GPU) | GPU video decoding |
+| `use_asynchronous_shaders` | `true` | background shader compilation |
+| `async_presentation` | `true` | non-blocking present |
+| `vsync_mode` | `1` (Mailbox) | lowest-latency pacing |
+| `use_docked_mode` | `1` | docked; handheld showed a black 3D scene |
+| `resolution_setup` | `3` (1x) | see the note below |
+| `use_disk_shader_cache` | `true` | persistent pipeline cache |
+
+The baseline is written once and recorded in `tools/lichii/profile/.baseline-applied`;
+later in-app changes win, and a role rerun does not touch them. To re-apply it,
+delete that marker and rerun the playbook.
+
+`resolution_setup` stays at 1x deliberately. Upstream reports low speed and
+rendering problems above it, this box has no verified 4K gameplay claim for the
+title, and the fork's own recommendation is native. Raise it only after
+measuring stable gameplay, per *Graphics: Always Max Out* in `AGENTS.md`.
+Lichii also has `fps_limit` (0 = the game's own vblank); it is left at 0 so the
+bundled **Dynamic FPS** mod keeps pacing the game.
+
+## What is newer than build 88 (the pinned commit)
+
+About a hundred `nx2` commits sit between the build-88 tag and this commit.
+The ones that matter for Ocarina of Time:
+
+- **HMMA ported to Vulkan cooperative matrices** — `HMMA.16816.F16` on
+  cooperative matrices (upstream: +12% standing, +24% walking) and the pinned
+  `VK_KHR_cooperative_matrix` 16x16x16 path (upstream: 41 → 60 FPS on RDNA4).
+  The fork's *software* K8 HMMA is also unrolled.
+- **GPU thread poll interval** 1 ms → 50 µs (upstream: about 11% faster in
+  Kokiri village), plus a 50 µs suspended-channel poll.
+- **Shader correctness fixes with OoT symptoms**: near-foliage cbuf pointer
+  competition, Hyrule Field grass (null compute pointer slots, up to 64 storage
+  buffers), white flashes from macro-DMA queries, split-thread deadlock, and
+  gradient/global-atomic register shadowing in `TXD`/`ATOMG`.
+- **Dynamic FPS** keeps working down to 10 FPS, and **LayeredFS mods now apply
+  to NUP titles** through Lichii's own add-on path.
+- Pipeline/present work: opt-in `EDEN_NX2_ASYNC_DISCARD`, bounded waits for
+  unbuilt Switch 2 pipelines, `EDEN_NX2_FRAMES_AHEAD`, an optional host FPS
+  limit for the game's present rate, and pinning the split GPU threads to their
+  own cores on Linux as well as Windows.
+- Diagnostics: `EDEN_NX2_PIPELINE_BUILD_TRACE`, `VK_EXT_device_fault` on
+  device loss, desktop compatibility reports, frame-generation state in the
+  status bar.
+
+## Local verification (2026-11-07)
+
+The built binary reports `d549411690-nx2` and boots the NUP with the Vulkan
+RTX 5090 device to a rendered title screen; a bounded `timeout 100` run inside
+the box was stopped and reaped afterwards. Earlier build-88 sessions reached
+the menu at about 59–60 FPS at 1x docked, then showed a 3D scene with severe
+overexposure at 9–23 FPS while shaders were compiling. Those readings were
+momentary, not a steady benchmark, and **no verified 60 FPS gameplay claim
+exists for this build either** — measure before raising the resolution scale.
+(The preliminary per-PR figures quoted above are upstream's, on their hardware.)
+The controller map is installed; individual buttons and sustained gameplay
+have not been re-verified on the source build.
+
+## Saves
+
+Game saves live under `tools/lichii/profile/data/eden/nand/user/save/` and are
+registered with `dg_save_sets`; the live session created `option.sav` and
+`account.sav` there. The NUP and shader caches are not backed up by that
+service.
 
 ## Restricted runtime pilot
 
 `ansible-playbook install-lichii-sandbox.yml` builds a separate, unprivileged
 Docker runtime and adds **Ocarina of Time (Lichii Restricted)** to the menu.
-This is separate from the migrated, restricted `gaming` container. The image
-recipe is `config/docker/lichii-sandbox/Dockerfile` with a pinned Arch base
-digest. Re-running the playbook refreshes the image and launcher when their
-inputs change. The AppImage, NUP and existing Lichii profile remain in their
-original locations; no game data is copied into the image.
+The recipe is `config/docker/lichii-sandbox/Dockerfile` with a pinned Arch base
+digest.
+
+The restricted runtime **still runs the released build-88 AppImage**
+(`dg_lichii_sandbox_*`), not the source build: its image intentionally carries
+no Qt6, and the AppImage bundles its own. The two versions are therefore
+decoupled — `install-lichii.yml` keeps the pinned AppImage staged in
+`tools/lichii/build-88/` and unpacked to `squashfs-root/` for this role, and
+only updates it when `dg_lichii_sandbox_release` moves. Because the migrated
+`gaming` container has no `/dev/fuse`, both paths avoid mounting an image: the
+AppImage is unpacked once with `--appimage-extract` and the launcher runs
+`squashfs-root/AppRun` (a symlink to `usr/bin/lichii`).
+
+Vulkan inside the runtime needs two pieces the AppImage does not carry: the
+loader and the GPU's ICD manifest. The image installs `vulkan-icd-loader` (and
+`vulkan-tools` for the check below); `--gpus all` mounts the driver libraries
+but **not** `/usr/share/vulkan/icd.d/nvidia_icd.json`, so the launcher
+bind-mounts the host manifest (`dg_lichii_sandbox_icd`) read-only. Without both,
+Lichii exits with `Failed to initialize Vulkan: VK_ERROR_INITIALIZATION_FAILED`
+— which is exactly what this runtime did until 2026-11-07.
 
 The host launcher is `~/.local/bin/lichii-sandbox`. It starts with no network,
 all Linux capabilities dropped, a read-only container root, no host home or
-`/run/host`, and no NAS directory mounts. It grants only the Lichii profile read/write,
-the AppImage and NUP read-only, the NVIDIA GPU, X11 and PulseAudio sockets, and
-the 8BitDo Ultimate 2 input nodes when connected. Connect the controller
-**before** launching; hotplugging it later requires a restart. The regular
-Lichii session and restricted one share a profile, so the launcher refuses to
-start while the regular AppImage is running. Run
-`~/.local/bin/lichii-sandbox --check` to verify mounts and GPU without opening
-the game.
+`/run/host`, and no NAS directory mounts. It grants only the Lichii profile
+read/write, the emulator tree and the NUP read-only, the NVIDIA GPU, X11 and
+PulseAudio sockets, and the 8BitDo Ultimate 2 input nodes when connected.
+Connect the controller **before** launching; hotplugging it later requires a
+restart. The regular and restricted sessions share a profile, so the launcher
+refuses to start while the regular emulator is running (it matches both the
+source-build binary and, for an in-flight container, the AppImage tree). Run
+`~/.local/bin/lichii-sandbox --check` to verify mounts, the driver and the
+Vulkan device without opening the game.
 
 The restricted runtime is a pilot, not a claim that GUI applications are fully
 sandboxed: the X11 and audio sockets still link it to the desktop session.
-The NUP and save behavior is the same experimental build described below.
-The 2026-11-05 bounded launch reached the game with normal menu fonts after
-adding Noto/DejaVu fonts; controller input and sustained gameplay in this
-runtime still need live verification.
+A bounded 2026-11-07 launch reached the game (`Lichii | build-88 | … |
+Ocarina of Time`) with the menu fonts in place and the RTX 5090 as the Vulkan
+device, then was stopped and reaped; controller input and sustained gameplay in
+this runtime still need live verification.
 
-[The build-75 report for this exact game](https://github.com/zortos293/Lichii/issues/94)
-documents a black 3D scene in handheld mode. Switching to docked mode fixed
-that symptom for two NVIDIA users, but stutter and exposure problems remained.
-There is no supported 60 FPS or 4K gameplay claim for this build. Raise the
-resolution scale only after verifying stable gameplay on this machine.
+## Upgrading
 
-## What build 88 changed (upstream, since build 83)
-
-No settings keys changed (`src/common/settings.h` is identical between the
-tags), so the seeded profile stays valid. From the release notes:
-
-- **Zelda: Ocarina of Time Dynamic FPS** — Dark's mod, ported by Frizti, is now
-  bundled and **enabled by default for Ocarina**; disable it in the game's
-  Add-Ons settings. It patches only the supported build (with instruction,
-  padding and timer checks), and the notes recommend **CPU Clock Normal** while
-  evaluating it — our profile never raises the clock.
-- Frizti's performance ports: cached storage-buffer bindings, direct native
-  uniform-bank uploads, batched command-page readbacks, less writer tracking,
-  earlier GPU submission, and explicit GPU-to-host visibility before readback.
-- Vulkan pipeline cache v53 (keeps compatible v52 caches; interrupted cache
-  migrations are retryable) and bounded background preparation of cached
-  pipelines and task/mesh shader state.
-- FSR3 frame generation fixes (still off by default).
-
-The four commits on `nx2` after the build-88 tag are AMD shader/depth fixes, a
-MinGW-only AV1 change and one SSBO-alignment fix upstream has not released yet;
-the notes say the AMD work lands in the next build, so build 88 is the newest
-usable version for this NVIDIA box.
-
-## Local smoke test (2026-11-05)
-
-The NUP booted with the NVIDIA RTX 5090 Vulkan device and reached a fully
-rendered title screen with **New Game** selectable. Its intro and title screen
-showed roughly 59–60 FPS at 1x, docked. A second bounded test with Lichii's
-keyboard defaults also reached the menu, but synthetic key input did not enter
-a new game. Both bounded tests were stopped and reaped.
-
-A later desktop-launched session, with the 8BitDo controller connected,
-advanced through the opening story and rendered 3D scene. The scene had severe
-overexposure and ran at about 9 FPS while hundreds of shaders were building;
-a later frame showed about 23 FPS with four shaders building. These are
-momentary readings, not a steady gameplay benchmark. The installed controller
-map is present, but individual buttons and sustained gameplay have not been
-verified. Leave this experiment at 1x until rendering and frame pacing improve.
-
-Game saves are under `tools/lichii/profile/data/eden/nand/user/save/` and
-registered with `dg_save_sets`; the live session created `option.sav` and
-`account.sav` there. The NUP game file and shader caches are not
-backed up by that service. Lichii's firmware and keys are not bundled; the
-unencrypted NUP format can be opened without Switch 1 decryption keys.
+Bump `dg_lichii_commit`/`dg_lichii_short` and re-pin `dg_lichii_source_sha256`;
+the role extracts into a new `build-<short>` tree, builds it, and the launcher
+follows `dg_lichii_bin`. Read the release notes / commit range for new launch
+options and settings first (see *GitHub Release Updates* in `AGENTS.md`), and
+delete the previous `build-<short>` tree once a run reports `changed=0`.

@@ -13,7 +13,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 
 | Project | What it is | Source |
 |---|---|---|
-| Lichii | Experimental Switch 2 emulator, installed alongside Eden with an isolated profile and optional restricted runtime | [zortos293/Lichii](https://github.com/zortos293/Lichii) · [doc](lichii.md) |
+| Lichii | Experimental Switch 2 emulator, built from the pinned `nx2` commit with an isolated profile and optional restricted runtime | [zortos293/Lichii](https://github.com/zortos293/Lichii) · [doc](lichii.md) |
 
 ## Recompilations / decomps / native source ports
 

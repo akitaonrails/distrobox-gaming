@@ -2,8 +2,10 @@
 - name: Check the Lichii AppImage and owned game used by the restricted runtime
   ansible.builtin.stat:
     path: "{{ item }}"
+    # AppRun in the unpacked tree is a symlink to usr/bin/lichii.
+    follow: true
   loop:
-    - "{{ dg_lichii_appimage }}"
+    - "{{ dg_lichii_sandbox_appdir }}/AppRun"
     - "{{ dg_lichii_game }}"
   register: _lichii_sandbox_inputs
 

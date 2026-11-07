@@ -1,11 +1,13 @@
 FROM archlinux@sha256:b1c2fe6e717bfd5673af8fc217e1e1c3ce0dcbb1d53c3414c8425e7ce79fc6d9
 
 # The AppImage bundles Lichii/Qt. These are the host-facing X11, Vulkan and
-# font libraries it still expects. GPU driver libraries come from --gpus all.
+# font libraries it still expects. GPU driver libraries come from --gpus all,
+# which also injects /usr/share/vulkan/icd.d/nvidia_icd.json; the loader itself
+# is a system package the AppImage does not carry (vulkan-icd-loader).
 RUN pacman -Syu --noconfirm --needed \
       alsa-lib fontconfig fribidi harfbuzz libglvnd libpulse libx11 libxcb \
       libxkbcommon-x11 noto-fonts noto-fonts-emoji ttf-dejavu \
-      xcb-util-cursor \
+      xcb-util-cursor vulkan-icd-loader vulkan-tools \
     && pacman -Scc --noconfirm
 
 ARG DG_UID
