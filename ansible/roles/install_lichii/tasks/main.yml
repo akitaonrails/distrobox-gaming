@@ -139,11 +139,25 @@
     path: "{{ dg_lichii_profile }}/.baseline-applied"
   register: _lichii_baseline
 
+# A setting is only honoured when its "<key>\default=false" companion exists:
+# with the flag absent (or true) the frontend uses its built-in default and
+# rewrites the value on exit — which silently reverted the GPU baseline before.
 - name: Apply the Ocarina baseline settings
   ansible.builtin.lineinfile:
     path: "{{ dg_lichii_config }}"
-    regexp: "^{{ item.key }}="
+    regexp: '^{{ item.key }}='
     line: "{{ item.key }}={{ item.value }}"
+    insertafter: EOF
+  loop: "{{ dg_lichii_profile_settings | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  when: not _lichii_baseline.stat.exists
+
+- name: Mark the baseline settings as explicit, not built-in defaults
+  ansible.builtin.lineinfile:
+    path: "{{ dg_lichii_config }}"
+    regexp: '^{{ item.key }}\\default='
+    line: '{{ item.key }}\default=false'
     insertafter: EOF
   loop: "{{ dg_lichii_profile_settings | dict2items }}"
   loop_control:

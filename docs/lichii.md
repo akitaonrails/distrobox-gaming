@@ -75,9 +75,13 @@ build as `dg_lichii_profile_settings`:
 | `resolution_setup` | `3` (1x) | see the note below |
 | `use_disk_shader_cache` | `true` | persistent pipeline cache |
 
-The baseline is written once and recorded in `tools/lichii/profile/.baseline-applied`;
-later in-app changes win, and a role rerun does not touch them. To re-apply it,
-delete that marker and rerun the playbook.
+Each key is written together with its `<key>\default=false` companion. That
+matters: the frontend treats a missing (or `true`) `\default` flag as "use the
+built-in default" and rewrites the value on exit, which silently reverted GPU
+accuracy and hardware decoding until this was fixed. The baseline is written
+once and recorded in `tools/lichii/profile/.baseline-applied`; later in-app
+changes win, and a role rerun does not touch them. To re-apply it, delete that
+marker and rerun the playbook.
 
 `resolution_setup` stays at 1x deliberately. Upstream reports low speed and
 rendering problems above it, this box has no verified 4K gameplay claim for the
