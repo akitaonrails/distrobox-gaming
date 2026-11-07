@@ -368,6 +368,12 @@ dg_ogm_games:
     category: recomp
     sgdb_query: "The Legend of Zelda Tears of the Kingdom"
     github: "{{ dg_ut_repo }}"
+  - desktop_id: voldorium
+    id: voldorium
+    name: "SoulCalibur (Voldorium)"
+    category: recomp
+    sgdb_query: "Soulcalibur"
+    github: "{{ dg_voldorium_repo }}"
   - desktop_id: gaming-soulcalibur2
     id: soulcalibur2
     category: recomp

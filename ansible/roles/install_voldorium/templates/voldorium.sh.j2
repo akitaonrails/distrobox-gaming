@@ -1,0 +1,25 @@
+#!/bin/sh
+set -eu
+
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+
+root="{{ dg_voldorium_root }}"
+if [ ! -x "$root/voldorium" ]; then
+  printf '%s\n' 'Voldorium is not installed (run install-voldorium.yml).' >&2
+  exit 1
+fi
+if [ ! -f "$root/sc_game.so" ]; then
+  printf '%s\n' 'The SoulCalibur game module is not built; run install-voldorium.yml.' >&2
+  exit 1
+fi
+
+# Native Linux binary: SDL2 + OpenGL on the RTX, full screen at the monitor's
+# resolution (the in-game GRAPHICS menu switches to a window and sets MSAA).
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+export __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+unset PYTHONHOME PYTHONPATH
+cd "$root"
+exec ./voldorium "$@"

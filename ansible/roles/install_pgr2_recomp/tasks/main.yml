@@ -178,7 +178,10 @@
 - name: Build the game code from the disc
   ansible.builtin.command:
     argv:
-      - "{{ dg_in_box }}"
+      - distrobox-enter
+      - -n
+      - "{{ dg_box_name }}"
+      - --
       - sh
       - -c
       - >-

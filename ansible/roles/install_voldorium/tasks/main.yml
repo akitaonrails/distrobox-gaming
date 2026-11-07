@@ -1,0 +1,197 @@
+---
+# Voldorium is a native Linux program (no Wine): a small pinned tarball plus a
+# game module it builds from the owned disc with a headless script
+# (builder/first_run.sh -> tools/build.py, which downloads Zig and two Flycast
+# files at pinned hashes). See docs/voldorium.md.
+
+- name: Create the Voldorium directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_voldorium_staging }}"
+    - "{{ dg_voldorium_root }}"
+    - "{{ dg_voldorium_disc_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Stage the pinned Voldorium release
+  ansible.builtin.get_url:
+    url: "{{ dg_voldorium_asset_url }}"
+    dest: "{{ dg_voldorium_staging }}/{{ dg_voldorium_asset_name }}"
+    checksum: "sha256:{{ dg_voldorium_asset_sha256 }}"
+    mode: "0644"
+
+# The tarball holds a single top-level directory; flatten it into the game root
+# so `voldorium`, `builder/` and `voldorium.ini` sit side by side.
+- name: Install the Voldorium program
+  ansible.builtin.command:
+    argv:
+      - tar
+      - -xzf
+      - "{{ dg_voldorium_staging }}/{{ dg_voldorium_asset_name }}"
+      - -C
+      - "{{ dg_voldorium_root }}"
+      - --strip-components=1
+    creates: "{{ dg_voldorium_root }}/voldorium"
+
+- name: Check the owned SoulCalibur CHD
+  ansible.builtin.stat:
+    path: "{{ dg_voldorium_chd }}"
+    checksum_algorithm: sha256
+    get_checksum: "{{ not (dg_voldorium_gdi is file) }}"
+  register: _voldorium_chd
+
+- name: Require the supported SoulCalibur dump
+  ansible.builtin.assert:
+    that:
+      - _voldorium_chd.stat.isreg | default(false)
+      - (dg_voldorium_gdi is file) or (_voldorium_chd.stat.checksum | default('') == dg_voldorium_chd_sha256)
+    fail_msg: >-
+      Voldorium needs the SoulCalibur (USA) T-1401N V1.000 dump; expected the
+      redump CHD at dg_voldorium_chd (sha256 {{ dg_voldorium_chd_sha256 }}).
+    quiet: true
+
+# chdman converts the library CHD to the .gdi + track files the port reads.
+# It writes locally; the source CHD is read from the library.
+- name: Check whether the disc has been converted
+  ansible.builtin.stat:
+    path: "{{ dg_voldorium_gdi }}"
+  register: _voldorium_gdi
+
+- name: Convert the CHD to a GDI with its tracks
+  ansible.builtin.command:
+    argv:
+      - distrobox-enter
+      - -n
+      - "{{ dg_box_name }}"
+      - --
+      - sh
+      - -c
+      - >-
+        cd "{{ dg_voldorium_disc_dir }}" && chdman extractcd
+        -i "{{ dg_voldorium_chd }}" -o soulcalibur.gdi -ob 'track%t.bin' --splitbin
+  when: not _voldorium_gdi.stat.exists
+
+# The build refuses anything but T-1401N V1.000; check it here so a wrong dump
+# fails with our message instead of a builder log.
+- name: Verify the dump identity in IP.BIN
+  ansible.builtin.command:
+    argv:
+      - python3
+      - -c
+      - |
+        import pathlib, sys
+        raw = (pathlib.Path(sys.argv[1]) / "track1.bin").read_bytes()[16:16 + 0x100]
+        product = raw[0x40:0x4A].decode("latin1").strip()
+        version = raw[0x4A:0x50].decode("latin1").strip()
+        if raw[:16] != b"SEGA SEGAKATANA " or product != sys.argv[2] or version != sys.argv[3]:
+            raise SystemExit(f"unexpected dump: {product!r} {version!r}")
+        print(f"{product} {version}")
+      - "{{ dg_voldorium_disc_dir }}"
+      - "{{ dg_voldorium_product }}"
+      - "{{ dg_voldorium_version_code }}"
+  changed_when: false
+
+- name: Check whether the game module is built
+  ansible.builtin.stat:
+    path: "{{ dg_voldorium_module }}"
+  register: _voldorium_module
+
+# Builds sc_game.so from the disc: downloads Zig 0.14.1 and two Flycast files
+# (each SHA-256 checked) into builder/, translates the code and compiles it.
+# Headless by design: first_run.sh writes builder/work/first_run.result.
+- name: Build the game module from the disc
+  ansible.builtin.command:
+    argv:
+      - distrobox-enter
+      - -n
+      - "{{ dg_box_name }}"
+      - --
+      - sh
+      - -c
+      - >-
+        cd "{{ dg_voldorium_root }}" && timeout 2400
+        sh builder/first_run.sh "{{ dg_voldorium_gdi }}" "{{ dg_voldorium_root }}"
+  register: _voldorium_build
+  changed_when: true
+  failed_when: false
+  when: not _voldorium_module.stat.exists
+
+- name: Require the built game module
+  ansible.builtin.stat:
+    path: "{{ dg_voldorium_module }}"
+  register: _voldorium_module_after
+  when: not _voldorium_module.stat.exists
+
+- name: Record the module build
+  ansible.builtin.assert:
+    that: _voldorium_module_after.stat.isreg | default(false)
+    fail_msg: >-
+      sc_game.so was not built; see {{ dg_voldorium_root }}/builder/work/build.log
+      (and builder/work/first_run.result). docs/voldorium.md lists the usual causes.
+    quiet: true
+  when: not _voldorium_module.stat.exists
+
+# The in-game GRAPHICS menu rewrites this file, so seed it once; only the disc
+# path is kept in step with this install.
+- name: Seed the Voldorium settings
+  ansible.builtin.copy:
+    dest: "{{ dg_voldorium_root }}/voldorium.ini"
+    force: false
+    mode: "0644"
+    content: |
+      ; Voldorium settings (seeded by install_voldorium; the in-game GRAPHICS
+      ; menu edits this file and wins afterwards).
+      [game]
+      disc = disc/soulcalibur.gdi
+      font = biosfont.bin
+
+      [video]
+      fullscreen = {{ dg_voldorium_settings.fullscreen }}
+      resolution = {{ dg_voldorium_settings.resolution }}
+      window = 1280x720
+      msaa = {{ dg_voldorium_settings.msaa }}
+      backgrounds = {{ dg_voldorium_settings.backgrounds }}
+      text = {{ dg_voldorium_settings.text }}
+      vsync = {{ dg_voldorium_settings.vsync }}
+
+      [audio]
+      enabled = 1
+      volume = 100
+
+      [net]
+      port = 7000
+      peer =
+      player = 1
+      delay = 2
+      menu_delay = 8
+
+- name: Keep the disc path on this install
+  ansible.builtin.lineinfile:
+    path: "{{ dg_voldorium_root }}/voldorium.ini"
+    regexp: '^disc = '
+    line: 'disc = disc/soulcalibur.gdi'
+
+- name: Install the Voldorium launcher
+  ansible.builtin.template:
+    src: voldorium.sh.j2
+    dest: "{{ dg_voldorium_launcher }}"
+    mode: "0755"
+
+- name: Render the Voldorium desktop entry
+  ansible.builtin.template:
+    src: voldorium.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/voldorium.desktop"
+    mode: "0644"
+
+- name: Publish the Voldorium desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _voldorium_host_launchers
+  changed_when: >-
+    'installed ' in _voldorium_host_launchers.stdout or
+    'removed stale ' in _voldorium_host_launchers.stdout

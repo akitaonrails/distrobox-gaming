@@ -104,6 +104,10 @@ dg_save_sets:
   - { name: prboom-data,          src: ".local/share/prboom-plus-rt" }
   - { name: banjo-recompiled,     src: ".config/BanjoRecompiled" }   # legacy BanjoRecomp saves (pre-Lighthouse)
 
+  # SoulCalibur (Voldorium): the VMU memory card + settings
+  - { name: voldorium,            src: ["file:Games/voldorium/vmu_a1.bin",
+                                       "file:Games/voldorium/voldorium.ini"] }
+
   # Original-Xbox recompilations: emulated hard disks
   - { name: pgr2-recomp,          src: ["Games/pgr2/hdd/E/UDATA",
                                        "file:Games/pgr2/pgr2.toml"] }

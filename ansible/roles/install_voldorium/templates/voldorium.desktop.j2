@@ -1,0 +1,10 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=SoulCalibur (Voldorium)
+Exec={{ dg_voldorium_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Dreamcast SoulCalibur, recompiled: 16:9, 8x MSAA, rollback netplay
+Categories=Game;
+{{ ogm_metadata('voldorium') }}

@@ -1,0 +1,7 @@
+---
+- name: Install SoulCalibur (Voldorium)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_voldorium

@@ -1,0 +1,39 @@
+---
+# SoulCalibur (Dreamcast, USA T-1401N V1.000) — enrique363/voldorium, a static
+# recompilation with a native Linux build (SDL2 + OpenGL), 16:9 and rollback
+# netplay. No Wine: the release is a small native tarball, and the game module
+# sc_game.so is built from the owned disc on first start. See docs/voldorium.md.
+
+dg_voldorium_repo: enrique363/voldorium
+dg_voldorium_version: v1.1.3
+# The release tag carries a "v" but the asset filename does not
+# (Voldorium-1.1.3-linux.tar.gz).
+dg_voldorium_asset_name: "Voldorium-{{ dg_voldorium_version | regex_replace('^v', '') }}-linux.tar.gz"
+dg_voldorium_asset_url: "https://github.com/{{ dg_voldorium_repo }}/releases/download/{{ dg_voldorium_version }}/{{ dg_voldorium_asset_name }}"
+dg_voldorium_asset_sha256: 45ce2551e54ee16b40158fee3eaa70b131e94809c5d775228346f26a2bd181ba
+dg_voldorium_staging: "{{ dg_roms_final_root }}/PC/ports/voldorium/{{ dg_voldorium_version }}"
+
+# The port needs the T-1401N V1.000 dump as a .gdi with its track files. The
+# library has the redump CHD, so the role converts it once with chdman and
+# keeps only the tracks (the CHD copy is deleted after a successful convert).
+dg_voldorium_chd: "{{ dg_roms_final_root }}/dreamcast/Soulcalibur (USA).chd"
+dg_voldorium_chd_sha256: c927b716f1e563437b2666535b2505cc87fa58c5c25910037d151675d2452d1d
+dg_voldorium_product: T1401N
+dg_voldorium_version_code: V1.000
+
+dg_voldorium_root: "{{ dg_box_home }}/Games/voldorium"
+dg_voldorium_disc_dir: "{{ dg_voldorium_root }}/disc"
+dg_voldorium_gdi: "{{ dg_voldorium_disc_dir }}/soulcalibur.gdi"
+dg_voldorium_module: "{{ dg_voldorium_root }}/sc_game.so"
+dg_voldorium_launcher: "{{ dg_box_home }}/bin/voldorium"
+
+# Graphics baseline (AGENTS: highest settings that hold the frame rate). The
+# in-game GRAPHICS menu edits the same file, so the role seeds these once and
+# only keeps `disc` in step; fullscreen + native resolution + 8x MSAA + VSync.
+dg_voldorium_settings:
+  fullscreen: "1"
+  resolution: native
+  msaa: "8"
+  backgrounds: stretch
+  text: smooth
+  vsync: "1"
