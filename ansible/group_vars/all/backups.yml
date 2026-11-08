@@ -108,6 +108,10 @@ dg_save_sets:
   - { name: voldorium,            src: ["file:Games/voldorium/vmu_a1.bin",
                                        "file:Games/voldorium/voldorium.ini"] }
 
+  # Virtua Racing Deluxe Enhanced: settings + the single save state
+  - { name: vrdeluxe,             src: ["file:Games/vrdeluxe/vrde.ini",
+                                       "file:Games/vrdeluxe/vrde.mds"] }
+
   # Original-Xbox recompilations: emulated hard disks
   - { name: pgr2-recomp,          src: ["Games/pgr2/hdd/E/UDATA",
                                        "file:Games/pgr2/pgr2.toml"] }

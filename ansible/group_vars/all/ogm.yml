@@ -423,6 +423,8 @@ dg_ogm_games:
       sgdb_query: "OutRunners", github: "{{ dg_or_repo }}" }
   - { desktop_id: gaming-outrunners-arcade, id: outrunners-arcade, category: port,
       sgdb_query: "OutRunners", github: "{{ dg_or_repo }}" }
+  - { desktop_id: gaming-vrdeluxe, id: vrdeluxe, category: port,
+      sgdb_query: "Virtua Racing Deluxe", github: "{{ dg_vrde_repo }}" }
   - desktop_id: gaming-gt4-recomp
     id: gt4-recomp
     category: recomp

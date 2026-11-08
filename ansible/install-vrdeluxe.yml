@@ -1,0 +1,7 @@
+---
+- name: Install Virtua Racing Deluxe Enhanced
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_vrdeluxe

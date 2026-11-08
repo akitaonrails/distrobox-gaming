@@ -1,0 +1,139 @@
+---
+# Virtua Racing Deluxe Enhanced: build the Linux Makefile from the pinned
+# tarball (upstream publishes no Linux binary) and run it from the owned USA
+# 32X ROM under gamescope at 4K60. See docs/vrdeluxe.md.
+
+- name: Verify the owned USA 32X ROM
+  ansible.builtin.shell:
+    cmd: >-
+      set -o pipefail; unzip -p "{{ dg_vrde_rom_zip }}" | sha1sum | cut -d' ' -f1
+  register: _vrde_rom
+  changed_when: false
+  failed_when: false
+
+- name: Require the supported Virtua Racing Deluxe (USA) ROM
+  ansible.builtin.assert:
+    that: _vrde_rom.stdout | default('') | trim == dg_vrde_rom_sha1
+    fail_msg: >-
+      Put the owned Virtua Racing Deluxe (USA) 32X ROM at
+      {{ dg_vrde_rom_zip }} (inner file SHA-1 {{ dg_vrde_rom_sha1 }}),
+      or override dg_vrde_rom_zip in host_vars/localhost.yml.
+
+- name: Create Virtua Racing build, game and launcher directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_vrde_source_archive | dirname }}"
+    - "{{ dg_vrde_build_root }}"
+    - "{{ dg_vrde_src_dir }}"
+    - "{{ dg_vrde_root }}"
+    - "{{ dg_vrde_launcher | dirname }}"
+    - "{{ dg_desktop_render_dir }}"
+
+- name: Install the Virtua Racing build dependencies
+  ansible.builtin.shell: "{{ dg_in_box }} sudo pacman -S --needed --noconfirm {{ dg_vrde_packages | join(' ') }}"
+  register: _vrde_packages
+  changed_when: "'installing' in _vrde_packages.stdout"
+
+- name: Stage the pinned Virtua Racing source archive
+  ansible.builtin.get_url:
+    url: "{{ dg_vrde_source_url }}"
+    dest: "{{ dg_vrde_source_archive }}"
+    checksum: "sha256:{{ dg_vrde_source_sha256 }}"
+    mode: "0644"
+
+- name: Extract the Virtua Racing source
+  ansible.builtin.unarchive:
+    src: "{{ dg_vrde_source_archive }}"
+    dest: "{{ dg_vrde_src_dir }}"
+    remote_src: true
+    extra_opts:
+      - --strip-components=1
+    creates: "{{ dg_vrde_src_dir }}/Makefile"
+
+- name: Check for a built Virtua Racing binary
+  ansible.builtin.stat:
+    path: "{{ dg_vrde_built }}"
+  register: _vrde_bin
+
+# A handful of C files plus PicoDrive: under a minute with -j 30.
+- name: Build Virtua Racing Deluxe Enhanced
+  ansible.builtin.command:
+    argv:
+      - distrobox-enter
+      - -n
+      - "{{ dg_box_name }}"
+      - --
+      - sh
+      - -c
+      - >-
+        cd "{{ dg_vrde_src_dir }}" && timeout 1800 make -j 30
+  when: not _vrde_bin.stat.exists
+
+- name: Require the built Virtua Racing binary
+  ansible.builtin.stat:
+    path: "{{ dg_vrde_built }}"
+  register: _vrde_bin_after
+
+- name: Record the Virtua Racing build result
+  ansible.builtin.assert:
+    that: _vrde_bin_after.stat.isreg | default(false)
+    fail_msg: >-
+      Virtua Racing Deluxe Enhanced did not build at {{ dg_vrde_version }}; see
+      the make output above and docs/vrdeluxe.md.
+    quiet: true
+
+- name: Install the Virtua Racing binary
+  ansible.builtin.copy:
+    src: "{{ dg_vrde_built }}"
+    dest: "{{ dg_vrde_bin }}"
+    remote_src: true
+    mode: "0755"
+
+# The port reads the library ZIP directly (PicoDrive's own zip support), so the
+# owned ROM stays in place and read-only.
+- name: Link the owned ROM beside the game
+  ansible.builtin.file:
+    path: "{{ dg_vrde_rom_link }}"
+    src: "{{ dg_vrde_rom_zip }}"
+    state: link
+
+- name: Check whether the Virtua Racing settings already exist
+  ansible.builtin.stat:
+    path: "{{ dg_vrde_config }}"
+  register: _vrde_config
+
+- name: Seed the enhanced 4K60 settings
+  ansible.builtin.copy:
+    dest: "{{ dg_vrde_config }}"
+    mode: "0644"
+    content: |
+      ; vrde settings: the menu (Esc) and keys 1 to 9 change most of these while
+      ; playing, and this file is rewritten. Seeded once by Ansible.
+      {% for key, value in dg_vrde_settings.items() %}
+      {{ key }} = {{ value }}
+      {% endfor %}
+  when: not _vrde_config.stat.exists
+
+- name: Install the Virtua Racing launcher
+  ansible.builtin.template:
+    src: vrdeluxe.sh.j2
+    dest: "{{ dg_vrde_launcher }}"
+    mode: "0755"
+
+- name: Render the Virtua Racing desktop entry
+  ansible.builtin.template:
+    src: gaming-vrdeluxe.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-vrdeluxe.desktop"
+    mode: "0644"
+
+- name: Publish the Virtua Racing desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _vrde_host
+  changed_when: "'installed ' in _vrde_host.stdout or 'removed stale ' in _vrde_host.stdout"

@@ -1,0 +1,61 @@
+---
+# Virtua Racing Deluxe Enhanced: a PicoDrive-based HLE port that redraws the
+# Sega 32X game's 3D on the GPU (higher resolution, MSAA, 16:9, longer draw
+# distance, analog pad, frame rate above the original 20 FPS). Upstream ships
+# Windows/macOS binaries only, so this builds the Linux Makefile from the
+# pinned source tarball inside the box. The ROM is the owned USA dump.
+dg_vrde_repo: PokaMilkTea/VirtuaRacingDeluxeEnhanced
+dg_vrde_version: v1.2.2
+dg_vrde_commit: 99b5ff98473d958b4e6d3d987bce0ec16c57a869
+dg_vrde_source_url: "https://github.com/{{ dg_vrde_repo }}/archive/refs/tags/{{ dg_vrde_version }}.tar.gz"
+dg_vrde_source_sha256: d8d1c9d1145d6ca7c74ce08e56f7ef2ffb69fdd83d8e14c188ca072bf4b0a8d7
+dg_vrde_source_archive: "{{ dg_roms_final_root }}/PC/ports/vrdeluxe/vrdeluxe-{{ dg_vrde_version }}.tar.gz"
+# Build dependencies (the binary links SDL2, GL and zlib at runtime). zlib is
+# not listed: this box ships zlib-ng-compat, which conflicts with the zlib
+# package and already provides zlib.h and libz.so.
+dg_vrde_packages:
+  - sdl2
+  - mesa
+dg_vrde_build_root: "{{ dg_box_home }}/tools/vrdeluxe/{{ dg_vrde_version }}"
+dg_vrde_src_dir: "{{ dg_vrde_build_root }}/src"
+dg_vrde_built: "{{ dg_vrde_src_dir }}/build/vrde"
+
+# Installed game: the binary, the ROM link and vrde.ini / vrde.mds (written in
+# the working directory on Linux, which the launcher sets to this folder).
+dg_vrde_root: "{{ dg_box_home }}/Games/vrdeluxe"
+dg_vrde_bin: "{{ dg_vrde_root }}/vrde"
+dg_vrde_config: "{{ dg_vrde_root }}/vrde.ini"
+dg_vrde_state: "{{ dg_vrde_root }}/vrde.mds"
+dg_vrde_rom_zip: "{{ dg_roms_final_root }}/sega32x/Virtua Racing Deluxe (USA).zip"
+dg_vrde_rom_sha1: 18dfdeb50780c2623e60a6587d7ed701a1cf81f1
+dg_vrde_rom_link: "{{ dg_vrde_root }}/Virtua Racing Deluxe (USA).zip"
+dg_vrde_launcher: "{{ dg_box_home }}/bin/vrdeluxe"
+
+# 3840x2160 at 60 Hz under gamescope measured 0 missed vsyncs (2328/2328) and
+# 0 audio underruns on 2026-11-08; the port's own fullscreen on the 250 Hz
+# output missed 413 of 1412. The game's own fullscreen stays off (see below).
+dg_vrde_gamescope_args: "-W 3840 -H 2160 -r 60 -f"
+
+# Seeded once (later in-game changes survive): the enhanced maximum of every
+# knob the port exposes. resolution 0 = the window's pixels (4K), msaa on,
+# exact vertices, blended dither, 60 interpolated images/s, 16:9, the far view
+# with haze and detailed opponents everywhere, analog pad on.
+dg_vrde_settings:
+  view: 0
+  hle: 1
+  resolution: 0
+  msaa: 1
+  exact_vertices: 1
+  picodrive_green: 0
+  blend_dither: 1
+  smooth: 3
+  widescreen: 1
+  far_view: 1
+  detailed_opponents: 1
+  fullscreen: 0
+  analog: 1
+  stick_dead_zone: 8
+  trigger_dead_zone: 5
+  far_tiles: 12
+  haze_start: 8
+  haze_end: 10

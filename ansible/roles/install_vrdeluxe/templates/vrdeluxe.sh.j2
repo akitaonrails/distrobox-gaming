@@ -1,0 +1,18 @@
+#!/bin/sh
+# Virtua Racing Deluxe Enhanced launcher — native HLE port on PicoDrive,
+# presented fullscreen at 4K60 by gamescope. Managed by install_vrdeluxe.
+# Runs inside the gaming box (gamescope lives there); re-enters itself.
+set -eu
+
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+
+if [ ! -f "{{ dg_vrde_rom_link }}" ] || [ ! -f "{{ dg_vrde_bin }}" ]; then
+  printf '%s\n' "ERROR: Virtua Racing Deluxe Enhanced is not installed." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-vrdeluxe.yml" >&2
+  exit 1
+fi
+
+cd "{{ dg_vrde_root }}"
+exec gamescope {{ dg_vrde_gamescope_args }} -- "{{ dg_vrde_bin }}" "{{ dg_vrde_rom_link }}" "$@"
