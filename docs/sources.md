@@ -14,6 +14,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | Project | What it is | Source |
 |---|---|---|
 | Lichii | Experimental Switch 2 emulator, built from the pinned `nx2` commit with an isolated profile and optional restricted runtime | [zortos293/Lichii](https://github.com/zortos293/Lichii) · [doc](lichii.md) |
+| Lichii Shader Sync | Third-party CLI that merges community Vulkan shader packs into Lichii/Eden caches (Ocarina pack: 88,982 pipelines) | [oceanpacificpeace/lichii-shader-sync](https://github.com/oceanpacificpeace/lichii-shader-sync) · [doc](lichii.md) |
 
 ## Recompilations / decomps / native source ports
 

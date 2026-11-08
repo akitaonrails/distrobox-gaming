@@ -7,10 +7,10 @@
 # shadowing the enclosing one), which clang does not warn about.
 dg_lichii_repo: zortos293/Lichii
 dg_lichii_branch: nx2
-dg_lichii_commit: d5494116902d15f9616efbe7668bbcec33a93f9c
-dg_lichii_short: d549411
+dg_lichii_commit: ad477ef1f4b54ed48db6ce73cc990a141637e55b
+dg_lichii_short: ad477ef
 dg_lichii_source_url: "https://github.com/{{ dg_lichii_repo }}/archive/{{ dg_lichii_commit }}.tar.gz"
-dg_lichii_source_sha256: 66fae46d9f8c8c332792dcf5e4a8df0362536a123dcb6a52bdddc398ceb41318
+dg_lichii_source_sha256: e97b8991733b5cc13020509c351668d2f8d65c9ccce6f104f7451e2e5ddb01e3
 dg_lichii_source_archive: "{{ dg_roms_final_root }}/PC/ports/lichii/lichii-{{ dg_lichii_short }}.tar.gz"
 dg_lichii_packages:
   - clang
@@ -70,6 +70,19 @@ dg_lichii_profile_settings:
   use_docked_mode: "1"
   resolution_setup: "{{ dg_lichii_resolution_setup }}"
   use_disk_shader_cache: "true"
+
+# Shared Vulkan shader caches (third-party, unofficial): the CLI merges the
+# OoT pack from this repo into the profile's cache, checksum-verified per chunk
+# and keeping the previous file as .bak. Pinned tool; the pack itself is fetched
+# by the tool from the same releases and is not re-hosted here.
+dg_lichii_shaders_repo: oceanpacificpeace/lichii-shader-sync
+dg_lichii_shaders_release: v1.1.1
+dg_lichii_shaders_asset_name: lichii-sync-linux-amd64
+dg_lichii_shaders_asset_url: "https://github.com/{{ dg_lichii_shaders_repo }}/releases/download/{{ dg_lichii_shaders_release }}/{{ dg_lichii_shaders_asset_name }}"
+dg_lichii_shaders_asset_sha256: f32df85acaf182504f62b8d750805cec4e76bab600640faac15322d90ac45e14
+dg_lichii_shaders_archive: "{{ dg_roms_final_root }}/PC/tools/lichii-sync-{{ dg_lichii_shaders_release }}-linux-amd64"
+dg_lichii_shaders_bin: "{{ dg_lichii_root }}/lichii-sync"
+dg_lichii_shaders_launcher: "{{ dg_box_home }}/bin/lichii-shaders"
 
 # The restricted runtime still runs the released AppImage (its image carries no
 # Qt6, and the AppImage bundles it), independently of the source build above.

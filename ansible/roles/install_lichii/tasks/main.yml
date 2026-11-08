@@ -34,8 +34,10 @@
     mode: "0755"
   loop:
     - "{{ dg_lichii_source_archive | dirname }}"
+    - "{{ dg_lichii_shaders_archive | dirname }}"
     - "{{ dg_lichii_root }}"
     - "{{ dg_lichii_build_root }}"
+    - "{{ dg_lichii_src_dir }}"
     - "{{ dg_lichii_profile }}/config/eden"
     - "{{ dg_lichii_profile }}/data"
     - "{{ dg_lichii_profile }}/cache"
@@ -64,6 +66,20 @@
       - "{{ dg_lichii_src_dir }}"
       - --strip-components=1
     creates: "{{ dg_lichii_src_dir }}/CMakeLists.txt"
+
+# A GitHub tarball has no .git, and upstream then falls back to
+# "stable-1.0.0"; these files make the binary report the pinned revision
+# instead (GetSCMRev.cmake reads them before shelling out to git).
+- name: Record the pinned revision for the build banner
+  ansible.builtin.copy:
+    dest: "{{ dg_lichii_src_dir }}/{{ item.file }}"
+    content: "{{ item.value }}\n"
+    mode: "0644"
+  loop:
+    - { file: GIT-COMMIT, value: "{{ dg_lichii_commit }}" }
+    - { file: GIT-REFSPEC, value: "{{ dg_lichii_branch }}" }
+  loop_control:
+    label: "{{ item.file }}"
 
 - name: Check for a configured Lichii build tree
   ansible.builtin.stat:
@@ -202,6 +218,28 @@
        | map('regex_replace', '^', dg_lichii_root ~ '/') | list
        + dg_lichii_superseded_releases
        | map('regex_replace', '^', dg_roms_final_root ~ '/PC/releases/lichii-') | map('regex_replace', '$', '-linux-x86_64.AppImage') | list }}
+
+# Shared Vulkan shader packs (third-party, unofficial). The tool fetches and
+# checksum-verifies its own chunks; we pin the tool itself.
+- name: Stage the pinned Lichii shader-sync tool
+  ansible.builtin.get_url:
+    url: "{{ dg_lichii_shaders_asset_url }}"
+    dest: "{{ dg_lichii_shaders_archive }}"
+    checksum: "sha256:{{ dg_lichii_shaders_asset_sha256 }}"
+    mode: "0644"
+
+- name: Install the Lichii shader-sync tool
+  ansible.builtin.copy:
+    src: "{{ dg_lichii_shaders_archive }}"
+    dest: "{{ dg_lichii_shaders_bin }}"
+    remote_src: true
+    mode: "0755"
+
+- name: Install the Lichii shader-sync launcher
+  ansible.builtin.template:
+    src: lichii-shaders.sh.j2
+    dest: "{{ dg_lichii_shaders_launcher }}"
+    mode: "0755"
 
 - name: Install Lichii launcher
   ansible.builtin.template:

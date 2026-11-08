@@ -2,16 +2,16 @@
 
 Lichii is an experimental Switch 2 emulator. It is installed from
 [upstream source](https://github.com/zortos293/Lichii) at a pinned commit on
-branch `nx2`, because the released AppImages trail the branch by roughly a
-hundred commits — and those commits are the Ocarina of Time performance and
-stability work this box wants:
+branch `nx2`, because the releases trail the branch — the newest one
+(`build-117`) is 56 commits behind this pin — and those commits are the Ocarina
+of Time performance and stability work this box wants:
 
 | | |
 |---|---|
-| Commit | `d5494116902d15f9616efbe7668bbcec33a93f9c` (`d549411`, branch `nx2`, 2026-11-07) |
+| Commit | `ad477ef1f4b54ed48db6ce73cc990a141637e55b` (`ad477ef`, branch `nx2`, 2026-11-08) |
 | Source | `Lichii-<commit>.tar.gz`, SHA256-pinned, staged in `ROMS_FINAL/PC/ports/lichii/` |
-| Build tree | `tools/lichii/build-d549411/{src,build-clang}` |
-| Binary | `tools/lichii/build-d549411/build-clang/bin/lichii` (42 MB), plus `eden-cli` |
+| Build tree | `tools/lichii/build-ad477ef/{src,build-clang}` |
+| Binary | `tools/lichii/build-ad477ef/build-clang/bin/lichii` (43 MB), plus `eden-cli` |
 | Launcher | `bin/lichii`; entries **Lichii Switch 2 (Experimental)** and **Ocarina of Time (Lichii Experimental)** |
 
 Run from `ansible/`:
@@ -40,7 +40,7 @@ minimal repro of both compilers), so the configure step pins
 `-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++`. Upstream's own
 "Fix Linux builds with GCC shadow warnings" commit predates the code that
 still trips it. The running window reports the build:
-`Lichii | d549411690-nx2 | Clang 23.1.4`.
+`Lichii | ad477ef1f4-nx2 | Clang 23.1.4`.
 
 ## The game file
 
@@ -90,10 +90,74 @@ measuring stable gameplay, per *Graphics: Always Max Out* in `AGENTS.md`.
 Lichii also has `fps_limit` (0 = the game's own vblank); it is left at 0 so the
 bundled **Dynamic FPS** mod keeps pacing the game.
 
-## What is newer than build 88 (the pinned commit)
+## Shared shader caches (unofficial)
 
-About a hundred `nx2` commits sit between the build-88 tag and this commit.
-The ones that matter for Ocarina of Time:
+[oceanpacificpeace/lichii-shader-sync](https://github.com/oceanpacificpeace/lichii-shader-sync)
+merges cache packs published by other players into the profile's Vulkan
+pipeline cache, so a first playthrough stutters less than when Lichii compiles
+every pipeline on first use. The Ocarina pack covers **88,982 pipelines**; with
+the 1,398 this box built by playing, the merged `vulkan.fork-v54.bin` holds
+**90,203** entries (4.4 GB).
+
+```sh
+lichii-shaders sync -title 0400486024DEC000 -dry-run   # report only
+lichii-shaders sync -title 0400486024DEC000            # merge the pack
+lichii-shaders info <cache file>                       # version + entry count
+```
+
+`bin/lichii-shaders` is the re-entrant wrapper (it needs the box: network plus
+the shared profile path). The tool verifies each chunk against the SHA256 in its
+manifest, keeps the previous cache as `<file>.bak`, resumes from chunks already
+fetched, and deletes its `.chunks` staging directory when the merge validates.
+Only the tool is pinned here (`dg_lichii_shaders_*`, staged in
+`ROMS_FINAL/PC/tools/`); the packs come from that third-party repository.
+
+Cache versions must match. The pack is `source_version 54`, which is what
+Lichii has written since build 115; delete older `vulkan.fork-vNN.bin` files
+first, because the tool would otherwise merge v54-format entries into files the
+current build never reads (this box had stale v52/v53 files from earlier
+builds). The `.bak` (45 MB) can be deleted after a clean session, or renamed
+back to restore the pre-sync cache.
+
+On build 117+ leave `EDEN_NX2_PRELOAD_ALL_PIPELINES` **off** in
+`nx2_switches.txt` for normal play: preloading a pack this size freezes the game
+for ~20 s, and the driver-memory eviction that runs after ~2.5 min discards the
+prebuilt pipelines. The pack still pays off through ordinary disk-cache
+lookups. To warm the driver's own cache instead, turn preload on once, stay on
+the title screen until compiling stops, quit, then turn it off (with NVIDIA's
+`__GL_SHADER_DISK_CACHE_SIZE` raised to 10 GB as the pack README suggests).
+
+## What changed since our previous pin (`d549411`, 2026-11-07)
+
+61 `nx2` commits; upstream cut build-116/117 from them. The OoT items that
+matter on this box:
+
+- **FPS Unlock is built in**, next to `nx2_frame_rate_limit` (30–240, default
+  60, the Switch 2 VSync event rate). Above 60 the game keeps its speed only
+  because OoT's real-time step is patched, so the limit stays at 60 here until
+  it is measured in play.
+- **`oot_anti_aliasing`** chooses between the game's own anti-aliasing network
+  with its sharpening output pass and the plain tonemapped image. The DLSS
+  replacement path (`game_dlss_network`, `nvidia_dlss`) is Windows/NGX only.
+- **Shader precaching before play** (`precache_shaders`,
+  `EDEN_NX2_PRELOAD_ALL_PIPELINES`) builds cached pipelines and the game's
+  compute programs on the loading screen; see the pack notes above for why it
+  stays off with a large shared cache.
+- Frizti/Fritchii v4 imports: **OoT water flicker**, staging-buffer reuse and
+  per-method switch reads.
+- Rendering fixes with OoT symptoms: noperspective varyings interpolated
+  perspective-correct (**tomb red line**), query results landed before macro-DMA
+  reads, cached task/mesh pipelines built at boot without
+  `VK_EXT_mesh_shader`, HMMA kept off AMD's emulated cooperative matrices.
+- Movie/audio sync and refused decoder packets; texture-cache uploads no longer
+  read stale guest memory or a whole image a join copy overwrites.
+- Pipeline cache: a new version starts from the newest compatible cache and
+  only damaged, stale or duplicate records are dropped.
+
+## What this build adds over build 88
+
+169 `nx2` commits sit between the build-88 tag and this commit. The ones that
+matter for Ocarina of Time:
 
 - **HMMA ported to Vulkan cooperative matrices** — `HMMA.16816.F16` on
   cooperative matrices (upstream: +12% standing, +24% walking) and the pinned
@@ -117,9 +181,10 @@ The ones that matter for Ocarina of Time:
 
 ## Local verification (2026-11-07)
 
-The built binary reports `d549411690-nx2` and boots the NUP with the Vulkan
-RTX 5090 device to a rendered title screen; a bounded `timeout 100` run inside
-the box was stopped and reaped afterwards. Earlier build-88 sessions reached
+The built binary reports `ad477ef1f4-nx2` and boots the NUP with the Vulkan
+RTX 5090 device to a rendered title screen, including with the 90,203-entry
+shared shader cache (see above); bounded runs inside the box were stopped and
+reaped afterwards. Earlier build-88 sessions reached
 the menu at about 59–60 FPS at 1x docked, then showed a 3D scene with severe
 overexposure at 9–23 FPS while shaders were compiling. Those readings were
 momentary, not a steady benchmark, and **no verified 60 FPS gameplay claim

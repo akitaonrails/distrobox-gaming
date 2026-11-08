@@ -1,0 +1,17 @@
+#!/bin/sh
+# Merge shared Vulkan shader packs into Lichii's profile cache (third-party,
+# unofficial; see docs/lichii.md):
+#
+#   lichii-shaders sync -title 0400486024DEC000          # fetch missing shaders
+#   lichii-shaders sync -title 0400486024DEC000 -dry-run # report only
+#   lichii-shaders info "$XDG_CACHE_HOME/eden/shader/<title>/vulkan.fork-v54.bin"
+set -eu
+
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+
+export XDG_CONFIG_HOME="{{ dg_lichii_profile }}/config"
+export XDG_DATA_HOME="{{ dg_lichii_profile }}/data"
+export XDG_CACHE_HOME="{{ dg_lichii_profile }}/cache"
+exec "{{ dg_lichii_shaders_bin }}" "$@"
