@@ -1,0 +1,7 @@
+---
+- name: Build Daytona USA Ultimate from the owned Saturn discs
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_daytona_ultimate

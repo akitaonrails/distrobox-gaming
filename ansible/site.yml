@@ -77,6 +77,7 @@
     - { role: install_pgr2_recomp,            tags: [pgr2, never] }
     - { role: install_voldorium,               tags: [voldorium, never] }
     - { role: install_vrdeluxe,                tags: [vrdeluxe, never] }
+    - { role: install_daytona_ultimate,        tags: [daytona_ultimate, never] }
     - { role: install_ridge_racer,             tags: [ridge_racer, never] }
     - { role: install_openbor,                 tags: [openbor, never] }
     - { role: install_starfox_enhanced,        tags: [starfox_enhanced, never] }

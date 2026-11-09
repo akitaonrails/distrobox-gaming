@@ -1,0 +1,40 @@
+---
+# Daytona USA Ultimate: a mod disc built from the two owned Saturn discs with
+# upstream's patcher. The distributed builder is a Windows GUI, so this box
+# applies the same embedded patch through upstream's own Rust modules with a
+# small headless driver (scripts/build-daytona-ultimate.sh). No game data is
+# fetched: the disc is rebuilt from the two retail rips, both checked against
+# the exact hashes the patch was made from.
+dg_daytona_repo: AJBats/daytona-cce95
+dg_daytona_version: v1.0.0-beta.1
+dg_daytona_commit: 0e8fdcc765f734ed239ebe212f97a745d94e06ef
+dg_daytona_source_url: "https://github.com/{{ dg_daytona_repo }}/archive/{{ dg_daytona_commit }}.tar.gz"
+dg_daytona_source_sha256: ca6e18da8818e111ad478c0e538687ec103ce0068a5d2e40b9c91a860553e4d9
+dg_daytona_builder_name: "Daytona-USA-Ultimate-{{ dg_daytona_version }}-windows.zip"
+dg_daytona_builder_url: "https://github.com/{{ dg_daytona_repo }}/releases/download/{{ dg_daytona_version }}/{{ dg_daytona_builder_name }}"
+dg_daytona_builder_sha256: 7625e4fedca29e7a636847d99e328aeb0b20226ef80b8f32da6164349d728bbd
+dg_daytona_builder_exe: "Daytona USA Ultimate Builder.exe"
+dg_daytona_builder_exe_sha256: ad345a0b61ba8ab9b7c4334c3f67ad899820e46d00c121f1a392e2fdd1a1098e
+
+# The builder needs Daytona USA - Circuit Edition (Japan) GS-9100 and any region
+# of the original Daytona USA. Both are the owned rips already in the library.
+dg_daytona_cce_chd: "{{ dg_emudeck_root }}/roms/saturn/Daytona USA - Circuit Edition (Japan).chd"
+dg_daytona_cce_chd_sha256: 267fea42c509c6cb5c3224a4a073ce5d6f45f88cc21401d0782dd15a17bbc35e
+dg_daytona_dusa_cue: "{{ dg_roms_final_root }}/saturn/Daytona USA (USA)_dup1.cue"
+dg_daytona_dusa_dir: "{{ dg_roms_final_root }}/saturn/Daytona USA (USA)"
+# The three DUSA tracks the patch takes, as its own known-good hashes.
+dg_daytona_dusa_tracks:
+  - { name: "Daytona USA (USA) (Track 01).bin", sha1: 6078e96e563273980e01740b4717dcfbd45cf19c }
+  - { name: "Daytona USA (USA) (Track 02).bin", sha1: e8c3d3e2a150d8a9c363860dd12499790277fe83 }
+  - { name: "Daytona USA (USA) (Track 03).bin", sha1: 5c5ddf7f0262d74608d6f4b0f1926d04c775129b }
+
+dg_daytona_source_archive: "{{ dg_roms_final_root }}/PC/ports/daytona-ultimate/daytona-cce95-{{ dg_daytona_commit[:7] }}.tar.gz"
+dg_daytona_builder_archive: "{{ dg_roms_final_root }}/PC/ports/daytona-ultimate/{{ dg_daytona_builder_name }}"
+
+dg_daytona_packages:
+  - rust
+  - mame-tools
+dg_daytona_build_root: "{{ dg_box_home }}/tools/daytona-build"
+dg_daytona_out: "{{ dg_emudeck_root }}/roms/saturn/Daytona USA Ultimate"
+dg_daytona_marker: "{{ dg_daytona_out }}/.built-{{ dg_daytona_commit[:7] }}"
+dg_daytona_launch_script: "{{ dg_project_root }}/scripts/build-daytona-ultimate.sh"

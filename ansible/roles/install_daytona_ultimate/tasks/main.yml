@@ -1,0 +1,204 @@
+---
+# Daytona USA Ultimate rebuilds the mod disc from the two owned Saturn rips.
+# Upstream's builder is a Windows GUI; this uses its own Rust modules through a
+# headless driver and the patch carved out of the released binary, then puts
+# the disc where ES-DE's Saturn system already looks. No game data is fetched.
+
+- name: Check the owned Circuit Edition rip
+  ansible.builtin.stat:
+    path: "{{ dg_daytona_cce_chd }}"
+    checksum_algorithm: sha256
+  register: _dt_cce
+
+- name: Check the owned Daytona USA tracks
+  ansible.builtin.stat:
+    path: "{{ dg_daytona_dusa_dir }}/{{ item.name }}"
+    checksum_algorithm: sha1
+  loop: "{{ dg_daytona_dusa_tracks }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: _dt_dusa
+
+- name: Require the exact retail rips the patch was made from
+  ansible.builtin.assert:
+    that:
+      - _dt_cce.stat.checksum | default('') == dg_daytona_cce_chd_sha256
+      - _dt_dusa.results | length == dg_daytona_dusa_tracks | length
+      - item.stat.checksum | default('') == item.item.sha1
+    fail_msg: >-
+      {{ item.item.name }} is not the rip this patch was made from (need SHA-1
+      {{ item.item.sha1 }}). The builder refuses a rip that is off by a few
+      samples; use one that corrects for the drive's read offset.
+  loop: "{{ _dt_dusa.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+
+- name: Check whether the disc is already built
+  ansible.builtin.stat:
+    path: "{{ dg_daytona_marker }}"
+  register: _dt_marker
+
+- name: Build and publish Daytona USA Ultimate
+  when: not _dt_marker.stat.exists
+  block:
+    - name: Install the Daytona build dependencies
+      ansible.builtin.shell: "{{ dg_in_box }} sudo pacman -S --needed --noconfirm {{ dg_daytona_packages | join(' ') }}"
+      register: _dt_packages
+      changed_when: "'installing' in _dt_packages.stdout"
+
+    - name: Create the Daytona build directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_daytona_source_archive | dirname }}"
+        - "{{ dg_daytona_build_root }}"
+        - "{{ dg_daytona_build_root }}/cce"
+        - "{{ dg_daytona_build_root }}/dusa"
+        - "{{ dg_daytona_build_root }}/builder"
+        - "{{ dg_daytona_build_root }}/build/release"
+        - "{{ dg_daytona_build_root }}/patcher/headless/src"
+        - "{{ dg_daytona_build_root }}/out"
+        - "{{ dg_daytona_out }}"
+
+    - name: Stage the pinned patcher source
+      ansible.builtin.get_url:
+        url: "{{ dg_daytona_source_url }}"
+        dest: "{{ dg_daytona_source_archive }}"
+        checksum: "sha256:{{ dg_daytona_source_sha256 }}"
+        mode: "0644"
+
+    - name: Stage the pinned builder release
+      ansible.builtin.get_url:
+        url: "{{ dg_daytona_builder_url }}"
+        dest: "{{ dg_daytona_builder_archive }}"
+        checksum: "sha256:{{ dg_daytona_builder_sha256 }}"
+        mode: "0644"
+
+    - name: Extract the patcher source
+      ansible.builtin.unarchive:
+        src: "{{ dg_daytona_source_archive }}"
+        dest: "{{ dg_daytona_build_root }}"
+        remote_src: true
+        extra_opts:
+          - --strip-components=1
+
+    - name: Extract the released builder
+      ansible.builtin.unarchive:
+        src: "{{ dg_daytona_builder_archive }}"
+        dest: "{{ dg_daytona_build_root }}/builder"
+        remote_src: true
+        creates: "{{ dg_daytona_build_root }}/builder/{{ dg_daytona_builder_exe }}"
+
+    - name: Check the released builder binary
+      ansible.builtin.stat:
+        path: "{{ dg_daytona_build_root }}/builder/{{ dg_daytona_builder_exe }}"
+        checksum_algorithm: sha256
+      register: _dt_exe
+
+    - name: Require the pinned builder binary
+      ansible.builtin.assert:
+        that: _dt_exe.stat.checksum | default('') == dg_daytona_builder_exe_sha256
+        fail_msg: "The released builder changed; re-pin dg_daytona_builder_exe_sha256."
+
+    - name: Carve the release patch out of the builder
+      ansible.builtin.command:
+        argv:
+          - python3
+          - "{{ dg_project_root }}/scripts/daytona_extract_patch.py"
+          - "{{ dg_daytona_build_root }}/builder/{{ dg_daytona_builder_exe }}"
+          - "{{ dg_daytona_build_root }}/build/release/ultimate.patch"
+        creates: "{{ dg_daytona_build_root }}/build/release/ultimate.patch"
+
+    - name: Generate the headless driver crate
+      ansible.builtin.template:
+        src: "{{ item.src }}"
+        dest: "{{ dg_daytona_build_root }}/patcher/headless/{{ item.dest }}"
+        mode: "0644"
+      loop:
+        - { src: headless-Cargo.toml, dest: Cargo.toml }
+        - { src: headless-main.rs, dest: src/main.rs }
+
+    - name: Extract the Circuit Edition CHD to cue and tracks
+      ansible.builtin.command:
+        argv:
+          - distrobox-enter
+          - -n
+          - "{{ dg_box_name }}"
+          - --
+          - chdman
+          - extractcd
+          - -i
+          - "{{ dg_daytona_cce_chd }}"
+          - -o
+          - "{{ dg_daytona_build_root }}/cce/cce.cue"
+          - -ob
+          - "{{ dg_daytona_build_root }}/cce/cce - Track %t.bin"
+          - --splitbin
+        creates: "{{ dg_daytona_build_root }}/cce/cce.cue"
+
+    - name: Copy the Daytona USA cue sheet into the staging folder
+      ansible.builtin.copy:
+        src: "{{ dg_daytona_dusa_cue }}"
+        dest: "{{ dg_daytona_build_root }}/dusa/Daytona USA (USA).cue"
+        remote_src: true
+        mode: "0644"
+
+    - name: Find the owned Daytona USA tracks
+      ansible.builtin.find:
+        paths: "{{ dg_daytona_dusa_dir }}"
+        patterns: "*.bin"
+        file_type: file
+      register: _dt_bins
+
+    - name: Link the owned tracks beside the cue sheet
+      ansible.builtin.file:
+        src: "{{ item.path }}"
+        dest: "{{ dg_daytona_build_root }}/dusa/{{ item.path | basename }}"
+        state: link
+      loop: "{{ _dt_bins.files }}"
+      loop_control:
+        label: "{{ item.path | basename }}"
+
+    - name: Build the headless patcher and write the disc
+      ansible.builtin.command:
+        argv:
+          - distrobox-enter
+          - -n
+          - "{{ dg_box_name }}"
+          - --
+          - sh
+          - -c
+          - >-
+            cd "{{ dg_daytona_build_root }}/patcher/headless" &&
+            CARGO_HOME="{{ dg_daytona_build_root }}/cargo-home" cargo build --release -q &&
+            timeout 3600 ./target/release/daytona-headless
+            "{{ dg_daytona_build_root }}/cce/cce.cue"
+            "{{ dg_daytona_build_root }}/dusa/Daytona USA (USA).cue"
+            "{{ dg_daytona_build_root }}/out"
+
+    - name: Require the built disc
+      ansible.builtin.stat:
+        path: "{{ dg_daytona_build_root }}/out/Daytona USA Ultimate.cue"
+      register: _dt_out
+
+    - name: Record the built disc
+      ansible.builtin.assert:
+        that: _dt_out.stat.isreg | default(false)
+        fail_msg: "The patcher did not write the disc; see its output above."
+
+    - name: Publish the disc to the Saturn library
+      ansible.builtin.command:
+        cmd: >-
+          cp -a "{{ dg_daytona_build_root }}/out/."
+          "{{ dg_daytona_out }}/"
+      changed_when: true
+
+    - name: Record what the disc was built from
+      ansible.builtin.copy:
+        dest: "{{ dg_daytona_marker }}"
+        content: |
+          patcher {{ dg_daytona_commit }}
+          circuit-edition {{ dg_daytona_cce_chd_sha256 }}
+        mode: "0644"
