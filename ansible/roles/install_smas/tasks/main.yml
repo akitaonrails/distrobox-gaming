@@ -1,0 +1,98 @@
+---
+# Super Mario All-Stars — Darhkfox's native Linux AppImage port. See
+# group_vars/all/smas.yml and docs/smas.md.
+
+- name: Verify the owned Super Mario All-Stars (USA) ROM
+  ansible.builtin.shell: |
+    python3 - <<'PY'
+    import zlib
+    data = open(r'''{{ dg_smas_rom }}''', 'rb').read()
+    crc = '%08x' % (zlib.crc32(data) & 0xffffffff)
+    if crc != "{{ dg_smas_rom_crc32 }}":
+        raise SystemExit("wrong dump: CRC32 " + crc + " (the port is made for 925637c7)")
+    print("rom-ok " + crc)
+  register: _smas_rom
+  changed_when: false
+  failed_when: "'rom-ok' not in _smas_rom.stdout"
+  ignore_errors: false
+
+- name: Create the SMAS install, ROM and data directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_smas_asset_path | dirname }}"
+    - "{{ dg_smas_root }}"
+    - "{{ dg_smas_data_dir }}"
+    - "{{ dg_smas_launcher | dirname }}"
+    - "{{ dg_desktop_render_dir }}"
+
+- name: Stage the pinned Super Mario All-Stars AppImage
+  ansible.builtin.get_url:
+    url: "{{ dg_smas_asset_url }}"
+    dest: "{{ dg_smas_asset_path }}"
+    checksum: "sha256:{{ dg_smas_asset_sha256 }}"
+    mode: "0644"
+
+# No FUSE in the migrated gaming container, so unpack once and run the binary.
+- name: Check for the unpacked game binary
+  ansible.builtin.stat:
+    path: "{{ dg_smas_bin }}"
+  register: _smas_bin
+
+- name: Unpack the AppImage
+  ansible.builtin.command:
+    cmd: "{{ dg_smas_asset_path }} --appimage-extract"
+    chdir: "{{ dg_smas_root }}"
+  when: not _smas_bin.stat.exists
+
+- name: Require the unpacked game binary
+  ansible.builtin.stat:
+    path: "{{ dg_smas_bin }}"
+  register: _smas_bin_after
+
+- name: Record the SMAS unpack result
+  ansible.builtin.assert:
+    that: _smas_bin_after.stat.isreg | default(false) and _smas_bin_after.stat.executable | default(false)
+    fail_msg: "The SMAS AppImage did not unpack to {{ dg_smas_bin }}."
+    quiet: true
+
+- name: Link the owned ROM where the port looks for it
+  ansible.builtin.file:
+    path: "{{ dg_smas_rom_link }}"
+    src: "{{ dg_smas_rom }}"
+    state: link
+
+- name: Check whether the SMAS settings already exist
+  ansible.builtin.stat:
+    path: "{{ dg_smas_config }}"
+  register: _smas_config
+
+- name: Seed the widescreen 4K settings
+  ansible.builtin.copy:
+    dest: "{{ dg_smas_config }}"
+    mode: "0644"
+    content: "{{ dg_smas_settings }}"
+  when: not _smas_config.stat.exists
+
+- name: Install the Super Mario All-Stars launcher
+  ansible.builtin.template:
+    src: smas.sh.j2
+    dest: "{{ dg_smas_launcher }}"
+    mode: "0755"
+
+- name: Render the Super Mario All-Stars desktop entry
+  ansible.builtin.template:
+    src: smas.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-smas.desktop"
+    mode: "0644"
+
+- name: Publish the Super Mario All-Stars desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _smas_host
+  changed_when: "'installed ' in _smas_host.stdout or 'removed stale ' in _smas_host.stdout"

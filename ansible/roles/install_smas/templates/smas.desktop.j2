@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Type=Application
+Name=Super Mario All-Stars · PC Port
+Exec={{ dg_smas_launcher }}
+Terminal=false
+Icon=applications-games
+Comment=Native port of the SNES collection — widescreen, 2-player co-op, 60 fps.
+Categories=Game;
+Keywords=mario;all-stars;allstars;smas;snes;nintendo;platformer;
+StartupWMClass={{ dg_smas_wmclass }};
+{{ ogm_metadata('gaming-smas') }}

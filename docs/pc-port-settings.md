@@ -13,7 +13,7 @@ not override a game's simulation clock.
 
 > This playbook covers the ports below only. Ports whose role owns the
 > setting seed it directly instead — Sonic 2 (2013) at 9× integer scale,
-> DKC2/DKC3 at 16:9 fullscreen, Super Mario All-Stars at desktop fullscreen,
+> DKC2/DKC3 at 16:9 fullscreen, Super Mario All-Stars at 16:9 fullscreen,
 > Project R and God of War III at 4K, F-ZERO GX at 1440p + 4× MSAA, and FM4's
 > whole settings baseline; each is documented on its own page.
 

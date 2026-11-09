@@ -1,0 +1,35 @@
+#!/bin/sh
+# Super Mario All-Stars launcher — Darhkfox's native port, unpacked AppImage.
+# Presented 4K60 by gamescope on the landscape monitor; settings/saves live in
+# the port's XDG data dir, the ROM link sits beside the binary. Managed by
+# install_smas.
+set -eu
+
+if [ ! -e /.dockerenv ]; then
+  # Focus the main landscape 4K monitor before gamescope opens.
+  python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_smas_main_output }}" }))'); s.recv(256); s.close()
+PY
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+
+if [ ! -x "{{ dg_smas_bin }}" ] || [ ! -e "{{ dg_smas_rom_link }}" ]; then
+  printf '%s\n' "ERROR: Super Mario All-Stars is not installed." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-smas.yml" >&2
+  exit 1
+fi
+
+cd "{{ dg_smas_root }}"
+export LD_LIBRARY_PATH="{{ dg_smas_appdir }}/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+export SDL_VIDEO_X11_WMCLASS={{ dg_smas_wmclass }}
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+
+exec gamescope {{ dg_smas_gamescope_args }} -- "{{ dg_smas_bin }}" "$@"

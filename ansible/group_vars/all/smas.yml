@@ -1,0 +1,51 @@
+---
+# Super Mario All-Stars — Darhkfox's native PC/Steam Deck port of the SNES
+# collection (SMB, The Lost Levels, SMB2, SMB3): a C++ rebuild that runs from
+# the owned 1993 USA ROM, with true widescreen (16:10/16:9/21:9), simultaneous
+# 2-player co-op, achievements, save states + rewind, cheats, level select and
+# MSU-1 soundtracks. Ships a Linux AppImage, so no build and no Wine.
+#
+# It replaces TanookiStudios' recomp (no widescreen); that install is left on
+# disk, unlinked, under tools/smas-recomp and can be deleted at any time.
+dg_smas_repo: Darhkfox/SuperMarioAllStars
+dg_smas_version: v1.1.1
+dg_smas_asset_name: SuperMarioAllStars-Linux-x86_64.AppImage
+dg_smas_asset_url: "https://github.com/{{ dg_smas_repo }}/releases/download/{{ dg_smas_version }}/{{ dg_smas_asset_name }}"
+dg_smas_asset_sha256: e4dd33890bd7e2978532bccf3da7128aed2efe7a1cc66d3db62a2686d4620b8f
+dg_smas_asset_path: "{{ dg_roms_final_root }}/PC/ports/smas-port/{{ dg_smas_asset_name }}"
+
+# The AppImage is unpacked once (the box has no FUSE) and the game runs from
+# the extracted tree; `roms/` beside the working directory is how it finds the
+# ROM, and Linux keeps settings/saves in the XDG data dir.
+dg_smas_root: "{{ dg_box_home }}/tools/smas-port/{{ dg_smas_version }}"
+dg_smas_appdir: "{{ dg_smas_root }}/squashfs-root"
+dg_smas_bin: "{{ dg_smas_appdir }}/usr/bin/SuperMarioAllStars"
+dg_smas_rom: "{{ dg_roms_final_root }}/snes/Super Mario All-Stars.smc"
+dg_smas_rom_crc32: "925637c7"
+dg_smas_rom_link: "{{ dg_smas_appdir }}/usr/bin/Super Mario All-Stars (USA).sfc"
+dg_smas_data_dir: "{{ dg_box_home }}/.local/share/SuperMarioAllStars"
+dg_smas_config: "{{ dg_smas_data_dir }}/smas_port.ini"
+dg_smas_launcher: "{{ dg_box_home }}/bin/smas"
+dg_smas_wmclass: SuperMarioAllStars
+dg_smas_main_output: DP-1
+# gamescope gives it a 3840x2160 60 Hz surface on the landscape monitor: the
+# port otherwise opens on the portrait 4K output and paces against 240 Hz.
+dg_smas_gamescope_args: "-W 3840 -H 2160 -r 60 -f"
+
+# Seeded once (the game rewrites the file; later in-game changes survive):
+# fullscreen, widescreen auto-matched to the display, VSync, the widescreen
+# HUD/enemy/dim options on, and no per-scanline sprite limit. The daily update
+# check is off (Options > Updates re-enables it).
+dg_smas_settings: |
+  [display]
+  mode=1
+  aspect=4
+  vsync=1
+  hud_anchor=1
+  dim_wrap=1
+  pillarbox=1
+  widescreen_enemies=1
+  [graphics]
+  no_sprite_limit=1
+  [updates]
+  check=0

@@ -233,6 +233,9 @@ dg_save_sets:
                                         "file:tools/vf1-recomp/VirtuaFighter/nvram.sav",
                                         "file:tools/vf1-recomp/VirtuaFighter/ranking_names.txt"] }
   - { name: vf3-recomp,           src: "{{ dg_vf3_data_rel }}" }  # VF3 settings, EEPROM, rankings, screenshots and logs; separate from release files
-  - { name: smas-recomp,          src: "tools/smas-recomp/SuperMarioAllStars-Linux" }  # SMAS recomp config.ini/keybinds.ini + *.srm battery + *.sav states (anchored to exe dir, no save subdir; binary/assets re-extracted on rebuild)
+  # Super Mario All-Stars (Darhkfox port): battery saves (saves/smas.srm), save
+  # states, settings and achievements under the port's XDG data dir. The retired
+  # recomp under tools/smas-recomp is unlinked and has no saves.
+  - { name: smas,                 src: ".local/share/SuperMarioAllStars" }
   - { name: ultratears,           src: "tools/ultratears/userdata" }  # UltraTears (TOTK) recomp saves + account.uid (game rebuilt from the NAS dump on rebuild)
   - { name: soulcalibur2,         src: ".local/share/Soulcalibur II" }  # SC2 recomp settings.ini + Xbox HDD save partitions (game reads the owned disc directly, not restaged)
