@@ -1,0 +1,41 @@
+#!/bin/sh
+# Sonic Momentum (Beta Edition) — GameMaker Studio 2 build under Wine + DXVK,
+# presented 4K60 by gamescope on the landscape monitor. Managed by
+# install_sonic_momentum.
+set -eu
+
+if [ ! -e /.dockerenv ]; then
+  python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_sm_main_output }}" }))'); s.recv(256); s.close()
+PY
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+
+install_dir="{{ dg_sm_install_root }}"
+exe="$install_dir/{{ dg_sm_exe }}"
+
+if [ ! -f "$exe" ]; then
+  printf '%s\n' "ERROR: Sonic Momentum is not installed ($exe)." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-sonic-momentum.yml" >&2
+  exit 1
+fi
+
+export WINEPREFIX="{{ dg_sm_prefix }}"
+export WINEARCH="{{ dg_sm_winearch }}"
+export WINEDEBUG="${WINEDEBUG:--all}"
+export WINEESYNC="${WINEESYNC:-{{ dg_sm_wine_esync }}}"
+export WINEFSYNC="${WINEFSYNC:-{{ dg_sm_wine_fsync }}}"
+export WINEDLLOVERRIDES="winemenubuilder.exe=d"
+export DXVK_LOG_LEVEL="${DXVK_LOG_LEVEL:-none}"
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+
+cd "$install_dir"
+exec gamescope {{ dg_sm_gamescope_args }} -- env -u PYTHONHOME -u PYTHONPATH wine "$exe" "$@"

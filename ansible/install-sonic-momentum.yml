@@ -1,0 +1,7 @@
+---
+- name: Install Sonic Momentum (Beta Edition)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_sonic_momentum

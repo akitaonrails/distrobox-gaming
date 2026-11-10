@@ -1,0 +1,115 @@
+---
+# Sonic Momentum (Beta Edition) — GameMaker Studio 2 Windows build under Wine
+# with DXVK. See group_vars/all/sonic_momentum.yml and docs/sonic-momentum.md.
+
+- name: Verify the owned Sonic Momentum archive
+  ansible.builtin.stat:
+    path: "{{ dg_sm_source_zip }}"
+    checksum_algorithm: sha256
+  register: _sm_zip
+
+- name: Require the pinned Sonic Momentum archive
+  ansible.builtin.assert:
+    that: _sm_zip.stat.checksum | default('') == dg_sm_source_sha256
+    fail_msg: >-
+      Expected the obtained Sonic Momentum Beta Edition m1.8 ZIP at
+      {{ dg_sm_source_zip }} (sha256 {{ dg_sm_source_sha256 }}).
+
+- name: Create Sonic Momentum directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_sm_install_root }}"
+    - "{{ dg_sm_prefix }}"
+    - "{{ dg_sm_bin | dirname }}"
+    - "{{ dg_desktop_render_dir }}"
+
+- name: Install the Sonic Momentum Wine runtime packages
+  ansible.builtin.shell: "{{ dg_in_box }} sudo pacman -S --needed --noconfirm {{ dg_sm_packages | join(' ') }}"
+  register: _sm_pacman
+  changed_when: "'installing' in _sm_pacman.stdout"
+
+- name: Unpack Sonic Momentum
+  ansible.builtin.unarchive:
+    src: "{{ dg_sm_source_zip }}"
+    dest: "{{ dg_sm_install_root }}"
+    remote_src: true
+    creates: "{{ dg_sm_install_root }}/{{ dg_sm_exe }}"
+
+- name: Check the Sonic Momentum Wine prefix
+  ansible.builtin.stat:
+    path: "{{ dg_sm_prefix }}/system.reg"
+  register: _sm_prefix
+
+- name: Initialize the Sonic Momentum Wine prefix
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      export WINEPREFIX="{{ dg_sm_prefix }}"
+      export WINEARCH="{{ dg_sm_winearch }}"
+      export WINEDEBUG=-all
+      export WINEDLLOVERRIDES=winemenubuilder.exe=d
+      timeout 120 env -u PYTHONHOME -u PYTHONPATH wineboot -u
+      timeout 60 env -u PYTHONHOME -u PYTHONPATH wineserver -w
+    '
+  when: not _sm_prefix.stat.exists
+
+- name: Force the GLX OpenGL backend (wine 11 EGL regression)
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      export WINEPREFIX="{{ dg_sm_prefix }}"
+      export WINEDEBUG=-all
+      key="HKCU\\Software\\Wine\\X11 Driver"
+      if env -u PYTHONHOME -u PYTHONPATH wine reg query "$key" /v UseEGL 2>/dev/null | grep -Eiq "REG_SZ[[:space:]]+N[[:space:]]*$"; then
+        exit 0
+      fi
+      env -u PYTHONHOME -u PYTHONPATH wine reg add "$key" /v UseEGL /t REG_SZ /d N /f
+      printf "%s\n" "forced-glx"
+    '
+  register: _sm_glx
+  changed_when: "'forced-glx' in _sm_glx.stdout"
+  when: dg_wine_force_glx | default(true)
+
+- name: Check Sonic Momentum winetricks markers
+  ansible.builtin.stat:
+    path: "{{ dg_sm_prefix }}/.dg-winetricks-{{ item }}"
+  loop: "{{ dg_sm_winetricks_components }}"
+  register: _sm_winetricks
+
+- name: Install Sonic Momentum winetricks components
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      export WINEPREFIX="{{ dg_sm_prefix }}"
+      export WINEARCH="{{ dg_sm_winearch }}"
+      export WINEDEBUG=-all
+      export WINEDLLOVERRIDES=winemenubuilder.exe=d
+      timeout 300 env -u PYTHONHOME -u PYTHONPATH winetricks -q "{{ item.item }}"
+      printf "%s\n" "{{ item.item }}" > "{{ dg_sm_prefix }}/.dg-winetricks-{{ item.item }}"
+    '
+  loop: "{{ _sm_winetricks.results }}"
+  when: not item.stat.exists
+
+- name: Install the Sonic Momentum launcher
+  ansible.builtin.template:
+    src: sonic-momentum.sh.j2
+    dest: "{{ dg_sm_bin }}"
+    mode: "0755"
+
+- name: Render the Sonic Momentum desktop entry
+  ansible.builtin.template:
+    src: gaming-sonic-momentum.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-sonic-momentum.desktop"
+    mode: "0644"
+
+- name: Publish the Sonic Momentum desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _sm_host
+  changed_when: "'installed ' in _sm_host.stdout or 'removed stale ' in _sm_host.stdout"

@@ -1,0 +1,26 @@
+---
+# Sonic Momentum (Beta Edition, SAGE 2024) — a GameMaker Studio 2 Windows fan
+# game, run under Wine + DXVK in the gaming box. Source archive is the owned
+# download in the PC games bucket.
+dg_sm_source_zip: "{{ dg_roms_final_root }}/PC/games/Sonic_Momentum_Beta_Edition_m1_8.zip"
+dg_sm_source_sha256: a353f9e0e2da41f419e5c0d6e3a6ee4ee248ea89346d9c2458a47d227110b03c
+dg_sm_install_root: "{{ dg_box_home }}/Games/sonic-momentum"
+dg_sm_prefix: "{{ dg_box_home }}/wineprefixes/sonic-momentum"
+dg_sm_bin: "{{ dg_box_home }}/bin/sonic-momentum"
+dg_sm_exe: Sonic_Momentum_Beta.exe
+dg_sm_winearch: win64
+dg_sm_wine_esync: "0"
+dg_sm_wine_fsync: "0"
+dg_sm_packages:
+  - wine
+  - winetricks
+  - cabextract
+  - vulkan-icd-loader
+  - lib32-vulkan-icd-loader
+  - sdl2
+dg_sm_winetricks_components:
+  - dxvk2071
+# GameMaker's window is its own; gamescope presents it fullscreen at 4K60 on
+# the landscape monitor like the other fan ports.
+dg_sm_main_output: DP-1
+dg_sm_gamescope_args: "-W 3840 -H 2160 -r 60 -f"

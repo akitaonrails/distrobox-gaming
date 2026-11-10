@@ -164,6 +164,7 @@
     - { role: install_2ship2harkinian,         tags: [two_ship2harkinian, never] }
     - { role: install_starfox64_recomp,        tags: [starfox64_recomp, never] }
     - { role: install_sonic_p06,               tags: [sonic_p06, never] }
+    - { role: install_sonic_momentum,          tags: [sonic_momentum, never] }
     - { role: install_wipeout_pe,              tags: [wipeout_pe, never] }
     - { role: install_cannonball,              tags: [cannonball, never] }
     - { role: install_parallel_launcher,       tags: [parallel_launcher, never] }

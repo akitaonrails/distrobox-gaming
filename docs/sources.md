@@ -94,6 +94,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 
 | Project | What it is | Source |
 |---|---|---|
+| Sonic Momentum (Beta Edition) | SAGE 2024 GameMaker fan game — Sonic Frontiers-style cyberspace with momentum movement | [Sonic Fan Games HQ](https://sonicfangameshq.com/forums/showcase/sonic-momentum-beta-edition.2324/) · [doc](sonic-momentum.md) |
 | Sonic 3 A.I.R. | Sonic 3 & Knuckles remaster | [Eukaryot/sonic3air](https://github.com/Eukaryot/sonic3air) · [doc](sonic-fan-pack.md) |
 | Sonic 2 (2013) | RSDKv4 decomp + Sonic 2 Mania | [RSDKModding/RSDKv4-Decompilation](https://github.com/RSDKModding/RSDKv4-Decompilation) · [doc](sonic2-2013.md) |
 | Sonic SMS Remake | Master System Sonic remake (Wine) | [The Creative Araya](https://sonic-sms-remake.blogspot.com/) · [doc](sonic-fan-pack.md) |

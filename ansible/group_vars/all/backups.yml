@@ -233,6 +233,15 @@ dg_save_sets:
                                         "file:tools/vf1-recomp/VirtuaFighter/nvram.sav",
                                         "file:tools/vf1-recomp/VirtuaFighter/ranking_names.txt"] }
   - { name: vf3-recomp,           src: "{{ dg_vf3_data_rel }}" }  # VF3 settings, EEPROM, rankings, screenshots and logs; separate from release files
+  # Sonic Momentum (GameMaker fangame): the .sav slots it may write beside the
+  # exe, plus the sandboxed %LOCALAPPDATA% folder GameMaker uses when present.
+  - { name: sonic-momentum,       src: ["file:Games/sonic-momentum/SM.sav",
+                                       "file:Games/sonic-momentum/SM_SAVE.sav",
+                                       "file:Games/sonic-momentum/Momentum.sav",
+                                       "file:Games/sonic-momentum/SonicMomentumData.sav",
+                                       "file:Games/sonic-momentum/savedgame.sav",
+                                       "wineprefixes/sonic-momentum/drive_c/users/akitaonrails/AppData/Local/Sonic_Momentum_Beta"] }
+
   # Ratchet & Clank (ReCasted): the loader's emulated PS4 user/save data
   - { name: recasted,             src: "tools/recasted/current/recasted-linux-x86_64/user" }
 
