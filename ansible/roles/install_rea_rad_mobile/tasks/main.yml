@@ -1,0 +1,94 @@
+---
+# Rad Mobile — REA launcher (bundled patched MAME). See
+# group_vars/all/rea_rad_mobile.yml and docs/rea-rad-mobile.md.
+
+- name: Verify the owned Rad Mobile romset
+  ansible.builtin.stat:
+    path: "{{ dg_radm_rom }}"
+    checksum_algorithm: sha256
+  register: _radm_rom
+
+- name: Require the Rad Mobile (World) MAME set
+  ansible.builtin.assert:
+    that: _radm_rom.stat.checksum | default('') == dg_radm_rom_sha256
+    fail_msg: >-
+      Expected the 21-file Rad Mobile (World) MAME/FBNeo set at
+      {{ dg_radm_rom }} (sha256 {{ dg_radm_rom_sha256 }}). The launcher detects
+      ROMs by content, so any file name under that path works.
+
+- name: Create the Rad Mobile directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_radm_archive | dirname }}"
+    - "{{ dg_radm_root }}"
+    - "{{ dg_radm_data }}"
+    - "{{ dg_radm_dir }}/roms"
+    - "{{ dg_radm_launcher | dirname }}"
+    - "{{ dg_desktop_render_dir }}"
+
+- name: Stage the pinned Rad Mobile launcher
+  ansible.builtin.get_url:
+    url: "{{ dg_radm_asset_url }}"
+    dest: "{{ dg_radm_archive }}"
+    checksum: "sha256:{{ dg_radm_asset_sha256 }}"
+    mode: "0644"
+
+- name: Unpack the Rad Mobile launcher
+  ansible.builtin.unarchive:
+    src: "{{ dg_radm_archive }}"
+    dest: "{{ dg_radm_root }}"
+    remote_src: true
+    creates: "{{ dg_radm_dir }}/RadMobile"
+
+- name: Check the launcher binary
+  ansible.builtin.stat:
+    path: "{{ dg_radm_dir }}/RadMobile"
+  register: _radm_bin
+
+- name: Record the unpack result
+  ansible.builtin.assert:
+    that: _radm_bin.stat.isreg | default(false) and _radm_bin.stat.executable | default(false)
+    fail_msg: "The Rad Mobile tarball did not unpack to {{ dg_radm_dir }}/RadMobile."
+    quiet: true
+
+- name: Link the owned romset where the launcher scans
+  ansible.builtin.file:
+    path: "{{ dg_radm_rom_link }}"
+    src: "{{ dg_radm_rom }}"
+    state: link
+
+- name: Check whether the Rad Mobile settings already exist
+  ansible.builtin.stat:
+    path: "{{ dg_radm_settings }}"
+  register: _radm_settings
+
+- name: Seed the 4K widescreen settings
+  ansible.builtin.copy:
+    dest: "{{ dg_radm_settings }}"
+    content: "{{ dg_radm_baseline }}"
+    mode: "0644"
+  when: not _radm_settings.stat.exists
+
+- name: Install the Rad Mobile launcher
+  ansible.builtin.template:
+    src: rad-mobile.sh.j2
+    dest: "{{ dg_radm_launcher }}"
+    mode: "0755"
+
+- name: Render the Rad Mobile desktop entry
+  ansible.builtin.template:
+    src: gaming-rad-mobile.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-rad-mobile.desktop"
+    mode: "0644"
+
+- name: Publish the Rad Mobile desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _radm_host
+  changed_when: "'installed ' in _radm_host.stdout or 'removed stale ' in _radm_host.stdout"

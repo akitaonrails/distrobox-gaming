@@ -1,0 +1,44 @@
+---
+# Rad Mobile (Sega System 32, 1990) — REA's launcher around a bundled,
+# patched MAME: 4K rendering, true widescreen, CRT filters, wheel/pedal/FFB
+# support and the arcade's operator settings. No ROMs included; it detects the
+# owned radm set by content.
+dg_radm_repo: akitaonrails/rea-rad-mobile
+dg_radm_version: v0.1.0
+dg_radm_asset_name: RadMobile-0.1.0-linux-x86_64.tar.gz
+dg_radm_asset_url: "https://github.com/{{ dg_radm_repo }}/releases/download/{{ dg_radm_version }}/{{ dg_radm_asset_name }}"
+dg_radm_asset_sha256: 95ade18b4a04cfe542f0d78e030c6ad38bb8ad69bbf4761d86de76d3786f4944
+dg_radm_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_radm_asset_name }}"
+
+dg_radm_root: "{{ dg_box_home }}/tools/rea-rad-mobile/{{ dg_radm_version }}"
+dg_radm_dir: "{{ dg_radm_root }}/RadMobile-0.1.0-linux-x86_64"
+dg_radm_launcher: "{{ dg_box_home }}/bin/rad-mobile"
+# Settings, MAME nvram (the arcade EEPROM) and the rebuilt romset live here so
+# they survive a version bump; --data points the launcher at it.
+dg_radm_data: "{{ dg_box_home }}/.local/share/rea-rad-mobile"
+dg_radm_settings: "{{ dg_radm_data }}/settings.ini"
+
+# The modern MAME/FBNeo set (World, with its factory EEPROM). The launcher
+# rebuilds it under MAME's names and detects it by content, so any file name
+# works; this one is the 21-file set already in the library.
+dg_radm_rom: "{{ dg_roms_final_root }}/arcade/fbneo/radm.zip"
+dg_radm_rom_sha256: 2886a22eb552305dd4c8568c103e561aff5f7be44d1b4053d72822933207ba3d
+dg_radm_rom_link: "{{ dg_radm_dir }}/roms/radm.zip"
+
+dg_radm_main_output: DP-1
+# Seeded once; the launcher's menu rewrites the file and later changes survive.
+# Max baseline: fullscreen 4K, true 16:9 (MAME draws more road), sharp pixels,
+# vsync, free play (the launcher's default way to start).
+dg_radm_baseline: |
+  # Rad Mobile launcher settings (seeded by the distrobox-gaming role)
+  display=fullscreen
+  resolution=2160p
+  aspect=widescreen
+  wide_target=16:9
+  filter=sharp
+  vsync=true
+  brightness=100
+  volume=80
+  free_play=true
+  input_device=auto
+  steer_lock=270

@@ -114,6 +114,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 
 | Project | What it is | Source |
 |---|---|---|
+| Rad Mobile (REA) | System 32 arcade racer: bundled patched MAME, 4K widescreen, wheel + FFB, arcade settings | [akitaonrails/rea-rad-mobile](https://github.com/akitaonrails/rea-rad-mobile) · [doc](rea-rad-mobile.md) |
 | CannonBall-DX | OutRun engine | [Endprodukt/cannonball-dx](https://github.com/Endprodukt/cannonball-dx) · [doc](cannonball.md) |
 | Sega Model 1 (Wanszai) | Virtua Racing / Virtua Fighter | [Virtua-Racing](https://github.com/wanszai/Virtua-Racing---XBOXONE-Windows) · [Virtua-Fighter](https://github.com/wanszai/Virtua-Fighter---XboxOne-Windows) · [doc](sega-arcade.md) |
 | Sega Rally HD (Wanszai) | Model 2 Sega Rally wrapper | [wanszai/Sega-Rally-Championship-…](https://github.com/wanszai/Sega-Rally-Championship-PC-Xbox360-Series-X-) · [doc](sega-arcade.md) |

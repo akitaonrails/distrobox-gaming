@@ -1,0 +1,33 @@
+#!/bin/sh
+# Rad Mobile launcher — REA's bundled patched MAME with a gamepad/wheel menu.
+# Runs inside the gaming box (SDL2 + MAME), 4K fullscreen from settings.ini.
+# Managed by install_rea_rad_mobile.
+set -eu
+
+if [ ! -e /.dockerenv ]; then
+  python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_radm_main_output }}" }))'); s.recv(256); s.close()
+PY
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+
+cd "{{ dg_radm_dir }}" || exit 1
+
+if [ ! -x ./RadMobile ]; then
+  printf '%s\n' "ERROR: Rad Mobile is not installed." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-rea-rad-mobile.yml" >&2
+  exit 1
+fi
+
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+
+exec ./RadMobile --data "{{ dg_radm_data }}" "$@"

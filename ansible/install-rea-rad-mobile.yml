@@ -1,0 +1,7 @@
+---
+- name: Install Rad Mobile (REA launcher)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_rea_rad_mobile

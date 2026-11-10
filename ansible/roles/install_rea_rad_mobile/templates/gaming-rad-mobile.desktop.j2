@@ -1,0 +1,11 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Type=Application
+Name=Rad Mobile · REA
+Exec={{ dg_radm_launcher }}
+Terminal=false
+Icon=applications-games
+Comment=Sega System 32 arcade racer — bundled MAME, 4K widescreen, wheel + FFB.
+Categories=Game;
+Keywords=rad;mobile;sega;system32;arcade;racing;
+{{ ogm_metadata('gaming-rad-mobile') }}

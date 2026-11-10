@@ -69,6 +69,7 @@
     - { role: install_m2emulator,              tags: [m2emulator, never] }
     - { role: install_model1,                  tags: [model1, never] }
     - { role: install_sega_rally,              tags: [sega_rally, never] }
+    - { role: install_rea_rad_mobile,          tags: [rea_rad_mobile, never] }
     - { role: install_sega_rally_2,            tags: [sega_rally_2, never] }
     - { role: install_scud_race,               tags: [scud_race, never] }
     - { role: install_outrunners,               tags: [outrunners, never] }

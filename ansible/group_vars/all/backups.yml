@@ -233,6 +233,9 @@ dg_save_sets:
                                         "file:tools/vf1-recomp/VirtuaFighter/nvram.sav",
                                         "file:tools/vf1-recomp/VirtuaFighter/ranking_names.txt"] }
   - { name: vf3-recomp,           src: "{{ dg_vf3_data_rel }}" }  # VF3 settings, EEPROM, rankings, screenshots and logs; separate from release files
+  # Rad Mobile (REA launcher): settings.ini, wheel.ini and MAME's nvram EEPROM
+  - { name: rea-rad-mobile,       src: ".local/share/rea-rad-mobile" }
+
   # Sonic Momentum (GameMaker fangame): the .sav slots it may write beside the
   # exe, plus the sandboxed %LOCALAPPDATA% folder GameMaker uses when present.
   - { name: sonic-momentum,       src: ["file:Games/sonic-momentum/SM.sav",
