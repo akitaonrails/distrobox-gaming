@@ -1,0 +1,28 @@
+---
+# ReCasted — a minimal HLE compatibility layer + native x86-64 loader for
+# *Ratchet & Clank (PS4)*: it maps the Orbis/GNM calls onto POSIX + Vulkan 1.3
+# and runs the game binary as a host process (no full-system emulation, no
+# Wine). Ships a Linux x86_64 tarball with a GUI launcher and presets.
+#
+# The game dump is NOT included and is not in this library yet: EU
+# CUSA01073 v1.09 is the "fully playable" target, USA CUSA01047 v1.09 is
+# supported. Point dg_recasted_game_dir at the extracted game folder (the one
+# holding eboot.bin) or symlink it as <app>/game/CUSA01073.
+dg_recasted_project: AndyALRLabs/ReCasted
+dg_recasted_version: v0.4.0
+dg_recasted_asset_name: recasted-linux-x86_64.tar.gz
+dg_recasted_asset_url: "https://gitlab.com/-/project/88267024/uploads/e0132d496eb39e64da08d0d46e3f9436/{{ dg_recasted_asset_name }}"
+dg_recasted_asset_sha256: 780e5c4504526bbe79f6434e762a8758daa0cacf07540d150732e79f1d434787
+dg_recasted_asset_path: "{{ dg_roms_final_root }}/PC/ports/recasted/{{ dg_recasted_version }}/{{ dg_recasted_asset_name }}"
+
+dg_recasted_root: "{{ dg_box_home }}/tools/recasted"
+dg_recasted_dir: "{{ dg_recasted_root }}/{{ dg_recasted_version }}"
+dg_recasted_current: "{{ dg_recasted_root }}/current"
+dg_recasted_app: "{{ dg_recasted_current }}/recasted-linux-x86_64"
+dg_recasted_launcher: "{{ dg_box_home }}/bin/recasted"
+dg_recasted_game_dir: "{{ dg_roms_final_root }}/ps4/Ratchet & Clank (CUSA01073)"
+dg_recasted_game_link: "{{ dg_recasted_app }}/game/CUSA01073"
+
+# The launcher is an ImGui desktop app that owns its Display/Settings tabs, so
+# it runs directly (no gamescope); this only focuses the landscape monitor.
+dg_recasted_main_output: DP-1

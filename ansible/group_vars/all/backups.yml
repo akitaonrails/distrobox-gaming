@@ -233,6 +233,9 @@ dg_save_sets:
                                         "file:tools/vf1-recomp/VirtuaFighter/nvram.sav",
                                         "file:tools/vf1-recomp/VirtuaFighter/ranking_names.txt"] }
   - { name: vf3-recomp,           src: "{{ dg_vf3_data_rel }}" }  # VF3 settings, EEPROM, rankings, screenshots and logs; separate from release files
+  # Ratchet & Clank (ReCasted): the loader's emulated PS4 user/save data
+  - { name: recasted,             src: "tools/recasted/current/recasted-linux-x86_64/user" }
+
   # Super Mario All-Stars (Darhkfox port): battery saves (saves/smas.srm), save
   # states, settings and achievements under the port's XDG data dir. The retired
   # recomp under tools/smas-recomp is unlinked and has no saves.

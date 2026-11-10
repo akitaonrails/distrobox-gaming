@@ -1,0 +1,84 @@
+---
+# ReCasted — Ratchet & Clank (PS4) HLE loader. Pinned Linux release, unpacked
+# under tools/recasted/<version> with a `current` symlink; the game dump is
+# user-supplied (EU CUSA01073 or USA CUSA01047, v1.09). See docs/recasted.md.
+
+- name: Create the ReCasted directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_recasted_asset_path | dirname }}"
+    - "{{ dg_recasted_root }}"
+    - "{{ dg_recasted_dir }}"
+    - "{{ dg_recasted_launcher | dirname }}"
+    - "{{ dg_desktop_render_dir }}"
+
+- name: Stage the pinned ReCasted release
+  ansible.builtin.get_url:
+    url: "{{ dg_recasted_asset_url }}"
+    dest: "{{ dg_recasted_asset_path }}"
+    checksum: "sha256:{{ dg_recasted_asset_sha256 }}"
+    mode: "0644"
+
+- name: Check for an unpacked ReCasted launcher
+  ansible.builtin.stat:
+    path: "{{ dg_recasted_dir }}/recasted-linux-x86_64/recasted-launcher"
+  register: _rc_launcher
+
+- name: Unpack ReCasted
+  ansible.builtin.unarchive:
+    src: "{{ dg_recasted_asset_path }}"
+    dest: "{{ dg_recasted_dir }}"
+    remote_src: true
+  when: not _rc_launcher.stat.exists
+
+- name: Point the current symlink at the pinned release
+  ansible.builtin.file:
+    path: "{{ dg_recasted_current }}"
+    src: "{{ dg_recasted_dir }}"
+    state: link
+    force: true
+
+- name: Check the Ratchet & Clank game dump
+  ansible.builtin.stat:
+    path: "{{ dg_recasted_game_dir }}"
+  register: _rc_game
+
+- name: Report the missing game dump
+  ansible.builtin.debug:
+    msg: >-
+      ReCasted is installed, but the Ratchet & Clank (PS4) dump is missing at
+      {{ dg_recasted_game_dir }}. Put the extracted EU CUSA01073 or USA
+      CUSA01047 v1.09 folder there (or override dg_recasted_game_dir) and rerun
+      this playbook to link it.
+  when: not _rc_game.stat.exists
+
+- name: Link the game dump where the launcher auto-detects it
+  ansible.builtin.file:
+    path: "{{ dg_recasted_game_link }}"
+    src: "{{ dg_recasted_game_dir }}"
+    state: link
+  when: _rc_game.stat.exists
+
+- name: Install the ReCasted launcher
+  ansible.builtin.template:
+    src: recasted.sh.j2
+    dest: "{{ dg_recasted_launcher }}"
+    mode: "0755"
+
+- name: Render the ReCasted desktop entry
+  ansible.builtin.template:
+    src: recasted.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-recasted.desktop"
+    mode: "0644"
+
+- name: Publish the ReCasted desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _rc_host
+  changed_when: "'installed ' in _rc_host.stdout or 'removed stale ' in _rc_host.stdout"

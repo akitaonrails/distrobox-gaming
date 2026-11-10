@@ -1,0 +1,7 @@
+---
+- name: Install ReCasted (Ratchet & Clank PS4 HLE loader)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_recasted

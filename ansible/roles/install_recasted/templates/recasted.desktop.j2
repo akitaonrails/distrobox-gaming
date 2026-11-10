@@ -1,0 +1,11 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Type=Application
+Name=Ratchet & Clank · ReCasted (PS4)
+Exec={{ dg_recasted_launcher }}
+Terminal=false
+Icon=applications-games
+Comment=Native HLE loader for Ratchet & Clank (PS4) — Vulkan 1.3, no emulator.
+Categories=Game;
+Keywords=ratchet;clank;ps4;insomniac;recasted;platformer;
+{{ ogm_metadata('gaming-recasted') }}

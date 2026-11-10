@@ -1,0 +1,35 @@
+#!/bin/sh
+# ReCasted launcher — Ratchet & Clank (PS4) HLE loader. Runs the bundled GUI
+# on the landscape monitor (the launcher owns its display settings); the dump is picked in
+# the Setup tab (or auto-detected from <app>/game/CUSA01073). Managed by
+# install_recasted.
+set -eu
+
+if [ ! -e /.dockerenv ]; then
+  python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_recasted_main_output }}" }))'); s.recv(256); s.close()
+PY
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+
+cd "{{ dg_recasted_app }}" || exit 1
+
+if [ ! -x ./recasted-launcher ]; then
+  printf '%s\n' "ERROR: ReCasted is not installed." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-recasted.yml" >&2
+  exit 1
+fi
+
+export SDL_JOYSTICK_HIDAPI=0
+export RC_PRESENT_MODE=Mailbox
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+
+exec ./recasted-launcher "$@"

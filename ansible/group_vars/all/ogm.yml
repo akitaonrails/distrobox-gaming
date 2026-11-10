@@ -425,6 +425,8 @@ dg_ogm_games:
       sgdb_query: "OutRunners", github: "{{ dg_or_repo }}" }
   - { desktop_id: gaming-vrdeluxe, id: vrdeluxe, category: port,
       sgdb_query: "Virtua Racing Deluxe", github: "{{ dg_vrde_repo }}" }
+  - { desktop_id: gaming-recasted, id: recasted, category: emulator,
+      sgdb_query: "Ratchet & Clank", web_url: "https://gitlab.com/{{ dg_recasted_project }}" }
   - desktop_id: gaming-gt4-recomp
     id: gt4-recomp
     category: recomp
