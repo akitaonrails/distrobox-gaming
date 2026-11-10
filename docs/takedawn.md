@@ -75,3 +75,8 @@ be exercised on device yet because no installable disc exists.
 
 There is no `--uninstall`: delete the AppImage, `~/.local/share/takedawn`
 (saves included), `~/.cache/takedawn`, and `bin/takedawn` + the desktop entry.
+
+> **2026-11-10 release check:** Takedawn 0.3.1 adds a strict disc check for the
+> NTSC-U retail disc; this library's `Burnout 3 Takedown.iso` is the
+> North America + Japan + Europe pressing (`default.xbe` sha256 `cda5337…`),
+> so the pin deliberately stays at 0.2.1 until the retail NTSC-U dump is here.

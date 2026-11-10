@@ -1,10 +1,10 @@
 ---
 # Windows-only DriveClub Recomp; separate from the working CUSA00003 shadPS4 setup.
 dg_dcr_repo: OverkillLabs3/driveclub-recomp
-dg_dcr_version: 0.4.0
+dg_dcr_version: 0.4.2
 dg_dcr_archive: "{{ dg_roms_final_root }}/PC/releases/driveclub-recomp-{{ dg_dcr_version }}-win64.zip"
 dg_dcr_archive_url: "https://github.com/{{ dg_dcr_repo }}/releases/download/v{{ dg_dcr_version }}/driveclub-recomp-{{ dg_dcr_version }}-win64.zip"
-dg_dcr_archive_sha256: 60bc08bf031a39302daa78a6a12edec714228803564e674c79e23333e84d0ff3
+dg_dcr_archive_sha256: 57276e146e01b1f31b670668c53170b3e116bd5d58fca6a0cb3cc25aa298e658
 dg_dcr_install_dir: "{{ dg_box_home }}/tools/driveclub-recomp"
 dg_dcr_launcher: "{{ dg_box_home }}/bin/driveclub-recomp"
 dg_dcr_source_root: "{{ dg_roms_final_root }}/ps4/DriveClub (CUSA00093) - v1.28"

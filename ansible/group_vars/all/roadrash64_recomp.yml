@@ -8,11 +8,11 @@
 # and auto-starts — so the launcher's ROM picker never appears. Vulkan/RTX.
 
 dg_rr64_repo: linkssy2/RoadRash64Recompiled
-dg_rr64_release_tag: v1.4.8
-dg_rr64_asset_name: RoadRash64Recompiled-v1.4.8-Linux-Experimental.zip
+dg_rr64_release_tag: v1.4.9
+dg_rr64_asset_name: RoadRash64Recompiled-v1.4.9-Linux-Experimental.zip
 dg_rr64_asset_url: "https://github.com/{{ dg_rr64_repo }}/releases/download/{{ dg_rr64_release_tag }}/{{ dg_rr64_asset_name }}"
-dg_rr64_asset_sha256: "4ca6e103fc6dead44b325df5143e6af704a6516dd711edb63b9d9dcd19715c16"
-dg_rr64_asset_subdir: RoadRash64Recompiled-v1.4.8-Linux-Experimental
+dg_rr64_asset_sha256: "894a14967fa83f1f49cdf49c9a031053c907b5570dc9fd91a8671c24940c268c"
+dg_rr64_asset_subdir: RoadRash64Recompiled-v1.4.9-Linux-Experimental
 
 dg_rr64_root: "{{ dg_box_home }}/tools/roadrash64-recomp"
 dg_rr64_cache_dir: "{{ dg_box_home }}/cache/roadrash64-recomp"

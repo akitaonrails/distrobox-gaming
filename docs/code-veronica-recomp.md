@@ -51,3 +51,7 @@ survive release changes. `dg_save_sets` backs up only that save directory;
 the extracted game, shaders and EBOOT cache are reproducible. Re-render the
 backup manifest with `ansible-playbook site.yml --tags backup_saves`, then
 check `~/.local/bin/backup-saves --dry-run` on the host.
+
+> **2026-11-10 release check:** the port updated to v1.5.3, but the role's final
+> gate still fails without the owner-provided NPUB30467 `.rap` license, which is
+> not in the library. Supply it at `dg_cv_rap_file` and rerun to finish.

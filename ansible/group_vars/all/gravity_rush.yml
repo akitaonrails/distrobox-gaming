@@ -6,10 +6,10 @@
 # See docs/gravity-rush.md.
 
 dg_gr_repo: LucaPazienza/gravityrush_pc
-dg_gr_version: 0.1.10
+dg_gr_version: 0.1.15
 dg_gr_asset_name: "GravityRush-PC-{{ dg_gr_version }}-Windows.zip"
 dg_gr_asset_url: "https://github.com/{{ dg_gr_repo }}/releases/download/v{{ dg_gr_version }}/{{ dg_gr_asset_name }}"
-dg_gr_asset_sha256: 30e310dbc96ebecaf69895be10e62bcc16b37a226e1a65d6a804ce36608bfe7b
+dg_gr_asset_sha256: 253895308d512d43629eb2f8e94a48c7c300880252549ccf474315bb1d65c362
 dg_gr_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_gr_asset_name }}"
 
 # The port is validated on the European release; the resolution and shadow

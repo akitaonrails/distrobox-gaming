@@ -1,9 +1,9 @@
 ---
 dg_nf_repo: hk21x/nightfire-recomp
-dg_nf_version: v1.0.2
+dg_nf_version: v1.1.0
 dg_nf_launcher_url: "https://github.com/{{ dg_nf_repo }}/releases/download/{{ dg_nf_version }}/NightFireLauncher.exe"
 dg_nf_launcher_archive: "{{ dg_roms_final_root }}/PC/releases/NightFireLauncher-{{ dg_nf_version }}.exe"
-dg_nf_launcher_sha256: cd85e43a4799c6edb403e10af90bb8a9115b9d180834ea517513a7e4caeb1298
+dg_nf_launcher_sha256: 598949df54b6b81272969b2035f69a052858f59a027295ab08896e81ed20e9a9
 dg_nf_compiler_dlls:
   - name: x64
     url: https://raw.githubusercontent.com/mozilla/fxc2/807d26f4e4e9e9d0d0d6c1e05493b28eafb20e91/dll/d3dcompiler_47.dll

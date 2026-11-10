@@ -1,10 +1,10 @@
 ---
 # God of War III Remastered native PC port (experimental Linux AppImage).
 dg_gow3_pc_repo: FelipePrado0/gow3_pc
-dg_gow3_pc_release_tag: windows-v3.0.0
+dg_gow3_pc_release_tag: windows-v3.1.0
 dg_gow3_pc_asset_name: spartanport-x86_64.AppImage
 dg_gow3_pc_asset_url: "https://github.com/{{ dg_gow3_pc_repo }}/releases/download/{{ dg_gow3_pc_release_tag }}/{{ dg_gow3_pc_asset_name }}"
-dg_gow3_pc_asset_sha256: b63448dfc10b88f33e8c2edd0ec1ff56e7c902f870dca9c612a09e588cc35557
+dg_gow3_pc_asset_sha256: f0283807e56f4acc8cc7e5a4a0f5617086887e163111a5cc6f5f3f7ce312b941
 dg_gow3_pc_archive: "{{ dg_roms_final_root }}/PC/releases/spartanport-{{ dg_gow3_pc_release_tag }}-x86_64.AppImage"
 dg_gow3_pc_install_dir: "{{ dg_box_home }}/tools/gow3-pc"
 dg_gow3_pc_appimage: "{{ dg_gow3_pc_install_dir }}/spartanport-x86_64.AppImage"

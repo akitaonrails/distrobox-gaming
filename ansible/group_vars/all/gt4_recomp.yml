@@ -2,10 +2,10 @@
 # GT4 static recompilation, v1.3.0-rc6 standalone executables under Wine.
 # The 1.2.x installer line is retired; only the portable rc is tracked.
 dg_gt4r_repo: moesuito/gt4-staticrecomp
-dg_gt4r_130_version: 1.3.0-rc6
+dg_gt4r_130_version: 1.3.0-rc16
 dg_gt4r_130_zip: "{{ dg_roms_final_root }}/PC/releases/GT4Recomp-{{ dg_gt4r_130_version }}-portable.zip"
 dg_gt4r_130_url: "https://github.com/{{ dg_gt4r_repo }}/releases/download/v{{ dg_gt4r_130_version }}/GT4Recomp-{{ dg_gt4r_130_version }}-portable.zip"
-dg_gt4r_130_sha256: d94479da17e74e76e3b27545ce957dc691ceddbb6976899f8a0e130946bd33bd
+dg_gt4r_130_sha256: 7b32e66e4e5c9962cfbab340520106faff9a44115115a241ef1bcd90af515163
 dg_gt4r_130_release: "{{ dg_gt4r_root }}/releases/{{ dg_gt4r_130_version }}"
 dg_gt4r_gs_repo: moesuito/gt4recomp-gs
 dg_gt4r_gs_version: 1.2.1

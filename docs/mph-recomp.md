@@ -80,3 +80,6 @@ artifacts; the Windows zip could run under Proton if that ever becomes worth it.
 ## 2026-11-01 update check
 
 The latest v0.7.11-alpha release provides a Windows ZIP and source archive but no native Linux AppImage. Keep the existing v0.7.3-alpha Linux build until a compatible asset is released. The new release defaults to 4× internal 3D resolution and 8× SSAA on supported builds.
+
+> **2026-11-10 release check:** v0.7.12 publishes only a Windows x64 zip — no
+> Linux AppImage — so the Linux pin stays at v0.7.3-alpha.

@@ -1,10 +1,10 @@
 ---
 # Mickey & Donald Collection Windows PC port via the gaming box's Wine.
 dg_mdc_repo: Darhkfox/MickeyAndDonaldCollection
-dg_mdc_version: 1.1
+dg_mdc_version: 1.2
 dg_mdc_archive_name: "Mickey-and-Donald-Collection-v{{ dg_mdc_version }}-win64.zip"
 dg_mdc_archive_url: "https://github.com/{{ dg_mdc_repo }}/releases/download/v{{ dg_mdc_version }}/{{ dg_mdc_archive_name }}"
-dg_mdc_archive_sha256: 5b9e425af6bab28fa57ad6bce341076266a4d074310e399b5ef2ea3d1c8f06a6
+dg_mdc_archive_sha256: c84ededd1a071cce0727104cbe386819bc750a56342e15e3156ac7c4445c5a2c
 dg_mdc_cache_dir: "{{ dg_box_home }}/cache/mickey_donald"
 dg_mdc_install_root: "{{ dg_box_home }}/Games/mickey-donald"
 dg_mdc_game_dir: "{{ dg_mdc_install_root }}/Mickey and Donald Collection"

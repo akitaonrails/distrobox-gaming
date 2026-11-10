@@ -55,3 +55,7 @@ Edition (also installed) is intentionally not used — DUDE needs the classic da
 ## 2026-11-01 release update
 
 The 0.9.7 release fixes Vulkan and path-tracing cache hitches and applies a default gamepad layout only when no pad buttons are bound. The pinned native build keeps the existing renderer and graphics configuration.
+
+> **2026-11-10 release check:** DUDE is built from a pinned git commit, not a
+> release asset; the sweep reports it as `SOURCE` and it is updated by bumping
+> `dg_dude_ref` and rebuilding, separately from the release sweep.

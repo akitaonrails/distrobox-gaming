@@ -71,3 +71,8 @@ either re-run the role or set the disc via the app's Disc Setup panel.
   builds don't auto-update. Bump `dg_sotn_recomp_version` + `_asset_sha256` to
   move to a newer release.
 - Re-extracting on a version bump preserves the existing `disc/`.
+
+> **2026-11-10 release check:** v1.1.2p is available, but the PS1 disc is no
+> longer under `dg_sotn_recomp_disc_src_dir` (the library holds Castlevania
+> Chronicles, not Symphony of the Night), so the role cannot re-run and the pin
+> stays at v0.5.1b. Restore the redump split bin/cue, then bump and rerun.

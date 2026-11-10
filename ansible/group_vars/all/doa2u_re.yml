@@ -7,10 +7,10 @@
 # See docs/doa2u-re.md.
 
 dg_doa2u_repo: NoRain211/doa2u-re
-dg_doa2u_version: 0.1.13-Alpha
+dg_doa2u_version: 0.3.0-Alpha
 dg_doa2u_zip: "{{ dg_roms_final_root }}/PC/releases/DOA2U-{{ dg_doa2u_version }}-Linux.zip"
-dg_doa2u_zip_url: "https://github.com/{{ dg_doa2u_repo }}/releases/download/v0.1.13/DOA2U-0.1.13-Alpha-Linux.zip"
-dg_doa2u_zip_sha256: adec3f432f8c9f99d7ea58ef6cd5b2769c7f89ccf4918376788a6f0fca2b4381
+dg_doa2u_zip_url: "https://github.com/{{ dg_doa2u_repo }}/releases/download/v0.3.0/DOA2U-0.3.0-Alpha-Linux.zip"
+dg_doa2u_zip_sha256: 8cc901f18d68cea6abf929efa332e224caea28251296dc91d25f117998cbd363
 
 # Dead or Alive Ultimate (Xbox, USA) Disc 2 — the DOA2U disc. The build
 # verifies the executable's SHA-256 and refuses anything else.

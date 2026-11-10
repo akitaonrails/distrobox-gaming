@@ -131,6 +131,12 @@
     checksum: "sha256:{{ dg_gt4r_gs_sha256 }}"
     mode: "0644"
 
+- name: Create the GSdx config directory
+  ansible.builtin.file:
+    path: "{{ dg_gt4r_gs_config | dirname }}"
+    state: directory
+    mode: "0755"
+
 - name: Configure the GSdx renderer upscale
   ansible.builtin.copy:
     content: |
@@ -140,10 +146,14 @@
     mode: "0644"
 
 - name: Ensure the GSdx renderer (gt4-gs.exe) is present
-  ansible.builtin.unarchive:
-    src: "{{ dg_gt4r_cache }}/{{ dg_gt4r_gs_name }}"
-    dest: "{{ dg_gt4r_130_release }}/game/gs"
-    remote_src: true
+  # Windows-built zip: backslashed entry names and non-traversable dir modes;
+  # files/extract_gsdx.py normalises both and flattens the version folder.
+  ansible.builtin.command:
+    argv:
+      - python3
+      - "{{ role_path }}/files/extract_gsdx.py"
+      - "{{ dg_gt4r_130_release }}/game/gs"
+      - "{{ dg_gt4r_cache }}/{{ dg_gt4r_gs_name }}"
     creates: "{{ dg_gt4r_130_release }}/game/gs/gt4-gs.exe"
 
 - name: Link the PCSX2 HD texture packs into the shared Textures folder

@@ -1,10 +1,10 @@
 ---
 # Resident Evil Code: Veronica X HD, US PSN base release (NPUB30467).
 dg_cv_repo: kastieloficial/RE-Code-Veronica-PS3-HD-Recomp-PC
-dg_cv_version: v1.1.11
-dg_cv_asset_name: CodeVeronica-PC-v1.1.11.zip
+dg_cv_version: v1.5.3
+dg_cv_asset_name: CodeVeronica-PC-v1.5.3.zip
 dg_cv_asset_url: "https://github.com/{{ dg_cv_repo }}/releases/download/{{ dg_cv_version }}/{{ dg_cv_asset_name }}"
-dg_cv_asset_sha256: a9c3ec5567ec84628648d689ba08da9aa4db4866b484abce34b532fd6da7fe05
+dg_cv_asset_sha256: 413dee2350223dde0c492928dbef71abe737139ead3d9441f1ee86e2bef5f021
 dg_cv_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_cv_asset_name }}"
 dg_cv_pkg: "{{ dg_roms_final_root }}/ps3/Resident.Evil.Code.Veronica.X.HD.PSN.PS3-DUPLEX/Resident.Evil.Code.Veronica.X.HD.NPUB30467.Install.pkg"
 dg_cv_game_dir: "{{ dg_rpcs3_dev_hdd0_game }}/NPUB30467"

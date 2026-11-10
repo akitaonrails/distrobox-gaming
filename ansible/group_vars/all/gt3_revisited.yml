@@ -6,10 +6,10 @@
 # See docs/gt3-revisited.md.
 
 dg_gt3r_repo: matt-pulsipher/GT3-revisited
-dg_gt3r_version: 0.5.0
+dg_gt3r_version: 0.6.4
 dg_gt3r_asset_name: gt3r-linux-x86_64.tar.gz
 dg_gt3r_asset_url: "https://github.com/{{ dg_gt3r_repo }}/releases/download/v{{ dg_gt3r_version }}/{{ dg_gt3r_asset_name }}"
-dg_gt3r_asset_sha256: 661ec71eec0a9e36953bcdfea7ee0469340421eef44148565f1e0e9b8323c57f
+dg_gt3r_asset_sha256: 2f745d06feb5c7bc1ab15e22f68f80f2d055f2434551589113804981e3196278
 dg_gt3r_archive: "{{ dg_roms_final_root }}/PC/releases/gt3r-v{{ dg_gt3r_version }}-linux-x86_64.tar.gz"
 
 # NTSC-U disc only (SCUS-97102 or the PBPX-95503 bundle disc — both verified
