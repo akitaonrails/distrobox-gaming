@@ -1,8 +1,8 @@
 #!/bin/sh
-# ReCasted launcher — Ratchet & Clank (PS4) HLE loader. Runs the bundled GUI
-# on the landscape monitor (the launcher owns its display settings); the dump is picked in
-# the Setup tab (or auto-detected from <app>/game/CUSA01073). Managed by
-# install_recasted.
+# ReCasted launcher — Ratchet & Clank (PS4) HLE loader. Boots the game under
+# gamescope at 4K60 in Neo mode, or opens the bundled GUI with --launcher.
+# Patches are off: the bundled patches.bin targets the EU CUSA01073 v1.09 image
+# and corrupts this USA v1.07 dump. Managed by install_recasted.
 set -eu
 
 if [ ! -e /.dockerenv ]; then
@@ -26,10 +26,23 @@ if [ ! -x ./recasted-launcher ]; then
   exit 1
 fi
 
+if [ "${1:-}" = "--launcher" ]; then
+  exec ./recasted-launcher
+fi
+
+if [ ! -d "{{ dg_recasted_game_link }}" ]; then
+  printf '%s\n' "ERROR: the Ratchet & Clank dump is missing." >&2
+  printf '%s\n' "Put the extracted {{ dg_recasted_game_id }} folder at {{ dg_recasted_game_dir }} or run: $0 --launcher" >&2
+  exit 1
+fi
+
+export RC_NO_PATCHES={{ dg_recasted_env.RC_NO_PATCHES }}
+export RC_NEO_MODE={{ dg_recasted_env.RC_NEO_MODE }}
+export RC_RES={{ dg_recasted_env.RC_RES }}
 export SDL_JOYSTICK_HIDAPI=0
 export RC_PRESENT_MODE=Mailbox
 export __NV_PRIME_RENDER_OFFLOAD=1
 export __GLX_VENDOR_LIBRARY_NAME=nvidia
 export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
 
-exec ./recasted-launcher "$@"
+exec gamescope {{ dg_recasted_gamescope_args }} -- ./run.sh "{{ dg_recasted_game_dir }}" "$@"

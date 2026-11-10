@@ -41,6 +41,12 @@
     state: link
     force: true
 
+- name: Create the launcher's game directory
+  ansible.builtin.file:
+    path: "{{ dg_recasted_game_link | dirname }}"
+    state: directory
+    mode: "0755"
+
 - name: Check the Ratchet & Clank game dump
   ansible.builtin.stat:
     path: "{{ dg_recasted_game_dir }}"
@@ -61,6 +67,26 @@
     src: "{{ dg_recasted_game_dir }}"
     state: link
   when: _rc_game.stat.exists
+
+- name: Check whether the dump carries a param.sfo
+  ansible.builtin.stat:
+    path: "{{ dg_recasted_game_dir }}/sce_sys/param.sfo"
+  register: _rc_sfo
+  when: _rc_game.stat.exists
+
+# shadpkg never writes sce_sys/param.sfo, and ReCasted reads the title id and
+# app version from it; without one the dump is "UNKNOWN" and may not boot.
+- name: Write the missing param.sfo
+  ansible.builtin.command:
+    argv:
+      - python3
+      - "{{ dg_project_root }}/scripts/recasted_param_sfo.py"
+      - "{{ dg_recasted_game_dir }}/sce_sys/param.sfo"
+      - "{{ dg_recasted_game_id }}"
+      - "{{ dg_recasted_game_app_ver }}"
+      - "Ratchet & Clank"
+    creates: "{{ dg_recasted_game_dir }}/sce_sys/param.sfo"
+  when: _rc_game.stat.exists and not _rc_sfo.stat.exists
 
 - name: Install the ReCasted launcher
   ansible.builtin.template:

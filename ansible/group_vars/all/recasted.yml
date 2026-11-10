@@ -4,10 +4,10 @@
 # and runs the game binary as a host process (no full-system emulation, no
 # Wine). Ships a Linux x86_64 tarball with a GUI launcher and presets.
 #
-# The game dump is NOT included and is not in this library yet: EU
-# CUSA01073 v1.09 is the "fully playable" target, USA CUSA01047 v1.09 is
-# supported. Point dg_recasted_game_dir at the extracted game folder (the one
-# holding eboot.bin) or symlink it as <app>/game/CUSA01073.
+# The game dump is NOT included. EU CUSA01073 v1.09 is upstream's "fully
+# playable" target; this library has the USA release, CUSA01047 (base PKG +
+# v1.07 patch), extracted with shadpkg into the box home for streaming speed.
+# The launcher auto-detects <app>/game/<CUSA id>.
 dg_recasted_project: AndyALRLabs/ReCasted
 dg_recasted_version: v0.4.0
 dg_recasted_asset_name: recasted-linux-x86_64.tar.gz
@@ -20,9 +20,18 @@ dg_recasted_dir: "{{ dg_recasted_root }}/{{ dg_recasted_version }}"
 dg_recasted_current: "{{ dg_recasted_root }}/current"
 dg_recasted_app: "{{ dg_recasted_current }}/recasted-linux-x86_64"
 dg_recasted_launcher: "{{ dg_box_home }}/bin/recasted"
-dg_recasted_game_dir: "{{ dg_roms_final_root }}/ps4/Ratchet & Clank (CUSA01073)"
-dg_recasted_game_link: "{{ dg_recasted_app }}/game/CUSA01073"
+dg_recasted_game_id: CUSA01047
+dg_recasted_game_app_ver: "01.07"
+dg_recasted_game_dir: "{{ dg_box_home }}/Games/ratchet-clank-{{ dg_recasted_game_id | lower }}"
+dg_recasted_game_link: "{{ dg_recasted_app }}/game/{{ dg_recasted_game_id }}"
 
-# The launcher is an ImGui desktop app that owns its Display/Settings tabs, so
-# it runs directly (no gamescope); this only focuses the landscape monitor.
+# Presentation: gamescope 4K60 on the landscape monitor, Neo mode (1440p native
+# with IGTI reconstruction toward 4K). The bundled patches.bin is cut for the EU
+# CUSA01073 v1.09 image; on this USA v1.07 dump they corrupt the code, so the
+# launcher boots the game with patches disabled.
 dg_recasted_main_output: DP-1
+dg_recasted_gamescope_args: "-W 3840 -H 2160 -r 60 -f"
+dg_recasted_env:
+  RC_NO_PATCHES: "1"
+  RC_NEO_MODE: "1"
+  RC_RES: "1440p"
