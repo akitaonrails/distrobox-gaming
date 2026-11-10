@@ -6,12 +6,12 @@
   when: dg_dk64_revert | bool
   block:
     - name: Remove the DK64 launcher + install dir (config/saves + ROM copy kept)
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ dg_dk64_launcher }}"
-        - "{{ dg_dk64_root }}"
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_dk64_launcher }}"
+          - "{{ dg_dk64_root }}"
     - name: Report DK64 reverted
       ansible.builtin.debug:
         msg: "DK64 Recompiled removed. {{ dg_dk64_config_dir }} (saves, ROM copy) and your NAS ROM are untouched."

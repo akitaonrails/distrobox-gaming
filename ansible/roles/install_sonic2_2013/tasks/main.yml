@@ -5,14 +5,14 @@
 - name: Revert Sonic 2 (2013) when requested
   when: dg_s2013_revert | bool
   block:
-    - name: Remove the launcher + install dir + source tree
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ dg_s2013_bin }}"
-        - "{{ dg_s2013_game_dir }}"
-        - "{{ dg_s2013_src }}"
+    - name: Remove the launcher + install dir + source tree (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_s2013_bin }}"
+          - "{{ dg_s2013_game_dir }}"
+          - "{{ dg_s2013_src }}"
     - name: Report reverted
       ansible.builtin.debug:
         msg: "Sonic 2 (2013) removed. NAS archives untouched."

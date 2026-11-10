@@ -7,13 +7,13 @@
   when: dg_sf64_revert | bool
   block:
     - name: Remove the SF64 launcher, desktop entry + install dir (config/saves kept)
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ dg_sf64_launcher }}"
-        - "{{ dg_sf64_root }}"
-        - "{{ dg_desktop_render_dir }}/gaming-starfox64-recomp.desktop"
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_sf64_launcher }}"
+          - "{{ dg_sf64_root }}"
+          - "{{ dg_desktop_render_dir }}/gaming-starfox64-recomp.desktop"
     - name: Refresh host launchers after removing SF64
       ansible.builtin.command:
         cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"

@@ -5,14 +5,14 @@
 - name: Revert Virtua Fighter Recompiled when requested
   when: dg_vf1_revert | bool
   block:
-    - name: Remove the VF launcher, desktop entry + install dir
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ dg_vf1_launcher }}"
-        - "{{ dg_vf1_root }}"
-        - "{{ dg_desktop_render_dir }}/gaming-vf1.desktop"
+    - name: Remove the VF launcher, desktop entry + install dir (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_vf1_launcher }}"
+          - "{{ dg_vf1_root }}"
+          - "{{ dg_desktop_render_dir }}/gaming-vf1.desktop"
     - name: Refresh host launchers after removing VF
       ansible.builtin.command:
         cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
@@ -22,7 +22,7 @@
       changed_when: true
     - name: Report VF reverted
       ansible.builtin.debug:
-        msg: "Virtua Fighter Recompiled removed. Your vf.zip on the NAS is untouched (saves lived under {{ dg_vf1_save_dir }}, captured by backup_saves)."
+        msg: "Virtua Fighter Recompiled removed. Your vf.zip on the NAS is untouched, and the registered saves in {{ dg_vf1_save_dir }} were kept in place — the revert only removes program files."
 
 - name: Install Virtua Fighter Recompiled
   when: not (dg_vf1_revert | bool)

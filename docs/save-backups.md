@@ -115,6 +115,15 @@ box-home base into `backup.env`. It deploys both helpers to host
 `~/.local/bin/` and removes the retired in-box copies. It runs as part of
 `site.yml` (tag `backup_saves`).
 
+## Reverts and uninstalls
+
+A revert never deletes a path registered in `dg_save_sets`. Revert blocks remove
+the launcher and program files through the shared `revert_guard` role, whose
+`scripts/dg-revert-clean.py` prunes the install tree *around* the listed save
+files/directories and reports what it kept. That makes a revert safe even when
+the newest backup is older than the current progress; the next backup still
+captures anything the player starts after the revert.
+
 ## Adding a new emulator or game
 
 When you install anything with save data, **add its save dir(s) to

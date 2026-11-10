@@ -5,14 +5,14 @@
 - name: Revert Banjo-Tooie Recompiled when requested
   when: dg_btooie_revert | bool
   block:
-    - name: Remove the launcher, install dir and prefix
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ dg_btooie_launcher }}"
-        - "{{ dg_btooie_install_dir }}"
-        - "{{ dg_btooie_prefix }}"
+    - name: Remove the launcher, install dir and prefix (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_btooie_launcher }}"
+          - "{{ dg_btooie_install_dir }}"
+          - "{{ dg_btooie_prefix }}"
     - name: Report reverted
       ansible.builtin.debug:
         msg: "Banjo-Tooie Recompiled removed. The NAS zip + z64 and the profile ({{ dg_btooie_profile_dir }}) are untouched."

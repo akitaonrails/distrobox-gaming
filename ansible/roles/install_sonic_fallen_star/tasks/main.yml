@@ -6,15 +6,15 @@
 - name: Revert Sonic and the Fallen Star when requested
   when: dg_fs_revert | bool
   block:
-    - name: Remove the Fallen Star launcher, install dir, prefix + desktop entry
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ dg_fs_bin }}"
-        - "{{ dg_fs_install_dir }}"
-        - "{{ dg_fs_prefix }}"
-        - "{{ dg_desktop_render_dir }}/gaming-sonic-fallen-star.desktop"
+    - name: Remove the Fallen Star launcher, install dir, prefix + desktop entry (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_fs_bin }}"
+          - "{{ dg_fs_install_dir }}"
+          - "{{ dg_fs_prefix }}"
+          - "{{ dg_desktop_render_dir }}/gaming-sonic-fallen-star.desktop"
     - name: Refresh host launchers after removing Fallen Star
       ansible.builtin.command:
         cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"

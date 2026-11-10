@@ -5,14 +5,14 @@
 - name: Revert Road Rash 64 Recompiled when requested
   when: dg_rr64_revert | bool
   block:
-    - name: Remove the Road Rash 64 launcher, desktop entry + install dir
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ dg_rr64_launcher }}"
-        - "{{ dg_rr64_root }}"
-        - "{{ dg_desktop_render_dir }}/gaming-roadrash64.desktop"
+    - name: Remove the Road Rash 64 launcher, desktop entry + install dir (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_rr64_launcher }}"
+          - "{{ dg_rr64_root }}"
+          - "{{ dg_desktop_render_dir }}/gaming-roadrash64.desktop"
     - name: Refresh host launchers after removing Road Rash 64
       ansible.builtin.command:
         cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"

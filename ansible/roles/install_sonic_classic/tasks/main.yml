@@ -6,15 +6,15 @@
 - name: Revert Sonic Classic when requested
   when: dg_sclassic_revert | bool
   block:
-    - name: Remove the Sonic Classic launcher, install dir, prefix + desktop entry
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ dg_sclassic_bin }}"
-        - "{{ dg_sclassic_install_dir }}"
-        - "{{ dg_sclassic_prefix }}"
-        - "{{ dg_desktop_render_dir }}/gaming-sonic-classic.desktop"
+    - name: Remove the Sonic Classic launcher, install dir, prefix + desktop entry (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_sclassic_bin }}"
+          - "{{ dg_sclassic_install_dir }}"
+          - "{{ dg_sclassic_prefix }}"
+          - "{{ dg_desktop_render_dir }}/gaming-sonic-classic.desktop"
     - name: Refresh host launchers after removing Sonic Classic
       ansible.builtin.command:
         cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"

@@ -5,14 +5,14 @@
 - name: Revert DKR-R when requested
   when: dg_dkr_revert | bool
   block:
-    - name: Remove the DKR-R launcher, desktop entry + install dir
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ dg_dkr_launcher }}"
-        - "{{ dg_dkr_install_dir }}"
-        - "{{ dg_desktop_render_dir }}/gaming-dkr-r.desktop"
+    - name: Remove the DKR-R launcher, desktop entry + install dir (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_dkr_launcher }}"
+          - "{{ dg_dkr_install_dir }}"
+          - "{{ dg_desktop_render_dir }}/gaming-dkr-r.desktop"
     - name: Refresh host launchers after removing DKR-R
       ansible.builtin.command:
         cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"

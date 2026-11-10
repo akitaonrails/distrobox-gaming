@@ -289,6 +289,10 @@ missing from that list is silently unprotected.
 - **Point at save data only.** Leave out what a rebuild re-derives — extracted
   discs, texture packs, shader caches, ROM caches. Dusk keeps 6 GB of textures
   beside its 36 KB memory card; Fukami a 461 MB extracted disc beside `mc/`.
+- **Reverts preserve saves.** A revert/uninstall block must not delete a path
+  registered in `dg_save_sets`: route it through the `revert_guard` role
+  (`scripts/dg-revert-clean.py`), which removes program files but keeps the save
+  files or directories in place and reports them.
 - **Verify both ends**: re-run `ansible-playbook site.yml --tags backup_saves`
   to re-render the manifest, then
   `~/.local/bin/backup-saves --dry-run` on the host and confirm the new set

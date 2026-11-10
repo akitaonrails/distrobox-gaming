@@ -5,14 +5,14 @@
 - name: Revert Wind Waker HD Recomp when requested
   when: dg_wwhd_revert | bool
   block:
-    - name: Remove the WWHD launcher, install dir + desktop entry
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ dg_wwhd_launcher }}"
-        - "{{ dg_wwhd_root }}"
-        - "{{ dg_desktop_render_dir }}/gaming-wwhd-recomp.desktop"
+    - name: Remove the WWHD launcher, install dir + desktop entry (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_wwhd_launcher }}"
+          - "{{ dg_wwhd_root }}"
+          - "{{ dg_desktop_render_dir }}/gaming-wwhd-recomp.desktop"
     - name: Refresh host launchers after removing WWHD
       ansible.builtin.command:
         cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"

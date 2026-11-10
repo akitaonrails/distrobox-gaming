@@ -7,15 +7,15 @@
 - name: Revert Metroid Prime 4 Recomp when requested
   when: dg_mp4_revert | bool
   block:
-    - name: Remove the MP4 launcher, staging + built game + desktop entry
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ dg_mp4_launcher }}"
-        - "{{ dg_mp4_root }}"
-        - "{{ dg_mp4_game }}"
-        - "{{ dg_desktop_render_dir }}/gaming-mp4-recomp.desktop"
+    - name: Remove the MP4 launcher, staging + built game + desktop entry (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_mp4_launcher }}"
+          - "{{ dg_mp4_root }}"
+          - "{{ dg_mp4_game }}"
+          - "{{ dg_desktop_render_dir }}/gaming-mp4-recomp.desktop"
     - name: Refresh host launchers after removing MP4
       ansible.builtin.command:
         cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"

@@ -5,14 +5,14 @@
 - name: Revert F-Zero SNES Recompiled when requested
   when: dg_fzero_revert | bool
   block:
-    - name: Remove the F-Zero launcher, desktop entry + install dir
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ dg_fzero_launcher }}"
-        - "{{ dg_fzero_root }}"
-        - "{{ dg_desktop_render_dir }}/gaming-fzero.desktop"
+    - name: Remove the F-Zero launcher, desktop entry + install dir (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_fzero_launcher }}"
+          - "{{ dg_fzero_root }}"
+          - "{{ dg_desktop_render_dir }}/gaming-fzero.desktop"
     - name: Refresh host launchers after removing F-Zero
       ansible.builtin.command:
         cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"

@@ -5,13 +5,13 @@
 - name: Revert Star Fox Enhanced when requested
   when: dg_sfe_revert | bool
   block:
-    - name: Remove the Star Fox Enhanced launcher + install dir
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ dg_sfe_bin }}"
-        - "{{ dg_sfe_root }}"
+    - name: Remove the Star Fox Enhanced launcher + install dir (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_sfe_bin }}"
+          - "{{ dg_sfe_root }}"
     - name: Report Star Fox Enhanced reverted
       ansible.builtin.debug:
         msg: "Star Fox Enhanced removed. Your ROM on the NAS and Documents/Star Fox Enhanced saves are untouched."

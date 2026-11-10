@@ -5,14 +5,14 @@
 - name: Revert Sonic and the Moon Facility when requested
   when: dg_moonfacility_revert | bool
   block:
-    - name: Remove the Moon Facility launcher, install dir and prefix
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ dg_moonfacility_bin }}"
-        - "{{ dg_moonfacility_install_dir }}"
-        - "{{ dg_moonfacility_prefix }}"
+    - name: Remove the Moon Facility launcher, install dir and prefix (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_moonfacility_bin }}"
+          - "{{ dg_moonfacility_install_dir }}"
+          - "{{ dg_moonfacility_prefix }}"
     - name: Report Moon Facility reverted
       ansible.builtin.debug:
         msg: "Sonic and the Moon Facility removed. The NAS zip is untouched."

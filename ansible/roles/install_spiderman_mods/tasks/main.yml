@@ -24,10 +24,12 @@
       register: _smmods_uninstall
       changed_when: "'uninstalled-' in _smmods_uninstall.stdout"
 
-    - name: Remove the Overstrike working dirs
-      ansible.builtin.file:
-        path: "{{ dg_smmods_work_root }}"
-        state: absent
+    - name: Remove the Overstrike working dirs (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_smmods_work_root }}"
 
     - name: Report reverted
       ansible.builtin.debug:

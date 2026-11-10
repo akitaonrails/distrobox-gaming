@@ -6,14 +6,14 @@
 - name: Revert SM64 DS port when requested
   when: dg_sm64ds_revert | bool
   block:
-    - name: Remove the SM64 DS launcher, install dir + desktop entry
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ dg_sm64ds_bin }}"
-        - "{{ dg_sm64ds_install_dir }}"
-        - "{{ dg_desktop_render_dir }}/gaming-sm64ds-port.desktop"
+    - name: Remove the SM64 DS launcher, install dir + desktop entry (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_sm64ds_bin }}"
+          - "{{ dg_sm64ds_install_dir }}"
+          - "{{ dg_desktop_render_dir }}/gaming-sm64ds-port.desktop"
     - name: Refresh host launchers after removing SM64 DS port
       ansible.builtin.command:
         cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"

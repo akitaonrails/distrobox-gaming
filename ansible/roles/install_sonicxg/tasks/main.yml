@@ -6,12 +6,12 @@
   when: dg_sonicxg_revert | bool
   block:
     - name: Remove the Sonic XG launcher + install dir (save dir kept)
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ dg_sonicxg_launcher }}"
-        - "{{ dg_sonicxg_install_dir }}"
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_sonicxg_launcher }}"
+          - "{{ dg_sonicxg_install_dir }}"
     - name: Report Sonic XG reverted
       ansible.builtin.debug:
         msg: "Sonic XG removed. {{ dg_sonicxg_save_dir }} (replays, options) and the NAS zip are untouched."

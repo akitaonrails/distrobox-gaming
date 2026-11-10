@@ -1,0 +1,28 @@
+---
+# Shared revert helper. Never deletes a path registered as save data in
+# dg_save_sets: scripts/dg-revert-clean.py prunes the install tree around them,
+# so saves and their folders survive in place for a later reinstall.
+# Callers pass the same list a `file: state=absent` loop used to take:
+#   vars: { revert_paths: ["{{ dg_x_launcher }}", "{{ dg_x_root }}"] }
+
+- name: Remove the requested paths, keeping registered saves
+  ansible.builtin.command:
+    argv:
+      - python3
+      - "{{ dg_project_root }}/scripts/dg-revert-clean.py"
+      - --backups-file
+      - "{{ dg_project_root }}/ansible/group_vars/all/backups.yml"
+      - --box-home
+      - "{{ dg_box_home }}"
+      - --user
+      - "{{ ansible_facts.user_id }}"
+      - --path
+      - "{{ item }}"
+  loop: "{{ revert_paths }}"
+  register: _revert_clean
+  changed_when: "'removed ' in _revert_clean.stdout"
+
+- name: Report the saves the revert kept
+  ansible.builtin.debug:
+    msg: "{{ _revert_clean.results | map(attribute='stdout') | select('search', 'kept save') | list }}"
+  when: _revert_clean.results | selectattr('stdout', 'search', 'kept save') | list | length > 0

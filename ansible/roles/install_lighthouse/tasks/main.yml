@@ -7,14 +7,14 @@
 - name: Revert Lighthouse when requested
   when: dg_lighthouse_revert | bool
   block:
-    - name: Remove the Lighthouse launcher, desktop entry + install dir
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ dg_lighthouse_launcher }}"
-        - "{{ dg_lighthouse_root }}"
-        - "{{ dg_desktop_render_dir }}/gaming-lighthouse.desktop"
+    - name: Remove the Lighthouse launcher, desktop entry + install dir (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_lighthouse_launcher }}"
+          - "{{ dg_lighthouse_root }}"
+          - "{{ dg_desktop_render_dir }}/gaming-lighthouse.desktop"
     - name: Refresh host launchers after removing Lighthouse
       ansible.builtin.command:
         cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"

@@ -6,12 +6,12 @@
   when: dg_s3air_revert | bool
   block:
     - name: Remove the S3AIR launcher + install dir (save dir kept)
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ dg_s3air_launcher }}"
-        - "{{ dg_s3air_install_dir }}"
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_s3air_launcher }}"
+          - "{{ dg_s3air_install_dir }}"
     - name: Report S3AIR reverted
       ansible.builtin.debug:
         msg: "Sonic 3 A.I.R. removed. {{ dg_s3air_save_dir }} (saves, ROM copy) and the NAS are untouched."

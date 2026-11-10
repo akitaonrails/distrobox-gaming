@@ -5,14 +5,14 @@
 - name: Revert Sonic Dimensions when requested
   when: dg_sonicdimensions_revert | bool
   block:
-    - name: Remove the Sonic Dimensions launcher, install dir and prefix
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ dg_sonicdimensions_bin }}"
-        - "{{ dg_sonicdimensions_install_dir }}"
-        - "{{ dg_sonicdimensions_prefix }}"
+    - name: Remove the Sonic Dimensions launcher, install dir and prefix (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_sonicdimensions_bin }}"
+          - "{{ dg_sonicdimensions_install_dir }}"
+          - "{{ dg_sonicdimensions_prefix }}"
     - name: Report Sonic Dimensions reverted
       ansible.builtin.debug:
         msg: "Sonic Dimensions removed. The NAS rar is untouched."

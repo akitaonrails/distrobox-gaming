@@ -7,14 +7,14 @@
 - name: Revert UltraTears when requested
   when: dg_ut_revert | bool
   block:
-    - name: Remove the UltraTears launcher, install tree + desktop entry
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ dg_ut_launcher }}"
-        - "{{ dg_ut_root }}"
-        - "{{ dg_desktop_render_dir }}/gaming-ultratears.desktop"
+    - name: Remove the UltraTears launcher, install tree + desktop entry (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_ut_launcher }}"
+          - "{{ dg_ut_root }}"
+          - "{{ dg_desktop_render_dir }}/gaming-ultratears.desktop"
     - name: Refresh host launchers after removing UltraTears
       ansible.builtin.command:
         cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"

@@ -6,12 +6,12 @@
   when: dg_pd_revert | bool
   block:
     - name: Remove the Perfect Dark launcher + install dir (config/saves kept)
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ dg_pd_launcher }}"
-        - "{{ dg_pd_root }}"
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_pd_launcher }}"
+          - "{{ dg_pd_root }}"
     - name: Report Perfect Dark reverted
       ansible.builtin.debug:
         msg: "Perfect Dark removed. {{ dg_pd_config_dir }} (pd.ini, saves) and your NAS ROM are untouched."

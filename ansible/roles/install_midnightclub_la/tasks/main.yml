@@ -7,14 +7,14 @@
 - name: Revert Midnight Club LA when requested
   when: dg_mcla_revert | bool
   block:
-    - name: Remove the MC:LA launcher, desktop entry + install dir
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ dg_mcla_launcher }}"
-        - "{{ dg_mcla_root }}"
-        - "{{ dg_desktop_render_dir }}/gaming-midnightclubla.desktop"
+    - name: Remove the MC:LA launcher, desktop entry + install dir (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_mcla_launcher }}"
+          - "{{ dg_mcla_root }}"
+          - "{{ dg_desktop_render_dir }}/gaming-midnightclubla.desktop"
     - name: Refresh host launchers after removing MC:LA
       ansible.builtin.command:
         cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"

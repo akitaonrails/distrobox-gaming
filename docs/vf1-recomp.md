@@ -25,10 +25,10 @@ scripts/install-host-launchers.sh             # refresh the host menu entry
 ```
 
 Launcher `bin/vf1`; host/Walker entry **"Virtua Fighter · Recompiled"**; `ogm`
-id `vf1`. Revert with `-e dg_vf1_revert=true` (removes the launcher + install
-dir; your `vf.zip` on the NAS is untouched — note that removes the `data/`
-EEPROM/NVRAM + ranking names beside the executable, which the `backup_saves` role captures as the
-`vf1-recomp` set).
+id `vf1`. Revert with `-e dg_vf1_revert=true`: it removes the launcher and the
+program files but **keeps the registered saves** (`eeprom.sav`, `nvram.sav`,
+`ranking_names.txt`) in place, so a later reinstall picks them up. Your `vf.zip`
+on the NAS is untouched.
 
 ## How it works
 
