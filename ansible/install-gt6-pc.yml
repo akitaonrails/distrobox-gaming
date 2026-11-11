@@ -1,0 +1,7 @@
+---
+- name: Install Gran Turismo 6 PC
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_gt6_pc

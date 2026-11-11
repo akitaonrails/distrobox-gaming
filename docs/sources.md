@@ -13,6 +13,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 
 | Project | What it is | Source |
 |---|---|---|
+| Gran Turismo 6 PC | GT6-tuned RPCS3 + launcher: 4K/300% upscaling, graphics patches, firmware/update installers, wheel support, LAN | [Mabec-games/Gran-Turismo-6-PC](https://github.com/Mabec-games/Gran-Turismo-6-PC) · [doc](gt6-pc.md) |
 | ReCasted | HLE loader that runs Ratchet & Clank (PS4) natively on Vulkan 1.3 (needs the CUSA01073/01047 v1.09 dump) | [AndyALRLabs/ReCasted](https://gitlab.com/AndyALRLabs/ReCasted) · [doc](recasted.md) |
 | Lichii | Experimental Switch 2 emulator, built from the pinned `nx2` commit with an isolated profile and optional restricted runtime | [zortos293/Lichii](https://github.com/zortos293/Lichii) · [doc](lichii.md) |
 | Lichii Shader Sync | Third-party CLI that merges community Vulkan shader packs into Lichii/Eden caches (Ocarina pack: 88,982 pipelines) | [oceanpacificpeace/lichii-shader-sync](https://github.com/oceanpacificpeace/lichii-shader-sync) · [doc](lichii.md) |

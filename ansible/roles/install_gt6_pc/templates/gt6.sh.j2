@@ -1,0 +1,33 @@
+#!/bin/sh
+# Gran Turismo 6 PC launcher — Mabec-games' GT6-tuned RPCS3 + launcher.
+# Runs on the HOST: its bundled RPCS3 is an AppImage that mounts itself with
+# FUSE, which the restricted box does not have (and the box's RPCS3 cannot
+# verify the firmware there). The data dir lives in the box home, so saves,
+# settings and the launcher profile are shared and backed up. Managed by
+# install_gt6_pc.
+set -eu
+
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_gt6_main_output }}" }))'); s.recv(256); s.close()
+PY
+
+cd "{{ dg_gt6_appdir }}" || exit 1
+
+if [ ! -x ./AppRun ]; then
+  printf '%s\n' "ERROR: the GT6 launcher is not installed." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-gt6-pc.yml" >&2
+  exit 1
+fi
+
+export XDG_DATA_HOME="{{ dg_box_home }}/.local/share"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+
+exec ./AppRun "$@"

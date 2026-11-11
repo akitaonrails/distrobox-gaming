@@ -1,0 +1,57 @@
+---
+# Gran Turismo 6 PC — Mabec-games' GT6-tuned RPCS3 + launcher: one download with
+# the patched emulator, firmware/update installers, GT6 graphics patches, wheel
+# and gamepad setup, mods and LAN. Needs the owned GT6 disc dump.
+dg_gt6_repo: Mabec-games/Gran-Turismo-6-PC
+dg_gt6_version: v1.1.3
+dg_gt6_asset_name: GT6-Launcher-x86_64.AppImage
+dg_gt6_asset_url: "https://github.com/{{ dg_gt6_repo }}/releases/download/{{ dg_gt6_version }}/{{ dg_gt6_asset_name }}"
+dg_gt6_asset_sha256: a850b2a3d8fd6c6957d36258b72a012e525d787dedeb77e6545d0c1783a212ac
+dg_gt6_asset_path: "{{ dg_roms_final_root }}/PC/releases/{{ dg_gt6_asset_name }}"
+
+dg_gt6_root: "{{ dg_box_home }}/tools/gt6-launcher/{{ dg_gt6_version }}"
+dg_gt6_appdir: "{{ dg_gt6_root }}/squashfs-root"
+dg_gt6_launcher: "{{ dg_box_home }}/bin/gt6"
+# The launcher keeps its RPCS3 config, saves, firmware and caches here (HOME).
+dg_gt6_data: "{{ dg_box_home }}/.local/share/gt6-launcher"
+dg_gt6_game: "{{ dg_roms_final_root }}/ps3/Gran.Turismo.6.PS3-DUPLEX"
+dg_gt6_main_output: DP-1
+
+# The official update chain (1.02 -> 1.22) is ~10.5 GB; the launcher downloads
+# it resumably. Off by default so a rebuild does not pull it again; run
+# `gt6 updates` (or set this true) once.
+dg_gt6_install_updates: false
+
+# Seeded once into launcher.json; the launcher's settings menu rewrites it.
+# Max baseline for this box: 4K output, 300% internal resolution, sharper MLAA,
+# 16x anisotropic, sharp shadows, 60 Hz with 60 FPS menus.
+dg_gt6_profile:
+  fullscreen: true
+  output_resolution: "3840x2160"
+  resolution_scale: 300
+  aspect: "16:9"
+  aa: "mlaa_sharp"
+  upscaler: "bilinear"
+  cas_sharpening: 50
+  anisotropic: 16
+  frame_mode: "60"
+  unlock_menu_fps: true
+  motion_blur: "stock"
+  depth_of_field: true
+  shadows: "sharp"
+  lamp_glare: 1.0
+  renderer: "Vulkan"
+  spu_block_size: "Safe"
+  thread_scheduler: "Operating System"
+  zcull_queries_disabled: true
+  render_path: "auto"
+  accurate_rsx_reservation: true
+  multithreaded_rsx: false
+  async_texture_streaming: false
+  handle_tiled_memory: true
+  audio_time_stretch: true
+  audio_buffer_ms: 50
+  controller_mode: "auto"
+  use_gamemode: false
+  use_mangohud: false
+  console_language: "auto"

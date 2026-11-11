@@ -1,0 +1,11 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Type=Application
+Name=Gran Turismo 6 · PC
+Exec={{ dg_gt6_launcher }}
+Terminal=false
+Icon=applications-games
+Comment=GT6-tuned RPCS3 with 4K upscaling, graphics patches, wheels and LAN.
+Categories=Game;
+Keywords=gran;turismo;gt6;ps3;racing;polyphony;
+{{ ogm_metadata('gaming-gt6') }}

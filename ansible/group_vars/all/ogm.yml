@@ -425,6 +425,8 @@ dg_ogm_games:
       sgdb_query: "OutRunners", github: "{{ dg_or_repo }}" }
   - { desktop_id: gaming-vrdeluxe, id: vrdeluxe, category: port,
       sgdb_query: "Virtua Racing Deluxe", github: "{{ dg_vrde_repo }}" }
+  - { desktop_id: gaming-gt6, id: gt6, category: emulator,
+      sgdb_query: "Gran Turismo 6", github: "{{ dg_gt6_repo }}" }
   - { desktop_id: gaming-sega-rally-2-native, id: sega-rally-2-native, category: recomp,
       sgdb_query: "Sega Rally 2", github: "{{ dg_sr2n_repo }}" }
   - { desktop_id: gaming-rad-mobile, id: rad-mobile, category: arcade,

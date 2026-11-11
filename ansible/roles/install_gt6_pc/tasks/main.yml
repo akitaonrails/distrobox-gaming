@@ -1,0 +1,124 @@
+---
+# Gran Turismo 6 PC — Mabec-games' launcher with the GT6-tuned RPCS3. The
+# launcher owns firmware/update installation, the game registration and every
+# emulator setting; this role stages it, seeds the max profile and registers
+# the owned dump. See docs/gt6-pc.md.
+
+- name: Verify the owned Gran Turismo 6 dump
+  ansible.builtin.stat:
+    path: "{{ dg_gt6_game }}/PS3_GAME/PARAM.SFO"
+  register: _gt6_disc
+
+- name: Require the Gran Turismo 6 disc dump
+  ansible.builtin.assert:
+    that: _gt6_disc.stat.isreg | default(false)
+    fail_msg: >-
+      Expected the extracted GT6 dump at {{ dg_gt6_game }} (PS3_GAME/PARAM.SFO).
+      Override dg_gt6_game in host_vars/localhost.yml for another copy.
+
+- name: Create the Gran Turismo 6 directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_gt6_asset_path | dirname }}"
+    - "{{ dg_gt6_root }}"
+    - "{{ dg_gt6_data }}"
+    - "{{ dg_gt6_launcher | dirname }}"
+    - "{{ dg_desktop_render_dir }}"
+
+- name: Stage the pinned GT6 launcher AppImage
+  ansible.builtin.get_url:
+    url: "{{ dg_gt6_asset_url }}"
+    dest: "{{ dg_gt6_asset_path }}"
+    checksum: "sha256:{{ dg_gt6_asset_sha256 }}"
+    mode: "0644"
+
+- name: Unpack the GT6 launcher
+  ansible.builtin.command:
+    cmd: "{{ dg_gt6_asset_path }} --appimage-extract"
+    chdir: "{{ dg_gt6_root }}"
+    creates: "{{ dg_gt6_appdir }}/AppRun"
+
+- name: Check the GT6 launcher
+  ansible.builtin.stat:
+    path: "{{ dg_gt6_appdir }}/AppRun"
+  register: _gt6_apprun
+
+- name: Record the unpack result
+  ansible.builtin.assert:
+    that: _gt6_apprun.stat.isreg | default(false)
+    fail_msg: "The GT6 AppImage did not unpack to {{ dg_gt6_appdir }}."
+    quiet: true
+
+- name: Check whether the launcher profile exists
+  ansible.builtin.stat:
+    path: "{{ dg_gt6_data }}/launcher.json"
+  register: _gt6_profile
+
+- name: Seed the 4K 300% launcher profile
+  ansible.builtin.copy:
+    dest: "{{ dg_gt6_data }}/launcher.json"
+    mode: "0644"
+    content: >-
+      {{ {'profile_rev': 4, 'profile': dg_gt6_profile, 'games': {}, 'active': ''}
+         | to_nice_json }}
+
+  when: not _gt6_profile.stat.exists
+
+# The launcher runs on the HOST (its bundled RPCS3 is an AppImage that mounts
+# itself; the box has no FUSE and its RPCS3 cannot verify firmware there). The
+# data dir stays in the box home so saves and settings are shared and backed up.
+- name: Register the GT6 disc with the launcher
+  ansible.builtin.shell: |
+    set -eu
+    if grep -qF "{{ dg_gt6_game }}" "{{ dg_gt6_data }}/launcher.json" 2>/dev/null; then
+      exit 0
+    fi
+    cd "{{ dg_gt6_appdir }}"
+    XDG_DATA_HOME="{{ dg_box_home }}/.local/share" ./AppRun add-game "{{ dg_gt6_game }}"
+  register: _gt6_add
+  changed_when: "'BCES' in _gt6_add.stdout or 'BCUS' in _gt6_add.stdout"
+
+- name: Check the installed PS3 firmware
+  ansible.builtin.stat:
+    path: "{{ dg_gt6_data }}/config/rpcs3/dev_flash"
+  register: _gt6_firmware
+
+# Downloads Sony's official PUP and installs it with the bundled RPCS3
+# (--installfw --headless). ~200 MB, once per launcher data dir.
+- name: Install the PS3 firmware
+  ansible.builtin.shell: |
+    set -eu
+    cd "{{ dg_gt6_appdir }}"
+    XDG_DATA_HOME="{{ dg_box_home }}/.local/share" ./AppRun firmware
+  when: not _gt6_firmware.stat.exists
+
+- name: Install the official GT6 updates (1.02 -> 1.22, ~10.5 GB)
+  ansible.builtin.shell: |
+    set -eu
+    cd "{{ dg_gt6_appdir }}"
+    XDG_DATA_HOME="{{ dg_box_home }}/.local/share" ./AppRun updates
+  when: dg_gt6_install_updates | bool
+
+- name: Install the Gran Turismo 6 launcher
+  ansible.builtin.template:
+    src: gt6.sh.j2
+    dest: "{{ dg_gt6_launcher }}"
+    mode: "0755"
+
+- name: Render the Gran Turismo 6 desktop entry
+  ansible.builtin.template:
+    src: gaming-gt6.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-gt6.desktop"
+    mode: "0644"
+
+- name: Publish the Gran Turismo 6 desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _gt6_host
+  changed_when: "'installed ' in _gt6_host.stdout or 'removed stale ' in _gt6_host.stdout"
