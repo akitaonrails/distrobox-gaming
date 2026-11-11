@@ -12,9 +12,9 @@ cd ansible && ansible-playbook install-rea-rad-mobile.yml   # or site.yml --tags
 
 | | |
 |---|---|
-| Release | `v0.1.0` — `RadMobile-0.1.0-linux-x86_64.tar.gz` (15.7 MB, SHA256-pinned), staged in `ROMS_FINAL/PC/releases/` |
+| Release | `v0.1.1` — `RadMobile-0.1.1-linux-x86_64.tar.gz` (15.7 MB, SHA256-pinned), staged in `ROMS_FINAL/PC/releases/` |
 | ROM | `ROMS_FINAL/arcade/fbneo/radm.zip` (Rad Mobile World, 21 files, SHA256-pinned) linked as `roms/radm.zip` |
-| Install | `tools/rea-rad-mobile/v0.1.0/RadMobile-0.1.0-linux-x86_64/` (launcher + bundled MAME + bgfx) |
+| Install | `tools/rea-rad-mobile/v0.1.1/RadMobile-0.1.1-linux-x86_64/` (launcher + bundled MAME + bgfx) |
 | State | `~/.local/share/rea-rad-mobile/` — `settings.ini`, `wheel.ini`, MAME `nvram` (arcade EEPROM), `cfg`, rebuilt `roms/` |
 | Launcher | `bin/rad-mobile`; entry **Rad Mobile · REA** |
 
@@ -37,6 +37,11 @@ menu rewrites the file and later changes survive.
 | `vsync` | `true` | |
 | `free_play` | `true` | the menu starts a race with Start, no coin needed |
 | `steer_lock` | `270` | the arcade cabinet's lock |
+
+v0.1.1 adds **STICK STEERING** (ASSISTED by default, where the stick sets the
+car's angle and centring it goes straight; ARCADE makes the stick the cabinet
+wheel) and fixes the stuck-turn after releasing the stick by feeding MAME the
+stick at wheel speed.
 
 Wheels (Logitech, Thrustmaster, Fanatec CSL/DD, MOZA, generic) are detected
 automatically, with a setup wizard for separate pedal devices and buttons;

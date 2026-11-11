@@ -19,6 +19,7 @@ rows are just the index). Contributions welcome if you crack one.
 | ~~MGSV: The Phantom Pain (mods)~~ | ✅ RESOLVED 2026-10-03 — mgsv-mod-installer (headless SnakeBite) installed 4/5 mods via `install_mgsvtpp_mods`; 316 archive missing | [#12](https://github.com/akitaonrails/distrobox-gaming/issues/12) |
 | Batman: Arkham Asylum/City/Knight (mods) | Nexus mods use the TFC Installer / Advanced Launcher GUI — not headless-automatable. 🔴 re-checked 2026-10-03: still GUI-only, but the manual GUI pass under Proton is now well-confirmed | [#13](https://github.com/akitaonrails/distrobox-gaming/issues/13) |
 | Sonic Mania — Megamix Mania (mod) | DLL character-mods don't run under Steam+Proton (SteamStub `verchk` hook never fires); data mods do. 🔴 re-checked 2026-10-03 with v1.1.1: still the same Steam DLL mod; user decision: stays parked | [#14](https://github.com/akitaonrails/distrobox-gaming/issues/14) |
+| Metroid Prime 3 · Corruption_3 PC | Windows-only static recompilation: under Wine Dawn picks the **Null adapter** (Vulkan and D3D12), and with vkd3d-proton it loads the disc then SEH-crashes. No source or Linux build exists. Play the owned ISO in Dolphin. See [notes](corruption-3-pc.md). | – |
 | Marvel Tōkon: Fighting Souls | EAC Linux/Proton module not enabled by the devs — "No anti-cheat module found for this platform"; dev-side toggle, no local workaround. 🔴 re-checked 2026-10-03: still blocked | [#15](https://github.com/akitaonrails/distrobox-gaming/issues/15) |
 
 Notes:
