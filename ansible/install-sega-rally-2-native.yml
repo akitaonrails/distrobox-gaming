@@ -1,0 +1,7 @@
+---
+- name: Install Sega Rally 2 Native
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_sega_rally_2_native

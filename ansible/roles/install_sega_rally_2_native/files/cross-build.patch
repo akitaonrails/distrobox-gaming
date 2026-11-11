@@ -1,0 +1,112 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 224f4a3..a9c8c02 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -38,7 +38,16 @@ set(SKIP_GLSLANG_INSTALL ON CACHE BOOL "" FORCE)
+ if(MSVC)
+     add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:/utf-8>)
+ endif()
+-add_subdirectory(third_party/glslang EXCLUDE_FROM_ALL)
++if(CMAKE_CROSSCOMPILING)
++  # Cross builds run the shader compiler and the Musashi table generator on the
++  # host: the target binaries are Windows executables and cannot be executed.
++  set(SR2_GLSLANG "${SR2_HOST_GLSLANG}" CACHE FILEPATH "host glslang-standalone")
++  set(SR2_M68KMAKE "${SR2_HOST_M68KMAKE}" CACHE FILEPATH "host m68kmake")
++else()
++  add_subdirectory(third_party/glslang EXCLUDE_FROM_ALL)
++  set(SR2_GLSLANG $<TARGET_FILE:glslang-standalone>)
++  set(SR2_M68KMAKE $<TARGET_FILE:m68kmake>)
++endif()
+ 
+ set(SHADER_DIR ${CMAKE_SOURCE_DIR}/src/video/shaders)
+ set(SHADER_OUT ${CMAKE_BINARY_DIR}/shaders)
+@@ -52,8 +61,8 @@ foreach(src ${SHADER_SOURCES})
+     # in any of them rebuilds it (no list of includes to keep by hand)
+     add_custom_command(OUTPUT ${out}
+         COMMAND ${CMAKE_COMMAND} -E make_directory ${SHADER_OUT}
+-        COMMAND $<TARGET_FILE:glslang-standalone> -V --target-env vulkan1.2 --vn spv_${var} --depfile ${out}.d -o ${out} ${src}
+-        DEPENDS ${src} glslang-standalone
++        COMMAND ${SR2_GLSLANG} -V --target-env vulkan1.2 --vn spv_${var} --depfile ${out}.d -o ${out} ${src}
++        DEPENDS ${src}
+         DEPFILE ${out}.d
+         COMMENT "Shader ${name}")
+     list(APPEND SHADER_HEADERS ${out})
+@@ -64,8 +73,8 @@ foreach(name r3d ao)
+     set(out ${SHADER_OUT}/${name}_rt.frag.h)
+     add_custom_command(OUTPUT ${out}
+         COMMAND ${CMAKE_COMMAND} -E make_directory ${SHADER_OUT}
+-        COMMAND $<TARGET_FILE:glslang-standalone> -V --target-env vulkan1.2 -DRAY_TRACING --vn spv_${name}_rt_frag --depfile ${out}.d -o ${out} ${SHADER_DIR}/${name}.frag
+-        DEPENDS ${SHADER_DIR}/${name}.frag glslang-standalone
++        COMMAND ${SR2_GLSLANG} -V --target-env vulkan1.2 -DRAY_TRACING --vn spv_${name}_rt_frag --depfile ${out}.d -o ${out} ${SHADER_DIR}/${name}.frag
++        DEPENDS ${SHADER_DIR}/${name}.frag
+         DEPFILE ${out}.d
+         COMMENT "Shader ${name}.frag (ray tracing)")
+     list(APPEND SHADER_HEADERS ${out})
+@@ -74,8 +83,8 @@ endforeach()
+ set(out ${SHADER_OUT}/r3d_rt.vert.h)
+ add_custom_command(OUTPUT ${out}
+     COMMAND ${CMAKE_COMMAND} -E make_directory ${SHADER_OUT}
+-    COMMAND $<TARGET_FILE:glslang-standalone> -V --target-env vulkan1.2 -DRAY_TRACING --vn spv_r3d_rt_vert --depfile ${out}.d -o ${out} ${SHADER_DIR}/r3d.vert
+-    DEPENDS ${SHADER_DIR}/r3d.vert glslang-standalone
++    COMMAND ${SR2_GLSLANG} -V --target-env vulkan1.2 -DRAY_TRACING --vn spv_r3d_rt_vert --depfile ${out}.d -o ${out} ${SHADER_DIR}/r3d.vert
++    DEPENDS ${SHADER_DIR}/r3d.vert
+     DEPFILE ${out}.d
+     COMMENT "Shader r3d.vert (ray tracing)")
+ list(APPEND SHADER_HEADERS ${out})
+@@ -130,15 +139,17 @@ set(MINIZ_DIR ${miniz_SOURCE_DIR})
+ # Musashi (68000 of the sound board): m68kmake generates the opcode tables
+ set(MUSASHI_DIR ${CMAKE_SOURCE_DIR}/third_party/musashi)
+ set(MUSASHI_GEN ${CMAKE_BINARY_DIR}/musashi)
+-add_executable(m68kmake ${MUSASHI_DIR}/m68kmake.c)
+-target_compile_definitions(m68kmake PRIVATE _CRT_SECURE_NO_WARNINGS)
++if(NOT CMAKE_CROSSCOMPILING)
++  add_executable(m68kmake ${MUSASHI_DIR}/m68kmake.c)
++  target_compile_definitions(m68kmake PRIVATE _CRT_SECURE_NO_WARNINGS)
++endif()
+ if(MSVC)
+     target_compile_options(m68kmake PRIVATE /Od)   # the generator misbehaves when optimised by MSVC
+ endif()
+ add_custom_command(OUTPUT ${MUSASHI_GEN}/m68kops.c ${MUSASHI_GEN}/m68kops.h
+     COMMAND ${CMAKE_COMMAND} -E make_directory ${MUSASHI_GEN}
+-    COMMAND $<TARGET_FILE:m68kmake> ${MUSASHI_GEN} ${MUSASHI_DIR}/m68k_in.c
+-    DEPENDS m68kmake ${MUSASHI_DIR}/m68k_in.c
++    COMMAND ${SR2_M68KMAKE} ${MUSASHI_GEN} ${MUSASHI_DIR}/m68k_in.c
++    DEPENDS ${MUSASHI_DIR}/m68k_in.c
+     COMMENT "Musashi opcode tables")
+ 
+ # NVIDIA DLSS SDK (tools/get_dlss.bat fetches it): optional. Without it the game
+diff --git a/src/runtime/ppc_rt.h b/src/runtime/ppc_rt.h
+index fa12101..ae13017 100644
+--- a/src/runtime/ppc_rt.h
++++ b/src/runtime/ppc_rt.h
+@@ -123,7 +123,13 @@ static inline uint32_t addca(Ctx& c, uint32_t a, uint32_t b, uint32_t cin) {
+ }
+ 
+ static inline uint32_t rotl(uint32_t v, uint32_t n) { n &= 31; return n ? (v << n) | (v >> (32 - n)) : v; }
+-static inline uint32_t clz32(uint32_t v) { unsigned long i; return _BitScanReverse(&i, v) ? 31 - i : 32; }
++static inline uint32_t clz32(uint32_t v) {
++#if defined(_MSC_VER)
++    unsigned long i; return _BitScanReverse(&i, v) ? 31 - i : 32;
++#else
++    return v ? uint32_t(__builtin_clz(v)) : 32;
++#endif
++}
+ 
+ static inline uint32_t sraw(Ctx& c, uint32_t s, uint32_t n) {
+     n &= 0x3F;
+diff --git a/src/video/r3d_scene.cpp b/src/video/r3d_scene.cpp
+index ade0153..98f49ca 100644
+--- a/src/video/r3d_scene.cpp
++++ b/src/video/r3d_scene.cpp
+@@ -1064,7 +1064,11 @@ void R3DSceneBuilder::model(uint32_t addr, const Mat& m, const Attribs& a) {
+         for (int i = 0; i < 7; i++) h[i] = model_word(addr + i);
+         if (h[6] == 0) break;
+         int nverts = (h[0] & 0x40) ? 4 : 3;
++        #if defined(_MSC_VER)
+         int shared = __popcnt(h[0] & 0xF);
++#else
++        int shared = __builtin_popcount(h[0] & 0xF);
++#endif
+         if (addr + 7 + 4 * uint32_t(std::max(0, nverts - shared)) > end) break;
+ 
+         // Texture state of this polygon (affects reused vertices' UVs as well)

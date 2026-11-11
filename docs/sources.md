@@ -26,6 +26,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | 2 Ship 2 Harkinian | Majora's Mask PC port | [HarbourMasters/2ship2harkinian](https://github.com/HarbourMasters/2ship2harkinian) · [doc](2ship2harkinian.md) |
 | DekUI | Single-screen Majora's Mask 3D via a custom Azahar build | [tgacquin/mm3d-dekui](https://github.com/tgacquin/mm3d-dekui) · [doc](dekui-mm3d.md) |
 | Nebula | Super Mario Galaxy Wii recompilation (Windows-only runtime; Linux blocked at NAND preflight) | [keepvaibin/nebula](https://github.com/keepvaibin/nebula) · [doc](nebula-galaxy.md) |
+| Sega Rally 2 Native | Model 3 arcade static recompilation, Vulkan renderer with ray tracing, true widescreen; Windows build cross-compiled with MinGW and run under Wine | [snicolast/SegaRally2Native](https://github.com/snicolast/SegaRally2Native) · [doc](sega-rally-2-native.md) |
 | RalliSport Challenge 2 Recompiled | Original Xbox native Linux recompilation | [Mortify7612/RallisportChallenge2-decomp](https://github.com/Mortify7612/RallisportChallenge2-decomp) · [doc](rsc2.md) |
 | Gran Turismo 4 Recompiled | PS2 USA retail static recompilation, Windows build under Wine | [moesuito/gt4-staticrecomp](https://github.com/moesuito/gt4-staticrecomp) · [doc](gt4-recomp.md) |
 | OpenCMR2 | Native Colin McRae Rally 2.0 port | [pablocpas/OpenCMR2](https://github.com/pablocpas/OpenCMR2) · [doc](opencmr2.md) |

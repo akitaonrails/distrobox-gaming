@@ -1,0 +1,216 @@
+---
+# Sega Rally 2 Native — cross-build the Windows-only recompilation with
+# MinGW-w64 (host glslang + m68kmake for the codegen steps), then run it under
+# Wine. See group_vars/all/sega_rally_2_native.yml and docs/sega-rally-2-native.md.
+
+- name: Verify the owned Sega Rally 2 Model 3 romset
+  ansible.builtin.stat:
+    path: "{{ dg_sr2n_rom }}"
+    checksum_algorithm: sha256
+  register: _sr2n_rom
+
+- name: Require the Sega Rally 2 (World) Model 3 set
+  ansible.builtin.assert:
+    that: _sr2n_rom.stat.checksum | default('') == dg_sr2n_rom_sha256
+    fail_msg: >-
+      Expected the owned Sega Rally 2 Model 3 set at {{ dg_sr2n_rom }} (sha256
+      {{ dg_sr2n_rom_sha256 }}); the port refuses other versions.
+
+- name: Create the Sega Rally 2 Native directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_sr2n_source_archive | dirname }}"
+    - "{{ dg_sr2n_build_root }}"
+    - "{{ dg_sr2n_src }}"
+    - "{{ dg_sr2n_game }}"
+    - "{{ dg_sr2n_prefix }}"
+    - "{{ dg_sr2n_launcher | dirname }}"
+    - "{{ dg_desktop_render_dir }}"
+
+- name: Install the Sega Rally 2 Native build packages
+  ansible.builtin.shell: "{{ dg_in_box }} sudo pacman -S --needed --noconfirm {{ dg_sr2n_packages | join(' ') }}"
+  register: _sr2n_pacman
+  changed_when: "'installing' in _sr2n_pacman.stdout"
+
+- name: Stage the pinned Sega Rally 2 Native source
+  ansible.builtin.get_url:
+    url: "{{ dg_sr2n_source_url }}"
+    dest: "{{ dg_sr2n_source_archive }}"
+    checksum: "sha256:{{ dg_sr2n_source_sha256 }}"
+    mode: "0644"
+
+- name: Extract the Sega Rally 2 Native source
+  ansible.builtin.unarchive:
+    src: "{{ dg_sr2n_source_archive }}"
+    dest: "{{ dg_sr2n_src }}"
+    remote_src: true
+    extra_opts:
+      - --strip-components=1
+    creates: "{{ dg_sr2n_src }}/CMakeLists.txt"
+
+# The upstream build is MSVC-only: two MSVC intrinsics and the cross-build
+# host-tool plumbing. The patch is ours, not upstream's.
+- name: Apply the cross-build patch
+  ansible.builtin.shell: |
+    set -eu
+    cd "{{ dg_sr2n_src }}"
+    if git apply --check "{{ role_path }}/files/cross-build.patch" 2>/dev/null; then
+      git apply "{{ role_path }}/files/cross-build.patch"
+      echo applied
+    fi
+  register: _sr2n_patch
+  changed_when: "'applied' in _sr2n_patch.stdout"
+
+- name: Extract the ROM data
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sh -c 'cd "{{ dg_sr2n_src }}" &&
+    python3 tools/romtool.py "{{ dg_sr2n_rom }}" data'
+  args:
+    creates: "{{ dg_sr2n_src }}/data/crom.bin"
+
+- name: Recompile the PowerPC code
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sh -c 'cd "{{ dg_sr2n_src }}" &&
+    python3 tools/recomp.py data/crom.bin build/gen'
+  args:
+    creates: "{{ dg_sr2n_src }}/build/gen/files.cmake"
+
+# The shader compiler and Musashi's table generator must run on the host: the
+# cross-built Windows binaries cannot execute here.
+- name: Build the host glslang for the shader step
+  ansible.builtin.shell: |
+    set -eu
+    cd "{{ dg_sr2n_build_root }}"
+    cmake -S "{{ dg_sr2n_src }}/third_party/glslang" -B glslang-host -G Ninja \
+      -DCMAKE_BUILD_TYPE=Release -DENABLE_GLSLANG_BINARIES=ON -DENABLE_OPT=OFF \
+      -DENABLE_HLSL=OFF -DGLSLANG_TESTS=OFF -DBUILD_TESTING=OFF \
+      -DENABLE_SPVREMAPPER=OFF >/dev/null
+    cmake --build glslang-host --target glslang-standalone -j 30 >/dev/null
+  args:
+    creates: "{{ dg_sr2n_host_glslang }}"
+
+- name: Build the host m68kmake
+  ansible.builtin.command:
+    argv:
+      - gcc
+      - -O2
+      - "{{ dg_sr2n_src }}/third_party/musashi/m68kmake.c"
+      - -o
+      - "{{ dg_sr2n_host_m68kmake }}"
+    creates: "{{ dg_sr2n_host_m68kmake }}"
+
+- name: Configure the MinGW cross build
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -c 'cmake -S "{{ dg_sr2n_src }}" -B "{{ dg_sr2n_build }}" -G Ninja \
+      -DCMAKE_SYSTEM_NAME=Windows \
+      -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc \
+      -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ \
+      -DCMAKE_RC_COMPILER=x86_64-w64-mingw32-windres \
+      -DCMAKE_BUILD_TYPE=Release \
+      "-DCMAKE_EXE_LINKER_FLAGS=-static -static-libgcc -static-libstdc++" \
+      -DSR2_HOST_GLSLANG="{{ dg_sr2n_host_glslang }}" \
+      -DSR2_HOST_M68KMAKE="{{ dg_sr2n_host_m68kmake }}"'
+  args:
+    creates: "{{ dg_sr2n_build }}/build.ninja"
+
+- name: Check for a built Sega Rally 2 Native executable
+  ansible.builtin.stat:
+    path: "{{ dg_sr2n_exe }}"
+  register: _sr2n_exe
+
+- name: Build Sega Rally 2 Native
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sh -c 'cmake --build "{{ dg_sr2n_build }}" -j 30'
+  when: not _sr2n_exe.stat.exists
+
+- name: Require the built executable
+  ansible.builtin.stat:
+    path: "{{ dg_sr2n_exe }}"
+  register: _sr2n_exe_after
+
+- name: Record the Sega Rally 2 Native build result
+  ansible.builtin.assert:
+    that: _sr2n_exe_after.stat.isreg | default(false)
+    fail_msg: "Sega Rally 2 Native did not build at {{ dg_sr2n_short }}; see the CMake output above."
+    quiet: true
+
+- name: Install the game executable
+  ansible.builtin.copy:
+    src: "{{ dg_sr2n_exe }}"
+    dest: "{{ dg_sr2n_game }}/SegaRally2.exe"
+    remote_src: true
+    mode: "0755"
+
+- name: Install the game data and textures
+  ansible.builtin.command:
+    argv:
+      - rsync
+      - -a
+      - --checksum
+      - --itemize-changes
+      - "{{ dg_sr2n_src }}/{{ item }}/"
+      - "{{ dg_sr2n_game }}/{{ item }}/"
+  loop:
+    - data
+    - textures
+  register: _sr2n_rsync
+  changed_when: _sr2n_rsync.stdout | length > 0
+
+- name: Check the Sega Rally 2 Native Wine prefix
+  ansible.builtin.stat:
+    path: "{{ dg_sr2n_prefix }}/system.reg"
+  register: _sr2n_prefix
+
+- name: Initialize the Sega Rally 2 Native Wine prefix
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      export WINEPREFIX="{{ dg_sr2n_prefix }}"
+      export WINEARCH=win64
+      export WINEDEBUG=-all
+      export WINEDLLOVERRIDES=winemenubuilder.exe=d
+      timeout 120 env -u PYTHONHOME -u PYTHONPATH wineboot -u
+      timeout 60 env -u PYTHONHOME -u PYTHONPATH wineserver -w
+    '
+  when: not _sr2n_prefix.stat.exists
+
+- name: Force the GLX OpenGL backend (wine 11 EGL regression)
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      export WINEPREFIX="{{ dg_sr2n_prefix }}"
+      export WINEDEBUG=-all
+      key="HKCU\\Software\\Wine\\X11 Driver"
+      if env -u PYTHONHOME -u PYTHONPATH wine reg query "$key" /v UseEGL 2>/dev/null | grep -Eiq "REG_SZ[[:space:]]+N[[:space:]]*$"; then
+        exit 0
+      fi
+      env -u PYTHONHOME -u PYTHONPATH wine reg add "$key" /v UseEGL /t REG_SZ /d N /f
+      printf "%s\n" "forced-glx"
+    '
+  register: _sr2n_glx
+  changed_when: "'forced-glx' in _sr2n_glx.stdout"
+  when: dg_wine_force_glx | default(true)
+
+- name: Install the Sega Rally 2 Native launcher
+  ansible.builtin.template:
+    src: sega-rally-2-native.sh.j2
+    dest: "{{ dg_sr2n_launcher }}"
+    mode: "0755"
+
+- name: Render the Sega Rally 2 Native desktop entry
+  ansible.builtin.template:
+    src: gaming-sega-rally-2-native.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-sega-rally-2-native.desktop"
+    mode: "0644"
+
+- name: Publish the Sega Rally 2 Native desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _sr2n_host
+  changed_when: "'installed ' in _sr2n_host.stdout or 'removed stale ' in _sr2n_host.stdout"

@@ -233,6 +233,9 @@ dg_save_sets:
                                         "file:tools/vf1-recomp/VirtuaFighter/nvram.sav",
                                         "file:tools/vf1-recomp/VirtuaFighter/ranking_names.txt"] }
   - { name: vf3-recomp,           src: "{{ dg_vf3_data_rel }}" }  # VF3 settings, EEPROM, rankings, screenshots and logs; separate from release files
+  # Sega Rally 2 Native: the port's EEPROM and settings
+  - { name: sega-rally-2-native,  src: "Games/sega-rally-2-native/save" }
+
   # Rad Mobile (REA launcher): settings.ini, wheel.ini and MAME's nvram EEPROM
   - { name: rea-rad-mobile,       src: ".local/share/rea-rad-mobile" }
 

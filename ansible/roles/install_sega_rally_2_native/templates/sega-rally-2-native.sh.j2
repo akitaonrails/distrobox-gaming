@@ -1,0 +1,38 @@
+#!/bin/sh
+# Sega Rally 2 Native — the Windows recompilation cross-built with MinGW and
+# run under Wine. Managed by install_sega_rally_2_native.
+set -eu
+
+if [ ! -e /.dockerenv ]; then
+  python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_sr2n_main_output }}" }))'); s.recv(256); s.close()
+PY
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+
+cd "{{ dg_sr2n_game }}" || exit 1
+
+if [ ! -x SegaRally2.exe ]; then
+  printf '%s\n' "ERROR: Sega Rally 2 Native is not installed." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-sega-rally-2-native.yml" >&2
+  exit 1
+fi
+
+export WINEPREFIX="{{ dg_sr2n_prefix }}"
+export WINEARCH=win64
+export WINEDEBUG="${WINEDEBUG:--all}"
+export WINEESYNC="${WINEESYNC:-{{ dg_sr2n_wine_esync }}}"
+export WINEFSYNC="${WINEFSYNC:-{{ dg_sr2n_wine_fsync }}}"
+export WINEDLLOVERRIDES="winemenubuilder.exe=d"
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+
+exec wine SegaRally2.exe "$@"

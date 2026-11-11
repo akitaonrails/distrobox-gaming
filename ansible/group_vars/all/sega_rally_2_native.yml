@@ -1,0 +1,37 @@
+---
+# Sega Rally 2 Native — snicolast's static recompilation of the Model 3 arcade
+# game: the original code recompiled to C++ with a Vulkan renderer (ray-traced
+# shadows/GI, true widescreen, HD liveries, 120+ Hz). Upstream is Windows-only
+# (MSVC, Win32, Media Foundation, WIC, WinHTTP); this role cross-builds it with
+# MinGW-w64 and runs it under Wine. Needs the owned Model 3 srally2 set.
+dg_sr2n_repo: snicolast/SegaRally2Native
+dg_sr2n_commit: 05dd362cd4b3eaa6404e7835bd192cee84702564
+dg_sr2n_short: "05dd362"
+dg_sr2n_source_url: "https://github.com/{{ dg_sr2n_repo }}/archive/{{ dg_sr2n_commit }}.tar.gz"
+dg_sr2n_source_sha256: 48c83a1442bd59dcc7003c31f705e446b62694bd47365e48e0f8b9d92251c37c
+dg_sr2n_source_archive: "{{ dg_roms_final_root }}/PC/ports/sega-rally-2-native/sr2native-{{ dg_sr2n_short }}.tar.gz"
+dg_sr2n_packages:
+  - mingw-w64-gcc
+  - cmake
+  - ninja
+  - gcc
+  - python
+
+dg_sr2n_build_root: "{{ dg_box_home }}/tools/sega-rally-2-native/{{ dg_sr2n_short }}"
+dg_sr2n_src: "{{ dg_sr2n_build_root }}/src"
+dg_sr2n_host_glslang: "{{ dg_sr2n_build_root }}/glslang-host/StandAlone/glslang"
+dg_sr2n_host_m68kmake: "{{ dg_sr2n_build_root }}/m68kmake-host"
+dg_sr2n_build: "{{ dg_sr2n_src }}/build-mingw"
+dg_sr2n_exe: "{{ dg_sr2n_build }}/SegaRally2.exe"
+
+dg_sr2n_game: "{{ dg_box_home }}/Games/sega-rally-2-native"
+dg_sr2n_prefix: "{{ dg_box_home }}/wineprefixes/sega-rally-2-native"
+dg_sr2n_launcher: "{{ dg_box_home }}/bin/sega-rally-2-native"
+dg_sr2n_wine_esync: "0"
+dg_sr2n_wine_fsync: "0"
+
+# Sega Model 3 Step 2.0 "srally2" set (World), with the force-feedback board
+# epr-20512.bin. Other versions are refused by the port.
+dg_sr2n_rom: "{{ dg_roms_final_root }}/arcade/model3/srally2.zip"
+dg_sr2n_rom_sha256: 45199e759b7c253ab18fbb6cbfb4a513d7132945173e49255c1555197d088acd
+dg_sr2n_main_output: DP-1
