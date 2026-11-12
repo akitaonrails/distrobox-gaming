@@ -4,14 +4,14 @@
 # support and the arcade's operator settings. No ROMs included; it detects the
 # owned radm set by content.
 dg_radm_repo: akitaonrails/rea-rad-mobile
-dg_radm_version: v0.1.1
-dg_radm_asset_name: RadMobile-0.1.1-linux-x86_64.tar.gz
+dg_radm_version: v0.4.0
+dg_radm_asset_name: RadMobile-0.4.0-linux-x86_64.tar.gz
 dg_radm_asset_url: "https://github.com/{{ dg_radm_repo }}/releases/download/{{ dg_radm_version }}/{{ dg_radm_asset_name }}"
-dg_radm_asset_sha256: 29b09caa36067db44f8cc54a41fe3aa97445d376d778b51297e18694dc79d8d4
+dg_radm_asset_sha256: 340187c618e9419bd8d477dfa5d5ad0bbd91da2d7bc59bef34dc7f31b199f756
 dg_radm_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_radm_asset_name }}"
 
 dg_radm_root: "{{ dg_box_home }}/tools/rea-rad-mobile/{{ dg_radm_version }}"
-dg_radm_dir: "{{ dg_radm_root }}/RadMobile-0.1.1-linux-x86_64"
+dg_radm_dir: "{{ dg_radm_root }}/RadMobile-0.4.0-linux-x86_64"
 dg_radm_launcher: "{{ dg_box_home }}/bin/rad-mobile"
 # Settings, MAME nvram (the arcade EEPROM) and the rebuilt romset live here so
 # they survive a version bump; --data points the launcher at it.

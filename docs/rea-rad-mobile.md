@@ -12,9 +12,9 @@ cd ansible && ansible-playbook install-rea-rad-mobile.yml   # or site.yml --tags
 
 | | |
 |---|---|
-| Release | `v0.1.1` — `RadMobile-0.1.1-linux-x86_64.tar.gz` (15.7 MB, SHA256-pinned), staged in `ROMS_FINAL/PC/releases/` |
+| Release | `v0.4.0` — `RadMobile-0.4.0-linux-x86_64.tar.gz` (15.8 MB, SHA256-pinned), staged in `ROMS_FINAL/PC/releases/` |
 | ROM | `ROMS_FINAL/arcade/fbneo/radm.zip` (Rad Mobile World, 21 files, SHA256-pinned) linked as `roms/radm.zip` |
-| Install | `tools/rea-rad-mobile/v0.1.1/RadMobile-0.1.1-linux-x86_64/` (launcher + bundled MAME + bgfx) |
+| Install | `tools/rea-rad-mobile/v0.4.0/RadMobile-0.4.0-linux-x86_64/` (launcher + bundled MAME + bgfx) |
 | State | `~/.local/share/rea-rad-mobile/` — `settings.ini`, `wheel.ini`, MAME `nvram` (arcade EEPROM), `cfg`, rebuilt `roms/` |
 | Launcher | `bin/rad-mobile`; entry **Rad Mobile · REA** |
 
@@ -33,15 +33,27 @@ menu rewrites the file and later changes survive.
 | `display` | `fullscreen` | |
 | `resolution` | `2160p` | MAME renders at 3840×2160 |
 | `aspect` / `wide_target` | `widescreen` / `16:9` | the patched MAME draws more road at the sides (`REA_S32_WIDE_MARGIN`) |
-| `filter` | `sharp` | unfiltered pixels; CRT/CRT Deluxe are selectable |
+| `filter` | `sharp` | unfiltered pixels; Arcade CRT, Trinitron CRT, CRT and CRT Deluxe (with optional curvature) are selectable |
 | `vsync` | `true` | |
 | `free_play` | `true` | the menu starts a race with Start, no coin needed |
 | `steer_lock` | `270` | the arcade cabinet's lock |
 
-v0.1.1 adds **STICK STEERING** (ASSISTED by default, where the stick sets the
-car's angle and centring it goes straight; ARCADE makes the stick the cabinet
-wheel) and fixes the stuck-turn after releasing the stick by feeding MAME the
-stick at wheel speed.
+## Updates
+
+- **0.4.0** — **Arcade CRT** and **Trinitron CRT** filters (scanlines whose
+  width follows brightness, shadow mask or aperture grille, glow, using
+  Wanszai's settings), **CRT curvature** that bends the glass and darkens the
+  corners, a 4:3 **cabinet bezel** with cabinet art at the sides, and a menu
+  themed on the title screen with a backdrop captured from the owned ROM.
+- **0.3.0** — pads and wheels can turn on the lights and run the wiper
+  (Round 3 needs the light), every cabinet control can be remapped, and
+  unknown wheels get the generic shift paddles.
+- **0.2.0** — assisted steering follows the road through bends instead of
+  pinning the car to the outside barrier; assist and force feedback no longer
+  switch off after the first checkpoint; **Race Clock** (1.5×/2×/3×) and
+  **Preset** (Easy / Arcade).
+- **0.1.1** — stick steering fixed: releasing the stick no longer leaves the
+  car turning, because the bundled MAME feeds it at wheel speed.
 
 Wheels (Logitech, Thrustmaster, Fanatec CSL/DD, MOZA, generic) are detected
 automatically, with a setup wizard for separate pedal devices and buttons;
@@ -52,7 +64,7 @@ original cabinet had no steering motor.
 
 ## Verified here
 
-`--check-roms` reports `ROM OK: Rad Mobile (World)`; the seeded settings produce
+`--check-roms` reports `ROM OK: Rad Mobile (World)` on v0.4.0; the seeded settings produce
 `-resolution 3840x2160 -view Widescreen -bgfx_screen_chains unfiltered -nofilter
 -nowindow -waitvsync` with `REA_S32_WIDE_MARGIN=52`; a bounded run reached the
 in-game Round 1 view ("GO", Los Angeles, speed readout) on the host, and the box
