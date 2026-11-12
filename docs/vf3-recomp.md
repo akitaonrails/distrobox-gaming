@@ -2,8 +2,16 @@
 
 [mr-finster/vf3-recomp](https://github.com/mr-finster/vf3-recomp) recompiles the
 1996 Model 3 arcade game for native Linux. The opt-in install uses upstream's
-`v0.1.13-alpha` x86-64 Steam Deck package, pinned by SHA-256. It does not use
+`v0.1.21-alpha` x86-64 Steam Deck package, pinned by SHA-256. It does not use
 Wine or copy the ROM into the install.
+
+## Updates
+
+The pin tracks upstream's alpha stream (`v0.1.21-alpha` at the 2026-11-11
+update): free camera (F4 / pad View + R3), the sky-top fix, the three-page
+Display menu and the frame limit starting at the screen's refresh. Settings
+already chosen in `settings.ini` (6x, 16:9, AA, GPU Auto, smooth motion) are
+kept; the role only seeds the file when absent.
 
 ## Install and assets
 
