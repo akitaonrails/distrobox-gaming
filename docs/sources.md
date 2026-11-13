@@ -75,6 +75,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | Road Rash 64 Recompiled | N64 recompilation (native Linux AppImage) | [linkssy2/RoadRash64Recompiled](https://github.com/linkssy2/RoadRash64Recompiled) · [doc](roadrash64.md) |
 | Perfect Dark | N64 decomp PC port | [DabDavis/perfect-dark-dabs-mod](https://github.com/DabDavis/perfect-dark-dabs-mod) · [doc](perfect-dark.md) |
 | DKC 1 / 2 / 3 Recompiled | SNES recomp trilogy (source-built) | [elliotttate/DKC1Recomp](https://github.com/elliotttate/DKC1Recomp) · [2](https://github.com/elliotttate/DKC2Recomp) · [3](https://github.com/elliotttate/DKC3Recomp) · [doc](dkc-recomp.md) |
+| Super Hang-On Ultimate | Arcade Super Hang-On native recomp (source build) with Mega Drive Original Mode, 16:9 | [chaotix359/Super-Hang-On-Ultimate](https://github.com/chaotix359/Super-Hang-On-Ultimate) · [doc](super-hang-on-ultimate.md) |
 | F-Zero Forever | SNES recomp (native Linux source build): 85 courses, HD Mode 7, 240 FPS, 2-4 player local VS, netplay | [RetroPortingToolKit/FZeroSNESRecomp](https://github.com/RetroPortingToolKit/FZeroSNESRecomp) · [doc](fzero-recomp.md) |
 | Virtua Fighter Recompiled | SEGA Model 1 Virtua Fighter static recomp (native Linux, Vulkan); needs your MAME `vf` set | [mr-finster/vf1-recomp](https://github.com/mr-finster/vf1-recomp) · [doc](vf1-recomp.md) |
 | Virtua Fighter 3 Recomp | SEGA Model 3 native Linux recomp; needs the MAME Revision D `vf3` set | [mr-finster/vf3-recomp](https://github.com/mr-finster/vf3-recomp) · [doc](vf3-recomp.md) |

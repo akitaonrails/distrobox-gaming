@@ -1,0 +1,46 @@
+---
+# Super Hang-On Ultimate — chaotix359's native recompilation of the arcade
+# Super Hang-On, with the Mega Drive "Original Mode" mod. One C source tree
+# builds Windows, macOS and Linux (SDL2); Linux has no prebuilt release, so
+# this role builds it from the pinned tag (the DKC / F-Zero pattern).
+#
+# You supply both game dumps:
+#   * the MAME "shangon" set (unprotected Super Hang-On). Its program ROM is
+#     translated to C by setup.py during the build; the result is kept private
+#     in the install dir, exactly like the other recomp projects.
+#   * an optional Mega Drive Super Hang-On (World) (Rev A) ROM for Original
+#     Mode. It is read at start-up to capture the screens and course data and
+#     never stored.
+#
+# The game folder holds the program, both ROMs, shangon.ini, the EEPROM
+# (shangon.nv) and the Original Mode saves. Linux is borderless fullscreen at
+# the desktop resolution.
+
+dg_sho_repo: chaotix359/Super-Hang-On-Ultimate
+dg_sho_version: v0.9.32
+dg_sho_commit: e1258f7ec8d7e54c2199580c5be31497b798ff72
+dg_sho_repo_url: "https://github.com/{{ dg_sho_repo }}.git"
+
+dg_sho_root: "{{ dg_box_home }}/tools/super-hang-on-ultimate"
+dg_sho_build_root: "{{ dg_box_home }}/.cache/super-hang-on-ultimate-build"
+dg_sho_src: "{{ dg_sho_build_root }}/src"
+dg_sho_bin: "{{ dg_sho_root }}/SuperHangOn"
+dg_sho_launcher: "{{ dg_box_home }}/bin/superhangon"
+dg_sho_main_output: DP-1
+dg_sho_revert: false
+
+# MAME "shangon" set: the unprotected Super Hang-On (sitdown/upright) used by
+# setup.py and by the game itself (ROM OK: shangon.zip verified).
+dg_sho_arcade_rom: "{{ dg_roms_final_root }}/arcade/fbneo/shangon.zip"
+dg_sho_arcade_sha256: 5e2f962b563ddabf5021d238bdfabf64f4b108c661991dfbff0461ae2b32b376
+
+# Mega Drive Original Mode: World Rev A (the revision the mod expects).
+dg_sho_md_rom: "{{ dg_roms_final_root }}/genesis_2/Super Hang-On/Super Hang-On (W) (REV01) [!].gen"
+dg_sho_md_sha256: 005979c700e59409817dc042d31aa2f169bfe0f00ba802315cc55938e09b0169
+dg_sho_md_name: "Super Hang-On (World) (Rev A).gen"
+
+dg_sho_pacman_packages:
+  - base-devel
+  - python
+  - sdl2-compat
+  - git

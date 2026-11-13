@@ -221,6 +221,10 @@ dg_save_sets:
   - { name: sorr-save,            src: "tools/sorr/game/savegame" }
   - { name: midnightclub-la,      src: "tools/midnightclubla/midnightclubla/user-data" }
   - { name: roadrash64-recomp,    src: ".config/RoadRash64Recompiled" }
+  - { name: super-hang-on-ultimate, src: ["file:tools/super-hang-on-ultimate/shangon.ini",
+                                        "file:tools/super-hang-on-ultimate/shangon.nv",
+                                        "file:tools/super-hang-on-ultimate/shangon_original.sav",
+                                        "file:tools/super-hang-on-ultimate/shangon_original_md.sav"] }  # settings, arcade EEPROM/high scores and Original Mode saves
   - { name: fzero-recomp,         src: ["tools/fzero-snes-recomp/saves",
                                         "file:tools/fzero-snes-recomp/config.ini",
                                         "file:tools/fzero-snes-recomp/fzero-video.ini"] }  # SRAM + save states + display/mod settings (native build)

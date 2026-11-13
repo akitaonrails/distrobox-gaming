@@ -1,0 +1,40 @@
+#!/bin/sh
+# Super Hang-On Ultimate launcher — native Linux recompilation of the arcade
+# game, with the Mega Drive Original Mode. Managed by
+# install_super_hang_on_ultimate.
+#
+# -play skips the settings screen, -fullscreen selects borderless fullscreen at
+# the desktop resolution. F11/Alt+Enter still toggle, Esc leaves fullscreen.
+set -eu
+
+BIN="{{ dg_sho_bin }}"
+ROM="{{ dg_sho_root }}/shangon.zip"
+if [ ! -x "$BIN" ]; then
+  printf '%s\n' "ERROR: Super Hang-On Ultimate missing at $BIN." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-super-hang-on-ultimate.yml" >&2
+  exit 1
+fi
+if [ ! -f "$ROM" ]; then
+  printf '%s\n' "ERROR: shangon.zip missing at $ROM" >&2
+  exit 1
+fi
+
+# Focus the main landscape 4K monitor (Hyprland >= 0.56 Lua IPC form).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_sho_main_output }}" }))'); s.recv(256); s.close()
+PY
+
+# SDL2 renders through the RTX; the game folder holds the ROMs, settings and
+# saves, so it is the working directory.
+export __NV_PRIME_RENDER_OFFLOAD="${__NV_PRIME_RENDER_OFFLOAD:-1}"
+export __GLX_VENDOR_LIBRARY_NAME="${__GLX_VENDOR_LIBRARY_NAME:-nvidia}"
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+cd "{{ dg_sho_root }}"
+exec "$BIN" -play -fullscreen "$ROM" "$@"

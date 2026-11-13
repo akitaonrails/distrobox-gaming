@@ -1,0 +1,7 @@
+---
+- name: Install Super Hang-On Ultimate
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_super_hang_on_ultimate

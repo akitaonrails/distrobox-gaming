@@ -1,0 +1,38 @@
+#!/bin/bash
+# Build Super Hang-On Ultimate from the pinned source and the owned dumps.
+# Runs inside the gaming box. The build tree is reused on version bumps.
+set -euo pipefail
+
+SRC="{{ dg_sho_src }}"
+ROM="{{ dg_sho_arcade_rom }}"
+VERSION="{{ dg_sho_version }}"
+COMMIT="{{ dg_sho_commit }}"
+REPO="{{ dg_sho_repo_url }}"
+
+mkdir -p "$(dirname "$SRC")"
+
+if [ ! -d "$SRC/.git" ]; then
+  rm -rf "$SRC"
+  git clone --depth 1 --branch "$VERSION" "$REPO" "$SRC"
+fi
+
+cd "$SRC"
+git fetch --depth 1 origin "refs/tags/$VERSION:refs/tags/$VERSION" || true
+git checkout -f "$COMMIT"
+
+actual="$(git rev-parse HEAD)"
+if [ "$actual" != "$COMMIT" ]; then
+  echo "super-hang-on: source is at $actual, expected $COMMIT" >&2
+  exit 1
+fi
+
+# The repository ships the shell scripts without the executable bit.
+chmod +x build.sh source/build_linux.sh source/build_linux_test.sh
+
+# setup.py needs shangon.zip in the repo; build_linux.sh runs the 1200-frame
+# self-test when it finds it next to the source and copies the program there.
+cp "$ROM" shangon.zip
+python3 setup.py --rom shangon.zip
+bash build.sh linux
+
+test -x source/build/linux/SuperHangOn

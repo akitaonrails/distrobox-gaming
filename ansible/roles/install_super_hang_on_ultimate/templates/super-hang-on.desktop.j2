@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Super Hang-On · Ultimate (on {{ dg_box_name }})
+Exec=/usr/bin/distrobox-enter -n {{ dg_box_name }} -- {{ dg_sho_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Super Hang-On arcade, natively recompiled — 16:9, Mega Drive Original Mode, on the RTX.
+Categories=Game;
+Keywords=super hang-on;hang-on;sega;arcade;recomp;racing;motorcycle;
+StartupWMClass=SuperHangOn;
+{{ ogm_metadata('gaming-super-hang-on-ultimate') }}

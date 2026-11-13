@@ -1,0 +1,194 @@
+---
+# Super Hang-On Ultimate — native Linux build (chaotix359/Super-Hang-On-Ultimate).
+# See group_vars/all/super_hang_on_ultimate.yml and docs/super-hang-on-ultimate.md.
+
+- name: Revert Super Hang-On Ultimate when requested
+  when: dg_sho_revert | bool
+  block:
+    - name: Remove the Super Hang-On launcher, desktop entry + install dir (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_sho_launcher }}"
+          - "{{ dg_sho_root }}"
+          - "{{ dg_desktop_render_dir }}/gaming-super-hang-on-ultimate.desktop"
+    - name: Refresh host launchers after removing Super Hang-On
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      changed_when: true
+    - name: Report Super Hang-On reverted
+      ansible.builtin.debug:
+        msg: "Super Hang-On Ultimate removed. Your ROMs are untouched; shangon.nv and the saves in {{ dg_sho_root }} are kept."
+
+- name: Install Super Hang-On Ultimate
+  when: not (dg_sho_revert | bool)
+  block:
+    - name: Verify the owned arcade and Mega Drive ROMs
+      ansible.builtin.stat:
+        path: "{{ item.path }}"
+        checksum_algorithm: sha256
+      loop:
+        - { path: "{{ dg_sho_arcade_rom }}", sha: "{{ dg_sho_arcade_sha256 }}" }
+        - { path: "{{ dg_sho_md_rom }}", sha: "{{ dg_sho_md_sha256 }}" }
+      register: _sho_roms
+
+    - name: Require the expected Super Hang-On dumps
+      ansible.builtin.assert:
+        that: item.stat.checksum | default('') == item.item.sha
+        fail_msg: >-
+          Expected {{ item.item.path }} (sha256 {{ item.item.sha }}). The MAME
+          "shangon" set and a Mega Drive Super Hang-On (World) (Rev A) ROM are
+          required.
+        quiet: true
+      loop: "{{ _sho_roms.results }}"
+      loop_control:
+        label: "{{ item.item.path }}"
+
+    - name: Install the Super Hang-On build dependencies inside the box
+      ansible.builtin.shell: >-
+        {{ dg_in_box }} sudo pacman -S --needed --noconfirm
+        {{ dg_sho_pacman_packages | join(' ') }}
+      register: _sho_pacman
+      changed_when: "'installing' in _sho_pacman.stdout or 'upgrading' in _sho_pacman.stdout"
+
+    - name: Create the Super Hang-On directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_sho_root }}"
+        - "{{ dg_sho_build_root }}"
+        - "{{ dg_sho_launcher | dirname }}"
+        - "{{ dg_desktop_render_dir }}"
+
+    - name: Check whether the native build is current
+      ansible.builtin.shell: |
+        set -eu
+        ref="{{ dg_sho_version }} {{ dg_sho_commit }}"
+        if [ -x "{{ dg_sho_bin }}" ] &&
+           [ -f "{{ dg_sho_src }}/source/src/gen/main_rc.c" ] &&
+           [ -f "{{ dg_sho_build_root }}/.dg-build-ref" ] &&
+           [ "$(cat "{{ dg_sho_build_root }}/.dg-build-ref")" = "$ref" ]; then
+          echo current
+        else
+          echo rebuild
+        fi
+      register: _sho_build_state
+      changed_when: false
+
+    - name: Deploy the Super Hang-On build script
+      ansible.builtin.template:
+        src: build.sh.j2
+        dest: "{{ dg_sho_build_root }}/build.sh"
+        mode: "0755"
+
+    - name: Build Super Hang-On Ultimate from the pinned source
+      when: _sho_build_state.stdout != 'current'
+      ansible.builtin.command:
+        cmd: "{{ dg_in_box }} bash {{ dg_sho_build_root }}/build.sh"
+      register: _sho_build
+      changed_when: true
+
+    - name: Install the native Super Hang-On binary
+      when: _sho_build_state.stdout != 'current'
+      ansible.builtin.copy:
+        src: "{{ dg_sho_src }}/source/build/linux/SuperHangOn"
+        dest: "{{ dg_sho_bin }}"
+        remote_src: true
+        mode: "0755"
+
+    - name: Record the built source revision
+      when: _sho_build_state.stdout != 'current'
+      ansible.builtin.copy:
+        dest: "{{ dg_sho_build_root }}/.dg-build-ref"
+        content: "{{ dg_sho_version }} {{ dg_sho_commit }}\n"
+        mode: "0644"
+
+    - name: Copy the owned game dumps into the game folder
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ dg_sho_root }}/{{ item.dest }}"
+        remote_src: true
+        mode: "0644"
+      loop:
+        - { src: "{{ dg_sho_arcade_rom }}", dest: shangon.zip }
+        - { src: "{{ dg_sho_md_rom }}", dest: "{{ dg_sho_md_name }}" }
+
+    - name: Copy the player manuals and icon
+      ansible.builtin.copy:
+        src: "{{ dg_sho_src }}/{{ item.src }}"
+        dest: "{{ dg_sho_root }}/{{ item.dest }}"
+        remote_src: true
+        mode: "0644"
+      loop:
+        - { src: README.txt, dest: README.txt }
+        - { src: README-LINUX.txt, dest: README-LINUX.txt }
+        - { src: NOTICE.md, dest: NOTICE.md }
+        - { src: LICENSE, dest: LICENSE }
+        - { src: source/res/icon_preview.png, dest: icon.png }
+
+    # Seeded once. The launcher's settings screen writes this file back; later
+    # changes survive role reruns.
+    - name: Seed fullscreen 16:9 with Mega Drive Original Mode
+      ansible.builtin.copy:
+        dest: "{{ dg_sho_root }}/shangon.ini"
+        content: |
+          [video]
+          fullscreen=1
+          view=16:9
+          filter=2
+          stretch=0
+          vsync=1
+
+          [input]
+          deadzone=15
+          steer_curve=100
+          swap_pedals=0
+
+          [megadrive]
+          enhancements=1
+          controls=0
+          music=0
+
+          [launcher]
+          show=0
+        mode: "0644"
+        force: false
+
+    - name: Deploy the Super Hang-On launcher
+      ansible.builtin.template:
+        src: super-hang-on.sh.j2
+        dest: "{{ dg_sho_launcher }}"
+        mode: "0755"
+
+    - name: Render the Super Hang-On desktop entry
+      ansible.builtin.template:
+        src: super-hang-on.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-super-hang-on-ultimate.desktop"
+        mode: "0644"
+
+    - name: Install the desktop file into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _sho_host_launchers
+      changed_when: >-
+        'installed ' in _sho_host_launchers.stdout or
+        'removed stale ' in _sho_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Super Hang-On Ultimate {{ dg_sho_version }} at {{ dg_sho_root }};
+          launcher {{ dg_sho_launcher }}. Both ROMs are in the game folder,
+          borderless 16:9 fullscreen on {{ dg_sho_main_output }}, Mega Drive
+          Original Mode enabled. shangon.nv, shangon_original*.sav and
+          shangon.ini live there and are backed up.
+          Revert: -e dg_sho_revert=true.

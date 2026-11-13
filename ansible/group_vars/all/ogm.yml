@@ -248,6 +248,11 @@ dg_ogm_games:
     category: recomp
     sgdb_query: "Road Rash 64"
     github: "{{ dg_rr64_repo }}"
+  - desktop_id: gaming-super-hang-on-ultimate
+    id: super-hang-on-ultimate
+    category: recomp
+    sgdb_query: "Super Hang-On"
+    github: "{{ dg_sho_repo }}"
   - desktop_id: gaming-fzero
     id: fzero
     category: recomp
