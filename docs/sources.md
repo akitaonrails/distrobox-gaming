@@ -55,7 +55,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | F-ZERO GX · GLINUX | GameCube F-ZERO GX on a Dolphin-derived runtime (ModernGekko), native widescreen | [Mabec-games/F-ZERO-GLINUX](https://github.com/Mabec-games/F-ZERO-GLINUX) · [doc](fzero-glinux.md) |
 | Gravity Rush PC | Gravity Rush Remastered (PS4) native port (shadPS4 video core) | [LucaPazienza/gravityrush_pc](https://github.com/LucaPazienza/gravityrush_pc) · [doc](gravity-rush.md) |
 | KytyPS5-GT7 | PS5 emulator branch tuned for Gran Turismo 7 (native Linux build) | [usa-ratt/KytyPS5-GT7](https://github.com/usa-ratt/KytyPS5-GT7) · [doc](kyty-gt7.md) |
-| DOA2U PC Port | Dead or Alive 2 Ultimate (Xbox) native port by static recompilation | [NoRain211/doa2u-re](https://github.com/NoRain211/doa2u-re) · [doc](doa2u-re.md) |
+| DOA2U PC Port (Moonalesca fork) | Dead or Alive 2 Ultimate (Xbox) native recompilation: KO replay, DOA4 hit voices, HUD/life-bar options | [Moonalesca/doa2u-re](https://github.com/Moonalesca/doa2u-re) · [doc](doa2u-re.md) |
 | GT3 Revisited | Gran Turismo 3 A-Spec engine reimplementation (native Linux/Android/VR) | [matt-pulsipher/GT3-revisited](https://github.com/matt-pulsiffer/GT3-revisited) · [doc](gt3-revisited.md) |
 | GT2 PC Port | Gran Turismo 2 native decompilation port + mod kit (win-x64 via Proton) | [CurtisSlone/GT2-PC-Port-Mod-Kit](https://github.com/CurtisSlone/GT2-PC-Port-Mod-Kit) · [doc](gt2-pc-port.md) |
 | SOTC PC Port | Shadow of the Colossus (PS4 remake) native port (win-x64 via Proton) | [AjncSystem/ShadowOfTheColossus-PC](https://github.com/AjncSystem/ShadowOfTheColossus-PC) · [doc](sotc-pc.md) |

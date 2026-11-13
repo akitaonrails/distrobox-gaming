@@ -10,25 +10,7 @@
       dg_doa2u_iso — the build hash-verifies the executable and refuses
       other regions, versions and Disc 1.
 
-- name: Fetch the pinned DOA2U release ZIP
-  ansible.builtin.get_url:
-    url: "{{ dg_doa2u_zip_url }}"
-    dest: "{{ dg_doa2u_zip }}"
-    checksum: "sha256:{{ dg_doa2u_zip_sha256 }}"
-    mode: "0644"
-
-- name: Verify the staged release ZIP
-  ansible.builtin.stat:
-    path: "{{ dg_doa2u_zip }}"
-    checksum_algorithm: sha256
-  register: _doa2u_zip
-- ansible.builtin.assert:
-    that: _doa2u_zip.stat.checksum | default('') == dg_doa2u_zip_sha256
-    fail_msg: >-
-      Staged ZIP {{ dg_doa2u_zip }} missing or wrong sha256 — re-download
-      DOA2U-{{ dg_doa2u_version }}-Linux.zip from the doa2u-re release.
-
-- name: Install the runtime packages in the box
+- name: Install the build and runtime packages in the box
   ansible.builtin.command:
     argv: "{{ ['distrobox-enter', '-n', dg_box_name, '--', 'sudo', 'pacman', '-S', '--noconfirm', '--needed'] + dg_doa2u_packages }}"
   register: _doa2u_pkgs
@@ -43,19 +25,53 @@
     - "{{ dg_doa2u_release_dir }}"
     - "{{ dg_box_home }}/bin"
 
-- name: Extract the release ZIP
+# Moonalesca's fork publishes a Windows-only bundle, so the Linux runner is
+# built from the pinned tag. The lifter is a submodule pinned by that tag.
+- name: Clone the pinned DOA2U fork
   ansible.builtin.command:
     argv:
       - distrobox-enter
       - -n
       - "{{ dg_box_name }}"
       - --
-      - 7z
-      - x
-      - -y
-      - "-o{{ dg_doa2u_release_dir }}"
-      - "{{ dg_doa2u_zip }}"
+      - git
+      - clone
+      - --branch
+      - "v{{ dg_doa2u_version }}"
+      - --depth
+      - "1"
+      - --recurse-submodules
+      - --shallow-submodules
+      - "{{ dg_doa2u_repo_url }}"
+      - "{{ dg_doa2u_app_dir }}"
     creates: "{{ dg_doa2u_app_dir }}/build_game.sh"
+
+- name: Verify the source and lifter revisions
+  ansible.builtin.shell: |
+    set -eu
+    cd "{{ dg_doa2u_app_dir }}"
+    test "$(git rev-parse HEAD)" = "{{ dg_doa2u_commit }}"
+    test "$(git -C tools/xboxrecomp rev-parse HEAD)" = "{{ dg_doa2u_lifter_commit }}"
+    chmod +x build_game.sh run_game.sh launcher.sh
+  changed_when: false
+
+# Reuse the disc extraction from an earlier release: the build verifies it
+# against the ISO, so this only skips copying the same 4.1 GB again.
+- name: Adopt the extracted disc from an earlier release
+  ansible.builtin.shell: |
+    set -eu
+    target="{{ dg_doa2u_app_dir }}/private/imported-disc"
+    [ -e "$target" ] && exit 0
+    src=$(find "{{ dg_doa2u_install_dir }}/releases" -mindepth 4 -maxdepth 4 \
+            -type d -name imported-disc \
+            ! -path "{{ dg_doa2u_app_dir }}/*" \
+            -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -1 | cut -d' ' -f2-)
+    [ -n "$src" ] || exit 0
+    mkdir -p "$(dirname "$target")"
+    cp -al "$src" "$target" 2>/dev/null || cp -a "$src" "$target"
+    printf '%s\n' adopted
+  register: _doa2u_adopt_disc
+  changed_when: "'adopted' in _doa2u_adopt_disc.stdout"
 
 - name: Create the lifter's Python venv
   ansible.builtin.command:
@@ -128,6 +144,34 @@
     printf '%s\n' adopted
   register: _doa2u_adopt
   changed_when: "'adopted' in _doa2u_adopt.stdout"
+
+# Old releases each carry a 4-5 GB imported disc and play cache. Saves were
+# adopted into the current release above; the current build marker must exist
+# before anything is removed.
+- name: Check the current DOA2U build before pruning
+  ansible.builtin.stat:
+    path: "{{ dg_doa2u_app_dir }}/private/.dg-built"
+  register: _doa2u_built
+
+- name: Point the stable current symlink at this release
+  when: _doa2u_built.stat.exists
+  ansible.builtin.file:
+    path: "{{ dg_doa2u_install_dir }}/current"
+    src: "{{ dg_doa2u_app_dir }}"
+    state: link
+    force: true
+
+- name: Remove older DOA2U releases
+  when: dg_doa2u_prune_old | bool and _doa2u_built.stat.exists
+  ansible.builtin.shell: |
+    set -eu
+    old=$(find "{{ dg_doa2u_install_dir }}/releases" -mindepth 1 -maxdepth 1 -type d \
+      ! -name "{{ dg_doa2u_version }}" -print)
+    [ -n "$old" ] || exit 0
+    printf '%s\n' "$old" | xargs -r rm -rf
+    printf '%s\n' pruned
+  register: _doa2u_prune
+  changed_when: "'pruned' in _doa2u_prune.stdout"
 
 - name: Seed the launcher baseline when absent
   ansible.builtin.copy:

@@ -119,7 +119,7 @@ newer build. Acceptable for actively developed emulators.
 | KytyPS5-GT7 `KytyPS5-2026-10-28-f908636` (native Linux) | [usa-ratt/KytyPS5-GT7](https://github.com/usa-ratt/KytyPS5-GT7/releases/tag/KytyPS5-2026-10-28-f908636) tarball, SHA256-pinned, staged in `ROMS_FINAL/PC/releases/` (AUTO). Needs the extracted GT7 PPSA01317 v01.710 game folder; see [setup](kyty-gt7.md). | `install_kyty_gt7` / `dg_kyty_*` |
 | .NET Desktop Runtime, VC++ redist (Xenia prefix) | aka.ms evergreen links | `install_xenia` |
 
-| DOA2U PC Port v0.3.0 (native Linux SDL_GPU/Vulkan) | [NoRain211/doa2u-re](https://github.com/NoRain211/doa2u-re/releases/tag/v0.3.0) Linux ZIP, SHA256-pinned (AUTO), staged in `ROMS_FINAL/PC/releases/`; the runner is built from the owned Disc 2 ISO. See [setup](doa2u-re.md). | `install_doa2u_re` / `dg_doa2u_*` |
+| DOA2U PC Port 0.3.2 Alpha (Moonalesca.1; native Linux SDL_GPU/Vulkan) | [Moonalesca/doa2u-re](https://github.com/Moonalesca/doa2u-re/tree/v0.3.2-Alpha-Moonalesca.1) source at commit `b1cb8e55` with the pinned `tools/xboxrecomp` submodule (AUTO; the fork's release is Windows-only, so the Linux runner is built in the box). The game is lifted from the owned Xbox Disc 2 ISO (MANUAL). See [setup](doa2u-re.md). | `install_doa2u_re` / `dg_doa2u_*` |
 | GT5 official patch chain 1.05→1.13 | Sony CDN (`b0.ww.np.dl.playstation.net` — still online) | `install_gt5_master_mod` / `dg_gt5_pkg_chain` |
 
 | GT3 Revisited v0.6.4 (native Linux Vulkan) | [matt-pulsipher/GT3-revisited](https://github.com/matt-pulsipher/GT3-revisited/releases/tag/v0.6.4) tarball (pinned + SHA256; AUTO), staged in `ROMS_FINAL/PC/releases/`. Needs the owned GT3 NTSC-U ISO, verified by gt3tool; see [setup](gt3-revisited.md). | `install_gt3_revisited` / `dg_gt3r_*` |
