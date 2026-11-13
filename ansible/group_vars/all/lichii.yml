@@ -7,10 +7,10 @@
 # shadowing the enclosing one), which clang does not warn about.
 dg_lichii_repo: zortos293/Lichii
 dg_lichii_branch: nx2
-dg_lichii_commit: ad477ef1f4b54ed48db6ce73cc990a141637e55b
-dg_lichii_short: ad477ef
+dg_lichii_commit: b8e3fd8e91f1dcde51333b510d2eb54140bb9abe
+dg_lichii_short: b8e3fd8
 dg_lichii_source_url: "https://github.com/{{ dg_lichii_repo }}/archive/{{ dg_lichii_commit }}.tar.gz"
-dg_lichii_source_sha256: e97b8991733b5cc13020509c351668d2f8d65c9ccce6f104f7451e2e5ddb01e3
+dg_lichii_source_sha256: 2e873d2ad05c201b35a6b370b274055d1a208c38db64bd873c89923332b3a94d
 dg_lichii_source_archive: "{{ dg_roms_final_root }}/PC/ports/lichii/lichii-{{ dg_lichii_short }}.tar.gz"
 dg_lichii_packages:
   - clang

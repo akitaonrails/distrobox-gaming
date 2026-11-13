@@ -3,15 +3,15 @@
 Lichii is an experimental Switch 2 emulator. It is installed from
 [upstream source](https://github.com/zortos293/Lichii) at a pinned commit on
 branch `nx2`, because the releases trail the branch — the newest one
-(`build-117`) is 56 commits behind this pin — and those commits are the Ocarina
-of Time performance and stability work this box wants:
+(`build-177`) trails this pin — and those commits carry the Ocarina of Time
+performance, shader-warm and frame-generation work this box wants:
 
 | | |
 |---|---|
-| Commit | `ad477ef1f4b54ed48db6ce73cc990a141637e55b` (`ad477ef`, branch `nx2`, 2026-11-08) |
+| Commit | `b8e3fd8e91f1dcde51333b510d2eb54140bb9abe` (`b8e3fd8`, branch `nx2`, 2026-11-13) |
 | Source | `Lichii-<commit>.tar.gz`, SHA256-pinned, staged in `ROMS_FINAL/PC/ports/lichii/` |
 | Build tree | `tools/lichii/build-ad477ef/{src,build-clang}` |
-| Binary | `tools/lichii/build-ad477ef/build-clang/bin/lichii` (43 MB), plus `eden-cli` |
+| Binary | `tools/lichii/build-b8e3fd8/build-clang/bin/lichii`, plus `eden-cli` |
 | Launcher | `bin/lichii`; entries **Lichii Switch 2 (Experimental)** and **Ocarina of Time (Lichii Experimental)** |
 
 Run from `ansible/`:
@@ -40,7 +40,7 @@ minimal repro of both compilers), so the configure step pins
 `-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++`. Upstream's own
 "Fix Linux builds with GCC shadow warnings" commit predates the code that
 still trips it. The running window reports the build:
-`Lichii | ad477ef1f4-nx2 | Clang 23.1.4`.
+`Lichii | b8e3fd8e91-nx2 | Clang 23.1.4`.
 
 ## The game file
 
