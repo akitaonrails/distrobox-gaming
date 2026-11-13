@@ -1,64 +1,86 @@
-# F-Zero SNES Recompiled (`install_fzero_recomp`)
+# F-Zero Forever (SNES F-Zero recomp)
 
-[mstan/FZeroSNESRecomp](https://github.com/mstan/FZeroSNESRecomp) is a native PC
-build of the SNES **F-Zero**, a static recompilation on the shared `snesrecomp`
-engine and `recomp-ui` launcher (the same family as the DKC recomps). It adds
-widescreen (16:9 / 21:9 / 32:9 / Fit), high-refresh presentation (60–360 FPS),
-display shaders (CRT Soft, LCD Grid, Sharp, Warm Composite, or your own GLSL),
-a 12-slot save-state browser with thumbnails, rewind, and the optional
-**BS F-Zero Deluxe** Satellaview content. Runs on the RTX — no emulator.
+[RetroPortingToolKit/FZeroSNESRecomp](https://github.com/RetroPortingToolKit/FZeroSNESRecomp)
+(the former `mstan/FZeroSNESRecomp`) recompiles the SNES **F-Zero** into a native
+PC program on the shared `snesrecomp` engine. The project grew into **F-Zero
+Forever**: 85 course versions (CGP, Astra Velocity/Astra Front,
+Bower League and MAX packs) alongside the original 15, two-to-four-player local
+VS, netplay, HD Mode 7 up to 8×, presentation up to 360 FPS, display shaders, a
+save-state browser with thumbnails, offline rewind, and BS F-Zero Deluxe
+content.
 
-Unlike the DKC trilogy, upstream ships an **official native Linux AppImage**, so
-this is a prebuilt-release role (no source build). You supply your own
-**F-Zero (USA)** dump.
-
-## Install
+Upstream ships **Windows x64 bundles only** now. This role builds the Linux
+binary from the pinned source (the DKC / DK64 pattern) and stages the release
+bundle's platform-independent data. It replaces the old v1.8.3 Linux AppImage.
 
 ```sh
-cd ansible
-ansible-playbook install-fzero-recomp.yml    # or: site.yml --tags fzero_recomp
-scripts/install-host-launchers.sh            # refresh the host menu entry
+cd ansible && ansible-playbook install-fzero-recomp.yml   # or site.yml --tags fzero_recomp
 ```
 
-Launcher `bin/fzero`; host/Walker entry **"F-Zero · Recompiled"**; `ogm` id
-`fzero`. Revert with `-e dg_fzero_revert=true` (removes the launcher + install
-dir; your ROM is untouched — note that removes `saves/` under the install dir,
-which the `backup_saves` role captures).
+| | |
+|---|---|
+| Source | `v0.20.0-rc.3`, commit `6e2800f7…`, submodules pinned in `group_vars/all/fzero_recomp.yml` |
+| Data bundle | `F-Zero-Forever-0.20.0-rc.3-windows-x64-without-msu.zip` (45.8 MB, SHA256-pinned), staged in `ROMS_FINAL/PC/releases/` |
+| Build | `~/.cache/fzero-forever-build/src` + `build` (reused on version bumps) |
+| Install | `tools/fzero-snes-recomp/` — native `F-Zero Forever` binary, `assets/`, `mods/packs/` |
+| ROM | `ROMS_FINAL/snes/F-ZERO.smc` (F-Zero USA, headerless, sha256 `bf16c3c8…`) |
+| Launcher | `bin/fzero`; entry **F-Zero · Forever** |
 
 ## How it works
 
-- Downloads the pinned `FZeroSNESRecomp-linux-1.8.3-x86_64.AppImage` (sha256 in
-  `group_vars/all/fzero_recomp.yml`) to `tools/fzero-snes-recomp/`.
-- The role verifies your ROM is the expected F-Zero (USA) revision (headerless
-  sha256 `bf16c3c8…`, sha1 `d3efd32b…`), matching the host's own check, and
-  fails early with a clear message otherwise. It strips a 512-byte copier header
-  first, so a headered `.smc` of that revision also passes.
-- The launcher runs the AppImage with the **ROM as its first argument**:
-  `resolve_rom()` takes `argv[1]` and returns before the launcher window is ever
-  created, so the game boots straight in — **the GUI ROM picker never appears**.
-  DP-1 focus + nvidia GLX offload are set in the wrapper. 8BitDo works via SDL.
-- The wrapper `cd`s into the install dir so `config.ini`, `rom.cfg` and `saves/`
-  (SRAM + save states) land there and stay stable/backed up.
+- Verifies the owned ROM (accepts a 512-byte copier header and strips it, like
+  the host does).
+- Clones the pinned tag with its pinned submodules, copies the ROM as
+  `fzero.sfc`, runs `tools/regen.sh` to generate the recompiler, then builds
+  `FZeroSNESRecomp` with CMake/SDL3. The build tree is kept so a version bump
+  reuses the checkout.
+- Unpacks the official bundle for the data that has no platform dependency:
+  `mods/packs` with ready course caches, `assets/` (shaders, fonts, vehicle-pack
+  sources), docs and licences. Its Windows binaries and DLLs are not used.
+- Seeds `config.ini` (`SkipLauncher=1`, fullscreen) and `fzero-video.ini`
+  (16:9, **4× HD Mode 7**, 240 FPS presentation, sharp pixels, rewind on). Both
+  files are seeded only when absent; the in-game menu rewrites them and later
+  changes survive.
+- The launcher boots the binary with the ROM as argv[1], focuses DP-1 and uses
+  the RTX OpenGL path. No AppImage, no FUSE, no Wine.
 
-In-game: **Settings > Display** for aspect + shader, **Mods** for widescreen /
-presentation FPS / BS Deluxe. **F7** (or Select+R) opens the save-state browser,
-**F8** (or Select+L) opens rewind (off by default; enable + set depth/interval
-in the launcher's Settings). Stock and BS Deluxe keep separate state files
-(`saves/fzero<N>.sav` vs `saves/bs-deluxe/…`).
+## Graphics and controls
 
-## ROM
+The seeded ceiling is 16:9 at **3840×2160** on DP-1, **4× HD Mode 7** with
+2-sample edge smoothing, presentation at **240 FPS** (the panel's refresh), sharp
+filtering, and rewind at 50 snapshots every 15 frames. Shaders (CRT Soft, LCD
+Grid, Sharp, Warm Composite or your own GLSL) are selectable in Settings;
+Display Size, Fit and the other aspect modes stay available. The game's
+simulation keeps its original timing; presentation FPS only smooths output.
 
-F-Zero (USA), No-Intro, 512 KiB headerless LoROM. The curated
-`ROMS_FINAL/snes/F-ZERO.smc` copy already matches the recomp's baked-in sha256
-exactly and is used as-is; override `dg_fzero_rom` if yours lives elsewhere (any
-dump of that revision, `.sfc` or headered `.smc`, works).
+The 8BitDo works through SDL with the same control layout as upstream (stick or
+D-pad steer, A/RT accelerate, B/LT brake, shoulder buttons drift/lean, Start
+pause, Select settings). Local VS assigns each pad/keyboard in **Controls**.
+F7 opens save states, R rewinds, Alt+Enter toggles fullscreen.
+
+## Limitations here
+
+- **BS Deluxe is not in this build.** Its native module needs the external
+  Deluxe patch archive and a second recompilation from the resulting cartridge.
+  The CGP pack still supplies corrected BS courses.
+- **CGP vehicle packs and stock rebalances stay off.** Upstream routes vehicle
+  packs through the BS Deluxe preparation path, so a build without the Deluxe
+  module refuses to start when they are enabled. The 85 courses, four stock
+  machines, local VS and netplay are unaffected. Re-enable them only after
+  building with BS Deluxe.
+- Netplay reports that this build has no mod support; the bundled course packs
+  still load locally. Online play was not exercised here.
+
+## Verified here
+
+The role builds the native binary, stages 237 MB of runtime data and reruns
+`changed=0`. A bounded `bin/fzero` launch boots directly to the title screen in
+fullscreen at 3840×2160, 16:9, with an `snes-hd` target of 3840×2160. Physical pad input, a full race, local 2–4
+player and netplay were not exercised during this update.
 
 ## Updating
 
-Bump `dg_fzero_release_tag` / `dg_fzero_asset_name` / `dg_fzero_asset_sha256`
-(from the [releases](https://github.com/mstan/FZeroSNESRecomp/releases); take the
-sha256 from the asset's `.sha256` sidecar) and re-run.
-
-## 2026-11-01 update check
-
-The GitHub release listing currently shows v0.14.1, but this tag has no compatible native Linux asset and is from a changed release line. Keep the installed v1.8.3 Linux build until a compatible newer build is available.
+Bump `dg_fzero_version`, `dg_fzero_commit`, the submodule revisions, and the
+data bundle version/hash in `group_vars/all/fzero_recomp.yml`, then re-run. The
+role rebuilds only when the build marker or binary is missing; saves and menu
+settings are preserved. Revert with `-e dg_fzero_revert=true`.

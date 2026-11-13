@@ -1,0 +1,66 @@
+#!/bin/bash
+# Build F-Zero Forever (RetroPortingToolKit/FZeroSNESRecomp) from the pinned
+# source and the owned F-Zero (USA) ROM. Runs inside the gaming box.
+# Managed by install_fzero_recomp; the build tree is reused on version bumps.
+set -euo pipefail
+
+SRC="{{ dg_fzero_src }}"
+BUILD="{{ dg_fzero_build }}"
+ROM="{{ dg_fzero_rom }}"
+VERSION="{{ dg_fzero_version }}"
+COMMIT="{{ dg_fzero_commit }}"
+REPO="{{ dg_fzero_repo_url }}"
+export CARGO_HOME="{{ dg_fzero_build_root }}/cargo"
+
+mkdir -p "$CARGO_HOME" "$(dirname "$SRC")"
+
+if [ ! -d "$SRC/.git" ]; then
+  rm -rf "$SRC"
+  git clone --branch "$VERSION" --depth 1 \
+    --recurse-submodules --shallow-submodules "$REPO" "$SRC"
+fi
+
+cd "$SRC"
+git fetch --depth 1 origin "refs/tags/$VERSION:refs/tags/$VERSION" || true
+git checkout -f "$COMMIT"
+git submodule sync --recursive
+git submodule update --init --recursive --depth 1
+
+actual="$(git rev-parse HEAD)"
+if [ "$actual" != "$COMMIT" ]; then
+  echo "fzero: source is at $actual, expected $COMMIT" >&2
+  exit 1
+fi
+while read -r path sha; do
+  [ -n "$path" ] || continue
+  got="$(git -C "$SRC/$path" rev-parse HEAD)"
+  if [ "$got" != "$sha" ]; then
+    echo "fzero: submodule $path is at $got, expected $sha" >&2
+    exit 1
+  fi
+done <<'SUBMODULES'
+{% for path, sha in dg_fzero_submodules.items() %}
+{{ path }} {{ sha }}
+{% endfor %}
+SUBMODULES
+
+# The recompiler is generated from the verified ROM and is not committed.
+cp "$ROM" "$SRC/fzero.sfc"
+bash tools/bootstrap.sh
+bash tools/regen.sh
+
+# No BS Deluxe native module in this build: upstream's Deluxe data needs the
+# external patch archive and a second recompilation. Vehicle packs currently
+# route through the Deluxe path, so they are disabled in the seeded settings
+# (see group_vars/all/fzero_recomp.yml). The bundled course packs are unaffected.
+cmake -S "$SRC" -B "$BUILD" -G "Unix Makefiles" \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DSNESRECOMP_BUILD_VERSION="${VERSION#v}" \
+  -DSNESRECOMP_SDL_BACKEND=SDL3 \
+  -DSDL3_DIR=/usr/lib/cmake/SDL3 \
+  -DFZERO_DELUXE_GEN_DIR= \
+  -DFZERO_DELUXE_DATA_FILE= \
+  -DBUILD_TESTING=OFF
+cmake --build "$BUILD" --target FZeroSNESRecomp -j"$(nproc)"
+
+test -x "$BUILD/F-Zero Forever"

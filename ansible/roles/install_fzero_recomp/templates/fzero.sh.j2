@@ -1,17 +1,17 @@
-#!/usr/bin/env sh
-set -eu
-# F-Zero SNES Recompiled launcher — mstan's native SNES recomp, opens on DP-1.
-# 8BitDo native via SDL. Managed by install_fzero_recomp.
+#!/bin/sh
+# F-Zero Forever launcher — native Linux build of RetroPortingToolKit's SNES
+# F-Zero recomp, on DP-1. 8BitDo native via SDL. Managed by install_fzero_recomp.
 #
-# The ROM is passed as the first positional argument: resolve_rom() takes argv[1]
-# and returns before the launcher window is created, so the game boots straight
-# in with no GUI picker. The SDL host verifies the dump's sha256 itself and
-# auto-strips a 512-byte copier header.
+# The ROM is passed as the first positional argument and config.ini seeds
+# SkipLauncher=1, so the game boots straight in with no GUI picker. The host
+# verifies the dump's sha256 itself and auto-strips a 512-byte copier header.
+set -eu
 
-APPIMAGE="{{ dg_fzero_appimage }}"
+BIN="{{ dg_fzero_bin }}"
 ROM="{{ dg_fzero_rom }}"
-if [ ! -x "$APPIMAGE" ]; then
-  printf '%s\n' "ERROR: F-Zero SNES Recompiled missing at $APPIMAGE. Run: ansible-playbook install-fzero-recomp.yml" >&2
+if [ ! -x "$BIN" ]; then
+  printf '%s\n' "ERROR: F-Zero Forever missing at $BIN." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-fzero-recomp.yml" >&2
   exit 1
 fi
 if [ ! -f "$ROM" ]; then
@@ -30,16 +30,13 @@ if paths:
     s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_fzero_main_output }}" }))'); s.recv(256); s.close()
 PY
 
-# The OpenGL shader path renders on the RTX (not the AMD iGPU); harmless for the
-# plain SDL path. This is a 2D SNES title, so no Vulkan ICD pin is needed.
+# The OpenGL/HD Mode 7 path renders on the RTX (not the AMD iGPU).
 export __NV_PRIME_RENDER_OFFLOAD="${__NV_PRIME_RENDER_OFFLOAD:-1}"
 export __GLX_VENDOR_LIBRARY_NAME="${__GLX_VENDOR_LIBRARY_NAME:-nvidia}"
 export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+export SDL_JOYSTICK_HIDAPI_STEAM=1
+export SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD=1
 
-# Run from the install dir so config.ini, rom.cfg and saves/ land here (they are
-# written relative to the working directory) — keeps them stable and backed up.
+# config.ini, fzero-video.ini and saves/ are relative to the working directory.
 cd "{{ dg_fzero_root }}"
-# No /dev/fuse in the migrated gaming container: let the AppImage runtime
-# extract and run itself instead of mounting the image.
-export APPIMAGE_EXTRACT_AND_RUN=1
-exec "$APPIMAGE" "$ROM" "$@"
+exec "$BIN" "$ROM" "$@"

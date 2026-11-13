@@ -221,7 +221,9 @@ dg_save_sets:
   - { name: sorr-save,            src: "tools/sorr/game/savegame" }
   - { name: midnightclub-la,      src: "tools/midnightclubla/midnightclubla/user-data" }
   - { name: roadrash64-recomp,    src: ".config/RoadRash64Recompiled" }
-  - { name: fzero-recomp,         src: "tools/fzero-snes-recomp/saves" }   # SRAM + save states (cwd-relative, next to the AppImage)
+  - { name: fzero-recomp,         src: ["tools/fzero-snes-recomp/saves",
+                                        "file:tools/fzero-snes-recomp/config.ini",
+                                        "file:tools/fzero-snes-recomp/fzero-video.ini"] }  # SRAM + save states + display/mod settings (native build)
   - { name: sonic-fallen-star,    src: "Games/sonic-fallen-star/Sonic and the Fallen Star (V1.1.1 Edit 4)/Data" }  # Clickteam Fusion saves live next to the exe (re-extracted on rebuild)
   - { name: sm64ds-port,          src: "Games/sm64ds-port/save" }          # SM64 DS port cartridge save + save states (re-extracted gamedir on rebuild)
   - { name: wwhd-recomp,          src: "tools/wwhd-recomp/data/save" }     # Wind Waker HD recomp saves + Picto Box pics (game rebuilt from dump on rebuild)

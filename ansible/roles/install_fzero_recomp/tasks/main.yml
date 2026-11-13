@@ -1,8 +1,9 @@
 ---
-# F-Zero SNES Recompiled — native SNES recomp (mstan, prebuilt Linux AppImage).
-# See group_vars/all/fzero_recomp.yml and docs/fzero-recomp.md.
+# F-Zero Forever (RetroPortingToolKit/FZeroSNESRecomp) — native Linux build
+# from the pinned source. See group_vars/all/fzero_recomp.yml and
+# docs/fzero-recomp.md.
 
-- name: Revert F-Zero SNES Recompiled when requested
+- name: Revert F-Zero Forever when requested
   when: dg_fzero_revert | bool
   block:
     - name: Remove the F-Zero launcher, desktop entry + install dir (registered saves kept)
@@ -22,9 +23,9 @@
       changed_when: true
     - name: Report F-Zero reverted
       ansible.builtin.debug:
-        msg: "F-Zero SNES Recompiled removed. Your ROM is untouched (saves lived under {{ dg_fzero_root }}/saves)."
+        msg: "F-Zero Forever removed. Your ROM is untouched; saves under {{ dg_fzero_root }}/saves are kept."
 
-- name: Install F-Zero SNES Recompiled
+- name: Install F-Zero Forever
   when: not (dg_fzero_revert | bool)
   block:
     - name: Verify the F-Zero (USA) ROM exists and is the expected revision
@@ -44,35 +45,179 @@
       changed_when: false
       failed_when: "'rom-ok' not in _fzero_rom.stdout"
 
-    - name: Create F-Zero directories
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: directory
-        mode: "0755"
-      loop:
-        - "{{ dg_fzero_root }}"
-        - "{{ dg_fzero_cache_dir }}"
-        - "{{ dg_box_home }}/bin"
-
-    - name: Install F-Zero runtime dependencies inside box
+    - name: Install the F-Zero build dependencies inside the box
       ansible.builtin.shell: >-
         {{ dg_in_box }} sudo pacman -S --needed --noconfirm
         {{ dg_fzero_pacman_packages | join(' ') }}
       register: _fzero_pacman
       changed_when: "'installing' in _fzero_pacman.stdout or 'upgrading' in _fzero_pacman.stdout"
 
-    - name: Download the pinned F-Zero Linux AppImage
+    - name: Create the F-Zero directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_fzero_root }}"
+        - "{{ dg_fzero_build_root }}"
+        - "{{ dg_fzero_data }}"
+        - "{{ dg_fzero_launcher | dirname }}"
+        - "{{ dg_desktop_render_dir }}"
+
+    - name: Stage the pinned F-Zero Forever data bundle
       ansible.builtin.get_url:
-        url: "{{ dg_fzero_asset_url }}"
-        dest: "{{ dg_fzero_appimage }}"
-        checksum: "sha256:{{ dg_fzero_asset_sha256 }}"
+        url: "{{ dg_fzero_data_url }}"
+        dest: "{{ dg_fzero_data_archive }}"
+        checksum: "sha256:{{ dg_fzero_data_sha256 }}"
+        mode: "0644"
+
+    - name: Check whether the native build is current
+      ansible.builtin.shell: |
+        set -eu
+        ref="{{ dg_fzero_version }} {{ dg_fzero_commit }}"
+        if [ -x "{{ dg_fzero_bin }}" ] &&
+           [ -f "{{ dg_fzero_build_root }}/.dg-build-ref" ] &&
+           [ "$(cat "{{ dg_fzero_build_root }}/.dg-build-ref")" = "$ref" ]; then
+          echo current
+        else
+          echo rebuild
+        fi
+      register: _fzero_build_state
+      changed_when: false
+
+    - name: Deploy the F-Zero build script
+      ansible.builtin.template:
+        src: build.sh.j2
+        dest: "{{ dg_fzero_build_root }}/build.sh"
         mode: "0755"
 
-    - name: Record the installed release ref
+    - name: Build F-Zero Forever from the pinned source
+      when: _fzero_build_state.stdout != 'current'
+      ansible.builtin.command:
+        cmd: "{{ dg_in_box }} bash {{ dg_fzero_build_root }}/build.sh"
+      register: _fzero_build
+      changed_when: true
+
+    - name: Install the native F-Zero binary
+      when: _fzero_build_state.stdout != 'current'
       ansible.builtin.copy:
-        dest: "{{ dg_fzero_root }}/.dg-installed-ref"
-        content: "{{ dg_fzero_release_tag }}\n"
+        src: "{{ dg_fzero_build }}/F-Zero Forever"
+        dest: "{{ dg_fzero_bin }}"
+        remote_src: true
+        mode: "0755"
+
+    - name: Record the built source revision
+      when: _fzero_build_state.stdout != 'current'
+      ansible.builtin.copy:
+        dest: "{{ dg_fzero_build_root }}/.dg-build-ref"
+        content: "{{ dg_fzero_version }} {{ dg_fzero_commit }}\n"
         mode: "0644"
+
+    - name: Check whether the runtime data is staged
+      ansible.builtin.shell: |
+        set -eu
+        ref="{{ dg_fzero_data_version }} {{ dg_fzero_data_sha256 }}"
+        if [ -x "{{ dg_fzero_bin }}" ] &&
+           [ -d "{{ dg_fzero_root }}/mods/packs" ] &&
+           [ -d "{{ dg_fzero_root }}/assets/shaders" ] &&
+           [ -f "{{ dg_fzero_build_root }}/.dg-stage-ref" ] &&
+           [ "$(cat "{{ dg_fzero_build_root }}/.dg-stage-ref")" = "$ref" ]; then
+          echo current
+        else
+          echo restage
+        fi
+      register: _fzero_stage_state
+      changed_when: false
+
+    - name: Unpack the F-Zero Forever data bundle
+      when: _fzero_stage_state.stdout != 'current'
+      ansible.builtin.unarchive:
+        src: "{{ dg_fzero_data_archive }}"
+        dest: "{{ dg_fzero_data }}"
+        remote_src: true
+        creates: "{{ dg_fzero_data }}/F-Zero-Forever-{{ dg_fzero_data_version }}-windows-x64-without-msu/README.txt"
+
+    - name: Stage assets, course packs, docs and licences
+      when: _fzero_stage_state.stdout != 'current'
+      ansible.builtin.copy:
+        src: "{{ dg_fzero_data }}/F-Zero-Forever-{{ dg_fzero_data_version }}-windows-x64-without-msu/{{ item }}"
+        dest: "{{ dg_fzero_root }}/"
+        remote_src: true
+        mode: preserve
+      loop:
+        - assets
+        - mods
+        - docs
+        - licenses
+        - README.txt
+        - MODS.md
+        - CONVERSION.md
+        - CREDITS.txt
+        - LICENSE
+
+    # The native build has no BS Deluxe module; dropping its payload keeps the
+    # launch path on the stock cartridge instead of trying to activate it.
+    - name: Drop the Windows BS Deluxe payload and the old AppImage
+      when: _fzero_stage_state.stdout != 'current'
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ dg_fzero_root }}/mods/bs-deluxe.dat"
+        - "{{ dg_fzero_root }}/mods/bs-deluxe-import.json"
+        - "{{ dg_fzero_root }}/FZeroSNESRecomp.AppImage"
+        - "{{ dg_fzero_root }}/rom.cfg"
+        - "{{ dg_fzero_root }}/.dg-installed-ref"
+
+    - name: Record the staged data revision
+      when: _fzero_stage_state.stdout != 'current'
+      ansible.builtin.copy:
+        dest: "{{ dg_fzero_build_root }}/.dg-stage-ref"
+        content: "{{ dg_fzero_data_version }} {{ dg_fzero_data_sha256 }}\n"
+        mode: "0644"
+
+    # Seeded once. The in-game menu and the launcher rewrite these files; later
+    # changes survive role reruns.
+    - name: Seed the direct-boot and fullscreen settings
+      ansible.builtin.copy:
+        dest: "{{ dg_fzero_root }}/config.ini"
+        content: |
+          [General]
+          SkipLauncher=1
+
+          [Graphics]
+          Fullscreen=1
+          WindowScale=2
+          LinearFiltering=0
+
+          [Sound]
+          Msu1Enabled=1
+
+          [Rewind]
+          Enabled=1
+          Depth=50
+          Interval=15
+        mode: "0644"
+        force: false
+
+    - name: Seed the maximum presentation settings
+      ansible.builtin.copy:
+        dest: "{{ dg_fzero_root }}/fzero-video.ini"
+        content: |
+          [FZeroVideo]
+          EnhancedRenderer=1
+          Aspect=16:9
+          PresentationEnabled=1
+          PresentationFPS=240
+          BSVehicles=0
+          BSTracks=0
+          CGPCars=0
+          CGPStockRebalance=0
+          Mode7Enabled=1
+          Mode7Scale=4
+          Mode7Supersample=2
+        mode: "0644"
+        force: false
 
     - name: Deploy the F-Zero launcher
       ansible.builtin.template:
@@ -100,7 +245,9 @@
     - name: Report
       ansible.builtin.debug:
         msg: >-
-          F-Zero SNES Recompiled {{ dg_fzero_release_tag }} at {{ dg_fzero_root }};
-          launcher {{ dg_fzero_launcher }}. ROM passed as argv[1] (no picker);
-          config.ini + saves/ live under {{ dg_fzero_root }}. Widescreen, shaders,
-          save states + rewind are in-app. Revert: -e dg_fzero_revert=true.
+          F-Zero Forever {{ dg_fzero_version }} at {{ dg_fzero_root }};
+          launcher {{ dg_fzero_launcher }}. The native binary boots with the ROM
+          as argv[1]; config.ini + saves/ live under {{ dg_fzero_root }}.
+          85 bundled courses, HD Mode 7 (4x), 240 FPS presentation, save states,
+          rewind, 2-4 player local VS and netplay are in-app.
+          Revert: -e dg_fzero_revert=true.

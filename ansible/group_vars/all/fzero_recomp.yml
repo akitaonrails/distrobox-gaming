@@ -1,40 +1,72 @@
 ---
-# F-Zero SNES Recompiled — mstan's static recompilation of the SNES F-Zero
-# into a native PC app (shared "snesrecomp" engine + "recomp-ui" launcher, the
-# same family as the DKC recomps). Unlike the DKC trilogy, upstream DOES ship
-# an official native Linux AppImage, so this is a prebuilt-release role (no
-# source build) — the DK64 / Road Rash pattern. Opt-in role install_fzero_recomp.
-# See docs/fzero-recomp.md.
+# F-Zero Forever (formerly mstan/FZeroSNESRecomp) — static recompilation of the
+# SNES F-Zero on RetroPortingToolKit's snesrecomp engine. Upstream still ships
+# Windows-only release bundles, so this role builds the Linux binary from the
+# pinned source (the same pattern as the DKC / DK64 recomps) and stages the
+# release bundle's platform-independent data (course packs, shaders, docs).
 #
-# You supply your own F-Zero (USA) dump. The recomp is revision-strict: the SDL
-# host verifies the ROM against sha256 bf16c3c8… (No-Intro F-Zero (USA), 512 KiB
-# headerless LoROM, sha1 d3efd32b…) and auto-strips a 512-byte copier header, so
-# both .sfc and headered .smc dumps of that revision work.
+# You supply your own F-Zero (USA) dump. The recomp is revision-strict: the
+# build verifies the ROM against sha256 bf16c3c8… (No-Intro F-Zero (USA),
+# 512 KiB headerless LoROM) and auto-strips a 512-byte copier header, so both
+# .sfc and headered .smc dumps of that revision work.
 #
-# Skipping the launcher/picker: resolve_rom() in sdl_main.c takes the ROM as the
-# first positional argument (argv[1]) and returns before the launcher window is
-# ever created — so the wrapper simply passes the ROM path and the game boots
-# straight in, no GUI picker. Widescreen (16:9/21:9/32:9), high-refresh
-# presentation, shaders, save states and rewind are all in-app options.
+# The binary boots straight into the game with the ROM as argv[1] and the
+# seeded config.ini (SkipLauncher=1). Widescreen, 8x HD Mode 7, high-refresh
+# presentation, shaders, save states, rewind, 2–4 player local VS and netplay
+# are in-app.
+#
+# The native build has no BS Deluxe native module (that needs the external
+# Deluxe patch archive and a second recompilation), and upstream's vehicle
+# packs currently require that module. The role therefore seeds CGPCars=0 and
+# CGPStockRebalance=0: the 85 bundled CGP/Astra/Bower/MAX courses, local VS and
+# every other feature remain. See docs/fzero-recomp.md.
 
-dg_fzero_repo: mstan/FZeroSNESRecomp
-dg_fzero_release_tag: v1.8.3
-dg_fzero_asset_name: "FZeroSNESRecomp-linux-1.8.3-x86_64.AppImage"
-dg_fzero_asset_url: "https://github.com/{{ dg_fzero_repo }}/releases/download/{{ dg_fzero_release_tag }}/{{ dg_fzero_asset_name }}"
-dg_fzero_asset_sha256: "2ac0438d7637d664a4aa0fd364c9d0604e5ac24dbec19db5e8cbfc3db7c82087"
+dg_fzero_repo: RetroPortingToolKit/FZeroSNESRecomp
+dg_fzero_version: v0.20.0-rc.3
+dg_fzero_commit: 6e2800f7e01786a6c6fbfae19a71711c497c30d9
+dg_fzero_repo_url: "https://github.com/{{ dg_fzero_repo }}.git"
+# Pinned dependency revisions from the release tag's gitlinks.
+dg_fzero_submodules:
+  recomp-ui: b13c876cab37a46b6266eed107a5c9ef5f035320
+  snesrecomp: d1ace29ae885a542605615a3664ccb7750227ba5
+  snesrecomp/lib/recomp-net: 7a4d330ecf995b881d167234da3c0b01675fd512
+  snesrecomp/lib/retcomm-rbengine: 2a03e73693acee0fb78076ea058642c931bef12e
+
+# The official Windows bundle supplies the platform-independent runtime data:
+# 85-course packs with their ready caches, vehicle-packs sources, shaders,
+# fonts, docs and licences. Its executables and DLLs are not used.
+dg_fzero_data_version: 0.20.0-rc.3
+dg_fzero_data_asset: "F-Zero-Forever-0.20.0-rc.3-windows-x64-without-msu.zip"
+dg_fzero_data_url: "https://github.com/{{ dg_fzero_repo }}/releases/download/v{{ dg_fzero_data_version }}/{{ dg_fzero_data_asset }}"
+dg_fzero_data_sha256: fca8062b0fa6bc63fae80219d73a3556a6e7ad620621d3695219ecc866f6920c
+dg_fzero_data_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_fzero_data_asset }}"
 
 dg_fzero_root: "{{ dg_box_home }}/tools/fzero-snes-recomp"
-dg_fzero_cache_dir: "{{ dg_box_home }}/cache/fzero-snes-recomp"
-dg_fzero_appimage: "{{ dg_fzero_root }}/FZeroSNESRecomp.AppImage"
+dg_fzero_build_root: "{{ dg_box_home }}/.cache/fzero-forever-build"
+dg_fzero_src: "{{ dg_fzero_build_root }}/src"
+dg_fzero_build: "{{ dg_fzero_build_root }}/build"
+dg_fzero_data: "{{ dg_fzero_build_root }}/data"
+dg_fzero_bin: "{{ dg_fzero_root }}/F-Zero Forever"
 dg_fzero_launcher: "{{ dg_box_home }}/bin/fzero"
-dg_fzero_main_output: "DP-1"
+dg_fzero_main_output: DP-1
 dg_fzero_revert: false
 
 # User's own dump — F-Zero (USA), No-Intro, 512 KiB headerless LoROM. The
 # curated ROMS_FINAL/snes/F-ZERO.smc copy is already headerless and matches the
-# recomp's baked-in sha256 exactly; passed to the AppImage as argv[1].
+# recomp's baked-in sha256 exactly.
 dg_fzero_rom: "{{ dg_roms_final_root }}/snes/F-ZERO.smc"
 dg_fzero_rom_sha256: "bf16c3c867c58e2ab061c70de9295b6930d63f29f81cc986f5ecae03e0ad18d2"
 
+# Source-build dependencies inside the box (SDL3 is the runtime backend).
 dg_fzero_pacman_packages:
-  - fuse2
+  - base-devel
+  - cmake
+  - git
+  - cargo
+  - sdl3
+  - libxml2
+  - libpng
+  - giflib
+  - rapidjson
+  - python
+  - unzip
