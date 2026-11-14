@@ -1,0 +1,33 @@
+---
+# Wangan Midnight arcade series — REA launcher (OpenParrot / OpenParrot_WMMT /
+# WanganArcadeLoader; no TeknoParrot). Linux tarball, 7 games play; Maximum
+# Tune (Chihiro) and Wangan Midnight R (System 246) are listed but blocked in
+# the current release, which has no loader route for those boards yet.
+#
+# The NAS BIOS folders are recorded here for the future loaders, but this
+# launcher release does not consume them (see docs/rea-wangan.md).
+dg_wangan_repo: akitaonrails/rea-teknoparrot-wangan-series
+dg_wangan_version: 0.1.0
+dg_wangan_asset_name: "WanganLauncher-{{ dg_wangan_version }}-linux-x86_64.tar.gz"
+dg_wangan_asset_url: "https://github.com/{{ dg_wangan_repo }}/releases/download/v{{ dg_wangan_version }}/{{ dg_wangan_asset_name }}"
+dg_wangan_asset_sha256: 96dd8eaf13879332c6271ac3b9d3de341aabec768482b09528d5977ef3ef7918
+dg_wangan_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_wangan_asset_name }}"
+
+dg_wangan_root: "{{ dg_box_home }}/tools/rea-wangan"
+dg_wangan_app_dir: "{{ dg_wangan_root }}/WanganLauncher-{{ dg_wangan_version }}-linux-x86_64"
+dg_wangan_launcher: "{{ dg_box_home }}/bin/wangan"
+dg_wangan_data: "{{ dg_box_home }}/.local/share/rea-wangan"
+dg_wangan_main_output: DP-1
+dg_wangan_revert: false
+
+dg_wangan_library: "{{ dg_emudeck_root }}/roms_rare/TeknoParrot"
+
+# Supplied BIOS sets. The current launcher release has no loader for the
+# Chihiro/System 246 titles, so these are not read; the paths are kept for the
+# eventual loaders and for other emulators.
+dg_wangan_sys246_bios: "{{ dg_emudeck_root }}/Emulation/bios/sys246/r27v1602f.7d"
+dg_wangan_chihiro_dir: "{{ dg_emudeck_root }}/Emulation/bios/chihiro"
+
+dg_wangan_packages:
+  - gamescope
+  - gst-libav

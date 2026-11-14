@@ -248,6 +248,11 @@ dg_ogm_games:
     category: recomp
     sgdb_query: "Road Rash 64"
     github: "{{ dg_rr64_repo }}"
+  - desktop_id: gaming-wangan
+    id: wangan
+    category: arcade
+    sgdb_query: "Wangan Midnight Maximum Tune"
+    github: "{{ dg_wangan_repo }}"
   - desktop_id: gaming-initiald
     id: initiald
     category: arcade

@@ -1,0 +1,111 @@
+---
+# Wangan Midnight arcade series — REA launcher v0.1.0. See
+# group_vars/all/rea_wangan.yml and docs/rea-wangan.md.
+
+- name: Revert the Wangan launcher when requested
+  when: dg_wangan_revert | bool
+  block:
+    - name: Remove the Wangan launcher, desktop entry + install dir (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_wangan_launcher }}"
+          - "{{ dg_wangan_root }}"
+          - "{{ dg_desktop_render_dir }}/gaming-wangan.desktop"
+    - name: Refresh host launchers after removing Wangan
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      changed_when: true
+    - name: Report the Wangan launcher reverted
+      ansible.builtin.debug:
+        msg: "Wangan launcher removed. Your dumps and BIOS are untouched; the data folder with saves is kept."
+
+- name: Install the Wangan launcher
+  when: not (dg_wangan_revert | bool)
+  block:
+    - name: Verify the Wangan game library
+      ansible.builtin.stat:
+        path: "{{ dg_wangan_library }}"
+      register: _wangan_library
+
+    - name: Require the Wangan library
+      ansible.builtin.assert:
+        that: _wangan_library.stat.exists | default(false)
+        fail_msg: "Missing {{ dg_wangan_library }} (the TeknoParrot-style Wangan dumps)."
+        quiet: true
+
+    - name: Install the Wangan dependencies in the box
+      ansible.builtin.command:
+        argv: "{{ ['distrobox-enter', '-n', dg_box_name, '--', 'sudo', 'pacman', '-S', '--noconfirm', '--needed'] + dg_wangan_packages }}"
+      register: _wangan_pkgs
+      changed_when: "'nothing to do' not in _wangan_pkgs.stdout"
+
+    - name: Create the Wangan directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_wangan_root }}"
+        - "{{ dg_wangan_data }}"
+        - "{{ dg_wangan_archive | dirname }}"
+        - "{{ dg_wangan_launcher | dirname }}"
+        - "{{ dg_desktop_render_dir }}"
+
+    - name: Stage the pinned Wangan launcher
+      ansible.builtin.get_url:
+        url: "{{ dg_wangan_asset_url }}"
+        dest: "{{ dg_wangan_archive }}"
+        checksum: "sha256:{{ dg_wangan_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Unpack the Wangan launcher
+      ansible.builtin.unarchive:
+        src: "{{ dg_wangan_archive }}"
+        dest: "{{ dg_wangan_root }}"
+        remote_src: true
+        creates: "{{ dg_wangan_app_dir }}/wangan-launcher"
+
+    - name: Seed the game library config when absent
+      ansible.builtin.copy:
+        dest: "{{ dg_wangan_data }}/launcher.cfg"
+        content: |
+          # Written by the launcher.
+          library = {{ dg_wangan_library }}
+        mode: "0644"
+        force: false
+
+    - name: Deploy the Wangan launcher
+      ansible.builtin.template:
+        src: wangan.sh.j2
+        dest: "{{ dg_wangan_launcher }}"
+        mode: "0755"
+
+    - name: Render the Wangan desktop entry
+      ansible.builtin.template:
+        src: wangan.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-wangan.desktop"
+        mode: "0644"
+
+    - name: Install the desktop file into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _wangan_host_launchers
+      changed_when: >-
+        'installed ' in _wangan_host_launchers.stdout or
+        'removed stale ' in _wangan_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Wangan launcher {{ dg_wangan_version }} at {{ dg_wangan_app_dir }};
+          launcher {{ dg_wangan_launcher }}. Library {{ dg_wangan_library }};
+          settings, logs and saves in {{ dg_wangan_data }}.
+          Revert: -e dg_wangan_revert=true.

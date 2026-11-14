@@ -95,6 +95,7 @@
     - { role: install_super_hang_on_ultimate,  tags: [super_hang_on, never] }
     - { role: install_rondo_recomp,            tags: [rondo_recomp, never] }
     - { role: install_rea_initiald,            tags: [rea_initiald, never] }
+    - { role: install_rea_wangan,              tags: [rea_wangan, never] }
     - { role: install_vf1_recomp,              tags: [vf1_recomp, never] }
     - { role: install_vf3_recomp,              tags: [vf3_recomp, never] }
     - { role: install_smas,                    tags: [smas, never] }

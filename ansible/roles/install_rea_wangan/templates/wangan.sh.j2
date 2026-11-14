@@ -1,0 +1,33 @@
+#!/bin/sh
+# Wangan Midnight arcade series launcher — REA hub for OpenParrot,
+# OpenParrot_WMMT and WanganArcadeLoader. Managed by install_rea_wangan.
+set -eu
+
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+
+if [ ! -x "{{ dg_wangan_app_dir }}/wangan-launcher" ]; then
+  printf '%s\n' "ERROR: Wangan launcher missing at {{ dg_wangan_app_dir }}." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-rea-wangan.yml" >&2
+  exit 1
+fi
+
+# Focus the main landscape 4K monitor (Hyprland >= 0.56 Lua IPC form).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_wangan_main_output }}" }))'); s.recv(256); s.close()
+PY
+
+export WANGAN_DATA="{{ dg_wangan_data }}"
+export __NV_PRIME_RENDER_OFFLOAD="${__NV_PRIME_RENDER_OFFLOAD:-1}"
+export __GLX_VENDOR_LIBRARY_NAME="${__GLX_VENDOR_LIBRARY_NAME:-nvidia}"
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+cd "{{ dg_wangan_app_dir }}"
+exec ./wangan-launcher "$@"

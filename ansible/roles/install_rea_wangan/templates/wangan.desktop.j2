@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Wangan Midnight · Arcade Series (on {{ dg_box_name }})
+Exec={{ dg_wangan_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Wangan Midnight arcade hub — Maximum Tune 3 to 6RR, pad/wheel, 4K.
+Categories=Game;
+Keywords=wangan;midnight;maximum tune;arcade;namco;racing;
+StartupWMClass=rea-wangan;
+{{ ogm_metadata('gaming-wangan') }}
