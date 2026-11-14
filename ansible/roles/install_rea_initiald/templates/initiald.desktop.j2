@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Initial D · Arcade Series (on {{ dg_box_name }})
+Exec={{ dg_initiald_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Initial D arcade hub — Ver. 1 to THE ARCADE Season 5, pad/wheel and 4K.
+Categories=Game;
+Keywords=initial d;initiald;arcade;sega;racing;drift;
+StartupWMClass=rea-initiald;
+{{ ogm_metadata('gaming-initiald') }}

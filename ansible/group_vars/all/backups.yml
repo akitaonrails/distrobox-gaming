@@ -222,6 +222,9 @@ dg_save_sets:
   - { name: sorr-save,            src: "tools/sorr/game/savegame" }
   - { name: midnightclub-la,      src: "tools/midnightclubla/midnightclubla/user-data" }
   - { name: roadrash64-recomp,    src: ".config/RoadRash64Recompiled" }
+  - { name: rea-initiald,        src: ["file:.local/share/rea-initiald/launcher.cfg",
+                                        ".local/share/rea-initiald/settings",
+                                        ".local/share/rea-initiald/runtimes"] }  # library config, per-game settings and saves (WAL prefix excluded)
   - { name: rondo-recomp,         src: "tools/rondo-recomp/user" }  # settings.ini, BRAM saves and save states (portable user folder)
   - { name: super-hang-on-ultimate, src: ["file:tools/super-hang-on-ultimate/shangon.ini",
                                         "file:tools/super-hang-on-ultimate/shangon.nv",

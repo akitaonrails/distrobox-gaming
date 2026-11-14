@@ -1,0 +1,37 @@
+---
+# Initial D arcade series — REA's launcher for the whole series (Ver. 1 to
+# THE ARCADE Season 5). No TeknoParrot: Flycast for the NAOMI 2 games,
+# lindbergh-loader natively for 4/5, windowsarcadeloader (through its
+# GE-Proton) for 6-8/Zero/THE ARCADE. No game files are included.
+#
+# Libraries point at the TeknoParrot-style dumps and the MAME-style naomi2
+# folder on the NAS. The NAOMI 2 BIOS is the naomi2.zip set Flycast needs.
+# The sys246 and chihiro BIOS folders on the NAS are not used by any Initial D
+# game (System 246 is PS2-based, Chihiro is Xbox-based; these titles are NAOMI 2,
+# Lindbergh, RingEdge, Nu and ALLS), so they are deliberately not configured.
+# See docs/rea-initiald.md.
+
+dg_initiald_repo: akitaonrails/rea-teknoparrot-initial-d-series
+dg_initiald_version: 0.1.0
+dg_initiald_asset_name: "InitialDLauncher-{{ dg_initiald_version }}-linux-x86_64.tar.gz"
+dg_initiald_asset_url: "https://github.com/{{ dg_initiald_repo }}/releases/download/v{{ dg_initiald_version }}/{{ dg_initiald_asset_name }}"
+dg_initiald_asset_sha256: e2a100d9e91e57885c9bbb9155d84d48dac377633ecae1dbe061eb02a92be86e
+dg_initiald_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_initiald_asset_name }}"
+
+dg_initiald_root: "{{ dg_box_home }}/tools/rea-initiald"
+dg_initiald_app_dir: "{{ dg_initiald_root }}/InitialDLauncher-{{ dg_initiald_version }}-linux-x86_64"
+dg_initiald_launcher: "{{ dg_box_home }}/bin/initiald"
+dg_initiald_data: "{{ dg_box_home }}/.local/share/rea-initiald"
+dg_initiald_main_output: DP-1
+dg_initiald_revert: false
+
+# Folders scanned for the supported builds.
+dg_initiald_libraries:
+  - "{{ dg_emudeck_root }}/roms_rare/TeknoParrot"
+  - "{{ dg_emudeck_root }}/roms_rare/naomi2"
+dg_initiald_naomi2_bios: "{{ dg_emudeck_root }}/roms_unstable/naomi/naomi2.zip"
+
+dg_initiald_packages:
+  - gamescope
+  - bubblewrap
+  - cabextract

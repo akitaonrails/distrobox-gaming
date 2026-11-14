@@ -1,0 +1,145 @@
+---
+# Initial D arcade series — REA launcher v0.1.0 (Flycast + lindbergh-loader +
+# windowsarcadeloader; no TeknoParrot). See group_vars/all/rea_initiald.yml
+# and docs/rea-initiald.md.
+
+- name: Revert the Initial D launcher when requested
+  when: dg_initiald_revert | bool
+  block:
+    - name: Remove the Initial D launcher, desktop entry + install dir (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_initiald_launcher }}"
+          - "{{ dg_initiald_root }}"
+          - "{{ dg_desktop_render_dir }}/gaming-initiald.desktop"
+    - name: Refresh host launchers after removing Initial D
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      changed_when: true
+    - name: Report the Initial D launcher reverted
+      ansible.builtin.debug:
+        msg: "Initial D launcher removed. Your dumps are untouched; the data folder with settings and saves is kept."
+
+- name: Install the Initial D launcher
+  when: not (dg_initiald_revert | bool)
+  block:
+    - name: Verify the game libraries and NAOMI 2 BIOS
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop: "{{ dg_initiald_libraries + [dg_initiald_naomi2_bios] }}"
+      register: _initiald_sources
+
+    - name: Require the Initial D libraries and BIOS
+      ansible.builtin.assert:
+        that: item.stat.exists | default(false)
+        fail_msg: >-
+          Missing {{ item.item }}. The launcher needs the TeknoParrot-style
+          Initial D dumps, the naomi2 dump folder and its naomi2.zip BIOS.
+        quiet: true
+      loop: "{{ _initiald_sources.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Install the launcher dependencies in the box
+      ansible.builtin.command:
+        argv: "{{ ['distrobox-enter', '-n', dg_box_name, '--', 'sudo', 'pacman', '-S', '--noconfirm', '--needed'] + dg_initiald_packages }}"
+      register: _initiald_pkgs
+      changed_when: "'nothing to do' not in _initiald_pkgs.stdout"
+
+    - name: Check Flycast (the NAOMI 2 runtime)
+      ansible.builtin.command:
+        argv: [distrobox-enter, -n, "{{ dg_box_name }}", --, sh, -c, command -v flycast]
+      register: _initiald_flycast
+      changed_when: false
+      failed_when: _initiald_flycast.rc != 0
+
+    - name: Create the Initial D directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_initiald_root }}"
+        - "{{ dg_initiald_data }}"
+        - "{{ dg_initiald_archive | dirname }}"
+        - "{{ dg_initiald_launcher | dirname }}"
+        - "{{ dg_desktop_render_dir }}"
+
+    - name: Stage the pinned Initial D launcher
+      ansible.builtin.get_url:
+        url: "{{ dg_initiald_asset_url }}"
+        dest: "{{ dg_initiald_archive }}"
+        checksum: "sha256:{{ dg_initiald_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Unpack the Initial D launcher
+      ansible.builtin.unarchive:
+        src: "{{ dg_initiald_archive }}"
+        dest: "{{ dg_initiald_root }}"
+        remote_src: true
+        creates: "{{ dg_initiald_app_dir }}/initiald-launcher"
+
+    # lindbergh-loader's CC BY-NC-SA licence forbids shipping it, so the
+    # launcher normally builds it on the first Play through docker/podman.
+    # This box has no container CLI inside the box but does have Docker on the
+    # host, so build the same pinned source once here, into components/.
+    - name: Check whether lindbergh-loader is built
+      ansible.builtin.stat:
+        path: "{{ dg_initiald_app_dir }}/components/lindbergh/lindbergh.so"
+      register: _initiald_lindbergh
+
+    - name: Build lindbergh-loader for Initial D 4 and 5
+      when: not _initiald_lindbergh.stat.exists
+      ansible.builtin.command:
+        cmd: ./scripts/build-components.sh components lindbergh
+        chdir: "{{ dg_initiald_app_dir }}"
+      register: _initiald_lindbergh_build
+      changed_when: true
+
+    - name: Seed the library and NAOMI 2 BIOS config when absent
+      ansible.builtin.copy:
+        dest: "{{ dg_initiald_data }}/launcher.cfg"
+        content: |
+          # Written by the launcher.
+          {% for lib in dg_initiald_libraries %}
+          library = {{ lib }}
+          {% endfor %}
+          naomi2_bios = {{ dg_initiald_naomi2_bios }}
+        mode: "0644"
+        force: false
+
+    - name: Deploy the Initial D launcher
+      ansible.builtin.template:
+        src: initiald.sh.j2
+        dest: "{{ dg_initiald_launcher }}"
+        mode: "0755"
+
+    - name: Render the Initial D desktop entry
+      ansible.builtin.template:
+        src: initiald.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-initiald.desktop"
+        mode: "0644"
+
+    - name: Install the desktop file into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _initiald_host_launchers
+      changed_when: >-
+        'installed ' in _initiald_host_launchers.stdout or
+        'removed stale ' in _initiald_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Initial D launcher {{ dg_initiald_version }} at {{ dg_initiald_app_dir }};
+          launcher {{ dg_initiald_launcher }}. Libraries: {{ dg_initiald_libraries | join(', ') }};
+          NAOMI 2 BIOS: {{ dg_initiald_naomi2_bios }}. Settings, logs and saves:
+          {{ dg_initiald_data }}. Revert: -e dg_initiald_revert=true.
