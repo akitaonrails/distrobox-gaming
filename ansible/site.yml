@@ -93,6 +93,7 @@
     - { role: install_roadrash64_recomp,       tags: [roadrash64, never] }
     - { role: install_fzero_recomp,            tags: [fzero_recomp, never] }
     - { role: install_super_hang_on_ultimate,  tags: [super_hang_on, never] }
+    - { role: install_rondo_recomp,            tags: [rondo_recomp, never] }
     - { role: install_vf1_recomp,              tags: [vf1_recomp, never] }
     - { role: install_vf3_recomp,              tags: [vf3_recomp, never] }
     - { role: install_smas,                    tags: [smas, never] }

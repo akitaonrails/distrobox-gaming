@@ -1,0 +1,63 @@
+---
+# Castlevania: Rondo of Blood — gminustwo/RondoRecomp, a static recompilation of
+# the PC Engine Super CD-ROM² game into a native app. Upstream ships an official
+# Linux AppImage; Setup recompiles the game from the player's own disc into
+# `rondo`, using the release's bundled Zig compiler. No game data is included.
+#
+# Two owned CHDs are installed side by side (Japanese original and the English
+# fan translation); the game's Language option switches between them.
+# See docs/rondo-recomp.md.
+
+dg_rondo_repo: gminustwo/RondoRecomp
+dg_rondo_version: "1.2"
+dg_rondo_tag: v1.2
+dg_rondo_asset_name: "RondoRecomp-{{ dg_rondo_version }}-x86_64.AppImage"
+dg_rondo_asset_url: "https://github.com/{{ dg_rondo_repo }}/releases/download/{{ dg_rondo_tag }}/{{ dg_rondo_asset_name }}"
+dg_rondo_asset_sha256: b19408b63f672f8cb693f8aa89196a890c814ab956770a0ff0d85941fa4a60f3
+dg_rondo_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_rondo_asset_name }}"
+
+dg_rondo_root: "{{ dg_box_home }}/tools/rondo-recomp"
+dg_rondo_appimage: "{{ dg_rondo_root }}/RondoRecomp.AppImage"
+dg_rondo_home: "{{ dg_rondo_root }}/install"
+dg_rondo_user: "{{ dg_rondo_root }}/user"
+dg_rondo_launcher: "{{ dg_box_home }}/bin/rondo-recomp"
+dg_rondo_main_output: DP-1
+dg_rondo_revert: false
+
+# The two supported PC Engine discs. Both are CUE/CHD-compatible; Setup checks
+# the PC Engine CD signature and the boot-sector fingerprint.
+dg_rondo_ja_disc: "{{ dg_roms_final_root }}/tg16_cd/Akumajou Dracula X - Chi no Rondo (Japan).chd"
+dg_rondo_ja_sha256: 09d64ce710b056a184aad9040dd932f9240bfccd1d83b11fbde731b10b17a2cf
+dg_rondo_en_disc: "{{ dg_roms_final_root }}/tg16_cd/Castlevania - Rondo of Blood (Japan) (Translated).chd"
+dg_rondo_en_sha256: 4fd5e9bd7ef455b69b29ac6e1901811c1105ea7d52c14afb0065de3266f75df7
+
+# Seeded once, in the portable `user` folder next to the AppImage. 4:3 at the
+# display's own resolution, sharp pixels, blurred sides on a wide screen,
+# rewind and the Super Castlevania IV moves on. The in-game F1 menu rewrites
+# the file; later changes survive.
+dg_rondo_settings: |
+  # Rondo Recomp options (seeded by the distrobox-gaming role)
+  fullscreen = 1
+  vsync = 1
+  aspect = 0
+  scaling = 0
+  filter = 0
+  screen_effect = 0
+  effect_strength = 1
+  sides = 0
+  skip_cinematics = 0
+  rewind = 1
+  volume = 10
+  slot = 1
+  start_screen = 1
+  eight_way = 1
+  limp_whip = 1
+  cheat_health = 0
+  cheat_hearts = 0
+  cheat_lives = 0
+  maria_unlocked = 0
+  play_maria = 0
+  language = 0
+  retroachievements = 0
+  ra_hardcore = 0
+  check_updates = 0

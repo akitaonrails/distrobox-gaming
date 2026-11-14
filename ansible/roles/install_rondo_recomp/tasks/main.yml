@@ -1,0 +1,174 @@
+---
+# Castlevania: Rondo of Blood — gminustwo/RondoRecomp (native PC Engine recomp).
+# See group_vars/all/rondo_recomp.yml and docs/rondo-recomp.md.
+
+- name: Revert RondoRecomp when requested
+  when: dg_rondo_revert | bool
+  block:
+    - name: Remove the RondoRecomp launcher, desktop entry + install dir (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_rondo_launcher }}"
+          - "{{ dg_rondo_root }}"
+          - "{{ dg_desktop_render_dir }}/gaming-rondo-recomp.desktop"
+    - name: Refresh host launchers after removing RondoRecomp
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      changed_when: true
+    - name: Report RondoRecomp reverted
+      ansible.builtin.debug:
+        msg: "RondoRecomp removed. Your disc images are untouched; user/ settings and saves are kept."
+
+- name: Install RondoRecomp
+  when: not (dg_rondo_revert | bool)
+  block:
+    - name: Verify the owned Rondo of Blood disc images
+      ansible.builtin.stat:
+        path: "{{ item.path }}"
+        checksum_algorithm: sha256
+      loop:
+        - { path: "{{ dg_rondo_ja_disc }}", sha: "{{ dg_rondo_ja_sha256 }}" }
+        - { path: "{{ dg_rondo_en_disc }}", sha: "{{ dg_rondo_en_sha256 }}" }
+      register: _rondo_discs
+
+    - name: Require the expected PC Engine CHDs
+      ansible.builtin.assert:
+        that: item.stat.checksum | default('') == item.item.sha
+        fail_msg: >-
+          Expected {{ item.item.path }} (sha256 {{ item.item.sha }}). RondoRecomp
+          needs the Japanese original or the English fan translation as a
+          CUE/CHD PC Engine disc.
+        quiet: true
+      loop: "{{ _rondo_discs.results }}"
+      loop_control:
+        label: "{{ item.item.path }}"
+
+    - name: Create the RondoRecomp directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_rondo_root }}"
+        - "{{ dg_rondo_home }}"
+        - "{{ dg_rondo_user }}"
+        - "{{ dg_rondo_archive | dirname }}"
+        - "{{ dg_rondo_launcher | dirname }}"
+        - "{{ dg_desktop_render_dir }}"
+
+    - name: Stage the pinned RondoRecomp AppImage
+      ansible.builtin.get_url:
+        url: "{{ dg_rondo_asset_url }}"
+        dest: "{{ dg_rondo_archive }}"
+        checksum: "sha256:{{ dg_rondo_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Install the AppImage in the game folder
+      ansible.builtin.copy:
+        src: "{{ dg_rondo_archive }}"
+        dest: "{{ dg_rondo_appimage }}"
+        remote_src: true
+        mode: "0755"
+
+    # Setup recompiles from the disc with the Zig compiler inside the AppImage.
+    # RONDO_HOME keeps the built game, extracted discs and logs outside the
+    # read-only image; the portable `user` folder holds settings and saves.
+    - name: Install the Japanese disc (first build)
+      ansible.builtin.command:
+        argv:
+          - distrobox-enter
+          - -n
+          - "{{ dg_box_name }}"
+          - --
+          - env
+          - "RONDO_HOME={{ dg_rondo_home }}"
+          - "APPIMAGE_EXTRACT_AND_RUN=1"
+          - "{{ dg_rondo_appimage }}"
+          - --setup-cli
+          - "{{ dg_rondo_ja_disc }}"
+        creates: "{{ dg_rondo_home }}/game/ja"
+
+    - name: Install the English translation alongside it
+      ansible.builtin.command:
+        argv:
+          - distrobox-enter
+          - -n
+          - "{{ dg_box_name }}"
+          - --
+          - env
+          - "RONDO_HOME={{ dg_rondo_home }}"
+          - "APPIMAGE_EXTRACT_AND_RUN=1"
+          - "{{ dg_rondo_appimage }}"
+          - --setup-cli
+          - "{{ dg_rondo_en_disc }}"
+        creates: "{{ dg_rondo_home }}/game/en"
+
+    - name: Check the built game version
+      ansible.builtin.shell: |
+        set -eu
+        v=$(cat "{{ dg_rondo_home }}/build/version.txt" 2>/dev/null || true)
+        if [ -x "{{ dg_rondo_home }}/rondo" ] && [ "${v%% *}" = "{{ dg_rondo_version }}" ]; then
+          echo current
+        else
+          echo rebuild
+        fi
+      register: _rondo_version
+      changed_when: false
+
+    - name: Rebuild the game after a version change
+      when: _rondo_version.stdout != 'current'
+      ansible.builtin.command:
+        argv:
+          - distrobox-enter
+          - -n
+          - "{{ dg_box_name }}"
+          - --
+          - env
+          - "RONDO_HOME={{ dg_rondo_home }}"
+          - "APPIMAGE_EXTRACT_AND_RUN=1"
+          - "{{ dg_rondo_appimage }}"
+          - --setup-cli
+          - --rebuild
+
+    - name: Seed the fullscreen 4:3 baseline when absent
+      ansible.builtin.copy:
+        dest: "{{ dg_rondo_user }}/settings.ini"
+        content: "{{ dg_rondo_settings }}"
+        mode: "0644"
+        force: false
+
+    - name: Deploy the RondoRecomp launcher
+      ansible.builtin.template:
+        src: rondo-recomp.sh.j2
+        dest: "{{ dg_rondo_launcher }}"
+        mode: "0755"
+
+    - name: Render the RondoRecomp desktop entry
+      ansible.builtin.template:
+        src: rondo-recomp.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-rondo-recomp.desktop"
+        mode: "0644"
+
+    - name: Install the desktop file into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _rondo_host_launchers
+      changed_when: >-
+        'installed ' in _rondo_host_launchers.stdout or
+        'removed stale ' in _rondo_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          RondoRecomp {{ dg_rondo_version }} at {{ dg_rondo_root }};
+          launcher {{ dg_rondo_launcher }}. Both discs are installed in
+          {{ dg_rondo_home }}/game (en/ja), settings and saves live in
+          {{ dg_rondo_user }}. Revert: -e dg_rondo_revert=true.

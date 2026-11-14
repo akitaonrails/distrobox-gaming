@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Castlevania: Rondo of Blood · Recomp (on {{ dg_box_name }})
+Exec={{ dg_rondo_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Rondo of Blood (PC Engine CD) native recompilation — 4:3 at 4K, rewind, English and Japanese discs.
+Categories=Game;
+Keywords=castlevania;rondo;blood;pc engine;turbografx;recomp;
+StartupWMClass=rondo;
+{{ ogm_metadata('gaming-rondo-recomp') }}

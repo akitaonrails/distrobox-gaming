@@ -1,0 +1,37 @@
+#!/bin/sh
+# RondoRecomp — native PC Engine recompilation of Castlevania: Rondo of Blood.
+# The AppImage carries Setup, the SDK and Zig; Setup recompiles the owned disc
+# into $RONDO_HOME. Managed by install_rondo_recomp.
+set -eu
+
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+
+if [ ! -x "{{ dg_rondo_appimage }}" ]; then
+  printf '%s\n' "ERROR: RondoRecomp AppImage missing at {{ dg_rondo_appimage }}." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-rondo-recomp.yml" >&2
+  exit 1
+fi
+
+# Focus the main landscape 4K monitor (Hyprland >= 0.56 Lua IPC form).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_rondo_main_output }}" }))'); s.recv(256); s.close()
+PY
+
+# The image is read-only; Setup's build and the built rondo live in RONDO_HOME.
+# A `user` folder next to the AppImage selects portable settings/saves.
+export RONDO_HOME="{{ dg_rondo_home }}"
+export APPIMAGE_EXTRACT_AND_RUN=1
+export __NV_PRIME_RENDER_OFFLOAD="${__NV_PRIME_RENDER_OFFLOAD:-1}"
+export __GLX_VENDOR_LIBRARY_NAME="${__GLX_VENDOR_LIBRARY_NAME:-nvidia}"
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+cd "{{ dg_rondo_root }}"
+exec ./RondoRecomp.AppImage "$@"
