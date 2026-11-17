@@ -1,0 +1,38 @@
+#!/bin/sh
+# Redline Recompiled — Forza Motorsport (Xbox, 2005) built with Linux Zig and
+# run through GE-Proton on the host. Managed by install_redline_recomp.
+set -eu
+
+ROOT="{{ dg_redline_root }}"
+EXE="$ROOT/build/redline.exe"
+PROTON="{{ dg_redline_proton }}"
+if [ ! -x "$EXE" ]; then
+  printf '%s\n' "ERROR: Redline is not built at $EXE." >&2
+  printf '%s\n' "Run: cd {{ dg_project_root }}/ansible && ansible-playbook install-redline-recomp.yml" >&2
+  exit 1
+fi
+if [ ! -x "$PROTON" ]; then
+  printf '%s\n' "ERROR: GE-Proton missing at $PROTON" >&2
+  exit 1
+fi
+
+# Focus the main landscape 4K monitor (Hyprland >= 0.56 Lua IPC form).
+python3 - <<'PY' 2>/dev/null || true
+import socket, os, glob
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+xdg = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1026")
+paths = [f"{xdg}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{xdg}/hypr/*/.socket.sock")
+if paths:
+    s = socket.socket(socket.AF_UNIX); s.connect(paths[0])
+    s.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_redline_main_output }}" }))'); s.recv(256); s.close()
+PY
+
+export STEAM_COMPAT_DATA_PATH="{{ dg_redline_prefix }}"
+export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.steam/steam"
+export WINEDEBUG="${WINEDEBUG:--all}"
+export WINEDLLOVERRIDES="${WINEDLLOVERRIDES:-winemenubuilder.exe=d}"
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD="${__NV_PRIME_RENDER_OFFLOAD:-1}"
+
+cd "$ROOT/build"
+exec "$PROTON" run redline.exe "$ROOT/game" "$@"

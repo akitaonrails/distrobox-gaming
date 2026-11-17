@@ -1,0 +1,54 @@
+---
+# Forza Motorsport (Xbox, 2005) — Redline Recompiled 0.3.0. Windows-only
+# decompilation/port; built here with Zig on Linux (the source's --zig path)
+# and played with GE-Proton, whose DXVK + native d3dcompiler compile the
+# game's D3D11 shaders. No game data is included: the owned Rev 1 disc is
+# read/extracted into game/.
+# See docs/redline-recompiled.md.
+
+dg_redline_repo: DivxPlays/redline-recompiled
+dg_redline_version: 0.3.0
+dg_redline_asset_name: "RedlineRecompiled-{{ dg_redline_version }}.zip"
+dg_redline_asset_url: "https://github.com/{{ dg_redline_repo }}/releases/download/v{{ dg_redline_version }}-alpha/{{ dg_redline_asset_name }}"
+dg_redline_asset_sha256: 07a77502deb9167b58fb4e0519f5a340c90751303bfb37a25d726170ec135bd2
+dg_redline_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_redline_asset_name }}"
+
+dg_redline_root: "{{ dg_box_home }}/tools/redline"
+dg_redline_game: "{{ dg_redline_root }}/game"
+dg_redline_exe: "{{ dg_redline_root }}/build/redline.exe"
+dg_redline_launcher: "{{ dg_box_home }}/bin/redline"
+dg_redline_prefix: "{{ dg_box_home }}/wineprefixes/redline-proton"
+dg_redline_proton: "{{ dg_box_home }}/.local/share/Steam/compatibilitytools.d/GE-Proton11-5-x86_64/proton"
+dg_redline_d3dcompiler: "{{ dg_box_home }}/.cache/winetricks/d3dcompiler_47/d3dcompiler_47.dll"
+dg_redline_main_output: DP-1
+dg_redline_revert: false
+
+# The owned Forza Motorsport (USA) Rev 1 image. The launcher/build checks the
+# extracted Forza.xbe against this SHA-1.
+dg_redline_iso: "{{ dg_roms_final_root }}/xbox/Forza Motorsport (USA) (En,Ja,Fr,De,Es,It,Pt,Zh,Ko) (Rev 1)/Forza Motorsport (USA) (En,Ja,Fr,De,Es,It,Pt,Zh,Ko) (Rev 1).iso"
+dg_redline_xbe_sha1: e60a968e7ea73a1065b87dc1120f0b02e2eb1b58
+
+# The build uses Linux Zig 0.14.1 and a host/box Python venv for Capstone.
+dg_redline_zig_version: 0.14.1
+dg_redline_zig_asset: "zig-x86_64-linux-0.14.1.tar.xz"
+dg_redline_zig_url: "https://ziglang.org/download/{{ dg_redline_zig_version }}/{{ dg_redline_zig_asset }}"
+dg_redline_zig_sha256: 24aeeec8af16c381934a6cd7d95c807a8cb2cf7df9fa40d359aa884195c4716c
+dg_redline_zig_archive: "{{ dg_redline_root }}/tools/{{ dg_redline_zig_asset }}"
+dg_redline_zig: "{{ dg_redline_root }}/tools/zig-linux/zig"
+# Seeded once after the build; the in-game Recomp Settings menu rewrites it.
+dg_redline_recomp_ini: |
+  [recomp]
+  language=1
+  videomode=1080
+  renderscale=2
+  fullscreen=1
+  widescreen=1
+  ultrawide=0
+  menusides=1
+  anisotropy=16
+  fsr=0
+  framerate=0
+  texpack=1
+  videos=1
+  enhaudio=1
+  speakers=1

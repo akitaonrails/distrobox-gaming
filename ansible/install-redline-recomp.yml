@@ -1,0 +1,7 @@
+---
+- name: Install Redline Recompiled (Forza Motorsport)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_redline_recomp

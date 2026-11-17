@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Forza Motorsport · Redline (on {{ dg_box_name }})
+Exec={{ dg_redline_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Forza Motorsport (Xbox, 2005) recompilation — 4K, DLSS/FSR, 144 fps, through GE-Proton.
+Categories=Game;
+Keywords=forza;motorsport;xbox;redline;recomp;racing;
+StartupWMClass=steam_proton;
+{{ ogm_metadata('gaming-redline') }}

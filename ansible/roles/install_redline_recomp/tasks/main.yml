@@ -1,0 +1,181 @@
+---
+# Forza Motorsport (Xbox, 2005) — Redline Recompiled 0.3.0 built with Linux
+# Zig and played through GE-Proton. See group_vars/all/redline_recomp.yml and
+# docs/redline-recompiled.md.
+
+- name: Revert Redline Recompiled when requested
+  when: dg_redline_revert | bool
+  block:
+    - name: Remove the Redline launcher, desktop entry + install dir (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_redline_launcher }}"
+          - "{{ dg_redline_root }}"
+          - "{{ dg_desktop_render_dir }}/gaming-redline.desktop"
+    - name: Refresh host launchers after removing Redline
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      changed_when: true
+    - name: Report Redline reverted
+      ansible.builtin.debug:
+        msg: "Redline Recompiled removed. Your disc is untouched; hdd saves are kept."
+
+- name: Install Redline Recompiled
+  when: not (dg_redline_revert | bool)
+  block:
+    - name: Verify the Rev 1 Forza disc
+      ansible.builtin.stat:
+        path: "{{ dg_redline_iso }}"
+      register: _redline_iso
+
+    - name: Require the Rev 1 Forza image
+      ansible.builtin.assert:
+        that: _redline_iso.stat.exists | default(false)
+        fail_msg: "Missing {{ dg_redline_iso }}."
+        quiet: true
+
+    - name: Create the Redline directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_redline_root }}"
+        - "{{ dg_redline_root }}/tools"
+        - "{{ dg_redline_root }}/tools/zig-linux"
+        - "{{ dg_redline_archive | dirname }}"
+        - "{{ dg_redline_launcher | dirname }}"
+        - "{{ dg_desktop_render_dir }}"
+
+    - name: Stage the pinned Redline release
+      ansible.builtin.get_url:
+        url: "{{ dg_redline_asset_url }}"
+        dest: "{{ dg_redline_archive }}"
+        checksum: "sha256:{{ dg_redline_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Unpack the Redline launcher and sources
+      ansible.builtin.unarchive:
+        src: "{{ dg_redline_archive }}"
+        dest: "{{ dg_redline_root }}"
+        remote_src: true
+        creates: "{{ dg_redline_root }}/RedlineLauncher.exe"
+
+    - name: Stage Linux Zig 0.14.1
+      ansible.builtin.get_url:
+        url: "{{ dg_redline_zig_url }}"
+        dest: "{{ dg_redline_zig_archive }}"
+        checksum: "sha256:{{ dg_redline_zig_sha256 }}"
+        mode: "0644"
+
+    - name: Unpack Linux Zig
+      ansible.builtin.unarchive:
+        src: "{{ dg_redline_zig_archive }}"
+        dest: "{{ dg_redline_root }}/tools/zig-linux"
+        remote_src: true
+        extra_opts: [--strip-components=1]
+        creates: "{{ dg_redline_zig }}"
+
+    - name: Check for an existing Redline build
+      ansible.builtin.stat:
+        path: "{{ dg_redline_exe }}"
+      register: _redline_exe
+
+    - name: Deploy the Redline build script
+      ansible.builtin.template:
+        src: build.sh.j2
+        dest: "{{ dg_redline_root }}/build-linux.sh"
+        mode: "0755"
+
+    - name: Build Redline from the owned disc
+      when: not _redline_exe.stat.exists
+      ansible.builtin.command:
+        cmd: "{{ dg_in_box }} bash {{ dg_redline_root }}/build-linux.sh"
+      register: _redline_build
+      changed_when: true
+
+    - name: Seed the maximum 1080i / 2x render settings when absent
+      ansible.builtin.copy:
+        dest: "{{ dg_redline_root }}/build/recomp.ini"
+        content: "{{ dg_redline_recomp_ini }}"
+        mode: "0644"
+        force: false
+
+    - name: Ensure the Proton prefix exists
+      ansible.builtin.stat:
+        path: "{{ dg_redline_prefix }}/pfx/system.reg"
+      register: _redline_prefix
+
+    - name: Create the Proton prefix
+      when: not _redline_prefix.stat.exists
+      ansible.builtin.shell: |
+        set -eu
+        export STEAM_COMPAT_DATA_PATH="{{ dg_redline_prefix }}"
+        export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.steam/steam"
+        export WINEDEBUG=-all
+        "{{ dg_redline_proton }}" run cmd /c exit
+
+    - name: Install Microsoft's native D3DCompiler in the prefix
+      ansible.builtin.copy:
+        src: "{{ dg_redline_d3dcompiler }}"
+        dest: "{{ dg_redline_prefix }}/pfx/drive_c/windows/system32/d3dcompiler_47.dll"
+        remote_src: true
+        mode: "0644"
+
+    - name: Override Wine's d3dcompiler_47 with the native one
+      ansible.builtin.command:
+        argv:
+          - distrobox-enter
+          - -n
+          - "{{ dg_box_name }}"
+          - --
+          - env
+          - "WINEPREFIX={{ dg_redline_prefix }}/pfx"
+          - "WINEDEBUG=-all"
+          - wine
+          - reg
+          - add
+          - "HKCU\\Software\\Wine\\DllOverrides"
+          - /v
+          - d3dcompiler_47
+          - /d
+          - native
+          - /f
+      changed_when: false
+
+    - name: Deploy the Redline launcher
+      ansible.builtin.template:
+        src: redline.sh.j2
+        dest: "{{ dg_redline_launcher }}"
+        mode: "0755"
+
+    - name: Render the Redline desktop entry
+      ansible.builtin.template:
+        src: redline.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-redline.desktop"
+        mode: "0644"
+
+    - name: Install the desktop file into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _redline_host_launchers
+      changed_when: >-
+        'installed ' in _redline_host_launchers.stdout or
+        'removed stale ' in _redline_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Redline Recompiled 0.3.0 at {{ dg_redline_root }}; launcher
+          {{ dg_redline_launcher }}. Built with Linux Zig from the owned Rev 1
+          disc; runs through GE-Proton. Saves are in
+          {{ dg_redline_root }}/hdd/Partition1/UDATA.
+          Revert: -e dg_redline_revert=true.

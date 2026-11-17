@@ -1,0 +1,61 @@
+#!/bin/bash
+# Build Redline Recompiled from the owned Rev 1 disc with Linux Zig.
+# Runs inside the gaming box. The launcher package is already unpacked.
+set -euo pipefail
+
+ROOT="{{ dg_redline_root }}"
+ISO="{{ dg_redline_iso }}"
+ZIG="{{ dg_redline_zig }}"
+cd "$ROOT"
+
+if [ ! -f "$ROOT/build/redline.exe" ]; then
+  if [ ! -f game/Forza.xbe ]; then
+    mkdir -p game
+    extract-xiso -x -d game "$ISO"
+  fi
+  if [ "$(sha1sum game/Forza.xbe | cut -d' ' -f1)" != "{{ dg_redline_xbe_sha1 }}" ]; then
+    echo "Forza.xbe is not the Rev 1 program" >&2
+    exit 1
+  fi
+
+  python3 -m venv .venv
+  .venv/bin/pip install -q capstone==5.0.7
+
+  # The source's build.py expects Windows python/zig. Two small Linux-host
+  # adjustments: the Zig path from the environment, and a job count without
+  # ctypes.windll.
+  python3 - <<'PY'
+import pathlib
+p = pathlib.Path("tools/build.py")
+t = p.read_text()
+old = 'ZIG = os.path.join(ROOT, "build", "tools", "zig-0.14.1", "zig-x86_64-windows-0.14.1", "zig.exe")'
+new = 'ZIG = os.environ.get("REDLINE_ZIG") or os.path.join(ROOT, "build", "tools", "zig-0.14.1", "zig-x86_64-windows-0.14.1", "zig.exe")'
+if old in t:
+    t = t.replace(old, new, 1)
+old = '''    m = Mem(length=ctypes.sizeof(Mem))
+    ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(m))
+    return max(1, min(os.cpu_count() or 1, int(m.avail / 1.5e9)))'''
+new = '''    if not hasattr(ctypes, "windll"):
+        return max(1, min(os.cpu_count() or 1, 16))
+    m = Mem(length=ctypes.sizeof(Mem))
+    ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(m))
+    return max(1, min(os.cpu_count() or 1, int(m.avail / 1.5e9)))'''
+if old in t:
+    t = t.replace(old, new, 1)
+p.write_text(t)
+PY
+
+  export REDLINE_ZIG="$ZIG"
+  [ -f analysis/Forza.functions.json ] || .venv/bin/python tools/find_functions.py game/Forza.xbe analysis/Forza.functions.json
+  [ -s build/oovpa/D3D8.i ] || .venv/bin/python tools/oovpa_pp.py
+  [ -f analysis/Forza.symbols.json ] || .venv/bin/python tools/find_symbols.py game/Forza.xbe build/oovpa third_party/nxdk/xboxkrnl.exe.def analysis/Forza.symbols.json
+  [ -f recomp/funcs_000.c ] || .venv/bin/python tools/lift.py game/Forza.xbe analysis/Forza.functions.json recomp --hle runtime/hle.txt --symbols analysis/Forza.symbols.json
+  .venv/bin/python tools/build.py --zig
+fi
+
+test -x build/redline.exe
+test -f build/forza_recomp.dll
+test -f build/SDL3.dll
+test -f build/amd_fidelityfx_loader_dx12.dll
+test -f build/nvngx_dlss.dll
+date -u +%Y-%m-%dT%H:%M:%SZ > "$ROOT/.dg-built"

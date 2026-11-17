@@ -222,6 +222,8 @@ dg_save_sets:
   - { name: sorr-save,            src: "tools/sorr/game/savegame" }
   - { name: midnightclub-la,      src: "tools/midnightclubla/midnightclubla/user-data" }
   - { name: roadrash64-recomp,    src: ".config/RoadRash64Recompiled" }
+  - { name: redline-recomp,      src: ["tools/redline/hdd/Partition1/UDATA",
+                                        "file:tools/redline/build/recomp.ini"] }  # Forza saves + Redline settings
   - { name: rea-sega,            src: ["file:.local/share/rea-sega/launcher.cfg",
                                         ".local/share/rea-sega/settings",
                                         ".local/share/rea-sega/runtimes"] }  # library/BIOS config, per-game settings and saves (Wine prefix excluded)
