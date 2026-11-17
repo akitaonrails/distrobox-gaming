@@ -79,6 +79,20 @@
         mode: "0644"
         force: false
 
+    # v0.2.0 checks the board files by size and SHA-1 and keeps only the
+    # matching ones; the NAS BIOS tree has the System 246 BIOS and the four
+    # Chihiro media-board files under different names.
+    - name: Add the System 246 and Chihiro board files
+      ansible.builtin.shell: |
+        set -eu
+        {{ dg_in_box }} sh -c '
+          cd "{{ dg_wangan_app_dir }}"
+          export WANGAN_DATA="{{ dg_wangan_data }}"
+          ./wangan-launcher --add-files "{{ dg_wangan_bios_dir }}"
+        '
+      register: _wangan_board_files
+      changed_when: "'added' in _wangan_board_files.stdout"
+
     - name: Deploy the Wangan launcher
       ansible.builtin.template:
         src: wangan.sh.j2

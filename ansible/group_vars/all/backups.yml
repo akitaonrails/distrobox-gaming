@@ -222,6 +222,12 @@ dg_save_sets:
   - { name: sorr-save,            src: "tools/sorr/game/savegame" }
   - { name: midnightclub-la,      src: "tools/midnightclubla/midnightclubla/user-data" }
   - { name: roadrash64-recomp,    src: ".config/RoadRash64Recompiled" }
+  - { name: rea-sega,            src: ["file:.local/share/rea-sega/launcher.cfg",
+                                        ".local/share/rea-sega/settings",
+                                        ".local/share/rea-sega/runtimes"] }  # library/BIOS config, per-game settings and saves (Wine prefix excluded)
+  - { name: rea-nintendo,        src: ["file:.local/share/rea-nintendo/launcher.cfg",
+                                        ".local/share/rea-nintendo/settings",
+                                        ".local/share/rea-nintendo/runtimes"] }  # library config, per-game settings and saves (Wine prefix excluded)
   - { name: mvc2,                src: ["file:tools/mvc2/mvc2.cfg",
                                         "file:tools/mvc2/eeprom.bin",
                                         "file:tools/mvc2/backup.bin",

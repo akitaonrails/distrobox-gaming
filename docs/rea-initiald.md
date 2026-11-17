@@ -13,8 +13,8 @@ cd ansible && ansible-playbook install-rea-initiald.yml   # or site.yml --tags r
 
 | | |
 |---|---|
-| Release | `v0.1.0` Linux tarball (602 MB, SHA256-pinned), staged in `ROMS_FINAL/PC/releases/` |
-| Install | `tools/rea-initiald/InitialDLauncher-0.1.0-linux-x86_64/` (hub, components, patches, scripts) |
+| Release | `v0.1.1` Linux tarball (602 MB, SHA256-pinned), staged in `ROMS_FINAL/PC/releases/` |
+| Install | `tools/rea-initiald/InitialDLauncher-0.1.1-linux-x86_64/` (hub, components, patches, scripts) |
 | Data | `~/.local/share/rea-initiald/` — `launcher.cfg`, `settings/<game>.cfg`, `runtimes/<game>` saves, WAL prefix |
 | Launcher | `bin/initiald`; entry **Initial D · Arcade Series** |
 

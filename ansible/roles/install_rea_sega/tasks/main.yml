@@ -1,0 +1,115 @@
+---
+# Sega arcade racing series — REA launcher v0.2.0. See
+# group_vars/all/rea_sega.yml and docs/rea-sega.md.
+
+- name: Revert the Sega racing launcher when requested
+  when: dg_sega_revert | bool
+  block:
+    - name: Remove the Sega racing launcher, desktop entry + install dir (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_sega_launcher }}"
+          - "{{ dg_sega_root }}"
+          - "{{ dg_desktop_render_dir }}/gaming-sega-racing.desktop"
+    - name: Refresh host launchers after removing Sega racing
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      changed_when: true
+    - name: Report Sega racing reverted
+      ansible.builtin.debug:
+        msg: "Sega racing launcher removed. Your dumps and BIOS are untouched; the data folder with saves is kept."
+
+- name: Install the Sega racing launcher
+  when: not (dg_sega_revert | bool)
+  block:
+    - name: Verify the Sega game library and BIOS folder
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop: "{{ [dg_sega_library, dg_sega_bios] }}"
+      register: _sega_sources
+
+    - name: Require the Sega library and BIOS folder
+      ansible.builtin.assert:
+        that: item.stat.exists | default(false)
+        fail_msg: "Missing {{ item.item }}."
+        quiet: true
+      loop: "{{ _sega_sources.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Install the Sega racing dependencies in the box
+      ansible.builtin.command:
+        argv: "{{ ['distrobox-enter', '-n', dg_box_name, '--', 'sudo', 'pacman', '-S', '--noconfirm', '--needed'] + dg_sega_packages }}"
+      register: _sega_pkgs
+      changed_when: "'nothing to do' not in _sega_pkgs.stdout"
+
+    - name: Create the Sega racing directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_sega_root }}"
+        - "{{ dg_sega_data }}"
+        - "{{ dg_sega_archive | dirname }}"
+        - "{{ dg_sega_launcher | dirname }}"
+        - "{{ dg_desktop_render_dir }}"
+
+    - name: Stage the pinned Sega racing launcher
+      ansible.builtin.get_url:
+        url: "{{ dg_sega_asset_url }}"
+        dest: "{{ dg_sega_archive }}"
+        checksum: "sha256:{{ dg_sega_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Unpack the Sega racing launcher
+      ansible.builtin.unarchive:
+        src: "{{ dg_sega_archive }}"
+        dest: "{{ dg_sega_root }}"
+        remote_src: true
+        creates: "{{ dg_sega_app_dir }}/sega-launcher"
+
+    - name: Seed the game library and BIOS config when absent
+      ansible.builtin.copy:
+        dest: "{{ dg_sega_data }}/launcher.cfg"
+        content: |
+          # Written by the launcher.
+          library = {{ dg_sega_library }}
+          bios = {{ dg_sega_bios }}
+        mode: "0644"
+        force: false
+
+    - name: Deploy the Sega racing launcher
+      ansible.builtin.template:
+        src: sega-racing.sh.j2
+        dest: "{{ dg_sega_launcher }}"
+        mode: "0755"
+
+    - name: Render the Sega racing desktop entry
+      ansible.builtin.template:
+        src: sega-racing.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-sega-racing.desktop"
+        mode: "0644"
+
+    - name: Install the desktop file into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _sega_host_launchers
+      changed_when: >-
+        'installed ' in _sega_host_launchers.stdout or
+        'removed stale ' in _sega_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Sega racing launcher {{ dg_sega_version }} at {{ dg_sega_app_dir }};
+          launcher {{ dg_sega_launcher }}. Library {{ dg_sega_library }}, BIOS
+          {{ dg_sega_bios }}. Revert: -e dg_sega_revert=true.

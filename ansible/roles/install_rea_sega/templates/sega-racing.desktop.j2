@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Sega Arcade Racing · REA (on {{ dg_box_name }})
+Exec={{ dg_sega_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=OutRun 2 SP, SEGA Rally 3, SEGA Racing Classic, Daytona and F355 — wheels/pads, FSR, 4K.
+Categories=Game;
+Keywords=sega;racing;outrun;daytona;rally;arcade;wheel;
+StartupWMClass=rea-sega;
+{{ ogm_metadata('gaming-sega-racing') }}

@@ -1,0 +1,7 @@
+---
+- name: Install the Nintendo arcade launcher
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_rea_nintendo

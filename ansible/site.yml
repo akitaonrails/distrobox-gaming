@@ -97,6 +97,8 @@
     - { role: install_rea_initiald,            tags: [rea_initiald, never] }
     - { role: install_rea_wangan,              tags: [rea_wangan, never] }
     - { role: install_mvc2_naomi_dc,           tags: [mvc2, never] }
+    - { role: install_rea_sega,                tags: [rea_sega, never] }
+    - { role: install_rea_nintendo,            tags: [rea_nintendo, never] }
     - { role: install_vf1_recomp,              tags: [vf1_recomp, never] }
     - { role: install_vf3_recomp,              tags: [vf3_recomp, never] }
     - { role: install_smas,                    tags: [smas, never] }

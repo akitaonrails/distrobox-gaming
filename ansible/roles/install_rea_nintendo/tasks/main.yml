@@ -1,0 +1,110 @@
+---
+# Nintendo arcade series — REA launcher v0.1.0. See
+# group_vars/all/rea_nintendo.yml and docs/rea-nintendo.md.
+
+- name: Revert the Nintendo arcade launcher when requested
+  when: dg_nintendo_revert | bool
+  block:
+    - name: Remove the Nintendo launcher, desktop entry + install dir (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_nintendo_launcher }}"
+          - "{{ dg_nintendo_root }}"
+          - "{{ dg_desktop_render_dir }}/gaming-nintendo-arcade.desktop"
+    - name: Refresh host launchers after removing Nintendo arcade
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      changed_when: true
+    - name: Report Nintendo arcade reverted
+      ansible.builtin.debug:
+        msg: "Nintendo arcade launcher removed. Your dumps are untouched; the data folder with saves is kept."
+
+- name: Install the Nintendo arcade launcher
+  when: not (dg_nintendo_revert | bool)
+  block:
+    - name: Verify the Nintendo game library
+      ansible.builtin.stat:
+        path: "{{ dg_nintendo_library }}"
+      register: _nintendo_library
+
+    - name: Require the Nintendo library
+      ansible.builtin.assert:
+        that: _nintendo_library.stat.exists | default(false)
+        fail_msg: "Missing {{ dg_nintendo_library }}."
+        quiet: true
+
+    - name: Install the Nintendo dependencies in the box
+      ansible.builtin.command:
+        argv: "{{ ['distrobox-enter', '-n', dg_box_name, '--', 'sudo', 'pacman', '-S', '--noconfirm', '--needed'] + dg_nintendo_packages }}"
+      register: _nintendo_pkgs
+      changed_when: "'nothing to do' not in _nintendo_pkgs.stdout"
+
+    - name: Create the Nintendo directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_nintendo_root }}"
+        - "{{ dg_nintendo_data }}"
+        - "{{ dg_nintendo_archive | dirname }}"
+        - "{{ dg_nintendo_launcher | dirname }}"
+        - "{{ dg_desktop_render_dir }}"
+
+    - name: Stage the pinned Nintendo launcher
+      ansible.builtin.get_url:
+        url: "{{ dg_nintendo_asset_url }}"
+        dest: "{{ dg_nintendo_archive }}"
+        checksum: "sha256:{{ dg_nintendo_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Unpack the Nintendo launcher
+      ansible.builtin.unarchive:
+        src: "{{ dg_nintendo_archive }}"
+        dest: "{{ dg_nintendo_root }}"
+        remote_src: true
+        creates: "{{ dg_nintendo_app_dir }}/nintendo-launcher"
+
+    - name: Seed the game library config when absent
+      ansible.builtin.copy:
+        dest: "{{ dg_nintendo_data }}/launcher.cfg"
+        content: |
+          # Written by the launcher.
+          library = {{ dg_nintendo_library }}
+        mode: "0644"
+        force: false
+
+    - name: Deploy the Nintendo launcher
+      ansible.builtin.template:
+        src: nintendo-arcade.sh.j2
+        dest: "{{ dg_nintendo_launcher }}"
+        mode: "0755"
+
+    - name: Render the Nintendo desktop entry
+      ansible.builtin.template:
+        src: nintendo-arcade.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-nintendo-arcade.desktop"
+        mode: "0644"
+
+    - name: Install the desktop file into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _nintendo_host_launchers
+      changed_when: >-
+        'installed ' in _nintendo_host_launchers.stdout or
+        'removed stale ' in _nintendo_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Nintendo arcade launcher {{ dg_nintendo_version }} at
+          {{ dg_nintendo_app_dir }}; launcher {{ dg_nintendo_launcher }}.
+          Library {{ dg_nintendo_library }}. Revert: -e dg_nintendo_revert=true.

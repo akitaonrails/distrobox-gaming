@@ -248,6 +248,16 @@ dg_ogm_games:
     category: recomp
     sgdb_query: "Road Rash 64"
     github: "{{ dg_rr64_repo }}"
+  - desktop_id: gaming-sega-racing
+    id: sega-racing
+    category: arcade
+    sgdb_query: "OutRun 2 SP"
+    github: "{{ dg_sega_repo }}"
+  - desktop_id: gaming-nintendo-arcade
+    id: nintendo-arcade
+    category: arcade
+    sgdb_query: "Mario Kart Arcade GP"
+    github: "{{ dg_nintendo_repo }}"
   - desktop_id: gaming-mvc2
     id: mvc2
     category: recomp

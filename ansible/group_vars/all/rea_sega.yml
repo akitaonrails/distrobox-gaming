@@ -1,0 +1,25 @@
+---
+# Sega arcade racing series — REA launcher (lindbergh-loader + windowsarcadeloader
+# + Flycast for F355; no TeknoParrot). Linux tarball, no game data included.
+# OutRun 2 SP SDX, SEGA Rally 3, SEGA Racing Classic and Daytona play; F355
+# starts; the two Chihiro games are still being brought up.
+dg_sega_repo: akitaonrails/rea-teknoparrot-sega-series
+dg_sega_version: 0.2.0
+dg_sega_asset_name: "SegaRacingLauncher-{{ dg_sega_version }}-linux-x86_64.tar.gz"
+dg_sega_asset_url: "https://github.com/{{ dg_sega_repo }}/releases/download/v{{ dg_sega_version }}/{{ dg_sega_asset_name }}"
+dg_sega_asset_sha256: 752b442548843546a571b18fd529f8485575b31cdaabd50f81dff5e557863e17
+dg_sega_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_sega_asset_name }}"
+
+dg_sega_root: "{{ dg_box_home }}/tools/rea-sega"
+dg_sega_app_dir: "{{ dg_sega_root }}/SegaRacingLauncher-{{ dg_sega_version }}-linux-x86_64"
+dg_sega_launcher: "{{ dg_box_home }}/bin/sega-racing"
+dg_sega_data: "{{ dg_box_home }}/.local/share/rea-sega"
+dg_sega_main_output: DP-1
+dg_sega_revert: false
+
+dg_sega_library: "{{ dg_emudeck_root }}/roms_rare/TeknoParrot"
+dg_sega_bios: "{{ dg_emudeck_root }}/Emulation/bios"
+dg_sega_packages:
+  - gamescope
+  - bubblewrap
+  - cabextract

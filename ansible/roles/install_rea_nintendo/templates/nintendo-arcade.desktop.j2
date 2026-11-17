@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Nintendo Arcade · REA (on {{ dg_box_name }})
+Exec={{ dg_nintendo_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=F-Zero AX Monster Ride, Mario Kart Arcade GP 2/DX and Luigi's Mansion — pad/lightgun, up to 4K.
+Categories=Game;
+Keywords=nintendo;f-zero;mario kart;luigi;arcade;triforce;namco;
+StartupWMClass=rea-nintendo;
+{{ ogm_metadata('gaming-nintendo-arcade') }}

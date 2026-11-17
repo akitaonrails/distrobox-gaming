@@ -12,8 +12,8 @@ cd ansible && ansible-playbook install-rea-wangan.yml   # or site.yml --tags rea
 
 | | |
 |---|---|
-| Release | `v0.1.0` Linux tarball (198 MB, SHA256-pinned), staged in `ROMS_FINAL/PC/releases/` |
-| Install | `tools/rea-wangan/WanganLauncher-0.1.0-linux-x86_64/` |
+| Release | `v0.2.0` Linux tarball (271 MB, SHA256-pinned), staged in `ROMS_FINAL/PC/releases/` |
+| Install | `tools/rea-wangan/WanganLauncher-0.2.0-linux-x86_64/` |
 | Data | `~/.local/share/rea-wangan/` — `launcher.cfg`, `settings/`, `runtimes/` saves, Wine prefix |
 | Library | `EmuDeck/roms_rare/TeknoParrot` |
 | Launcher | `bin/wangan`; entry **Wangan Midnight · Arcade Series** |
@@ -29,11 +29,12 @@ cd ansible && ansible-playbook install-rea-wangan.yml   # or site.yml --tags rea
 | Maximum Tune 6 | Namco ES3B | ready |
 | Maximum Tune 6R | Namco ES3B | ready |
 | Maximum Tune 6RR | Namco ES3B | ready |
-| Maximum Tune 3.07 Rev B | Sega Chihiro | **blocked** in this release |
-| Wangan Midnight R | Namco System 246 | **blocked** in this release |
+| Maximum Tune 3.07 Rev B | Sega Chihiro | board files accepted; Chihiro still freezes under Wine in most runs |
+| Wangan Midnight R | Namco System 246 | ready (pcsx2x6, board files added) |
 
-`wangan-launcher --list` reports the first seven `ready` and the last two
-`not yet`, with the same reasons shown in the app.
+`wangan-launcher --list` reports Wangan R and the seven ES3B/N2 games ready;
+Maximum Tune has its board files in but stays `not yet` because the Chihiro
+emulator freezes under Wine in most runs.
 
 ## The supplied BIOS files
 
@@ -42,14 +43,14 @@ The NAS has:
 - `EmuDeck/Emulation/bios/sys246/r27v1602f.7d` — System 246 PS2 BIOS
 - `EmuDeck/Emulation/bios/chihiro/` — a Chihiro/Xbox BIOS set
 
-The **current launcher release does not read either one**. Its catalogue
-hard-codes the Chihiro and System 246 routes as blocked, and the launcher's
-library scanner only accepts `library` folders; there is no BIOS path option
-or BIOS-consuming loader in v0.1.0. The Chihiro set it documents also expects
-four media-board files (`ic10_g24lc64.bin`, `pc20_g24lc64.bin`,
-`ic11_24lc024.bin`, `fpr21042_m29w160et.bin`), which are not the files in this
-folder. Wiring the paths into `launcher.cfg` would have no effect, so they are
-recorded in `group_vars/all/rea_wangan.yml` for the eventual loaders instead.
+v0.2.0 accepts them through **Settings → Add files** (or
+`--add-files <folder>`): it scans the folder and keeps files whose size and
+SHA-1 match MAME's records, under any name. The role runs that against
+`EmuDeck/Emulation/bios`; it added `r27v1602f.7d` and the four Chihiro files
+(`ic10_g24lc64.bin`, `pc20_g24lc64.bin`, `ic11_24lc024.bin`,
+`fpr21042_m29w160et.bin`), so Wangan R is ready. Maximum Tune finds its board
+files too, but the bundled Chihiro emulator freezes under Wine in most runs and
+the launcher keeps Play off.
 
 ## Settings and controls
 
@@ -61,8 +62,9 @@ takes a minute.
 
 ## Verified here
 
-- `wangan-launcher --list` finds all nine dumps; seven are `ready`, the two
-  BIOS-dependent titles are listed as blocked.
+- `wangan-launcher --list` finds all nine dumps: the seven ES3B/N2 games and
+  Wangan Midnight R are ready; Maximum Tune is `not yet` because Chihiro freezes
+  under Wine.
 - The hub opens fullscreen at 3840×2160 (window class `rea-wangan`).
 - A race was not driven during this install; the launcher's own release notes
   record MT3/3DX+/MT5/5DX+/6/6R/6RR played on Linux. Wheel feedback, audio and
