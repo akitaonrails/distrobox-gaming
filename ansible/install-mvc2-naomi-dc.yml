@@ -1,0 +1,7 @@
+---
+- name: Install Marvel vs. Capcom 2 (NAOMI/Dreamcast decomp port)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_mvc2_naomi_dc

@@ -248,6 +248,11 @@ dg_ogm_games:
     category: recomp
     sgdb_query: "Road Rash 64"
     github: "{{ dg_rr64_repo }}"
+  - desktop_id: gaming-mvc2
+    id: mvc2
+    category: recomp
+    sgdb_query: "Marvel vs. Capcom 2"
+    github: "{{ dg_mvc2_repo }}"
   - desktop_id: gaming-wangan
     id: wangan
     category: arcade

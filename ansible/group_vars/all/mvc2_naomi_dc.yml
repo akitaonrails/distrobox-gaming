@@ -1,0 +1,47 @@
+---
+# Marvel vs. Capcom 2 — gibletto/mvc2-naomi-dc, a byte-matching decompilation of
+# the NAOMI arcade cartridge and the Dreamcast disc, with a PC port. Upstream
+# ships a 32-bit Windows build (MSYS2 mingw32, SDL3); there is no Linux build,
+# so the role runs that build under Wine with SDL_GPU/Vulkan. The port reads
+# the owned MAME mvsc2 set for the arcade game and the owned USA CHD for the
+# Dreamcast version; no game data is included.
+# See docs/mvc2-naomi-dc.md.
+
+dg_mvc2_repo: gibletto/mvc2-naomi-dc
+dg_mvc2_version: 0.4.1
+dg_mvc2_asset_name: "mvc2-windows-{{ dg_mvc2_version }}.zip"
+dg_mvc2_asset_url: "https://github.com/{{ dg_mvc2_repo }}/releases/download/{{ dg_mvc2_version }}/{{ dg_mvc2_asset_name }}"
+dg_mvc2_asset_sha256: dd00f27953168f73c68f08119ad8ed95d6bef2cee1a1086255800a42bd726a06
+dg_mvc2_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_mvc2_asset_name }}"
+
+dg_mvc2_root: "{{ dg_box_home }}/tools/mvc2"
+dg_mvc2_release_dir: "{{ dg_mvc2_root }}/releases/{{ dg_mvc2_version }}"
+dg_mvc2_exe: "{{ dg_mvc2_root }}/mvc2.exe"
+dg_mvc2_launcher: "{{ dg_box_home }}/bin/mvc2"
+dg_mvc2_prefix: "{{ dg_box_home }}/wineprefixes/mvc2"
+dg_mvc2_main_output: DP-1
+dg_mvc2_revert: false
+
+# MAME mvsc2 (export cartridge, M1 board). The port's first start unpacks it
+# into roms/mvsc2/mvsc2.bin (136 MB).
+dg_mvc2_arcade_rom: "{{ dg_roms_final_root }}/arcade/mame-naomi/mvsc2.zip"
+dg_mvc2_arcade_sha256: 4ae500bbc8ca578f600100f9ad9edd967e4b22c71f04a59302517170dccdc14c
+
+# The Dreamcast USA disc (CHD), for the DC version (F9 switches).
+dg_mvc2_dc_disc: "{{ dg_roms_final_root }}/dreamcast/Marvel vs. Capcom 2 (USA)_dup1.chd"
+dg_mvc2_dc_sha256: 9d7d3f0c193143addc48f52a0e50981a175a32a067ac3060b70015603dac7969
+
+# Seeded once; the in-game settings/F1 menu rewrites the file.
+dg_mvc2_config: |
+  # mvc2.cfg
+  arcade = roms/mvsc2
+  dc = disc
+  mode = arcade
+  scale = aspect
+  fullscreen = yes
+  renderer = gpu
+  render = exact
+  resolution = auto
+  aa = 4
+  sprites = sharp
+  unlock = all

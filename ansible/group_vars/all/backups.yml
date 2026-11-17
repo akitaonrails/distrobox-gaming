@@ -222,6 +222,10 @@ dg_save_sets:
   - { name: sorr-save,            src: "tools/sorr/game/savegame" }
   - { name: midnightclub-la,      src: "tools/midnightclubla/midnightclubla/user-data" }
   - { name: roadrash64-recomp,    src: ".config/RoadRash64Recompiled" }
+  - { name: mvc2,                src: ["file:tools/mvc2/mvc2.cfg",
+                                        "file:tools/mvc2/eeprom.bin",
+                                        "file:tools/mvc2/backup.bin",
+                                        "file:tools/mvc2/vmu_save_A1.bin"] }  # settings, NAOMI EEPROM/bookkeeping and Dreamcast VMU
   - { name: rea-wangan,          src: ["file:.local/share/rea-wangan/launcher.cfg",
                                         ".local/share/rea-wangan/settings",
                                         ".local/share/rea-wangan/runtimes"] }  # library config, per-game settings and saves (Wine prefix excluded)

@@ -1,0 +1,12 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Marvel vs. Capcom 2 · NAOMI/Dreamcast (on {{ dg_box_name }})
+Exec={{ dg_mvc2_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Marvel vs. Capcom 2 decompilation port — arcade NAOMI and Dreamcast, 4K GPU, under Wine.
+Categories=Game;
+Keywords=marvel;capcom;mvc2;naomi;dreamcast;fighter;arcade;
+StartupWMClass=mvc2.exe;
+{{ ogm_metadata('gaming-mvc2') }}

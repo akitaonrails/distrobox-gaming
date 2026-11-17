@@ -1,0 +1,158 @@
+---
+# Marvel vs. Capcom 2 — gibletto/mvc2-naomi-dc Windows port under Wine.
+# See group_vars/all/mvc2_naomi_dc.yml and docs/mvc2-naomi-dc.md.
+
+- name: Revert Marvel vs. Capcom 2 when requested
+  when: dg_mvc2_revert | bool
+  block:
+    - name: Remove the MVC2 launcher, desktop entry + install dir (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_mvc2_launcher }}"
+          - "{{ dg_mvc2_root }}"
+          - "{{ dg_desktop_render_dir }}/gaming-mvc2.desktop"
+    - name: Refresh host launchers after removing MVC2
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      changed_when: true
+    - name: Report MVC2 reverted
+      ansible.builtin.debug:
+        msg: "Marvel vs. Capcom 2 removed. Your ROMs/discs are untouched; saves in {{ dg_mvc2_root }} are kept."
+
+- name: Install Marvel vs. Capcom 2
+  when: not (dg_mvc2_revert | bool)
+  block:
+    - name: Verify the owned MVC2 arcade set and Dreamcast disc
+      ansible.builtin.stat:
+        path: "{{ item.path }}"
+        checksum_algorithm: sha256
+      loop:
+        - { path: "{{ dg_mvc2_arcade_rom }}", sha: "{{ dg_mvc2_arcade_sha256 }}" }
+        - { path: "{{ dg_mvc2_dc_disc }}", sha: "{{ dg_mvc2_dc_sha256 }}" }
+      register: _mvc2_sources
+
+    - name: Require the expected MVC2 dumps
+      ansible.builtin.assert:
+        that: item.stat.checksum | default('') == item.item.sha
+        fail_msg: >-
+          Expected {{ item.item.path }} (sha256 {{ item.item.sha }}). The port
+          needs the MAME mvsc2 set and/or the USA Dreamcast CHD.
+        quiet: true
+      loop: "{{ _mvc2_sources.results }}"
+      loop_control:
+        label: "{{ item.item.path }}"
+
+    - name: Create the MVC2 directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_mvc2_root }}"
+        - "{{ dg_mvc2_release_dir }}"
+        - "{{ dg_mvc2_root }}/roms/mvsc2"
+        - "{{ dg_mvc2_root }}/disc"
+        - "{{ dg_mvc2_archive | dirname }}"
+        - "{{ dg_mvc2_launcher | dirname }}"
+        - "{{ dg_desktop_render_dir }}"
+
+    - name: Stage the pinned MVC2 Windows build
+      ansible.builtin.get_url:
+        url: "{{ dg_mvc2_asset_url }}"
+        dest: "{{ dg_mvc2_archive }}"
+        checksum: "sha256:{{ dg_mvc2_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Unpack the MVC2 Windows build
+      ansible.builtin.unarchive:
+        src: "{{ dg_mvc2_archive }}"
+        dest: "{{ dg_mvc2_release_dir }}"
+        remote_src: true
+        creates: "{{ dg_mvc2_release_dir }}/mvc2-windows-{{ dg_mvc2_version }}/mvc2.exe"
+
+    - name: Install the MVC2 programs and the SDL3 runtime
+      ansible.builtin.copy:
+        src: "{{ dg_mvc2_release_dir }}/mvc2-windows-{{ dg_mvc2_version }}/{{ item }}"
+        dest: "{{ dg_mvc2_root }}/{{ item }}"
+        remote_src: true
+        mode: "0755"
+      loop:
+        - mvc2.exe
+        - mvc2dc.exe
+        - SDL3.dll
+        - PLAYING.md
+        - NOTICE.md
+        - LICENSE.txt
+
+    - name: Link the owned arcade set where the port unpacks it
+      ansible.builtin.file:
+        path: "{{ dg_mvc2_root }}/roms/mvsc2/mvsc2.zip"
+        src: "{{ dg_mvc2_arcade_rom }}"
+        state: link
+        force: true
+
+    - name: Link the owned Dreamcast disc where the port unpacks it
+      ansible.builtin.file:
+        path: "{{ dg_mvc2_root }}/disc/Marvel vs. Capcom 2 (USA).chd"
+        src: "{{ dg_mvc2_dc_disc }}"
+        state: link
+        force: true
+
+    - name: Check the MVC2 Wine prefix
+      ansible.builtin.stat:
+        path: "{{ dg_mvc2_prefix }}/system.reg"
+      register: _mvc2_prefix
+
+    - name: Create the MVC2 Wine prefix
+      when: not _mvc2_prefix.stat.exists
+      ansible.builtin.shell: |
+        {{ dg_in_box }} sh -c '
+          export WINEPREFIX="{{ dg_mvc2_prefix }}" WINEARCH=win64 WINEDEBUG=-all
+          export WINEDLLOVERRIDES=winemenubuilder.exe=d
+          timeout 120 wineboot -u
+          timeout 60 wineserver -w
+        '
+      changed_when: true
+
+    - name: Seed the 4K GPU baseline when absent
+      ansible.builtin.copy:
+        dest: "{{ dg_mvc2_root }}/mvc2.cfg"
+        content: "{{ dg_mvc2_config }}"
+        mode: "0644"
+        force: false
+
+    - name: Deploy the MVC2 launcher
+      ansible.builtin.template:
+        src: mvc2.sh.j2
+        dest: "{{ dg_mvc2_launcher }}"
+        mode: "0755"
+
+    - name: Render the MVC2 desktop entry
+      ansible.builtin.template:
+        src: mvc2.desktop.j2
+        dest: "{{ dg_desktop_render_dir }}/gaming-mvc2.desktop"
+        mode: "0644"
+
+    - name: Install the desktop file into the host applications dir
+      ansible.builtin.command:
+        cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+      environment:
+        DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+        DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+      register: _mvc2_host_launchers
+      changed_when: >-
+        'installed ' in _mvc2_host_launchers.stdout or
+        'removed stale ' in _mvc2_host_launchers.stdout
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Marvel vs. Capcom 2 {{ dg_mvc2_version }} at {{ dg_mvc2_root }};
+          launcher {{ dg_mvc2_launcher }}. Arcade ROM and Dreamcast disc are
+          linked read-only; saves/config in {{ dg_mvc2_root }}.
+          Revert: -e dg_mvc2_revert=true.
