@@ -222,6 +222,10 @@ dg_save_sets:
   - { name: sorr-save,            src: "tools/sorr/game/savegame" }
   - { name: midnightclub-la,      src: "tools/midnightclubla/midnightclubla/user-data" }
   - { name: roadrash64-recomp,    src: ".config/RoadRash64Recompiled" }
+  # Daytona USA 2 Web: the cabinet NVRAM/EEPROM in the browser profile. The
+  # rest of that profile is Chromium's own component cache, not save data.
+  - { name: daytona2-web,        src: [".local/share/daytona2-web/profile/Default/IndexedDB",
+                                        ".local/share/daytona2-web/profile/Default/Local Storage"] }
   - { name: redline-recomp,      src: ["tools/redline/hdd/Partition1/UDATA",
                                         "file:tools/redline/build/recomp.ini"] }  # Forza saves + Redline settings
   - { name: rea-sega,            src: ["file:.local/share/rea-sega/launcher.cfg",
