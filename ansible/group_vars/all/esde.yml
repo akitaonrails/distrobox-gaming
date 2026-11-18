@@ -200,8 +200,9 @@ dg_esde_systems:
     path: "{{ dg_emudeck_root }}/roms_rare/model3"
     extension: ".zip .ZIP"
     commands:
-      # Must be the dg wrapper: the AUR /usr/bin/supermodel drops its
-      # args, so a plain `supermodel %ROM%` never loads the ROM.
+      # Must be the dg wrapper: it cd's into the pinned release tree, pins
+      # OpenGL to the RTX 5090 and adds the 4K/quality flags. A bare
+      # `supermodel %ROM%` has no such tree and no renderer pin.
       - { label: "Supermodel (Standalone)", cmd: "{{ dg_box_home }}/bin/supermodel-launch %ROM%" }
     platform: arcade
     theme: model3

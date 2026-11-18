@@ -53,7 +53,9 @@ dg_save_sets:
   - { name: lichii-system-save,   src: "tools/lichii/profile/data/eden/nand/system/save" }
   - { name: cemu,                 src: ".local/share/Cemu" }
   - { name: shadps4-savedata,     src: ".local/share/shadPS4/home" }   # per-user <uid>/savedata lives under home/
-  - { name: supermodel-nvram,     src: ".supermodel/NVRAM" }
+  # Supermodel (Model 3) moved to the pinned release tree on 2026-11-18; the
+  # pre-0.4 ~/.supermodel NVRAM is migrated once into this location.
+  - { name: supermodel-nvram,     src: ["tools/supermodel/NVRAM", "tools/supermodel/Saves"] }
   - { name: dolphin-gba-saves,    src: ".local/share/dolphin-emu/GBA/Saves" }
   - { name: rpcs3-savedata,       src: ".config/rpcs3/dev_hdd0/savedata" }
   - { name: kytyps5-savedata,     src: "tools/kytyps5/user/_SaveData" }

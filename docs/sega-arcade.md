@@ -67,29 +67,29 @@ so MAME is the fallback.
 
 ## Sega Model 3 — Supermodel
 
-Installed from the AUR as `supermodel` (a maintained release snapshot;
-`supermodel-git` is orphaned, and `supermodel-bin` is an **unrelated AI
-tool** — don't "upgrade" to it). The package ships two binaries:
+Installed by the **`install_supermodel`** role from
+[trzy/Supermodel](https://github.com/trzy/Supermodel)'s pinned Linux release
+tarball — a self-contained tree at `{{ dg_box_home }}/tools/supermodel/`
+(binary + `Config/Games.xml`, `Music.xml`, `Assets/`, `NVRAM/`, `Saves/`).
+The AUR `supermodel` snapshot package is **removed**: it lagged upstream
+(`0.4_20261108_git_239a77b` vs `0.4-20261116-git-0b82a98`) and its
+`/usr/bin/supermodel` wrapper drops its arguments, so a frontend could never
+pass a ROM. Do not add `supermodel-git` (orphaned) or `supermodel-bin` (an
+unrelated AI tool). Full write-up: [supermodel.md](supermodel.md).
 
-- `/usr/bin/supermodel-binary` — the real emulator.
-- `/usr/bin/supermodel` — a packaging wrapper that is **unusable from a
-  frontend**: it drops its arguments (no ROM ever reaches the binary),
-  requires a ROMs dir behind a zenity error, and seeds
-  `~/.config/supermodel`, a path this build never reads.
+The release tree resolves its data relative to the working directory, so
+`supermodel-launch` (`{{ dg_box_home }}/bin/`, deployed by the role) `cd`s
+into the tree and passes the ROM through. ROM sets stay on the NAS:
+`Config/Supermodel.ini` sets `ROMDirectory={{ dg_supermodel_roms_dir }}` and
+`ROMs/` is a symlink to the same folder. The ES-DE `model3` entry launches the
+wrapper.
 
-The 0.3a binary resolves everything under **`~/.supermodel/`**
-(`Config/Games.xml`, `Config/Supermodel.ini`, `NVRAM/`, `Saves/`).
-Our `supermodel-launch` wrapper (deployed by `seed_configs` to
-`{{ dg_box_home }}/bin/`) seeds that layout from `/usr/share/supermodel`
-on first run, forces SDL onto XWayland (`WAYLAND_DISPLAY=''` — the
-native Wayland GL context fails with "OpenGL initialization failed"),
-and passes the ROM through. The ES-DE `model3` entry launches it.
-
-Managed render settings (`dg_supermodel_settings` →
-`~/.supermodel/Config/Supermodel.ini`, merged into the pre-staged file):
-4K exclusive fullscreen (`FullScreen=1`), true widescreen FOV + wide
-backgrounds (Model 3 has a real widescreen mode, unlike Model 2), New3D
-engine, quad rendering, force feedback.
+Managed INI keys (`dg_supermodel_settings` in `group_vars/all/supermodel.yml`):
+`ROMDirectory`, `FullScreen`, `XResolution/YResolution` (3840×2160), `Throttle`
+and the pad mappings. Render flags are on the wrapper's command line:
+`-wide-screen -wide-bg -new3d -vsync -ss=2 -upscalemode=3` — true 16:9 FOV
+with wide backgrounds (Model 3 has a real widescreen mode, unlike Model 2),
+the accurate 3D engine, 2×2 supersampling and the sharpest 2D-layer filter.
 
 **Renders directly on the RTX 5090 via XWayland — NOT gamescope**
 (changed 2026-07-29; see below). Supermodel only applies its 4K
@@ -120,20 +120,28 @@ vars keep any Vulkan off the iGPU. Supermodel is native (no wine), so the
 wrapper's EXIT trap tears down evsieve cleanly.
 
 **Always opens on the main horizontal monitor (DP-1), never the portrait
-DP-2.** SDL exclusive fullscreen targets the *focused* output; if focus
-is on the portrait DP-2 (`2160x3840`) the `3840x2160` mode-set fails with
-the same "no matching video modes" error. Before launching, the wrapper
-focuses `${DG_MAIN_OUTPUT:-DP-1}` via Hyprland IPC — the compositor
+DP-2.** SDL exclusive fullscreen needs a matching mode on the window's output.
+Since 2026-11-18 Xwayland's screen is the *union* of both outputs
+(6000×3840), so an SDL-centred window straddles them and the mode-set still
+fails with "no matching video modes" even with DP-1 focused. The wrapper
+therefore reads DP-1's offset from `xrandr` and passes
+`-window-pos=<x>,<y>`, pinning the video mode to that output, and before that
+focuses `${DG_MAIN_OUTPUT:-DP-1}` and re-asserts
+`xwayland:force_zero_scaling=true` through Hyprland's Lua IPC — the compositor
 socket is shared into the box, but `hyprctl` isn't installed there and
 `distrobox-host-exec hyprctl` fails (exit 127), so it talks to
-`$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket.sock`
-directly with `python3` (`dispatch focusmonitor`). Best-effort — a no-op
-off Hyprland.
+`$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket.sock` with
+`python3` (`eval hl.dispatch(hl.dsp.focus({ monitor = … }))` and
+`eval hl.config({ xwayland = { force_zero_scaling = true } })`; the legacy
+`[[BATCH]]dispatch focusmonitor` string is rejected by Hyprland ≥ 0.56).
+Best-effort — a no-op off Hyprland.
 
-Verified 2026-07-29: Scud Race boots and renders fullscreen at 4K on
-DP-1 (GL 4.5 core profile, `NVIDIA 610.57.04`) via the ES-DE command
-path, including the worst case of launching while the portrait DP-2 held
-focus (the wrapper self-corrects to DP-1).
+Verified 2026-07-29 (0.3a/AUR): Scud Race boots and renders fullscreen at 4K
+on DP-1 (GL 4.5 core profile, `NVIDIA 610.57.04`) via the ES-DE command path.
+Verified 2026-11-18 (pinned `0.4-20261116-git-0b82a98`): `daytona2.zip` opens
+from the NAS, `ROMDirectory`, `Supersampling=2`, `UpscaleMode=3` and the
+managed inputs are parsed, the renderer is the RTX 5090, and the fullscreen
+3840×2160 window lands on DP-1 with no mode error.
 
 Controls: Supermodel's `JOY1_BUTTONn` is 1-based over the SDL joystick
 button list, and on xpad-ordered pads (8BitDo dongle, Xbox) the
@@ -142,8 +150,8 @@ d-pad, gears 3/4 colliding with Back/Start. The managed
 `dg_supermodel_settings` fix this: Start=Start, Coin=Back,
 accel/brake=RT/LT, sequential shift on RB/LB (the 4-way shifter is
 keyboard-only to avoid the collision). Verify with
-`WAYLAND_DISPLAY= supermodel-binary -print-inputs`. Per-game overrides
-go in sections named after the ROM set (e.g. `[ daytona2 ]`).
+`WAYLAND_DISPLAY= $DG_SUPERMODEL_ROOT/supermodel -print-inputs` (or the same
+flag on `tools/supermodel/supermodel`). Per-game overrides go in sections named after the ROM set (e.g. `[ daytona2 ]`).
 
 **Exit chord**: `Select+Start` quits — the `supermodel-launch` wrapper
 runs an evsieve bridge (no grab) that injects Escape (Supermodel's

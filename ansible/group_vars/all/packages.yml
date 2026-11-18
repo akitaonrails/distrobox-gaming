@@ -73,10 +73,10 @@ dg_aur_packages:
   # - vita3k-bin
   - shadps4-bin
   - flycast-git
-  # Sega Model 3 arcade (roms_rare/model3). Plain `supermodel` is the
-  # maintained snapshot package; supermodel-git is orphaned, and
-  # supermodel-bin is an unrelated AI tool — do not "upgrade" to it.
-  - supermodel
+  # Sega Model 3 arcade: Supermodel is NOT a package here any more. The AUR
+  # `supermodel` snapshot lags upstream, so install_supermodel owns the pinned
+  # release tree (tools/supermodel) and its own runtime deps. Do not add
+  # `supermodel`, `supermodel-git` or `supermodel-bin` (an unrelated AI tool).
   - emulationstation-de
   # ROM / patch tools (moved off the host — no desktop use case there)
   - 3dsconv

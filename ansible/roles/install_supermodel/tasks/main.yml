@@ -1,0 +1,252 @@
+---
+# Supermodel (Sega Model 3) — the pinned upstream Linux release tree, replacing
+# the AUR snapshot package. See group_vars/all/supermodel.yml, docs/supermodel.md
+# and docs/sega-arcade.md. ROM sets stay on the NAS (roms_rare/model3).
+
+- name: Revert Supermodel when requested
+  when: dg_supermodel_revert | bool
+  block:
+    - name: Remove the Supermodel launcher + install tree (registered saves kept)
+      ansible.builtin.include_role:
+        name: revert_guard
+      vars:
+        revert_paths:
+          - "{{ dg_supermodel_launcher }}"
+          - "{{ dg_supermodel_root }}"
+    - name: Report Supermodel reverted
+      ansible.builtin.debug:
+        msg: >-
+          Supermodel removed. Your ROM sets are untouched; NVRAM and save
+          states are kept. The ES-DE "Supermodel (Standalone)" entry stays
+          configured and reports the missing install when launched.
+
+- name: Install Supermodel
+  when: not (dg_supermodel_revert | bool)
+  block:
+    - name: Verify the NAS Model 3 ROM directory
+      ansible.builtin.stat:
+        path: "{{ dg_supermodel_roms_dir }}"
+      register: _sm_roms
+
+    - name: Require the NAS Model 3 ROM directory
+      ansible.builtin.assert:
+        that: _sm_roms.stat.exists | default(false) and _sm_roms.stat.isdir | default(false)
+        fail_msg: >-
+          Missing {{ dg_supermodel_roms_dir }}. Mount the NAS export that
+          holds your Model 3 MAME sets, or override dg_supermodel_roms_dir.
+        quiet: true
+
+    - name: Install the Supermodel runtime dependencies in the box
+      ansible.builtin.command:
+        argv: "{{ ['distrobox-enter', '-n', dg_box_name, '--', 'sudo', 'pacman', '-S', '--noconfirm', '--needed'] + dg_supermodel_packages }}"
+      register: _sm_pkgs
+      changed_when: "'nothing to do' not in _sm_pkgs.stdout"
+
+    - name: Create the Supermodel directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dg_supermodel_root }}"
+        - "{{ dg_supermodel_root }}/Config"
+        - "{{ dg_supermodel_nvram_dir }}"
+        - "{{ dg_supermodel_saves_dir }}"
+        - "{{ dg_supermodel_root }}/Screenshots"
+        - "{{ dg_supermodel_archive | dirname }}"
+        - "{{ dg_supermodel_launcher | dirname }}"
+
+    - name: Stage the pinned Supermodel Linux release
+      ansible.builtin.get_url:
+        url: "{{ dg_supermodel_asset_url }}"
+        dest: "{{ dg_supermodel_archive }}"
+        checksum: "sha256:{{ dg_supermodel_asset_sha256 }}"
+        mode: "0644"
+
+    - name: Read the installed Supermodel version
+      ansible.builtin.slurp:
+        src: "{{ dg_supermodel_root }}/.dg-version"
+      register: _sm_installed
+      failed_when: false
+
+    - name: Unpack the pinned Supermodel tree
+      # Overwrites the binary, Config/Games.xml, Music.xml and Assets/; NVRAM
+      # and Saves are not in the archive, so the player's data survives.
+      when: (_sm_installed.content | default('') | b64decode | trim) != dg_supermodel_version
+      ansible.builtin.unarchive:
+        src: "{{ dg_supermodel_archive }}"
+        dest: "{{ dg_supermodel_root }}"
+        remote_src: true
+        extra_opts: [--strip-components=1]
+
+    - name: Record the installed Supermodel version
+      ansible.builtin.copy:
+        dest: "{{ dg_supermodel_root }}/.dg-version"
+        content: "{{ dg_supermodel_version }}\n"
+        mode: "0644"
+
+    - name: Check the unpacked release
+      ansible.builtin.stat:
+        path: "{{ dg_supermodel_root }}/{{ item }}"
+      loop:
+        - supermodel
+        - Config/Games.xml
+        - Config/Music.xml
+      register: _sm_files
+      failed_when: false
+
+    - name: Require the unpacked release
+      ansible.builtin.assert:
+        that: item.stat.exists | default(false)
+        fail_msg: "{{ item.item }} is missing after unpacking {{ dg_supermodel_asset_name }}."
+        quiet: true
+      loop: "{{ _sm_files.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Check the Supermodel binary
+      ansible.builtin.command:
+        argv: [distrobox-enter, -n, "{{ dg_box_name }}", --, "{{ dg_supermodel_binary }}", -version]
+      register: _sm_version
+      changed_when: false
+
+    - name: Report the Supermodel build in use
+      ansible.builtin.debug:
+        msg: "{{ _sm_version.stdout_lines | default([dg_supermodel_version]) | first }}"
+
+    - name: Check the release's ROMs directory
+      ansible.builtin.stat:
+        path: "{{ dg_supermodel_root }}/ROMs"
+      register: _sm_roms_dir
+
+    - name: Look for ROM sets left inside the install tree
+      when: _sm_roms_dir.stat.isdir | default(false)
+      ansible.builtin.find:
+        paths: "{{ dg_supermodel_root }}/ROMs"
+        excludes: ["DIR.txt"]
+      register: _sm_roms_local
+
+    - name: Drop the release's empty ROMs placeholder
+      when:
+        - _sm_roms_dir.stat.isdir | default(false)
+        - _sm_roms_local.files | default([]) | length == 0
+      ansible.builtin.file:
+        path: "{{ dg_supermodel_root }}/ROMs"
+        state: absent
+
+    - name: Point ROMs/ at the NAS Model 3 sets
+      # The binary resolves its default ROMDirectory ('ROMs', relative to the
+      # working directory) here, and the managed ini names the same NAS path for
+      # the settings GUI. Nothing is copied: the tree only holds the link.
+      when: _sm_roms_local.files | default([]) | length == 0
+      ansible.builtin.file:
+        src: "{{ dg_supermodel_roms_dir }}"
+        dest: "{{ dg_supermodel_root }}/ROMs"
+        state: link
+        force: true
+
+    - name: Warn that the install tree holds its own ROM sets
+      when: _sm_roms_local.files | default([]) | length > 0
+      ansible.builtin.debug:
+        msg: >-
+          {{ dg_supermodel_root }}/ROMs contains ROM sets, so it was left alone
+          instead of being linked to {{ dg_supermodel_roms_dir }}. Remove them
+          to use the NAS folder.
+
+    - name: Set the managed Supermodel INI keys
+      community.general.ini_file:
+        path: "{{ dg_supermodel_ini }}"
+        section: " Global "
+        option: "{{ item.option }}"
+        value: "{{ item.value }}"
+        backup: true
+        mode: "0644"
+      loop: "{{ dg_supermodel_settings }}"
+      loop_control:
+        label: "[ Global ] {{ item.option }}"
+
+    - name: Check the Supermodel NVRAM migration marker
+      ansible.builtin.stat:
+        path: "{{ dg_supermodel_nvram_dir }}/.dg-migrated-legacy"
+      register: _sm_migrated
+
+    - name: Check the pre-0.4 ~/.supermodel NVRAM
+      ansible.builtin.stat:
+        path: "{{ dg_supermodel_legacy_root }}/NVRAM"
+      register: _sm_legacy
+      when: not _sm_migrated.stat.exists
+
+    - name: Migrate NVRAM from the pre-0.4 ~/.supermodel layout
+      # The AUR build kept per-game Test/Service-menu settings there (Free
+      # Play, difficulty). --ignore-existing keeps anything already in the new
+      # tree, so this runs once and never clobbers later changes.
+      when:
+        - not _sm_migrated.stat.exists
+        - _sm_legacy.stat.exists | default(false)
+        - _sm_legacy.stat.isdir | default(false)
+      ansible.builtin.shell: >-
+        rsync -a --info=NAME --ignore-existing
+        '{{ dg_supermodel_legacy_root }}/NVRAM/'
+        '{{ dg_supermodel_nvram_dir }}/'
+        && touch '{{ dg_supermodel_nvram_dir }}/.dg-migrated-legacy'
+      register: _sm_migrate
+      changed_when: "'.nv' in _sm_migrate.stdout"
+
+    - name: Check the Supermodel NVRAM seed marker
+      ansible.builtin.stat:
+        path: "{{ dg_supermodel_nvram_dir }}/.dg-nvram-seeded"
+      register: _sm_seeded
+
+    - name: Check the pre-configured Supermodel NVRAM pack exists
+      ansible.builtin.stat:
+        path: "{{ dg_supermodel_nvram_source }}"
+      register: _sm_seed_source
+      when: not _sm_seeded.stat.exists
+
+    - name: Seed pre-configured Supermodel NVRAM (Free Play / easy)
+      # One-time overlay of the per-game Test-menu settings; existing NVRAM is
+      # backed up (nothing destroyed) and the marker stops reruns from
+      # clobbering settings the player later changes in-game.
+      ansible.builtin.shell: >-
+        rsync -a --info=NAME
+        --backup --backup-dir='{{ dg_supermodel_nvram_dir }}.pre-easymode'
+        '{{ dg_supermodel_nvram_source }}/'
+        '{{ dg_supermodel_nvram_dir }}/'
+        && touch '{{ dg_supermodel_nvram_dir }}/.dg-nvram-seeded'
+      register: _sm_seed
+      changed_when: "'.nv' in _sm_seed.stdout"
+      when:
+        - not _sm_seeded.stat.exists
+        - _sm_seed_source.stat.exists | default(false)
+        - _sm_seed_source.stat.isdir | default(false)
+
+    - name: Deploy the Supermodel ES-DE launcher
+      ansible.builtin.copy:
+        src: supermodel-launch
+        dest: "{{ dg_supermodel_launcher }}"
+        mode: "0755"
+        backup: true
+
+    - name: Check for the superseded AUR package
+      ansible.builtin.command:
+        argv: [distrobox-enter, -n, "{{ dg_box_name }}", --, pacman, -Qq, supermodel]
+      register: _sm_aur
+      changed_when: false
+      failed_when: false
+
+    - name: Remove the superseded AUR supermodel package
+      # Its build lagged upstream and its /usr/bin/supermodel wrapper drops
+      # arguments; the pinned tree in tools/supermodel replaces it. The runtime
+      # deps were just installed explicitly, so -Rns keeps them.
+      when: _sm_aur.rc == 0
+      ansible.builtin.command:
+        argv: [distrobox-enter, -n, "{{ dg_box_name }}", --, sudo, pacman, -Rns, --noconfirm, supermodel]
+
+    - name: Report
+      ansible.builtin.debug:
+        msg: >-
+          Supermodel {{ dg_supermodel_version }} at {{ dg_supermodel_root }},
+          ROM sets from {{ dg_supermodel_roms_dir }} (ROMs/ symlink +
+          ROMDirectory), NVRAM in {{ dg_supermodel_nvram_dir }}, save states in
+          {{ dg_supermodel_saves_dir }}. ES-DE launches
+          {{ dg_supermodel_launcher }}. Revert: -e dg_supermodel_revert=true.

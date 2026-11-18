@@ -1,0 +1,67 @@
+---
+# Supermodel — Sega Model 3 (and, in 0.4, Model 1/2) arcade emulator.
+#
+# Installed from trzy/Supermodel's pinned Linux release tarball, which is a
+# complete tree (binary + Config/Games.xml + Assets + ROMs/NVRAM/Saves). It
+# replaces the AUR `supermodel` snapshot package, whose build lagged behind
+# upstream (0.4_20261108_git_239a77b there vs 0.4-20261116-git-0b82a98 here).
+# ROM sets stay on the NAS: nothing is copied into the box.
+#
+# See docs/supermodel.md and docs/sega-arcade.md.
+
+dg_supermodel_repo: trzy/Supermodel
+dg_supermodel_version: 0.4-20261116-git-0b82a98
+dg_supermodel_asset_name: "supermodel-{{ dg_supermodel_version }}-linux.tar.gz"
+dg_supermodel_asset_url: "https://github.com/{{ dg_supermodel_repo }}/releases/download/v{{ dg_supermodel_version }}/{{ dg_supermodel_asset_name }}"
+dg_supermodel_asset_sha256: 0078fa95b4b2f155a21d26683aad96ec32eaf34b6fff13c4d719c9b20f8a561e
+dg_supermodel_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_supermodel_asset_name }}"
+
+# The release's tree, owned by this repo (re-unpacked when the pin changes).
+dg_supermodel_root: "{{ dg_box_home }}/tools/supermodel"
+dg_supermodel_binary: "{{ dg_supermodel_root }}/supermodel"
+dg_supermodel_launcher: "{{ dg_box_home }}/bin/supermodel-launch"
+dg_supermodel_ini: "{{ dg_supermodel_root }}/Config/Supermodel.ini"
+dg_supermodel_nvram_dir: "{{ dg_supermodel_root }}/NVRAM"
+dg_supermodel_saves_dir: "{{ dg_supermodel_root }}/Saves"
+dg_supermodel_roms_dir: "{{ dg_emudeck_root }}/roms_rare/model3"
+# The pre-0.4 layout under ~/.supermodel (AUR package + seed_configs). Its
+# NVRAM holds the Test-menu tweaks from before this install; migrated once.
+dg_supermodel_legacy_root: "{{ dg_box_home }}/.supermodel"
+# Pre-configured per-game NVRAM (<romset>.nv) — Test/Service-menu settings
+# (Free Play etc.). Seeded once, existing NVRAM backed up.
+dg_supermodel_nvram_source: "{{ dg_external_games_root }}/Supermodel3/NVRAM"
+dg_supermodel_main_output: DP-1
+dg_supermodel_revert: false
+
+# Runtime dependencies of the release binary (ldd: SDL2, SDL2_net, GL, GLU).
+dg_supermodel_packages:
+  - sdl2
+  - sdl2_net
+  - glu
+
+# Managed [ Global ] keys in the release tree's Config/Supermodel.ini. Only
+# keys this build documents/generates are set here; the render flags live on
+# the wrapper's command line (see supermodel-launch) where they are guaranteed.
+dg_supermodel_settings:
+  # The settings GUI looks for ROM sets here; the ROM sets stay on the NAS.
+  - { option: ROMDirectory, value: "{{ dg_supermodel_roms_dir }}" }
+  - { option: FullScreen, value: "1" }
+  - { option: XResolution, value: "3840" }
+  - { option: YResolution, value: "2160" }
+  - { option: Throttle, value: "1" }
+  # Input fixes for xpad-ordered pads (8BitDo dongle, Xbox): JOY1_BUTTONn is
+  # 1-based over SDL's joystick button list (1=A 2=B 3=X 4=Y 5=LB 6=RB 7=Back
+  # 8=Start 9=Guide 10=L3 11=R3). The built-in defaults put Start on Guide,
+  # Coin on L3, accel/brake on the d-pad and gears 3/4 on Back/Start.
+  - { option: InputStart1, value: '"KEY_1,JOY1_BUTTON8"' }
+  - { option: InputCoin1, value: '"KEY_3,JOY1_BUTTON7"' }
+  - { option: InputAccelerator, value: '"KEY_UP,JOY1_RZAXIS_POS"' }
+  - { option: InputBrake, value: '"KEY_DOWN,JOY1_ZAXIS_POS"' }
+  - { option: InputGearShiftUp, value: '"KEY_Y,JOY1_BUTTON6"' }
+  - { option: InputGearShiftDown, value: '"KEY_H,JOY1_BUTTON5"' }
+  # Keyboard-only: the JOY defaults for the 4-way shifter collided with
+  # Back/Start (coin/start) on these pads.
+  - { option: InputGearShift1, value: '"KEY_Q"' }
+  - { option: InputGearShift2, value: '"KEY_W"' }
+  - { option: InputGearShift3, value: '"KEY_E"' }
+  - { option: InputGearShift4, value: '"KEY_R"' }

@@ -1,0 +1,7 @@
+---
+- name: Install Supermodel (Sega Model 3)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_supermodel

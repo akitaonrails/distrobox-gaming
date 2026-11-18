@@ -7,7 +7,7 @@
 #
 #   Reverse direction (NAS -> box) is the one-time seed, gated by a marker
 #   so it never clobbers later in-game changes:
-#     - Model 3: roles/seed_configs/tasks/supermodel.yml
+#     - Model 3: roles/install_supermodel (NVRAM migrated + seeded once)
 #     - Model 2: roles/install_m2emulator (NVDATA seed)
 #
 # Run this AFTER tuning games in their Test menus (see

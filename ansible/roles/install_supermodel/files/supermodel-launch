@@ -1,0 +1,132 @@
+#!/usr/bin/env sh
+set -eu
+
+# ES-DE launcher for Supermodel (Sega Model 3/2/1).
+#
+# Runs the pinned upstream release tree at $HOME/tools/supermodel (installed by
+# the install_supermodel role), not the AUR package: that snapshot lagged
+# upstream and its /usr/bin/supermodel wrapper drops its arguments, hard-fails
+# behind a zenity prompt, and seeds ~/.config/supermodel — a path this build
+# never reads. The release tree carries its own Config/Games.xml, Assets/,
+# NVRAM/ and Saves/, and the role pins Config/Supermodel.ini's ROMDirectory at
+# the NAS model3 folder.
+#
+# Managed by ansible/roles/install_supermodel/files/supermodel-launch.
+
+sm_root="${DG_SUPERMODEL_ROOT:-$HOME/tools/supermodel}"
+sm_bin="$sm_root/supermodel"
+
+if [ ! -x "$sm_bin" ]; then
+  echo "ERROR: Supermodel is not installed at $sm_bin." >&2
+  echo "Run: cd <repo>/ansible && ansible-playbook install-supermodel.yml" >&2
+  exit 1
+fi
+mkdir -p "$sm_root/NVRAM" "$sm_root/Saves" "$sm_root/Screenshots"
+
+# Select+Start on any connected pad quits (Supermodel's UIExit is Escape):
+# evsieve watches the pads (no grab) and injects Esc on a virtual keyboard
+# when the chord fires. Same pattern as azahar-launch.
+evsieve_pid=""
+if command -v evsieve >/dev/null 2>&1 && [ -w /dev/uinput ]; then
+  pad_inputs=""
+  for l in /dev/input/by-id/*8BitDo*Ultimate*event-joystick \
+           /dev/input/by-id/*Xbox*event-joystick \
+           /dev/input/by-id/*XBOX*event-joystick; do
+    [ -e "$l" ] && pad_inputs="$pad_inputs --input $(readlink -f "$l")"
+  done
+  if [ -n "$pad_inputs" ]; then
+    # shellcheck disable=SC2086
+    evsieve $pad_inputs \
+      --hook btn:select btn:start send-key=key:esc \
+      --output name="supermodel-exit-keys" key:esc >/dev/null 2>&1 &
+    evsieve_pid=$!
+  fi
+fi
+cleanup() { [ -n "$evsieve_pid" ] && kill "$evsieve_pid" 2>/dev/null || true; }
+trap cleanup EXIT INT TERM HUP
+
+# Two Hyprland tweaks before launch, via the shared socket (hyprctl isn't
+# installed in the box and distrobox-host-exec can't reach it — exit 127 — so
+# talk to the socket with python3; best-effort, harmless off Hyprland):
+#
+#  1. Focus the main HORIZONTAL monitor. SDL exclusive fullscreen targets the
+#     focused output; if focus is on the portrait DP-2 (2160x3840) the
+#     3840x2160 mode-set fails ("no matching video modes").
+#  2. Re-assert xwayland:force_zero_scaling=true (omarchy's default). CMR2's
+#     host wrapper flips it false and only restores it via a hyprctl reload
+#     trap, which a force-kill/SIGKILL of that wrapper skips — leaving it
+#     off. With it off, Supermodel's native-4K exclusive fullscreen is
+#     treated as logical pixels and overflows the 1.5x-scaled panel (game
+#     visible but zoomed). Asserting it true here self-heals that leak.
+main_output="${DG_MAIN_OUTPUT:-DP-1}"
+if command -v python3 >/dev/null 2>&1 && [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+  python3 - "$main_output" <<'PY' >/dev/null 2>&1 || true
+import socket, os, sys
+sig = os.environ["HYPRLAND_INSTANCE_SIGNATURE"]; xdg = os.environ["XDG_RUNTIME_DIR"]
+sock = f"{xdg}/hypr/{sig}/.socket.sock"
+# Hyprland >= 0.56 maps raw IPC dispatch/keyword onto its Lua API, so the
+# legacy "[[BATCH]]dispatch focusmonitor ..." string is rejected — use eval.
+for msg in (
+    f'eval hl.dispatch(hl.dsp.focus({{ monitor = "{sys.argv[1]}" }}))',
+    "eval hl.config({ xwayland = { force_zero_scaling = true } })",
+):
+    try:
+        s = socket.socket(socket.AF_UNIX); s.connect(sock)
+        s.sendall(msg.encode()); s.recv(256); s.close()
+    except OSError:
+        pass
+PY
+fi
+
+# Render directly on the RTX 5090 via XWayland — NO gamescope.
+#
+# Supermodel only applies its 4K resolution in EXCLUSIVE fullscreen; its
+# windowed/borderless path ignores -res and opens a tiny 496x384 window.
+# Exclusive fullscreen needs a real video mode. SDL2 defaults to its
+# Wayland backend under Hyprland, which exposes NO modes — that is the
+# "Unable to enter fullscreen mode: Couldn't find any matching video
+# modes" error. Forcing SDL onto X11 (SDL_VIDEODRIVER=x11) makes it use
+# XWayland, which DOES expose the monitor's real 3840x2160@240 mode.
+#
+# Since 2026-11-18 that alone is not enough: Xwayland's screen is the union
+# of both outputs (6000x3840), so an SDL_WINDOWPOS_CENTERED window straddles
+# them and SDL still reports "Couldn't find any matching video modes". Pass
+# -window-pos with the main output's Xwayland offset (read from xrandr) so the
+# window is created on, and fullscreens, that one output.
+#
+# We do NOT use gamescope: 3.16.25 regressed badly here. The 7950X3D's
+# integrated Radeon now exposes a RADV Vulkan device, and gamescope grabs
+# that iGPU to composite (epilepsy-flicker, game never advances) or, when
+# pointed at NVIDIA, hits "vkGetPhysicalDeviceFormatProperties2 returned
+# zero modifiers" DRM bugs (black screen). Native XWayland has none of it.
+sm_pos=""
+if command -v xrandr >/dev/null 2>&1; then
+  sm_pos=$(xrandr --query 2>/dev/null | awk -v out="$main_output" '
+    $1 == out && $2 == "connected" {
+      match($0, /\+[0-9]+\+[0-9]+/)
+      if (RSTART > 0) { s = substr($0, RSTART + 1, RLENGTH - 1); split(s, a, "+"); printf "%s,%s", a[1], a[2]; exit }
+    }')
+fi
+
+# Hard-pin the RTX 5090 so GL/Vulkan never fall back to the iGPU:
+#   __GLX_VENDOR_LIBRARY_NAME=nvidia + __NV_PRIME_RENDER_OFFLOAD=1 route
+#   Supermodel's OpenGL (GLX) to the NVIDIA driver; the VK_* vars keep any
+#   Vulkan off the iGPU too.
+# NOT exec: runs as a child so the EXIT trap still stops evsieve.
+sm_env="SDL_VIDEODRIVER=x11 __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia __VK_LAYER_NV_optimus=NVIDIA_only"
+if [ -f /usr/share/vulkan/icd.d/nvidia_icd.json ]; then
+  sm_env="$sm_env VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/nvidia_icd.json"
+fi
+# 4K exclusive fullscreen, native 16:9 FOV with wide backgrounds, the new 3D
+# engine and vsync — the flags this build documents (the INI keys for these are
+# absent from its generated default file). Quality at the ceiling for this GPU:
+# -ss=2 renders 2x2 supersampled (drop to -ss=1 if a game ever dips in frame
+# rate) and -upscalemode=3 is the sharpest of the four 2D-layer filters
+# (0 none / 1 biquintic / 2 bilinear default / 3 bicubic).
+sm_args="-res=3840,2160 -fullscreen -wide-screen -wide-bg -new3d -vsync -ss=2 -upscalemode=3"
+if [ -n "$sm_pos" ]; then
+  sm_args="$sm_args -window-pos=$sm_pos"
+fi
+# shellcheck disable=SC2086
+cd "$sm_root"
+env -u PYTHONHOME -u PYTHONPATH $sm_env "$sm_bin" "$@" $sm_args
