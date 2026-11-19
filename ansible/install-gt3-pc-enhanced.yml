@@ -1,7 +1,7 @@
 ---
-- name: Install GT3 Revisited
+- name: Install GT3 PC Enhanced
   hosts: localhost
   connection: local
   gather_facts: true
   roles:
-    - install_gt3_revisited
+    - install_gt3_pc_enhanced

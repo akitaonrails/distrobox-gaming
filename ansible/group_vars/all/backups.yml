@@ -97,7 +97,7 @@ dg_save_sets:
   - { name: gravity-rush,        src: ".local/share/gravity-rush" }
   - { name: doa2u-re,            src: ["tools/doa2u/current/private/play-disc/.recomp-storage/partition1",
                                         "tools/doa2u/current/private/play-disc/.recomp-storage/save-undo-v1"] }  # Xbox UDATA/TDATA saves + undo state (current -> release)
-  - { name: gt3-revisited,        src: ".local/share/GT3Revisited" }
+  - { name: gt3-pc-enhanced,      src: "tools/gt3-pc-enhanced/bin/saves" }
   - { name: gt2-pc-port,          src: ".local/share/gt2-pc" }
   - { name: unleashed-recomp,     src: ".config/UnleashedRecomp" }
   - { name: perfectdark,          src: ".local/share/perfectdark" }

@@ -1,0 +1,69 @@
+---
+# Gran Turismo 3: A-Spec — PC Enhanced (Silentwarior112/GT3-PC-ENHANCED).
+# A decompilation of the PS2 GT3 engine ported to Windows (C++, D3D11), run
+# here under Wine + DXVK on the RTX. Unlike GT3 Revisited (a from-scratch
+# engine reimplementation), this is the game's real decompiled code, so it is
+# behaviour-accurate and ships a working hash-keyed HD texture replacement
+# system (F10 dump / replace). The two exes are 32-bit (PE32 i386): DXVK and
+# the native D3D shader compiler install into BOTH Wine architectures, and the
+# 32-bit binaries load d3d11 from syswow64.
+#
+# One-time setup: the upstream GUI launcher installs (unpacks) the game files
+# from the user's own GT3 disc image — there is no headless install CLI — into
+# bin/data_US next to the exes. `gt3-pc-enhanced build` opens that launcher;
+# the role maps drive D: to the PS2 ROM folder so "Install game files..." finds
+# the disc. Nothing from the disc is redistributed. See docs/gt3-pc-enhanced.md.
+
+dg_gt3pc_repo: Silentwarior112/GT3-PC-ENHANCED
+dg_gt3pc_version: "1.0.1"
+dg_gt3pc_asset_name: "GT3-PC-ENHANCED_{{ dg_gt3pc_version }}.zip"
+dg_gt3pc_asset_url: "https://github.com/{{ dg_gt3pc_repo }}/releases/download/{{ dg_gt3pc_version }}/{{ dg_gt3pc_asset_name }}"
+dg_gt3pc_asset_sha256: 2dadc4abad5b902aee7dc309e38c3f1b575714d6ac9f037f0d8fcdaef9d791f9
+dg_gt3pc_archive: "{{ dg_roms_final_root }}/PC/releases/GT3-PC-ENHANCED-{{ dg_gt3pc_version }}.zip"
+
+# The same owned NTSC-U disc GT3 Revisited reads (SCUS-97102 / PBPX-95503).
+# Only needed for the one-time "Install game files" step. Override per host.
+dg_gt3pc_disc: "{{ dg_rom_heavy_root }}/ps2/Gran Turismo 3 - A-spec (USA) (v1.10)/Gran Turismo 3 - A-spec (USA) (v1.10).iso"
+# The folder the disc lives in — mapped to Wine drive D: so the launcher's
+# file picker reaches the image without browsing the deep Z: path.
+dg_gt3pc_disc_dir: "{{ dg_gt3pc_disc | dirname }}"
+
+dg_gt3pc_root: "{{ dg_box_home }}/tools/gt3-pc-enhanced"
+dg_gt3pc_bin: "{{ dg_gt3pc_root }}/bin"
+dg_gt3pc_prefix: "{{ dg_gt3pc_root }}/prefix"
+dg_gt3pc_staging: "{{ dg_gt3pc_root }}/staging"
+# Game files unpacked from the disc by the GUI launcher (US build), and the
+# in-tree save directory. Both survive upgrades; saves are backed up.
+dg_gt3pc_data: "{{ dg_gt3pc_bin }}/data_US"
+dg_gt3pc_saves: "{{ dg_gt3pc_bin }}/saves"
+dg_gt3pc_launcher: "{{ dg_box_home }}/bin/gt3-pc-enhanced"
+
+# Only the runtime files ship; the release also carries 135 MB of .pdb/.ilk
+# debug artifacts we leave out.
+dg_gt3pc_runtime_files: [gt3launcher.exe, gt3pc.exe, SDL3.dll]
+
+dg_gt3pc_display_width: 3840
+dg_gt3pc_display_height: 2160
+
+# mozilla/fxc2 vendors Microsoft's real d3dcompiler_47.dll (x64 + x86). The
+# 32-bit game resolves D3DCOMPILER_47 from syswow64; Wine's built-in
+# vkd3d-shader HLSL path is unreliable on these shaders. Same pinned DLLs the
+# PGR1/NightFire recomp roles use.
+dg_gt3pc_compiler_dlls:
+  - name: x64
+    url: https://raw.githubusercontent.com/mozilla/fxc2/807d26f4e4e9e9d0d0d6c1e05493b28eafb20e91/dll/d3dcompiler_47.dll
+    sha256: 4432bbd1a390874f3f0a503d45cc48d346abc3a8c0213c289f4b615bf0ee84f3
+    dest: "{{ dg_gt3pc_prefix }}/drive_c/windows/system32/d3dcompiler_47.dll"
+  - name: x86
+    url: https://raw.githubusercontent.com/mozilla/fxc2/807d26f4e4e9e9d0d0d6c1e05493b28eafb20e91/dll/d3dcompiler_47_32.dll
+    sha256: 2ad0d4987fc4624566b190e747c9d95038443956ed816abfd1e2d389b5ec0851
+    dest: "{{ dg_gt3pc_prefix }}/drive_c/windows/syswow64/d3dcompiler_47.dll"
+
+# DXVK translates the game's D3D11 to Vulkan on the RTX (WineD3D is far too
+# slow). Pinned to the same 3.1.1 build the recomp roles share.
+dg_gt3pc_dxvk_version: 3.1.1
+dg_gt3pc_dxvk_url: "https://github.com/doitsujin/dxvk/releases/download/v{{ dg_gt3pc_dxvk_version }}/dxvk-{{ dg_gt3pc_dxvk_version }}.tar.gz"
+dg_gt3pc_dxvk_archive: "{{ dg_roms_final_root }}/PC/releases/dxvk-{{ dg_gt3pc_dxvk_version }}-gt3pc.tar.gz"
+dg_gt3pc_dxvk_sha256: 40565b4a724aadc4433fa4e010b4b23916d9b1f1baeee64e17186db94f54e608
+dg_gt3pc_dxvk_extract: "{{ dg_gt3pc_root }}/runtime"
+dg_gt3pc_dxvk_dlls: [d3d9, d3d10core, d3d11, dxgi]

@@ -1,0 +1,45 @@
+#!/usr/bin/env sh
+# Gran Turismo 3: A-Spec — PC Enhanced, run in the gaming distrobox under
+# Wine + DXVK on the RTX. `build` (or no installed game files) opens the
+# upstream GUI launcher so the user installs the game files from their disc
+# (drive D: is pre-mapped to the disc folder); otherwise the game plays at 4K.
+set -eu
+
+if [ ! -e /.dockerenv ]; then
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+
+bin="{{ dg_gt3pc_bin }}"
+prefix="{{ dg_gt3pc_prefix }}"
+data="{{ dg_gt3pc_data }}"
+
+if [ "${1:-}" = status ]; then
+  test -d "$data"
+  printf 'GT3 PC Enhanced ready: %s\n' "$data"
+  exit 0
+fi
+
+export WINEPREFIX="$prefix" WINEDEBUG="${WINEDEBUG:--all}"
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-{{ dg_nvidia_icd }}}"
+export __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+unset PYTHONHOME PYTHONPATH
+
+cleanup() {
+  WINEPREFIX="$prefix" wineserver -k >/dev/null 2>&1 || true
+}
+trap cleanup 0
+trap 'exit 143' TERM
+trap 'exit 130' INT
+trap 'exit 129' HUP
+
+cd "$bin"
+# No game files yet (or explicit "build"): open the upstream GUI launcher so
+# the user picks "Install game files..." and the GT3 disc (drive D:). It unpacks
+# into data_US beside the exes. Otherwise play the installed game, presented at
+# 4K on the RTX (the prefix carries DXVK + native d3dcompiler, GLX-pinned).
+if [ "${1:-}" = build ] || [ ! -d "$data" ]; then
+  exec wine gt3launcher.exe
+else
+  exec wine gt3pc.exe --data data_US "$@"
+fi

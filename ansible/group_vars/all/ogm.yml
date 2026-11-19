@@ -441,11 +441,11 @@ dg_ogm_games:
     category: wine
     sgdb_query: "Gran Turismo 2"
     github: "{{ dg_gt2_repo }}"
-  - desktop_id: gaming-gt3-revisited
-    id: gt3-revisited
+  - desktop_id: gaming-gt3-pc-enhanced
+    id: gt3-pc-enhanced
     category: port
     sgdb_query: "Gran Turismo 3 A-Spec"
-    github: "{{ dg_gt3r_repo }}"
+    github: "{{ dg_gt3pc_repo }}"
   - desktop_id: gaming-doa2u-re
     id: doa2u-re
     category: port

@@ -65,7 +65,7 @@ PIN_VARS = {
     "gaming-fzero": ("fzero_recomp.yml", "dg_fzero_release_tag"),
     "gaming-gravity-rush": ("gravity_rush.yml", "dg_gr_version"),
     "gaming-gt2-pc-port": ("gt2_pc.yml", "dg_gt2_version"),
-    "gaming-gt3-revisited": ("gt3_revisited.yml", "dg_gt3r_version"),
+    "gaming-gt3-pc-enhanced": ("gt3_pc_enhanced.yml", "dg_gt3pc_version"),
     "gaming-kyty-gt7": ("kyty_gt7.yml", "dg_kyty_version"),
     "gaming-sotc-pc": ("sotc_pc.yml", "dg_sotc_version"),
     "gaming-sotn-recomp": ("sotn_recomp.yml", "dg_sotn_recomp_version"),
