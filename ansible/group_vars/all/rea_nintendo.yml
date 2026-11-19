@@ -4,10 +4,10 @@
 # data included. F-Zero AX, Mario Kart GP 2, Mario Kart DX and Luigi's Mansion
 # are found and start.
 dg_nintendo_repo: akitaonrails/rea-teknoparrot-nintendo-series
-dg_nintendo_version: 0.1.0
+dg_nintendo_version: 0.3.0
 dg_nintendo_asset_name: "NintendoArcadeLauncher-{{ dg_nintendo_version }}-linux-x86_64.tar.gz"
 dg_nintendo_asset_url: "https://github.com/{{ dg_nintendo_repo }}/releases/download/v{{ dg_nintendo_version }}/{{ dg_nintendo_asset_name }}"
-dg_nintendo_asset_sha256: f76205ea0ab938880c1b99f961ec26302a55a50744703d0a1028e04ede46b001
+dg_nintendo_asset_sha256: 67dcf844433eb9bddd098abd343b7221a757a63bfeded165fb5a427c37c42db7
 dg_nintendo_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_nintendo_asset_name }}"
 
 dg_nintendo_root: "{{ dg_box_home }}/tools/rea-nintendo"

@@ -1,5 +1,5 @@
 ---
-# Nintendo arcade series — REA launcher v0.1.0. See
+# Nintendo arcade series — REA launcher v0.3.0. See
 # group_vars/all/rea_nintendo.yml and docs/rea-nintendo.md.
 
 - name: Revert the Nintendo arcade launcher when requested
