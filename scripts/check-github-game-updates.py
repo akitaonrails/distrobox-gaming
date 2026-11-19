@@ -112,6 +112,7 @@ PIN_VARS = {
     "scud-race": ("scud_race.yml", "dg_scud_version"),
     "nightfire-recomp": ("nightfire_recomp.yml", "dg_nf_version"),
     "rea-colin-mcrae": ("rea_colin_mcrae.yml", "dg_cmr1_version"),
+    "rea-colin-mcrae-recomp": ("rea_colin_mcrae_recomp.yml", "dg_cmr_recomp_version"),
     "virtua-fighter": ("model1.yml", "dg_model1_vf_version"),
     "virtua-racing": ("model1.yml", "dg_model1_vr_version"),
 }

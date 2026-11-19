@@ -1,0 +1,215 @@
+---
+# akitaonrails/rea-colin-mcrae-recomp ships a data-free native Linux AppImage
+# (Rust + SDL3 + wgpu). This role stages the pinned AppImage, runs the one-time
+# asset import and executable-backed table extractions from the owned 1998 EU
+# PC install, links or unpacks the optional sibling HD art pack when available,
+# seeds Ultra 4K + gamepad settings in save/modern.cfg, and publishes a
+# re-entrant launcher and desktop entry.
+
+- name: Check the owned Colin McRae Rally (1998) PC installation
+  ansible.builtin.stat:
+    path: "{{ dg_cmr_recomp_rally_exe }}"
+    checksum_algorithm: sha256
+  register: _cmr_recomp_rally
+
+- name: Require the supported 1998 EU Colin McRae Rally installation
+  ansible.builtin.assert:
+    that:
+      - _cmr_recomp_rally.stat.exists
+      - _cmr_recomp_rally.stat.checksum == dg_cmr_recomp_rally_sha256
+    fail_msg: >-
+      Need the owned 1998 EU Colin McRae Rally PC install (Rally.exe sha256
+      {{ dg_cmr_recomp_rally_sha256[:12] }}...) at {{ dg_cmr_recomp_source_dir }}.
+      See docs/rea-colin-mcrae-recomp.md.
+
+- name: Check for a running Colin McRae Rally Modern session before install
+  ansible.builtin.command: pgrep -x cmr-app
+  register: _cmr_recomp_running
+  failed_when: false
+  changed_when: false
+
+- name: Require Colin McRae Rally Modern to be closed
+  ansible.builtin.assert:
+    that: _cmr_recomp_running.rc == 1
+    fail_msg: "Close Colin McRae Rally Modern before re-running the installer."
+
+- name: Create the Colin McRae Rally Modern directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_cmr_recomp_root }}"
+    - "{{ dg_cmr_recomp_runtime_root }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Stage the pinned Colin McRae Rally Modern AppImage
+  ansible.builtin.include_role:
+    name: stage_rea_appimage
+  vars:
+    dg_rea_stage_asset_url: "{{ dg_cmr_recomp_asset_url }}"
+    dg_rea_stage_asset_name: "{{ dg_cmr_recomp_asset_name }}"
+    dg_rea_stage_asset_sha256: "{{ dg_cmr_recomp_asset_sha256 }}"
+    dg_rea_stage_install_dir: "{{ dg_cmr_recomp_root }}"
+    dg_rea_stage_retired_names: "{{ dg_cmr_recomp_retired_appimages }}"
+
+- name: Import Colin McRae Rally (1998) game assets into runtime-data
+  ansible.builtin.command:
+    argv:
+      - distrobox-enter
+      - -n
+      - "{{ dg_box_name }}"
+      - --
+      - env
+      - APPIMAGE_EXTRACT_AND_RUN=1
+      - "{{ dg_cmr_recomp_appimage }}"
+      - --asset-tool
+      - import
+      - --source
+      - "{{ dg_cmr_recomp_source_dir }}"
+      - --profile
+      - profiles/installed-eu-derived-assets-v2.json
+      - --output
+      - "{{ dg_cmr_recomp_runtime_data }}"
+    chdir: "{{ dg_box_home }}"
+    creates: "{{ dg_cmr_recomp_runtime_data }}/import-state.json"
+
+- name: Decode the canonical clean official EU Rally.exe for table extraction
+  ansible.builtin.command:
+    argv:
+      - python3
+      - -c
+      - |
+        import hashlib, os, struct, sys, zipfile, zlib
+        zip_path, out_exe, expected_sha = sys.argv[1], sys.argv[2], sys.argv[3]
+        with zipfile.ZipFile(zip_path) as zf:
+            data = zf.read("european.exe")
+        pos = 0
+        while True:
+            idx = data.find(b"\x1f\x8b\x08", pos)
+            if idx == -1:
+                raise SystemExit(f"Clean Rally.exe ({expected_sha}) not found in {zip_path}")
+            try:
+                dec = zlib.decompressobj(16 + zlib.MAX_WBITS).decompress(data[idx:])
+                if dec[:4] == b"CMPR":
+                    n = struct.unpack("<I", dec[4:8])[0]
+                    payload = dec[8:8 + n]
+                    if hashlib.sha256(payload).hexdigest() == expected_sha:
+                        os.makedirs(os.path.dirname(out_exe), exist_ok=True)
+                        with open(out_exe, "wb") as fh:
+                            fh.write(payload)
+                        break
+            except Exception:
+                pass
+            pos = idx + 1
+      - "{{ dg_cmr_recomp_eu_patch_zip }}"
+      - "{{ dg_cmr_recomp_clean_source_dir }}/Rally.exe"
+      - "{{ dg_cmr_recomp_clean_rally_sha256 }}"
+    creates: "{{ dg_cmr_recomp_clean_source_dir }}/Rally.exe"
+
+- name: Extract executable-backed physics, audio, weather, and lookup tables
+  ansible.builtin.command:
+    argv:
+      - distrobox-enter
+      - -n
+      - "{{ dg_box_name }}"
+      - --
+      - env
+      - APPIMAGE_EXTRACT_AND_RUN=1
+      - "{{ dg_cmr_recomp_appimage }}"
+      - --asset-tool
+      - "{{ item.cmd }}"
+      - --source
+      - "{{ dg_cmr_recomp_clean_source_dir }}"
+      - --profile
+      - "{{ item.profile }}"
+      - --output
+      - "{{ dg_cmr_recomp_runtime_root }}/{{ item.dir }}"
+    chdir: "{{ dg_box_home }}"
+    creates: "{{ dg_cmr_recomp_runtime_root }}/{{ item.dir }}/{{ item.state_file }}"
+  loop: "{{ dg_cmr_recomp_table_extractions }}"
+  loop_control:
+    label: "{{ item.cmd }}"
+
+# Optional sibling HD art pack from rea-colin-mcrae: reuse the already-extracted
+# directory when install_rea_colin_mcrae is present, otherwise extract hd/ from
+# the pinned CMRLauncher archive if staged.
+- name: Check for an installed sibling rea-colin-mcrae HD art pack
+  ansible.builtin.stat:
+    path: "{{ dg_cmr1_release_dir }}/hd/pack.txt"
+  register: _cmr_recomp_sibling_hd
+
+- name: Symlink the sibling rea-colin-mcrae HD art pack into runtime-data
+  ansible.builtin.file:
+    src: "{{ dg_cmr1_release_dir }}/hd"
+    dest: "{{ dg_cmr_recomp_hd_pack_dir }}"
+    state: link
+    force: true
+  when: _cmr_recomp_sibling_hd.stat.exists
+
+- name: Check for a staged CMRLauncher archive when sibling HD pack is absent
+  ansible.builtin.stat:
+    path: "{{ dg_cmr1_archive }}"
+  register: _cmr_recomp_hd_archive
+  when: not _cmr_recomp_sibling_hd.stat.exists
+
+- name: Extract the optional HD art pack from the staged CMRLauncher archive
+  ansible.builtin.shell: |
+    set -eu
+    tmp=$(mktemp -d)
+    trap 'rm -rf "$tmp"' EXIT
+    unzip -q "{{ dg_cmr1_archive }}" "CMRLauncher-{{ dg_cmr1_version }}/hd/*" -d "$tmp"
+    rm -rf "{{ dg_cmr_recomp_hd_pack_dir }}"
+    mv "$tmp/CMRLauncher-{{ dg_cmr1_version }}/hd" "{{ dg_cmr_recomp_hd_pack_dir }}"
+  args:
+    creates: "{{ dg_cmr_recomp_hd_pack_dir }}/pack.txt"
+  when:
+    - not _cmr_recomp_sibling_hd.stat.exists
+    - _cmr_recomp_hd_archive.stat.exists | default(false)
+
+- name: Check whether the optional HD art pack is available
+  ansible.builtin.stat:
+    path: "{{ dg_cmr_recomp_hd_pack_dir }}/pack.txt"
+  register: _cmr_recomp_hd_ready
+
+- name: Create the save directory inside imported runtime-data
+  ansible.builtin.file:
+    path: "{{ dg_cmr_recomp_save_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Seed Ultra 4K and gamepad settings in save/modern.cfg
+  ansible.builtin.copy:
+    dest: "{{ dg_cmr_recomp_save_dir }}/modern.cfg"
+    mode: "0644"
+    force: false
+    content: |
+      # Colin McRae Rally (1998) — Modern Branch Settings
+      preset={{ dg_cmr_recomp_modern_settings.preset }}
+      resolution={{ dg_cmr_recomp_modern_settings.resolution }}
+      aspect_ratio={{ dg_cmr_recomp_modern_settings.aspect_ratio }}
+      fps_limit={{ dg_cmr_recomp_modern_settings.fps_limit }}
+      vsync={{ dg_cmr_recomp_modern_settings.vsync }}
+      draw_distance={{ dg_cmr_recomp_modern_settings.draw_distance }}
+      texture_filter={{ dg_cmr_recomp_modern_settings.texture_filter }}
+      msaa={{ dg_cmr_recomp_modern_settings.msaa }}
+      upscaling={{ dg_cmr_recomp_modern_settings.upscaling }}
+      hd_art={{ 1 if _cmr_recomp_hd_ready.stat.exists else 0 }}
+      modern_gamepad={{ dg_cmr_recomp_modern_settings.modern_gamepad }}
+      rumble={{ dg_cmr_recomp_modern_settings.rumble }}
+
+- name: Install the re-entrant Colin McRae Rally Modern launcher
+  ansible.builtin.template:
+    src: rea-colin-mcrae-recomp.sh.j2
+    dest: "{{ dg_cmr_recomp_launcher }}"
+    mode: "0755"
+
+- name: Render the Colin McRae Rally Modern desktop entry
+  ansible.builtin.template:
+    src: rea-colin-mcrae-recomp.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/rea-colin-mcrae-recomp.desktop"
+    mode: "0644"
+
+- name: Publish the Colin McRae Rally Modern desktop entry
+  ansible.builtin.command: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  changed_when: false

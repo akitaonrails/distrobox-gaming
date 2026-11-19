@@ -1,0 +1,29 @@
+#!/bin/sh
+set -eu
+if [ ! -e /.dockerenv ]; then
+  cd '{{ dg_box_home }}'
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+# Colin McRae Rally (1998) — Modern Reconstruction (native Rust + SDL3 + wgpu).
+# Runs inside the gaming distrobox via the pinned AppImage. Press F11 in-game
+# to toggle fullscreen. Settings and saves live under runtime-data/.../save/.
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD="${__NV_PRIME_RENDER_OFFLOAD:-1}"
+export __GLX_VENDOR_LIBRARY_NAME="${__GLX_VENDOR_LIBRARY_NAME:-nvidia}"
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS="${SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS:-1}"
+# The migrated gaming container has no /dev/fuse, so the AppImage runtime
+# extracts itself to /tmp and runs from there.
+export APPIMAGE_EXTRACT_AND_RUN=1
+
+if [ "${1-}" = "--version" ] || [ "${1-}" = "--asset-tool" ]; then
+  exec '{{ dg_cmr_recomp_appimage }}' "$@"
+fi
+
+exec '{{ dg_cmr_recomp_appimage }}' \
+  --windowed-game-session \
+  --runtime-data '{{ dg_cmr_recomp_runtime_data }}' \
+  --source '{{ dg_cmr_recomp_initial_stage_source }}' \
+  --stage '{{ dg_cmr_recomp_initial_stage }}' \
+  --car-code '{{ dg_cmr_recomp_initial_car }}' \
+  --renderer '{{ dg_cmr_recomp_renderer }}' \
+  "$@"

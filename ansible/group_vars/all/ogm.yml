@@ -649,6 +649,12 @@ dg_ogm_games:
     category: wine
     sgdb_query: "Colin McRae Rally"
     github: akitaonrails/rea-colin-mcrae
+  - desktop_id: rea-colin-mcrae-recomp
+    id: rea-colin-mcrae-recomp
+    name: "Colin McRae Rally Modern (Recomp)"
+    category: recomp
+    sgdb_query: "Colin McRae Rally"
+    github: "{{ dg_cmr_recomp_repo }}"
   - desktop_id: rea-colin-mcrae-3
     id: rea-colin-mcrae-3
     name: "Colin McRae Rally 3 (REA)"

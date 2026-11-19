@@ -1,0 +1,108 @@
+# Colin McRae Rally (1998) — Native Rust/SDL3/wgpu Modern Reconstruction
+# (akitaonrails/rea-colin-mcrae-recomp). Data-free AppImage; imports assets and
+# executable-backed tables once from the owned 1998 EU PC install (read-only).
+
+dg_cmr_recomp_repo: akitaonrails/rea-colin-mcrae-recomp
+dg_cmr_recomp_version: v0.1.1
+dg_cmr_recomp_asset_name: "Colin-McRae-Rally-Modern-{{ dg_cmr_recomp_version }}-x86_64.AppImage"
+dg_cmr_recomp_asset_url: >-
+  https://github.com/{{ dg_cmr_recomp_repo }}/releases/download/{{ dg_cmr_recomp_version }}/{{ dg_cmr_recomp_asset_name }}
+dg_cmr_recomp_asset_sha256: cc25099b2811ea77ef3962bca072794ade953b7106b7e8a9d38870a4b9f42766
+
+# Owned 1998 EU PC installation (same read-only source used by install_rea_colin_mcrae).
+dg_cmr_recomp_source_dir: "{{ dg_roms_final_root }}/PC/games/CMRally"
+dg_cmr_recomp_rally_exe: "{{ dg_cmr_recomp_source_dir }}/Rally.exe"
+dg_cmr_recomp_rally_sha256: 46500c8e22ce3e943b6855eca63ae9288261162347ca76fa36cad77cbb19c0bb
+# Official EU v1.5 updater archive bundled in CMRally/patches-applied/, used to
+# decode the canonical clean Rally.exe for the 11 executable-backed table stores.
+dg_cmr_recomp_eu_patch_zip: "{{ dg_cmr_recomp_source_dir }}/patches-applied/cmr_eu15_official.zip"
+dg_cmr_recomp_clean_rally_sha256: 0eb6ea9652219b9a35c0a6134bf0cdf316dce21215b724cdfc10ba85eb95982a
+dg_cmr_recomp_clean_source_dir: "{{ dg_cmr_recomp_root }}/official-eu-source"
+
+# Local install and imported runtime-data layout inside the gaming box home.
+dg_cmr_recomp_root: "{{ dg_box_home }}/tools/rea-colin-mcrae-recomp"
+dg_cmr_recomp_appimage: "{{ dg_cmr_recomp_root }}/{{ dg_cmr_recomp_asset_name }}"
+dg_cmr_recomp_runtime_root: "{{ dg_cmr_recomp_root }}/runtime-data"
+dg_cmr_recomp_runtime_data: "{{ dg_cmr_recomp_runtime_root }}/installed-eu-derived-assets-v2"
+dg_cmr_recomp_save_dir: "{{ dg_cmr_recomp_runtime_data }}/save"
+dg_cmr_recomp_hd_pack_dir: "{{ dg_cmr_recomp_runtime_data }}/hd-pack"
+dg_cmr_recomp_launcher: "{{ dg_box_home }}/bin/rea-colin-mcrae-recomp"
+
+# Initial fallback stage/car (menus dynamically load any stage/car from runtime-data).
+dg_cmr_recomp_initial_stage: AU1
+dg_cmr_recomp_initial_stage_source: "{{ dg_cmr_recomp_source_dir }}/Game/Au/1"
+dg_cmr_recomp_initial_car: Sub
+dg_cmr_recomp_renderer: auto
+
+# All 11 executable-backed physics, audio, weather, and static lookup tables
+# supported by cmr-assets and loaded as sidecars next to runtime-data.
+dg_cmr_recomp_table_extractions:
+  - cmd: extract-surface-tables
+    profile: profiles/official-eu-surface-tables-v1.json
+    dir: official-eu-surface-coefficients
+    state_file: surface-import-state.json
+  - cmd: extract-surface-capabilities
+    profile: profiles/official-eu-surface-capabilities-v1.json
+    dir: official-eu-surface-capabilities
+    state_file: surface-capability-import-state.json
+  - cmd: extract-compiled-car-initializer
+    profile: profiles/official-eu-compiled-car-initializer-v1.json
+    dir: official-eu-compiled-car-initializer
+    state_file: compiled-car-import-state.json
+  - cmd: extract-car-selectors
+    profile: profiles/official-eu-car-selector-map-v1.json
+    dir: official-eu-car-selectors
+    state_file: car-selector-import-state.json
+  - cmd: extract-tyre-surface-tables
+    profile: profiles/official-eu-tyre-surface-tables-v1.json
+    dir: official-eu-tyre-surface-tables
+    state_file: tyre-surface-tables-import-state.json
+  - cmd: extract-engine-audio-tables
+    profile: profiles/official-eu-engine-audio-tables-v1.json
+    dir: official-eu-engine-audio-tables
+    state_file: engine-audio-tables-import-state.json
+  - cmd: extract-surface-audio-tables
+    profile: profiles/official-eu-surface-audio-tables-v1.json
+    dir: official-eu-surface-audio-tables
+    state_file: surface-audio-tables-import-state.json
+  - cmd: extract-stage-weather-tables
+    profile: profiles/official-eu-stage-weather-tables-v1.json
+    dir: official-eu-stage-weather-tables
+    state_file: stage-weather-tables-import-state.json
+  - cmd: extract-rival-records
+    profile: profiles/official-eu-rival-records-v1.json
+    dir: official-eu-rival-records
+    state_file: rival-records-import-state.json
+  - cmd: extract-static-tables
+    profile: profiles/official-eu-static-tables-v1.json
+    dir: official-eu-static-tables
+    state_file: static-tables-import-state.json
+  - cmd: extract-aux-control-constants
+    profile: profiles/official-eu-aux-control-constants-v1.json
+    dir: official-eu-aux-control-constants
+    state_file: aux-control-constants-import-state.json
+
+# Seeded save/modern.cfg defaults (Ultra 4K preset; seeded once with force: false
+# so in-game changes survive reruns). hd_art is enabled automatically when the
+# sibling rea-colin-mcrae HD art pack is present.
+# Enum indices from crates/cmr-core/src/modern_settings.rs:
+#   preset=2 (Ultra4K), resolution=6 (3840x2160), aspect_ratio=1 (16:9 WIDE),
+#   fps_limit=4 (144 FPS sub-tick interpolation, paced by VSync), vsync=1,
+#   draw_distance=4 (3.0x Ultra), texture_filter=4 (Anisotropic 16x),
+#   msaa=2 (MSAA 4x — maximum supported by wgpu), upscaling=4 (CAS Sharpening,
+#   1.0x native render scale), modern_gamepad=1, rumble=1.
+dg_cmr_recomp_modern_settings:
+  preset: 2
+  resolution: 6
+  aspect_ratio: 1
+  fps_limit: 4
+  vsync: 1
+  draw_distance: 4
+  texture_filter: 4
+  msaa: 2
+  upscaling: 4
+  modern_gamepad: 1
+  rumble: 1
+
+dg_cmr_recomp_retired_appimages:
+  - Colin-McRae-Rally-Modern-v0.1.0-x86_64.AppImage
