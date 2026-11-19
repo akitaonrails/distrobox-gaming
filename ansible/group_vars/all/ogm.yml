@@ -21,7 +21,19 @@
 #   name         optional display-name override; set only where the repo
 #                already tracks a clean title (dg_*_games name fields) and the
 #                rendered desktop Name= carries a "(on gaming)"-style suffix
-#   category     port|decomp|recomp|fangame|wine|arcade|emulator|tool|custom
+#   category     port|decomp|recomp|fangame|wine|arcade|emulated|launcher|
+#                emulator|tool|custom. 'emulated' = a single game that runs
+#                through an emulator or emulator-derived runtime (renders in
+#                Games, not Emulators); 'launcher' = one entry fronting SEVERAL
+#                games (an arcade-series hub), renders in its own Launchers
+#                section; 'emulator' is strictly the emulator application
+#                itself. Rule: if launching the entry starts one specific game,
+#                it is never 'emulator'.
+#   includes     launcher entries ONLY: the list of titles the hub fronts,
+#                emitted as X-OGM-Includes (';'-joined in the .desktop, a TOML
+#                array in the catalog fragment). ogm's search matches these as
+#                well as the entry's own name and the card chip shows
+#                "launcher · N titles". Omit for non-launcher entries.
 #   github       owner/repo — ALWAYS derived from an existing dg_* var (the
 #                regex below strips any github.com URL form down to
 #                owner/repo); never a value invented in this file
@@ -62,9 +74,9 @@ dg_ogm_games:
   - { desktop_id: gaming-eden, id: eden, category: emulator }
   - { desktop_id: gaming-lichii, id: lichii, category: emulator,
       github: "{{ dg_lichii_repo }}" }
-  - { desktop_id: gaming-lichii-oot, id: lichii-oot, category: emulator,
+  - { desktop_id: gaming-lichii-oot, id: lichii-oot, category: emulated,
       sgdb_query: "The Legend of Zelda: Ocarina of Time", github: "{{ dg_lichii_repo }}" }
-  - { desktop_id: gaming-lichii-sandbox, id: lichii-oot-restricted, category: emulator,
+  - { desktop_id: gaming-lichii-sandbox, id: lichii-oot-restricted, category: emulated,
       sgdb_query: "The Legend of Zelda: Ocarina of Time", github: "{{ dg_lichii_repo }}" }
   - { desktop_id: gaming-cemu, id: cemu, category: emulator }
   - { desktop_id: gaming-vita3k, id: vita3k, category: emulator }
@@ -262,12 +274,23 @@ dg_ogm_games:
     github: "{{ dg_redline_repo }}"
   - desktop_id: gaming-sega-racing
     id: sega-racing
-    category: arcade
+    category: launcher
+    includes:
+      - "OutRun 2 SP SDX"
+      - "SEGA Rally 3"
+      - "SEGA Racing Classic"
+      - "Daytona Championship USA"
+      - "F355 Challenge 2"
     sgdb_query: "OutRun 2 SP"
     github: "{{ dg_sega_repo }}"
   - desktop_id: gaming-nintendo-arcade
     id: nintendo-arcade
-    category: arcade
+    category: launcher
+    includes:
+      - "F-Zero AX Monster Ride"
+      - "Mario Kart Arcade GP 2"
+      - "Mario Kart Arcade GP DX"
+      - "Luigi's Mansion Arcade"
     sgdb_query: "Mario Kart Arcade GP"
     github: "{{ dg_nintendo_repo }}"
   - desktop_id: gaming-mvc2
@@ -277,12 +300,33 @@ dg_ogm_games:
     github: "{{ dg_mvc2_repo }}"
   - desktop_id: gaming-wangan
     id: wangan
-    category: arcade
+    category: launcher
+    includes:
+      - "Maximum Tune 3"
+      - "Maximum Tune 3DX+"
+      - "Maximum Tune 5"
+      - "Maximum Tune 5DX+"
+      - "Maximum Tune 6"
+      - "Maximum Tune 6R"
+      - "Maximum Tune 6RR"
+      - "Wangan Midnight R"
     sgdb_query: "Wangan Midnight Maximum Tune"
     github: "{{ dg_wangan_repo }}"
   - desktop_id: gaming-initiald
     id: initiald
-    category: arcade
+    category: launcher
+    includes:
+      - "Initial D Arcade Stage Ver. 1"
+      - "Initial D Arcade Stage Ver. 2"
+      - "Initial D Arcade Stage Ver. 3"
+      - "Initial D Arcade Stage 4"
+      - "Initial D Arcade Stage 5"
+      - "Initial D Arcade Stage 6 AA"
+      - "Initial D Arcade Stage 7 AAX"
+      - "Initial D Arcade Stage 8 Infinity"
+      - "Initial D Arcade Stage Zero"
+      - "Initial D THE ARCADE Season 3"
+      - "Initial D THE ARCADE Season 5"
     sgdb_query: "Initial D Arcade Stage"
     github: "{{ dg_initiald_repo }}"
   - desktop_id: gaming-rondo-recomp
@@ -357,7 +401,13 @@ dg_ogm_games:
     github: "{{ dg_ttt2_repo }}"
   - desktop_id: gaming-azimuth
     id: azimuth
-    category: port
+    category: launcher
+    includes:
+      - "Forza Horizon 2"
+      - "Forza Horizon 2 Presents Fast & Furious"
+      - "Forza Horizon 3"
+      - "Forza Motorsport 5"
+      - "Forza Motorsport 6"
     web_url: "{{ dg_azimuth_web_url }}"
     update_regex: 'Version ([0-9]+[.][0-9]+[.][0-9]+)'
   - desktop_id: gaming-driveclub-recomp
@@ -382,7 +432,7 @@ dg_ogm_games:
     github: "{{ dg_fukami_repo }}"
   - desktop_id: gaming-fzero-glinux
     id: fzero-glinux
-    category: emulator
+    category: emulated
     sgdb_query: "F-Zero GX"
     github: "{{ dg_fzero_gx_repo }}"
   - desktop_id: gaming-takedawn
@@ -472,7 +522,7 @@ dg_ogm_games:
       sgdb_query: "OutRunners", github: "{{ dg_or_repo }}" }
   - { desktop_id: gaming-vrdeluxe, id: vrdeluxe, category: port,
       sgdb_query: "Virtua Racing Deluxe", github: "{{ dg_vrde_repo }}" }
-  - { desktop_id: gaming-gt6, id: gt6, category: emulator,
+  - { desktop_id: gaming-gt6, id: gt6, category: emulated,
       sgdb_query: "Gran Turismo 6", github: "{{ dg_gt6_repo }}" }
   - { desktop_id: gaming-sega-rally-2-native, id: sega-rally-2-native, category: recomp,
       sgdb_query: "Sega Rally 2", github: "{{ dg_sr2n_repo }}" }
@@ -480,7 +530,7 @@ dg_ogm_games:
       sgdb_query: "Rad Mobile", github: "{{ dg_radm_repo }}" }
   - { desktop_id: gaming-sonic-momentum, id: sonic-momentum, category: fangame,
       web_url: "https://sonicfangameshq.com/forums/showcase/sonic-momentum-beta-edition.2324/" }
-  - { desktop_id: gaming-recasted, id: recasted, category: emulator,
+  - { desktop_id: gaming-recasted, id: recasted, category: port,
       sgdb_query: "Ratchet & Clank", web_url: "https://gitlab.com/{{ dg_recasted_project }}" }
   - desktop_id: gaming-gt4-recomp
     id: gt4-recomp
@@ -528,7 +578,7 @@ dg_ogm_games:
   # endorsed). NOTE: the fork is what we track, not upstream jlrouzies-fr.
   - desktop_id: gaming-doom64-rt
     id: doom64-rt
-    category: source-port
+    category: port
     sgdb_query: "Doom 64"
     github: "{{ dg_d64rt_appimage_url | regex_replace('^https://(api\\.)?github\\.com/(repos/)?([^/]+/[^/]+?)(\\.git)?(/.*)?$', '\\3') }}"
   - desktop_id: gaming-sotn-recomp

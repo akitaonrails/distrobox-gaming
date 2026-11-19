@@ -9,6 +9,9 @@ desktop_id = {{ game.desktop_id | to_json }}
 name = {{ game.name | to_json }}
 {% endif -%}
 category = {{ game.category | to_json }}
+{% if game.includes is defined -%}
+includes = {{ game.includes | to_json }}
+{% endif -%}
 {% if game.github is defined -%}
 github = {{ game.github | to_json }}
 {% endif -%}

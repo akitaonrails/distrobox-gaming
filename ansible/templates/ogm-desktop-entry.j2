@@ -33,6 +33,8 @@ X-OGM-Category={{ _e.category }}
 {% endif -%}
 {%- if _e.sgdb_query is defined and _e.sgdb_query %}X-OGM-SGDBQuery={{ _e.sgdb_query }}
 {% endif -%}
+{%- if _e.includes is defined and _e.includes %}X-OGM-Includes={{ _e.includes | join(';') }}
+{% endif -%}
 {%- endif -%}
 {%- endif -%}
 {%- endmacro -%}
