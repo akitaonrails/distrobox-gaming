@@ -306,3 +306,30 @@
     '
   register: _flycast_juice_symlink
   changed_when: "'linked ' in _flycast_juice_symlink.stdout"
+
+- name: Strip file capabilities from pcsx2-qt
+  # pcsx2-latest-bin ships its binary with cap_net_admin,cap_net_raw+eip
+  # (set by the AUR package for PCSX2's DEV9 raw-socket network adapter),
+  # re-applied on every install/upgrade. Inside the distrobox those caps
+  # are not in the container's bounding set, so the kernel refuses to
+  # execve a file-capability binary with EPERM ("Operation not
+  # permitted") — PCSX2 silently fails to launch while every other
+  # emulator runs. The DEV9 network adapter is a rarely-used feature;
+  # stripping the caps lets the binary exec normally with no practical
+  # loss. getcap-guarded so a clean binary is a no-op.
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      bin=$(readlink -f "$(command -v pcsx2-qt 2>/dev/null)" 2>/dev/null)
+      if [ -z "$bin" ] || [ ! -e "$bin" ]; then
+        printf "%s\n" "pcsx2-qt not installed, skipping"
+        exit 0
+      fi
+      if [ -z "$(getcap "$bin" 2>/dev/null)" ]; then
+        exit 0
+      fi
+      sudo setcap -r "$bin"
+      printf "%s\n" "stripped caps from $bin"
+    '
+  register: _pcsx2_setcap
+  changed_when: "'stripped caps ' in _pcsx2_setcap.stdout"
