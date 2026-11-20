@@ -1,49 +1,28 @@
 ---
-# Experimental Switch 2 emulator; intentionally separate from the Eden profile.
-# Built from upstream source (branch nx2) at a pinned commit: the released
-# AppImages trail the branch, and this box runs the newest Ocarina fixes. The
-# build uses clang, not gcc: GCC 16 fails upstream's -Werror=shadow on
-# src/shader_recompiler/backend/spirv/emit_spirv_tensor.cpp (lambda parameter
-# shadowing the enclosing one), which clang does not warn about.
-dg_lichii_repo: zortos293/Lichii
-dg_lichii_branch: nx2
-dg_lichii_commit: b8e3fd8e91f1dcde51333b510d2eb54140bb9abe
-dg_lichii_short: b8e3fd8
-dg_lichii_source_url: "https://github.com/{{ dg_lichii_repo }}/archive/{{ dg_lichii_commit }}.tar.gz"
-dg_lichii_source_sha256: 2e873d2ad05c201b35a6b370b274055d1a208c38db64bd873c89923332b3a94d
-dg_lichii_source_archive: "{{ dg_roms_final_root }}/PC/ports/lichii/lichii-{{ dg_lichii_short }}.tar.gz"
-dg_lichii_packages:
-  - clang
-  - cmake
-  - ninja
-  - boost
-  - catch2
-  - enet
-  - ffmpeg
-  - fmt
-  - glslang
-  - libzip
-  - lz4
-  - nlohmann-json
-  - openssl
-  - opus
-  - qt6-base
-  - qt6-multimedia
-  - qt6-charts
-  - sdl3
-  - zstd
-  - unzip
-  - vulkan-headers
-  - vulkan-utility-libraries
-  - libusb
-  - spirv-tools
-  - spirv-headers
+# Switch 2 Ocarina of Time runtime: **Fritchii** — Frizti's OoT-specialised
+# Lichii fork (zortos293/Lichii lineage, Eden-derived), shipped as a prebuilt
+# Linux AppDir (a linuxdeploy tree: bundled Qt6 + ~200 libs, RPATH'd). No source
+# build and no third-party shader-sync tool (Fritchii prepares and keeps its own
+# shaders, including on NVIDIA/Linux). It shares Eden's `eden/qt-config.ini`
+# format and the `eden/` config+data dirs, so the isolated profile, saves and
+# controller mapping below are unchanged from the retired source build. The old
+# Lichii source build, shader-sync tool and restricted-runtime pilot are all
+# retired (see dg_lichii_retired_paths). See docs/lichii.md.
+
+dg_fritchii_repo: Frizti/Fritchii
+dg_fritchii_version: "6.2"
+dg_fritchii_tag: "fritchii-v{{ dg_fritchii_version }}"
+dg_fritchii_asset_name: "Fritchii-v{{ dg_fritchii_version }}-Linux-x86_64.tar.gz"
+dg_fritchii_asset_url: "https://github.com/{{ dg_fritchii_repo }}/releases/download/{{ dg_fritchii_tag }}/{{ dg_fritchii_asset_name }}"
+dg_fritchii_asset_sha256: 5bf3e6d9d42daff308a4b748aede88fe5c114841b290fb4458cb78e514711428
+dg_fritchii_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_fritchii_asset_name }}"
 
 dg_lichii_root: "{{ dg_box_home }}/tools/lichii"
-dg_lichii_build_root: "{{ dg_lichii_root }}/build-{{ dg_lichii_short }}"
-dg_lichii_src_dir: "{{ dg_lichii_build_root }}/src"
-dg_lichii_build_dir: "{{ dg_lichii_build_root }}/build-clang"
-dg_lichii_bin: "{{ dg_lichii_build_dir }}/bin/lichii"
+# The tarball unpacks a top-level fritchii/ AppDir under this version dir.
+dg_fritchii_unpack_root: "{{ dg_lichii_root }}/fritchii-v{{ dg_fritchii_version }}"
+dg_fritchii_app_dir: "{{ dg_fritchii_unpack_root }}/fritchii"
+# The launcher execs the AppDir's AppRun (bundled Qt6, no system Qt/FUSE).
+dg_lichii_bin: "{{ dg_fritchii_app_dir }}/AppRun"
 dg_lichii_launcher: "{{ dg_box_home }}/bin/lichii"
 dg_lichii_profile: "{{ dg_lichii_root }}/profile"
 dg_lichii_config: "{{ dg_lichii_profile }}/config/eden/qt-config.ini"
@@ -52,14 +31,19 @@ dg_lichii_game_size: 25622267860
 # SDL GUID of the USB 8BitDo Ultimate 2 (2dc8:310b), matching the existing
 # Eden mapping. Another machine can override it in host_vars/localhost.yml.
 dg_lichii_controller_guid: 03000000c82d00000b31000014010000
-dg_lichii_resolution_setup: 3  # 1x. Higher scales are not yet stable for this title.
+# 1x internal. Fritchii drives the 4K OUTPUT with DLSS (its NVIDIA default is
+# the "Automatic" model) plus the one-time "Max Resolution" add-on accepted on
+# first launch — raising the raw multiplier instead would cost the 60 fps hold.
+dg_lichii_resolution_setup: 3
 # Seeded into a fresh profile by templates/qt-config.ini.j2 (the Ocarina
 # baseline below re-applies it to existing profiles).
 dg_lichii_memory_layout_mode: 2  # Memory_8Gb, the game's own memory size
-# Ocarina-tuned baseline, mirroring the Frizti fork's defaults: 8 GB memory (the
-# game's own size), GPU accuracy Low ("Fast"), GPU video decoding, asynchronous
-# shaders and presentation, mailbox pacing, docked. The in-game settings win
-# afterwards; the role only seeds keys that do not exist yet.
+# Ocarina-tuned baseline (this IS the Frizti/Fritchii recommended profile): 8 GB
+# memory (the game's own size), GPU accuracy Low ("Fast"), GPU video decoding,
+# asynchronous shaders and presentation, mailbox pacing, docked, disk shader
+# cache. The in-game settings win afterwards; the role only seeds keys that do
+# not exist yet. Fritchii's own GPU-aware graphics (DLSS, Max Resolution) are
+# accepted once in its first-launch prompts — see docs/lichii.md.
 dg_lichii_profile_settings:
   memory_layout_mode: "2"     # Memory_8Gb
   gpu_accuracy: "0"           # Low / Fast
@@ -70,36 +54,19 @@ dg_lichii_profile_settings:
   use_docked_mode: "1"
   resolution_setup: "{{ dg_lichii_resolution_setup }}"
   use_disk_shader_cache: "true"
+# Older Fritchii versions to clean up (their unpack dirs and NAS archives).
+dg_fritchii_superseded_versions: []
 
-# Shared Vulkan shader caches (third-party, unofficial): the CLI merges the
-# OoT pack from this repo into the profile's cache, checksum-verified per chunk
-# and keeping the previous file as .bak. Pinned tool; the pack itself is fetched
-# by the tool from the same releases and is not re-hosted here.
-dg_lichii_shaders_repo: oceanpacificpeace/lichii-shader-sync
-dg_lichii_shaders_release: v1.1.1
-dg_lichii_shaders_asset_name: lichii-sync-linux-amd64
-dg_lichii_shaders_asset_url: "https://github.com/{{ dg_lichii_shaders_repo }}/releases/download/{{ dg_lichii_shaders_release }}/{{ dg_lichii_shaders_asset_name }}"
-dg_lichii_shaders_asset_sha256: f32df85acaf182504f62b8d750805cec4e76bab600640faac15322d90ac45e14
-dg_lichii_shaders_archive: "{{ dg_roms_final_root }}/PC/tools/lichii-sync-{{ dg_lichii_shaders_release }}-linux-amd64"
-dg_lichii_shaders_bin: "{{ dg_lichii_root }}/lichii-sync"
-dg_lichii_shaders_launcher: "{{ dg_box_home }}/bin/lichii-shaders"
-
-# The restricted runtime still runs the released AppImage (its image carries no
-# Qt6, and the AppImage bundles it), independently of the source build above.
-dg_lichii_sandbox_release: build-88
-dg_lichii_sandbox_asset_name: lichii-linux-x86_64.AppImage
-dg_lichii_sandbox_asset_url: "https://github.com/{{ dg_lichii_repo }}/releases/download/{{ dg_lichii_sandbox_release }}/{{ dg_lichii_sandbox_asset_name }}"
-dg_lichii_sandbox_asset_sha256: 8ddfcb03cffb9761d1532751eb6e68a1cb8a225da38ac1a55b6fe5b190691be0
-dg_lichii_sandbox_archive: "{{ dg_roms_final_root }}/PC/releases/lichii-{{ dg_lichii_sandbox_release }}-linux-x86_64.AppImage"
-dg_lichii_sandbox_appimage: "{{ dg_lichii_root }}/{{ dg_lichii_sandbox_release }}/lichii.AppImage"
-dg_lichii_sandbox_appdir: "{{ dg_lichii_root }}/{{ dg_lichii_sandbox_release }}/squashfs-root"
-# Host NVIDIA Vulkan ICD manifest, bind-mounted into the runtime (--gpus all
-# mounts the driver libraries but not this file). Override on another machine.
-dg_lichii_sandbox_icd: /usr/share/vulkan/icd.d/nvidia_icd.json
-dg_lichii_sandbox_image: "dg-lichii-sandbox:{{ dg_lichii_sandbox_release }}"
-# Released builds this role no longer uses (their AppImage trees and archives).
-dg_lichii_superseded_releases:
-  - build-83
-  - build-75
-  - build-70
-  - build-65
+# --- Retired artifacts (removed from the box on the next run) ---
+# The old source build tree, the third-party shader-sync tool + launcher, and
+# the retired restricted-runtime pilot (stock Lichii build-88 AppImage tree and
+# its NAS archive). The host-side pieces of the pilot (the docker image, the
+# ~/.local/bin/lichii-sandbox launcher and its desktop entry) are removed out of
+# band. The shared profile (saves, keys, config) is never touched.
+dg_lichii_retired_paths:
+  - "{{ dg_lichii_root }}/build-b8e3fd8"
+  - "{{ dg_lichii_root }}/lichii-sync"
+  - "{{ dg_box_home }}/bin/lichii-shaders"
+  - "{{ dg_roms_final_root }}/PC/ports/lichii"
+  - "{{ dg_lichii_root }}/build-88"
+  - "{{ dg_roms_final_root }}/PC/releases/lichii-build-88-linux-x86_64.AppImage"

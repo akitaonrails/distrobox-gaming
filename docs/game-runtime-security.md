@@ -119,51 +119,9 @@ docker exec gaming rm -rf /tmp/appimage_extracted_*
 
 Only caches go; the next launch of that title extracts again.
 
-## Narrower Lichii runtime
-
-Run `ansible-playbook install-lichii-sandbox.yml` from `ansible/`. It builds
-`dg-lichii-sandbox:build-88` from the pinned Arch base in
-`config/docker/lichii-sandbox/Dockerfile`, installs a host launcher, and
-publishes a separate desktop entry. It does not remove the regular Lichii
-entry or move game data. The image holds only system runtime libraries and
-fonts (including `vulkan-icd-loader`, which the AppImage does not bundle); the
-24 GB owned NUP is bound read-only at launch.
-
-The launcher grants:
-
-| Path or interface | Access | Reason |
-| --- | --- | --- |
-| Lichii profile under `dg_box_home` | Read/write | Settings, shader cache and saves |
-| Lichii program tree (unpacked AppImage) | Read-only | Executable |
-| Host NVIDIA Vulkan ICD (`dg_lichii_sandbox_icd`) | Read-only file | Lets the image's Vulkan loader see the GPU (`--gpus all` does not provide the manifest) |
-| The selected NUP | Read-only | Owned game data |
-| NVIDIA GPU | Device access | Vulkan rendering |
-| X11 and PulseAudio sockets | Socket access | Display and sound |
-| 8BitDo Ultimate 2 device nodes, if present | Read-only device access | Controller |
-
-The runtime has no real host home, `/run/host`, Docker socket, whole NAS
-directories, or network. It runs as the configured user with all container
-capabilities dropped, a read-only root filesystem, and a private process
-namespace. The X11 and sound sockets remain a connection to the desktop
-session; this is a practical filesystem and container-privilege boundary,
-not full desktop isolation. The controller must be connected before launch
-because only its then-present nodes are passed through.
-
-Check the boundary without starting the game:
-
-```sh
-~/.local/bin/lichii-sandbox --check
-```
-
-The Lichii launcher is deliberately separate and grants fewer mounts than the
-general `gaming` runtime. Validate the menu, gamepad, audio, save creation,
-and the absence of unwanted host access. When a newer
-Lichii release is pinned, rerun the focused playbook to rebuild the runtime
-and launcher. Existing game files and saves stay at their original paths.
-
 ## Save backups
 
 The `backup_saves` role now renders its manifest and helpers into the
 **host** home. The weekly user timer calls the host helper and needs the
-`dg_save_backup_nas_mount`. Neither the restricted runtime nor any game launcher
-needs write access to that backup share. See [save backups](save-backups.md).
+`dg_save_backup_nas_mount`. No game launcher needs write access to that backup
+share. See [save backups](save-backups.md).

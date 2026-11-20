@@ -1,10 +1,10 @@
 ---
-# Lichii is built from upstream source at a pinned commit: the released
-# AppImages trail branch nx2, and Ocarina fixes land there first. clang is the
-# compiler on purpose — GCC 16 fails upstream's -Werror=shadow in
-# src/shader_recompiler/backend/spirv/emit_spirv_tensor.cpp, which clang accepts.
-# The released AppImage is still installed for the restricted runtime, whose
-# image bundles no Qt6. See docs/lichii.md.
+# Fritchii, Frizti's OoT-specialised Lichii fork, shipped as a prebuilt Linux
+# AppDir (bundled Qt6 + libs). No source build, no shader-sync tool: Fritchii
+# keeps its own shaders. It shares Eden's eden/qt-config.ini, so the isolated
+# profile, saves and controller mapping are unchanged. The retired source build,
+# shader-sync tool and restricted-runtime pilot are cleaned up by the retired-
+# paths task below. See docs/lichii.md.
 
 - name: Check the owned Switch 2 NUP package
   ansible.builtin.stat:
@@ -27,118 +27,58 @@
       - "{{ dg_lichii_game }}"
   changed_when: false
 
-- name: Create Lichii build, profile and launcher directories
+- name: Create Fritchii, profile and launcher directories
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     mode: "0755"
   loop:
-    - "{{ dg_lichii_source_archive | dirname }}"
-    - "{{ dg_lichii_shaders_archive | dirname }}"
+    - "{{ dg_fritchii_archive | dirname }}"
     - "{{ dg_lichii_root }}"
-    - "{{ dg_lichii_build_root }}"
-    - "{{ dg_lichii_src_dir }}"
+    - "{{ dg_fritchii_unpack_root }}"
     - "{{ dg_lichii_profile }}/config/eden"
     - "{{ dg_lichii_profile }}/data"
     - "{{ dg_lichii_profile }}/cache"
     - "{{ dg_box_home }}/bin"
     - "{{ dg_desktop_render_dir }}"
 
-- name: Install the Lichii build dependencies
-  ansible.builtin.shell: "{{ dg_in_box }} sudo pacman -S --needed --noconfirm {{ dg_lichii_packages | join(' ') }}"
-  register: _lichii_packages
-  changed_when: "'installing' in _lichii_packages.stdout"
-
-- name: Stage the pinned Lichii source archive
+- name: Stage the pinned Fritchii AppDir tarball
   ansible.builtin.get_url:
-    url: "{{ dg_lichii_source_url }}"
-    dest: "{{ dg_lichii_source_archive }}"
-    checksum: "sha256:{{ dg_lichii_source_sha256 }}"
+    url: "{{ dg_fritchii_asset_url }}"
+    dest: "{{ dg_fritchii_archive }}"
+    checksum: "sha256:{{ dg_fritchii_asset_sha256 }}"
     mode: "0644"
 
-- name: Extract the Lichii source
+# The tarball carries a top-level fritchii/ AppDir; extract it as-is (no
+# strip-components) next to its version so older versions can be removed whole.
+- name: Unpack the Fritchii AppDir
   ansible.builtin.command:
     argv:
       - tar
       - -xzf
-      - "{{ dg_lichii_source_archive }}"
+      - "{{ dg_fritchii_archive }}"
       - -C
-      - "{{ dg_lichii_src_dir }}"
-      - --strip-components=1
-    creates: "{{ dg_lichii_src_dir }}/CMakeLists.txt"
+      - "{{ dg_fritchii_unpack_root }}"
+    creates: "{{ dg_fritchii_app_dir }}/AppRun"
 
-# A GitHub tarball has no .git, and upstream then falls back to
-# "stable-1.0.0"; these files make the binary report the pinned revision
-# instead (GetSCMRev.cmake reads them before shelling out to git).
-- name: Record the pinned revision for the build banner
-  ansible.builtin.copy:
-    dest: "{{ dg_lichii_src_dir }}/{{ item.file }}"
-    content: "{{ item.value }}\n"
-    mode: "0644"
-  loop:
-    - { file: GIT-COMMIT, value: "{{ dg_lichii_commit }}" }
-    - { file: GIT-REFSPEC, value: "{{ dg_lichii_branch }}" }
-  loop_control:
-    label: "{{ item.file }}"
-
-- name: Check for a configured Lichii build tree
-  ansible.builtin.stat:
-    path: "{{ dg_lichii_build_dir }}/build.ninja"
-  register: _lichii_configured
-
-- name: Configure the Lichii build with clang
-  ansible.builtin.command:
-    argv:
-      - distrobox-enter
-      - -n
-      - "{{ dg_box_name }}"
-      - --
-      - cmake
-      - -S
-      - "{{ dg_lichii_src_dir }}"
-      - -B
-      - "{{ dg_lichii_build_dir }}"
-      - -G
-      - Ninja
-      - -DCMAKE_BUILD_TYPE=Release
-      - -DYUZU_TESTS=OFF
-      - -DCMAKE_C_COMPILER=clang
-      - -DCMAKE_CXX_COMPILER=clang++
-  when: not _lichii_configured.stat.exists
-
-- name: Check for a built Lichii binary
+- name: Require the unpacked Fritchii entrypoint
   ansible.builtin.stat:
     path: "{{ dg_lichii_bin }}"
-  register: _lichii_bin
+  register: _fritchii_apprun
 
-# 1,816 ninja targets: about twelve minutes on this 32-thread CPU.
-- name: Build Lichii
-  ansible.builtin.command:
-    argv:
-      - distrobox-enter
-      - -n
-      - "{{ dg_box_name }}"
-      - --
-      - sh
-      - -c
-      - >-
-        cd "{{ dg_lichii_build_dir }}" && timeout 5400 cmake --build . -j 30
-  register: _lichii_build
-  changed_when: true
-  when: not _lichii_bin.stat.exists
-
-- name: Require the built Lichii binary
-  ansible.builtin.stat:
-    path: "{{ dg_lichii_bin }}"
-  register: _lichii_bin_after
-
-- name: Record the build result
+- name: Record the unpack result
   ansible.builtin.assert:
-    that: _lichii_bin_after.stat.isreg | default(false)
-    fail_msg: >-
-      Lichii did not build at {{ dg_lichii_commit }}; see the ninja output above
-      (recorded when the role ran) and docs/lichii.md.
+    that: _fritchii_apprun.stat.isreg | default(false)
+    fail_msg: "Fritchii did not unpack: {{ dg_lichii_bin }} is missing. See docs/lichii.md."
     quiet: true
+
+- name: Ensure the Fritchii entrypoints are executable
+  ansible.builtin.file:
+    path: "{{ item }}"
+    mode: "0755"
+  loop:
+    - "{{ dg_fritchii_app_dir }}/AppRun"
+    - "{{ dg_fritchii_app_dir }}/usr/bin/lichii"
 
 - name: Seed isolated docked, graphics and controller configuration
   ansible.builtin.template:
@@ -187,59 +127,24 @@
     mode: "0644"
   when: not _lichii_baseline.stat.exists
 
-# The restricted runtime still runs the released AppImage (its image bundles no
-# Qt6): keep that copy staged and unpacked for the sandbox role.
-- name: Stage the pinned Lichii AppImage for the restricted runtime
-  ansible.builtin.get_url:
-    url: "{{ dg_lichii_sandbox_asset_url }}"
-    dest: "{{ dg_lichii_sandbox_archive }}"
-    checksum: "sha256:{{ dg_lichii_sandbox_asset_sha256 }}"
-    mode: "0644"
-
-- name: Install the sandbox AppImage locally
-  ansible.builtin.copy:
-    src: "{{ dg_lichii_sandbox_archive }}"
-    dest: "{{ dg_lichii_sandbox_appimage }}"
-    remote_src: true
-    mode: "0755"
-
-- name: Unpack the sandbox AppImage for FUSE-free launching
-  ansible.builtin.command:
-    cmd: "{{ dg_lichii_sandbox_appimage }} --appimage-extract"
-    chdir: "{{ dg_lichii_sandbox_appimage | dirname }}"
-    creates: "{{ dg_lichii_sandbox_appdir }}/AppRun"
-
-- name: Remove superseded released builds
+- name: Remove superseded Fritchii versions
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent
   loop: >-
-    {{ dg_lichii_superseded_releases
-       | map('regex_replace', '^', dg_lichii_root ~ '/') | list
-       + dg_lichii_superseded_releases
-       | map('regex_replace', '^', dg_roms_final_root ~ '/PC/releases/lichii-') | map('regex_replace', '$', '-linux-x86_64.AppImage') | list }}
+    {{ dg_fritchii_superseded_versions
+       | map('regex_replace', '^', dg_lichii_root ~ '/fritchii-v') | list
+       + dg_fritchii_superseded_versions
+       | map('regex_replace', '^', dg_roms_final_root ~ '/PC/releases/Fritchii-v') | map('regex_replace', '$', '-Linux-x86_64.tar.gz') | list }}
 
-# Shared Vulkan shader packs (third-party, unofficial). The tool fetches and
-# checksum-verifies its own chunks; we pin the tool itself.
-- name: Stage the pinned Lichii shader-sync tool
-  ansible.builtin.get_url:
-    url: "{{ dg_lichii_shaders_asset_url }}"
-    dest: "{{ dg_lichii_shaders_archive }}"
-    checksum: "sha256:{{ dg_lichii_shaders_asset_sha256 }}"
-    mode: "0644"
-
-- name: Install the Lichii shader-sync tool
-  ansible.builtin.copy:
-    src: "{{ dg_lichii_shaders_archive }}"
-    dest: "{{ dg_lichii_shaders_bin }}"
-    remote_src: true
-    mode: "0755"
-
-- name: Install the Lichii shader-sync launcher
-  ansible.builtin.template:
-    src: lichii-shaders.sh.j2
-    dest: "{{ dg_lichii_shaders_launcher }}"
-    mode: "0755"
+# Clean replacement: drop the old source build tree and the retired shader-sync
+# tool/launcher once Fritchii is in place. The profile (saves, keys, config) is
+# never touched.
+- name: Remove the retired source build and shader-sync artifacts
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: "{{ dg_lichii_retired_paths }}"
 
 - name: Install Lichii launcher
   ansible.builtin.template:

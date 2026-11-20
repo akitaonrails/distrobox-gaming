@@ -20,5 +20,6 @@ export __GLX_VENDOR_LIBRARY_NAME=nvidia
 {% endif %}
 unset QT_STYLE_OVERRIDE
 
-# Built from source at {{ dg_lichii_short }} (system Qt6, no AppImage/FUSE).
+# Fritchii {{ dg_fritchii_version }} prebuilt AppDir: AppRun sets up the bundled
+# Qt6 + libs and execs the emulator (no system Qt, no FUSE — already unpacked).
 exec "{{ dg_lichii_bin }}" "$@"
