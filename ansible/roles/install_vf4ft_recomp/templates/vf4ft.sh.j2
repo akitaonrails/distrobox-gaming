@@ -1,0 +1,34 @@
+#!/usr/bin/env sh
+set -eu
+
+GAMEDIR="{{ dg_vf4ft_gamedir }}"
+BIN="{{ dg_vf4ft_bin }}"
+if [ ! -x "$BIN" ]; then
+  printf '%s\n' "VF4 Final Tuned is not built at $BIN (run install-vf4ft-recomp.yml)" >&2
+  exit 1
+fi
+
+# Focus the 4K DP-1 display before SDL chooses its fullscreen display.
+python3 - <<'PY' 2>/dev/null || true
+import glob
+import os
+import socket
+sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+runtime = os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}")
+paths = [f"{runtime}/hypr/{sig}/.socket.sock"] if sig else glob.glob(f"{runtime}/hypr/*/.socket.sock")
+if paths:
+    with socket.socket(socket.AF_UNIX) as sock:
+        sock.connect(paths[0])
+        sock.sendall(b'eval hl.dispatch(hl.dsp.focus({ monitor = "{{ dg_vf4ft_main_output }}" }))')
+        sock.recv(256)
+PY
+
+# Pin the NVIDIA Vulkan ICD so the GPU renderer binds the RTX, never the iGPU.
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+# The game reads user/settings.txt and user/ saves relative to its own folder.
+cd "$GAMEDIR"
+exec ./vf4ft "$@"

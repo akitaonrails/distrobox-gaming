@@ -1,0 +1,145 @@
+---
+# Virtua Fighter 4 Final Tuned (Ver. B) — native Linux recomp built in the box
+# from the owned MAME vf4tuned set. See group_vars/all/vf4ft_recomp.yml and
+# docs/vf4ft-recomp.md.
+
+- name: Check the owned MAME vf4tuned set
+  ansible.builtin.stat:
+    path: "{{ item.path }}"
+    checksum_algorithm: sha256
+  loop:
+    - { path: "{{ dg_vf4ft_set_pic }}", sha: "{{ dg_vf4ft_set_pic_sha256 }}" }
+    - { path: "{{ dg_vf4ft_set_chd }}", sha: "{{ dg_vf4ft_set_chd_sha256 }}" }
+  loop_control:
+    label: "{{ item.path }}"
+  register: _vf4ft_set
+
+- name: Require the verified vf4tuned PIC and GD-ROM
+  ansible.builtin.assert:
+    that:
+      - item.stat.isreg | default(false)
+      - item.stat.checksum | default('') == item.item.sha
+    fail_msg: "vf4tuned set file missing or changed: {{ item.item.path }} (need {{ item.item.sha }})"
+    quiet: true
+  loop: "{{ _vf4ft_set.results }}"
+  loop_control:
+    label: "{{ item.item.path }}"
+
+- name: Install the native-Linux build toolchain in the box
+  ansible.builtin.command:
+    argv: "{{ ['distrobox-enter', '-n', dg_box_name, '--', 'sudo', 'pacman', '-S', '--noconfirm', '--needed'] + dg_vf4ft_build_packages }}"
+  register: _vf4ft_pkgs
+  changed_when: "'nothing to do' not in _vf4ft_pkgs.stdout"
+
+- name: Create the VF4FT install and launcher directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_vf4ft_root }}"
+    - "{{ dg_vf4ft_gamedir }}"
+    - "{{ dg_box_home }}/bin"
+    - "{{ dg_desktop_render_dir }}"
+
+- name: Check out the VF4FT source at the pinned tag
+  ansible.builtin.git:
+    repo: "{{ dg_vf4ft_repo }}"
+    dest: "{{ dg_vf4ft_src }}"
+    version: "{{ dg_vf4ft_version }}"
+  register: _vf4ft_src
+
+- name: Require the pinned commit
+  ansible.builtin.assert:
+    that: _vf4ft_src.after == dg_vf4ft_commit
+    fail_msg: "VF4FT source is at {{ _vf4ft_src.after | default('?') }}, expected {{ dg_vf4ft_commit }}"
+    quiet: true
+
+# make_game.py translates the SH-4 programs to C and compiles them with the
+# system clang against SDL3. A first build reads the set (--set); a later one
+# rebuilds from the install's own data and keeps user/ (--update). The marker
+# records the built commit so a rerun at the same pin is a no-op.
+- name: Build or update the native Linux VF4FT
+  ansible.builtin.shell: |
+    set -eu
+    if [ -x "{{ dg_vf4ft_bin }}" ] && grep -qx "{{ dg_vf4ft_commit }}" "{{ dg_vf4ft_root }}/.dg-built-ref" 2>/dev/null; then
+      exit 0
+    fi
+    if [ -x "{{ dg_vf4ft_bin }}" ]; then
+      {{ dg_in_box }} bash -lc 'cd {{ dg_vf4ft_src }} && python3 -I tools/make_game.py --update {{ dg_vf4ft_gamedir }}'
+      printf '%s\n' vf4ft-updated
+    else
+      {{ dg_in_box }} bash -lc 'cd {{ dg_vf4ft_src }} && python3 -I tools/make_game.py --set {{ dg_vf4ft_set_dir }} --out {{ dg_vf4ft_gamedir }} --target linux'
+      printf '%s\n' vf4ft-built
+    fi
+    printf '%s\n' "{{ dg_vf4ft_commit }}" > "{{ dg_vf4ft_root }}/.dg-built-ref"
+  register: _vf4ft_build
+  changed_when: "'vf4ft-built' in _vf4ft_build.stdout or 'vf4ft-updated' in _vf4ft_build.stdout"
+
+- name: Verify the native binary's shared libraries inside the box
+  ansible.builtin.command:
+    argv:
+      - distrobox
+      - enter
+      - "{{ dg_box_name }}"
+      - --
+      - ldd
+      - "{{ dg_vf4ft_bin }}"
+  register: _vf4ft_ldd
+  changed_when: false
+  failed_when: _vf4ft_ldd.rc != 0 or 'not found' in _vf4ft_ldd.stdout
+
+# The first cold boot writes the cabinet backup record with the network off
+# ("starts again"); priming it once means the player's first real launch is not
+# held at the network time-out. Best-effort: it needs the desktop session, and
+# if it cannot run the first manual launch regenerates the record by itself.
+- name: Prime the cabinet backup for a fast first launch (one-time)
+  ansible.builtin.shell: |
+    set -eu
+    if [ -f "{{ dg_vf4ft_backup }}" ]; then exit 0; fi
+    timeout 60 {{ dg_in_box }} bash -lc '
+      cd {{ dg_vf4ft_gamedir }}
+      export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/nvidia_icd.json
+      export __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia
+      ./vf4ft --frames 300 --silent
+    ' || true
+    if [ -f "{{ dg_vf4ft_backup }}" ]; then printf '%s\n' vf4ft-primed; fi
+  register: _vf4ft_prime
+  changed_when: "'vf4ft-primed' in _vf4ft_prime.stdout"
+
+- name: Seed the maximum-graphics display settings
+  ansible.builtin.template:
+    src: settings.txt.j2
+    dest: "{{ dg_vf4ft_settings }}"
+    mode: "0644"
+    force: false
+
+- name: Install the VF4FT launcher
+  ansible.builtin.template:
+    src: vf4ft.sh.j2
+    dest: "{{ dg_vf4ft_launcher }}"
+    mode: "0755"
+
+- name: Render the VF4FT desktop entry
+  ansible.builtin.template:
+    src: gaming-vf4ft-recomp.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gaming-vf4ft-recomp.desktop"
+    mode: "0644"
+
+- name: Install the desktop entry on the host
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _vf4ft_host_launchers
+  changed_when: >-
+    'installed ' in _vf4ft_host_launchers.stdout or
+    'removed stale ' in _vf4ft_host_launchers.stdout
+
+- name: Report
+  ansible.builtin.debug:
+    msg: >-
+      VF4 Final Tuned (Ver. B) {{ dg_vf4ft_version }} built at {{ dg_vf4ft_gamedir }};
+      launcher {{ dg_vf4ft_launcher }}. Vulkan on the RTX, 4K/scale 4; saves and
+      settings in {{ dg_vf4ft_user_dir }}. Built from your own vf4tuned set.

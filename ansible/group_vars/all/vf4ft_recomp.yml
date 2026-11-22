@@ -1,0 +1,54 @@
+---
+# Virtua Fighter 4 Final Tuned (Ver. B) — native Linux recompilation.
+# djanice1980/VF4-Final-Tuned-Rev-B-Recomp: the Naomi 2 arcade game's SH-4
+# program is translated to C and compiled into a native Linux ELF ON THIS BOX
+# from the user's own MAME `vf4tuned` set. No emulator runs at play time; the
+# Naomi 2 hardware is modeled by the program and the pictures are drawn on the
+# GPU through Vulkan. Upstream ships only a Windows release, so this role
+# builds from source at a pinned tag with tools/make_game.py --target linux
+# (system clang + SDL3). See docs/vf4ft-recomp.md.
+dg_vf4ft_repo: https://github.com/djanice1980/VF4-Final-Tuned-Rev-B-Recomp.git
+dg_vf4ft_repo_web: djanice1980/VF4-Final-Tuned-Rev-B-Recomp
+dg_vf4ft_version: v0.5.17
+dg_vf4ft_commit: ed0616a23fe19deaac324524566f7f8967abb52b
+
+# Owned MAME vf4tuned set in MAME layout (vf4tuned.zip beside vf4tuned/gds-0036f.chd).
+# Read-only; never restaged. The builder reads the CHD itself and keeps the
+# disc's encrypted image, which the game decrypts at start (built data stays
+# local under the install's data/ and is never shared or committed).
+dg_vf4ft_set_dir: "{{ dg_emudeck_root }}/roms_rare/naomi2"
+dg_vf4ft_set_pic: "{{ dg_vf4ft_set_dir }}/vf4tuned.zip"
+dg_vf4ft_set_chd: "{{ dg_vf4ft_set_dir }}/vf4tuned/gds-0036f.chd"
+dg_vf4ft_set_pic_sha256: 39d1bddcaed763538d47083ef5423ba4266caef020da64bd36f16a39384b6e0b
+dg_vf4ft_set_chd_sha256: aaef037ded8b4197fb65f35dda7f024cb94b707bb4a952c6baf3f6e3765a11eb
+
+# Box-local source checkout, build output and launcher.
+dg_vf4ft_root: "{{ dg_box_home }}/tools/vf4ft-recomp"
+dg_vf4ft_src: "{{ dg_vf4ft_root }}/src"
+dg_vf4ft_gamedir: "{{ dg_vf4ft_root }}/game"
+dg_vf4ft_bin: "{{ dg_vf4ft_gamedir }}/vf4ft"
+dg_vf4ft_user_rel: tools/vf4ft-recomp/game/user
+dg_vf4ft_user_dir: "{{ dg_box_home }}/{{ dg_vf4ft_user_rel }}"
+dg_vf4ft_backup: "{{ dg_vf4ft_user_dir }}/backup.bin"
+dg_vf4ft_settings: "{{ dg_vf4ft_user_dir }}/settings.txt"
+dg_vf4ft_launcher: "{{ dg_box_home }}/bin/vf4ft"
+dg_vf4ft_main_output: DP-1
+
+# Native Linux target toolchain, installed in the box.
+dg_vf4ft_build_packages:
+  - clang
+  - sdl3
+  - pkgconf
+  - python
+
+# Max graphics, seeded into user/settings.txt (the game owns the file after the
+# first launch, so force:false keeps any F10-menu changes). scale 4 is the GPU
+# renderer's top internal resolution (4 x 640x480); picture 16:9 fills the 4K
+# DP-1 panel (21:9 would letterbox a 16:9 screen); fullscreen uses DP-1's
+# 3840x2160 desktop mode; the Vulkan renderer runs on the RTX (the launcher
+# pins the NVIDIA ICD so SDL never falls back to the iGPU).
+dg_vf4ft_scale: 4
+dg_vf4ft_picture: "16:9"
+dg_vf4ft_fullscreen: "on"
+dg_vf4ft_window: auto
+dg_vf4ft_renderer: gpu

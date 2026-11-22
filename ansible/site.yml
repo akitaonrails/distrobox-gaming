@@ -104,6 +104,7 @@
     - { role: install_supermodel,              tags: [supermodel, never] }
     - { role: install_vf1_recomp,              tags: [vf1_recomp, never] }
     - { role: install_vf3_recomp,              tags: [vf3_recomp, never] }
+    - { role: install_vf4ft_recomp,            tags: [vf4ft_recomp, never] }
     - { role: install_smas,                    tags: [smas, never] }
     - { role: install_driveclub_shader_patch,  tags: [driveclub, never] }
     - { role: install_driveclub_recomp,        tags: [driveclub_recomp, never] }

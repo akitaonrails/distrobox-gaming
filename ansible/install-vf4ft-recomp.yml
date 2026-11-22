@@ -1,0 +1,7 @@
+---
+- name: Install Virtua Fighter 4 Final Tuned Recomp (native Naomi 2 port)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_vf4ft_recomp
