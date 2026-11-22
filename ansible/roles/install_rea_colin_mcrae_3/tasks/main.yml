@@ -55,6 +55,7 @@
       - CMR3Launcher-v0.2.1-x86_64.AppImage
       - CMR3Launcher-v0.3.0-x86_64.AppImage
       - CMR3Launcher-v0.3.1-x86_64.AppImage
+      - CMR3Launcher-v0.5.0-x86_64.AppImage
 
 # Migrate the player's profile (the loose CMR3 file) from the retired
 # pc-racing install into the launcher's Saved Games folder. force: false keeps

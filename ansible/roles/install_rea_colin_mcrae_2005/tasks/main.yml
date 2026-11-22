@@ -57,6 +57,8 @@
       - CMR2005Launcher-v0.1.0-x86_64.AppImage
       - CMR2005Launcher-v0.2.0-x86_64.AppImage
       - CMR2005Launcher-v0.2.1-x86_64.AppImage
+      - CMR2005Launcher-v0.5.0-x86_64.AppImage
+      - CMR2005Launcher-v0.6.0-x86_64.AppImage
 
 # The Widescreen look fills the resolution from the screen when it is unset;
 # seeding the maxed-out values pins a headless --play to native 4K. force:

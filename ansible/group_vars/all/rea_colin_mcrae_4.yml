@@ -15,10 +15,10 @@
 # Wine CMR04 install. See docs/rea-colin-mcrae-4.md.
 
 dg_cmr4_repo: akitaonrails/rea-colin-mcrae-4
-dg_cmr4_version: v0.6.0
+dg_cmr4_version: v0.6.1
 dg_cmr4_asset_name: "CMR4Launcher-{{ dg_cmr4_version }}-x86_64.AppImage"
 dg_cmr4_asset_url: "https://github.com/{{ dg_cmr4_repo }}/releases/download/{{ dg_cmr4_version }}/{{ dg_cmr4_asset_name }}"
-dg_cmr4_asset_sha256: e54169adefc123aa51293a2aadcdeab29bae60ca8ea3ef7339aa3a94d2da506e
+dg_cmr4_asset_sha256: 4294e47f9a467226c5c3aaa68dd3e63ce548f3b37379cd79ab39cc921e3323ea
 
 # The owned source: a clean install with cmr4.exe next to Data/fonts/shaders,
 # staged under ROMS_FINAL/PC/games from the previous pc-racing install with the

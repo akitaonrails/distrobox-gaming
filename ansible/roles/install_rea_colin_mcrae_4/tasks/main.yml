@@ -58,6 +58,7 @@
       - CMR4Launcher-v0.3.1-x86_64.AppImage
       - CMR4Launcher-v0.4.0-x86_64.AppImage
       - CMR4Launcher-v0.4.1-x86_64.AppImage
+      - CMR4Launcher-v0.6.0-x86_64.AppImage
 
 # The settings window fills resolution from the screen when unset; seeding the
 # maxed-out values keeps a headless --play on the 4K panel. force: false — once

@@ -67,6 +67,7 @@
       - SRRLauncher-v0.2.0-x86_64.AppImage
       - SRRLauncher-v0.3.1-x86_64.AppImage
       - SRRLauncher-v0.3.2-x86_64.AppImage
+      - SRRLauncher-v0.6.1-x86_64.AppImage
 
 # Migrate the player's config.ini (its [GameController] mapping is preserved
 # verbatim by the launcher) and the career save (SEGA Rally.dat) from the

@@ -13,10 +13,10 @@
 # Steam copy — the native Linux port sidesteps that. See docs/rea-dirt-rally.md.
 
 dg_dirtrally_repo: akitaonrails/rea-dirt-rally
-dg_dirtrally_version: v0.2.0
+dg_dirtrally_version: v0.2.1
 dg_dirtrally_asset_name: "DiRTRallyLauncher-{{ dg_dirtrally_version }}-x86_64.AppImage"
 dg_dirtrally_asset_url: "https://github.com/{{ dg_dirtrally_repo }}/releases/download/{{ dg_dirtrally_version }}/{{ dg_dirtrally_asset_name }}"
-dg_dirtrally_asset_sha256: 305f69eb9459e3eabd6c59aff3cb8a627fea4d02ca9246b56e125f6c75e56b41
+dg_dirtrally_asset_sha256: 7a30ee23eea59f2dc7703af83277c0705bed77e863eaf50e876a47092800b172
 
 # The owned source: Feral's native Linux port, the folder that holds
 # bin/DirtRally + share/lib/config. The launcher's EDITIONS table knows this

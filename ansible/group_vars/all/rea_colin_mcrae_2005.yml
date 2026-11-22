@@ -13,10 +13,10 @@
 # See docs/rea-colin-mcrae-2005.md.
 
 dg_cmr2005_repo: akitaonrails/rea-colin-mcrae-2005
-dg_cmr2005_version: v0.5.0
+dg_cmr2005_version: v0.6.2
 dg_cmr2005_asset_name: "CMR2005Launcher-{{ dg_cmr2005_version }}-x86_64.AppImage"
 dg_cmr2005_asset_url: "https://github.com/{{ dg_cmr2005_repo }}/releases/download/{{ dg_cmr2005_version }}/{{ dg_cmr2005_asset_name }}"
-dg_cmr2005_asset_sha256: 0e3224790dcc1aaab87895b855cb3d78fa03fef1da16b9ed93d07a183285871c
+dg_cmr2005_asset_sha256: f008069c7111e5ff53c65cf0c38753682042b954161ea91491632d7f0b00bdc4
 
 # The owned source: the GOG DRM-free offline installer (version 1.1) — the
 # three parts setup_colin2005.exe + setup_colin2005-{1,2}.bin. The launcher

@@ -4,10 +4,10 @@
 # OutRun 2 SP SDX, SEGA Rally 3, SEGA Racing Classic and Daytona play; F355
 # starts; the two Chihiro games are still being brought up.
 dg_sega_repo: akitaonrails/rea-teknoparrot-sega-series
-dg_sega_version: 0.4.1
+dg_sega_version: 0.7.3
 dg_sega_asset_name: "SegaRacingLauncher-{{ dg_sega_version }}-linux-x86_64.tar.gz"
 dg_sega_asset_url: "https://github.com/{{ dg_sega_repo }}/releases/download/v{{ dg_sega_version }}/{{ dg_sega_asset_name }}"
-dg_sega_asset_sha256: abdcb7c226327a6b39fdec6e2ef17d31951a21a283cf5dba7d5eca2fcb7fb2ad
+dg_sega_asset_sha256: 0894a7d3c57cf32b9a3c22ec6cb328316cf08827860f5b9f6523cb110b985e92
 dg_sega_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_sega_asset_name }}"
 
 dg_sega_root: "{{ dg_box_home }}/tools/rea-sega"

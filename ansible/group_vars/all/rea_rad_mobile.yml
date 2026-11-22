@@ -4,10 +4,10 @@
 # support and the arcade's operator settings. No ROMs included; it detects the
 # owned radm set by content.
 dg_radm_repo: akitaonrails/rea-rad-mobile
-dg_radm_version: v0.6.0
-dg_radm_asset_name: RadMobile-0.6.0-linux-x86_64.tar.gz
+dg_radm_version: v0.6.3
+dg_radm_asset_name: RadMobile-0.6.3-linux-x86_64.tar.gz
 dg_radm_asset_url: "https://github.com/{{ dg_radm_repo }}/releases/download/{{ dg_radm_version }}/{{ dg_radm_asset_name }}"
-dg_radm_asset_sha256: 08685e3b565ae586b131985a34503f7440cdd38f5ed0ea5ac8964615b210ccb2
+dg_radm_asset_sha256: d1f2fa30a6958b94ba1402f163fd274567e7c68bbf7bf8d2cb39c4f36f457405
 dg_radm_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_radm_asset_name }}"
 
 dg_radm_root: "{{ dg_box_home }}/tools/rea-rad-mobile/{{ dg_radm_version }}"

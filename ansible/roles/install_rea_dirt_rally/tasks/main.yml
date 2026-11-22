@@ -55,6 +55,7 @@
     dg_rea_stage_install_dir: "{{ dg_dirtrally_root }}"
     dg_rea_stage_retired_names:
       - DiRTRallyLauncher-v0.1.0-x86_64.AppImage
+      - DiRTRallyLauncher-v0.2.0-x86_64.AppImage
 
 # The launcher fills the resolution from the screen when it is unset; seeding
 # the 4K target pins a headless --play to native 4K on DP-1. force: false — once

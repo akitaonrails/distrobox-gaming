@@ -54,6 +54,7 @@
       - DiRTLauncher-v0.2.0-x86_64.AppImage
       - DiRTLauncher-v0.3.0-x86_64.AppImage
       - DiRTLauncher-v0.3.1-x86_64.AppImage
+      - DiRTLauncher-v0.3.5-x86_64.AppImage
 
 # Migrate the saves and hardware settings from the retired pc-racing install
 # (DiRT kept them under the prefix's Public Documents). force: false keeps

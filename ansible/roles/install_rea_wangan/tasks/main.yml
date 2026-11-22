@@ -1,5 +1,5 @@
 ---
-# Wangan Midnight arcade series — REA launcher v0.6.0. See
+# Wangan Midnight arcade series — REA launcher v0.7.4. See
 # group_vars/all/rea_wangan.yml and docs/rea-wangan.md.
 
 - name: Revert the Wangan launcher when requested

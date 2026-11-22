@@ -1,5 +1,5 @@
 ---
-# Sega arcade racing series — REA launcher v0.4.1. See
+# Sega arcade racing series — REA launcher v0.7.3. See
 # group_vars/all/rea_sega.yml and docs/rea-sega.md.
 
 - name: Revert the Sega racing launcher when requested

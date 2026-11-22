@@ -59,6 +59,7 @@
       - OutRunLauncher-v0.2.1-x86_64.AppImage
       - OutRunLauncher-v0.3.0-x86_64.AppImage
       - OutRunLauncher-v0.3.1-x86_64.AppImage
+      - OutRunLauncher-v0.4.0-x86_64.AppImage
 
 # The settings window fills resolution from the screen when unset; seeding the
 # maxed-out values keeps a headless --play on the 4K panel with DXVK on. force:
