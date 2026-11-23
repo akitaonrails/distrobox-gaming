@@ -41,6 +41,7 @@
     - name: Install the Nintendo dependencies in the box
       ansible.builtin.command:
         argv: "{{ ['distrobox-enter', '-n', dg_box_name, '--', 'sudo', 'pacman', '-S', '--noconfirm', '--needed'] + dg_nintendo_packages }}"
+        chdir: "{{ dg_box_home }}"
       register: _nintendo_pkgs
       changed_when: "'nothing to do' not in _nintendo_pkgs.stdout"
 

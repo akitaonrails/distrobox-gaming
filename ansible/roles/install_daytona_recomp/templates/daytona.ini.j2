@@ -1,0 +1,32 @@
+# Daytona USA Recompiled PC settings (seeded by install_daytona_recomp).
+# Press F4 (or Start+Select on gamepad) in-game for the settings overlay;
+# "Save to config" writes back to this file.
+
+[Display]
+resolution = {{ dg_daytona_recomp_resolution }}
+game_resolution = {{ dg_daytona_recomp_game_resolution }}
+fullscreen = {{ dg_daytona_recomp_fullscreen }}
+monitor = 0
+vsync = {{ dg_daytona_recomp_vsync }}
+refresh_rate = 60
+letterbox = true
+safe_area_x = 100
+safe_area_y = 100
+
+[Graphics]
+internal_resolution_scale = {{ dg_daytona_recomp_internal_scale }}
+anisotropic_filtering = {{ dg_daytona_recomp_anisotropic }}
+upscaler = {{ dg_daytona_recomp_upscaler }}
+cas_sharpness = 0.0
+fsr_quality = auto
+dither = false
+
+[Storage]
+cache_path = {{ dg_daytona_recomp_cache_dir }}
+user_data_path = {{ dg_daytona_recomp_save_dir }}
+
+[Diagnostics]
+debug_overlay = false
+log_level = warn
+log_max_files = 5
+log_max_file_size_mb = 5

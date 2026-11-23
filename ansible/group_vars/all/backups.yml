@@ -198,6 +198,10 @@ dg_save_sets:
   # Native Rust reconstruction: back up only the save/ directory (cmRally.cfg,
   # modern.cfg, championship slots), not the imported runtime-data or HD pack.
   - { name: rea-colin-mcrae-recomp, src: "tools/rea-colin-mcrae-recomp/runtime-data/installed-eu-derived-assets-v2/save" }
+  # Daytona USA (Xbox 360 / XBLA) ReXGlue recomp: back up save/ and daytona.ini,
+  # not the extracted XBLA assets/ or shader cache/.
+  - { name: daytona-recomp,         src: ["tools/daytona-recomp/save",
+                                          "file:tools/daytona-recomp/daytona.ini"] }
   - { name: sega-rally-2,        src: ["file:Games/pc-racing/sega-rally-2/SR2_SAVE.DAT",
                                         "file:Games/pc-racing/sega-rally-2/SR2.CFG",
                                         "file:Games/pc-racing/sega-rally-2/SR2.DSP"] }

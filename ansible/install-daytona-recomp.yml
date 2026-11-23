@@ -1,0 +1,7 @@
+---
+- name: Install Daytona USA Recompiled (Xbox 360 / XBLA native Linux Vulkan)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_daytona_recomp

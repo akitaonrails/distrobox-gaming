@@ -3,11 +3,11 @@
 # executable-backed tables once from the owned 1998 EU PC install (read-only).
 
 dg_cmr_recomp_repo: akitaonrails/rea-colin-mcrae-recomp
-dg_cmr_recomp_version: v0.1.4
+dg_cmr_recomp_version: v0.1.8
 dg_cmr_recomp_asset_name: "Colin-McRae-Rally-Modern-{{ dg_cmr_recomp_version }}-x86_64.AppImage"
 dg_cmr_recomp_asset_url: >-
   https://github.com/{{ dg_cmr_recomp_repo }}/releases/download/{{ dg_cmr_recomp_version }}/{{ dg_cmr_recomp_asset_name }}
-dg_cmr_recomp_asset_sha256: 807ca612c6a87ac0bdbb7a30375932289be04035e5c2ea7d8664bc9fc8d189f2
+dg_cmr_recomp_asset_sha256: dc0b5f31fcb5af0ade7861997593a72135261cf2f5d519f12de55d934e6bb16d
 
 # Owned 1998 EU PC installation (same read-only source used by install_rea_colin_mcrae).
 dg_cmr_recomp_source_dir: "{{ dg_roms_final_root }}/PC/games/CMRally"
@@ -107,3 +107,4 @@ dg_cmr_recomp_modern_settings:
 dg_cmr_recomp_retired_appimages:
   - Colin-McRae-Rally-Modern-v0.1.0-x86_64.AppImage
   - Colin-McRae-Rally-Modern-v0.1.2-x86_64.AppImage
+  - Colin-McRae-Rally-Modern-v0.1.4-x86_64.AppImage

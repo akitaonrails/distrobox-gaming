@@ -1,0 +1,41 @@
+---
+# Daytona USA (Xbox 360 / XBLA, 2011) static recompilation — springah/daytona_recomp.
+# Native Linux x64 Vulkan build (ReXGlue + plume RHI). No game data is included;
+# extracts the owned XBLA LIVE/STFS content package once into assets/.
+# See docs/daytona-recomp.md.
+
+dg_daytona_recomp_repo: springah/daytona_recomp
+dg_daytona_recomp_version: v1.1.7
+dg_daytona_recomp_asset_name: "Daytona-USA-Deck-{{ dg_daytona_recomp_version }}.tar.gz"
+dg_daytona_recomp_asset_url: >-
+  https://github.com/{{ dg_daytona_recomp_repo }}/releases/download/{{ dg_daytona_recomp_version }}/{{ dg_daytona_recomp_asset_name }}
+dg_daytona_recomp_asset_sha256: a212cc5e0d5c935fa904423bbf78848c9df02991b6cbd93ee5346690e2744f2e
+dg_daytona_recomp_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_daytona_recomp_asset_name }}"
+
+# Owned Xbox 360 XBLA LIVE/STFS package (Title ID 58410B1D, read-only).
+dg_daytona_recomp_xbla_pkg: >-
+  {{ dg_roms_final_root }}/xboxlivearcade/DAYTONA USA/58410B1D/000D0000/80B8DCD51DE8B34C1513FFB1C66F3BE73B74823958
+dg_daytona_recomp_xbla_sha256: db2381451a15a4e537154712213a0309e9ddc33d20bdc03421d80c9939893cef
+
+# Local install layout inside the gaming box home. Extracted assets, saves,
+# cache, and daytona.ini live at the top level so version bumps preserve them.
+dg_daytona_recomp_root: "{{ dg_box_home }}/tools/daytona-recomp"
+dg_daytona_recomp_release_dir: "{{ dg_daytona_recomp_root }}/{{ dg_daytona_recomp_version }}"
+dg_daytona_recomp_assets_dir: "{{ dg_daytona_recomp_root }}/assets"
+dg_daytona_recomp_save_dir: "{{ dg_daytona_recomp_root }}/save"
+dg_daytona_recomp_cache_dir: "{{ dg_daytona_recomp_root }}/cache"
+dg_daytona_recomp_ini: "{{ dg_daytona_recomp_root }}/daytona.ini"
+dg_daytona_recomp_launcher: "{{ dg_box_home }}/bin/daytona-recomp"
+
+# Maxed-out 4K baseline for RTX 5090 (seeded once with force: false so F4
+# overlay "Save to config" edits survive reruns):
+# - game_resolution stays 1280x720 per upstream guidance; internal_resolution_scale=3
+#   renders natively at 3840x2160 (1:1 on the 4K panel) with 16x AF and VSync.
+# - Guest tick is fixed at 60 Hz (refresh_rate is ignored by upstream on purpose).
+dg_daytona_recomp_resolution: "3840x2160"
+dg_daytona_recomp_game_resolution: "1280x720"
+dg_daytona_recomp_fullscreen: "true"
+dg_daytona_recomp_vsync: "true"
+dg_daytona_recomp_internal_scale: 3
+dg_daytona_recomp_anisotropic: "16"
+dg_daytona_recomp_upscaler: "bilinear"

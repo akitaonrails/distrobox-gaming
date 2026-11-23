@@ -12,10 +12,10 @@
 # See docs/rea-initiald.md.
 
 dg_initiald_repo: akitaonrails/rea-teknoparrot-initial-d-series
-dg_initiald_version: 0.6.3
+dg_initiald_version: 0.6.6
 dg_initiald_asset_name: "InitialDLauncher-{{ dg_initiald_version }}-linux-x86_64.tar.gz"
 dg_initiald_asset_url: "https://github.com/{{ dg_initiald_repo }}/releases/download/v{{ dg_initiald_version }}/{{ dg_initiald_asset_name }}"
-dg_initiald_asset_sha256: 72bb9305a49307ad36020ded68f3f211552ca3fb12843edb1f982dbe0c4968d2
+dg_initiald_asset_sha256: b0f4f1793a34f7de77bfbceaf1106748edb91f3aad55328cd2137a1b921bed23
 dg_initiald_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_initiald_asset_name }}"
 
 dg_initiald_root: "{{ dg_box_home }}/tools/rea-initiald"

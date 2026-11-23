@@ -48,12 +48,14 @@
     - name: Install the launcher dependencies in the box
       ansible.builtin.command:
         argv: "{{ ['distrobox-enter', '-n', dg_box_name, '--', 'sudo', 'pacman', '-S', '--noconfirm', '--needed'] + dg_initiald_packages }}"
+        chdir: "{{ dg_box_home }}"
       register: _initiald_pkgs
       changed_when: "'nothing to do' not in _initiald_pkgs.stdout"
 
     - name: Check Flycast (the NAOMI 2 runtime)
       ansible.builtin.command:
         argv: [distrobox-enter, -n, "{{ dg_box_name }}", --, sh, -c, command -v flycast]
+        chdir: "{{ dg_box_home }}"
       register: _initiald_flycast
       changed_when: false
       failed_when: _initiald_flycast.rc != 0

@@ -7,10 +7,10 @@
 # The NAS BIOS folders are recorded here for the future loaders, but this
 # launcher release does not consume them (see docs/rea-wangan.md).
 dg_wangan_repo: akitaonrails/rea-teknoparrot-wangan-series
-dg_wangan_version: 0.7.4
+dg_wangan_version: 0.7.6
 dg_wangan_asset_name: "WanganLauncher-{{ dg_wangan_version }}-linux-x86_64.tar.gz"
 dg_wangan_asset_url: "https://github.com/{{ dg_wangan_repo }}/releases/download/v{{ dg_wangan_version }}/{{ dg_wangan_asset_name }}"
-dg_wangan_asset_sha256: 906a751a5da4cc4f79ed81bc9b8a23e470cdd740c04fd9a8c8a38672b75ddb53
+dg_wangan_asset_sha256: 1146eb49ecaf85413acb3987367a67d460badd4be49179e783df54352a354467
 dg_wangan_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_wangan_asset_name }}"
 
 dg_wangan_root: "{{ dg_box_home }}/tools/rea-wangan"

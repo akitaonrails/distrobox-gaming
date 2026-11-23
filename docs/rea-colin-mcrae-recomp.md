@@ -16,7 +16,7 @@ cd ansible && ansible-playbook install-rea-colin-mcrae-recomp.yml
 
 | Item | Path / Value |
 | --- | --- |
-| Release | `v0.1.1` (`Colin-McRae-Rally-Modern-v0.1.1-x86_64.AppImage`, SHA256-pinned in `ansible/group_vars/all/rea_colin_mcrae_recomp.yml`, staged in `ROMS_FINAL/PC/releases/`) |
+| Release | `v0.1.8` (`Colin-McRae-Rally-Modern-v0.1.8-x86_64.AppImage`, SHA256-pinned in `ansible/group_vars/all/rea_colin_mcrae_recomp.yml`, staged in `ROMS_FINAL/PC/releases/`) |
 | Owned source | `ROMS_FINAL/PC/games/CMRally` (`Rally.exe` SHA256 `46500c8e…`, read-only) |
 | Install root | `{{ dg_box_home }}/tools/rea-colin-mcrae-recomp/` |
 | Imported runtime data | `{{ dg_box_home }}/tools/rea-colin-mcrae-recomp/runtime-data/installed-eu-derived-assets-v2/` plus all 11 sibling `official-eu-*` executable-backed table stores |

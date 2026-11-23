@@ -1,0 +1,19 @@
+#!/bin/sh
+set -eu
+if [ ! -e /.dockerenv ]; then
+  cd '{{ dg_box_home }}'
+  exec distrobox-enter -n {{ dg_box_name }} -- sh "$0" "$@"
+fi
+# Daytona USA (Xbox 360 / XBLA, 2011) static recompilation (ReXGlue + plume).
+# Runs natively on Vulkan inside the gaming distrobox. X11/XWayland is required
+# because the plume renderer presents into an X11 window. Press F4 (or
+# Start+Select on gamepad) in-game for the settings overlay.
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD="${__NV_PRIME_RENDER_OFFLOAD:-1}"
+export __GLX_VENDOR_LIBRARY_NAME="${__GLX_VENDOR_LIBRARY_NAME:-nvidia}"
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS="${SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS:-1}"
+export SDL_VIDEODRIVER=x11
+export LD_LIBRARY_PATH="{{ dg_daytona_recomp_release_dir }}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
+
+cd '{{ dg_daytona_recomp_release_dir }}'
+exec ./daytona --game_data_root='{{ dg_daytona_recomp_assets_dir }}' "$@"

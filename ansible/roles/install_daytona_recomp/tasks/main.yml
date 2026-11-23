@@ -1,0 +1,132 @@
+---
+# Daytona USA (Xbox 360 / XBLA, 2011) static recompilation — springah/daytona_recomp.
+# Stages the pinned Linux x64 Vulkan bundle in ROMS_FINAL/PC/releases/, unpacks
+# it into tools/daytona-recomp/<version>/, extracts the owned XBLA LIVE package
+# once into tools/daytona-recomp/assets/, seeds a 4K/16x AF daytona.ini, and
+# publishes a re-entrant launcher and desktop entry.
+
+- name: Check the owned Daytona USA (XBLA) LIVE content package
+  ansible.builtin.stat:
+    path: "{{ dg_daytona_recomp_xbla_pkg }}"
+    checksum_algorithm: sha256
+  register: _daytona_recomp_pkg
+
+- name: Require the verified Daytona USA XBLA LIVE package
+  ansible.builtin.assert:
+    that:
+      - _daytona_recomp_pkg.stat.exists
+      - _daytona_recomp_pkg.stat.checksum == dg_daytona_recomp_xbla_sha256
+    fail_msg: >-
+      Need the owned Daytona USA (Xbox 360 / XBLA, Title ID 58410B1D) LIVE
+      package (sha256 {{ dg_daytona_recomp_xbla_sha256[:12] }}...) at
+      {{ dg_daytona_recomp_xbla_pkg }}. See docs/daytona-recomp.md.
+
+- name: Check for a running Daytona USA Recompiled session before install
+  ansible.builtin.command: pgrep -x daytona
+  register: _daytona_recomp_running
+  failed_when: false
+  changed_when: false
+
+- name: Require Daytona USA Recompiled to be closed
+  ansible.builtin.assert:
+    that: _daytona_recomp_running.rc == 1
+    fail_msg: "Close Daytona USA Recompiled before re-running the installer."
+
+- name: Create Daytona USA Recompiled directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_roms_final_root }}/PC/releases"
+    - "{{ dg_daytona_recomp_root }}"
+    - "{{ dg_daytona_recomp_release_dir }}"
+    - "{{ dg_daytona_recomp_assets_dir }}"
+    - "{{ dg_daytona_recomp_save_dir }}"
+    - "{{ dg_daytona_recomp_cache_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Stage the pinned Daytona USA Recompiled Linux tarball in PC/releases
+  ansible.builtin.get_url:
+    url: "{{ dg_daytona_recomp_asset_url }}"
+    dest: "{{ dg_daytona_recomp_archive }}"
+    checksum: "sha256:{{ dg_daytona_recomp_asset_sha256 }}"
+    mode: "0644"
+
+- name: Unpack the pinned Daytona USA Recompiled release
+  ansible.builtin.command:
+    argv:
+      - tar
+      - --strip-components=1
+      - -xzf
+      - "{{ dg_daytona_recomp_archive }}"
+      - -C
+      - "{{ dg_daytona_recomp_release_dir }}"
+    creates: "{{ dg_daytona_recomp_release_dir }}/daytona"
+
+- name: Ensure the daytona binary is executable
+  ansible.builtin.file:
+    path: "{{ dg_daytona_recomp_release_dir }}/daytona"
+    mode: "0755"
+
+- name: Extract the owned Daytona USA XBLA LIVE package into assets/
+  ansible.builtin.command:
+    argv:
+      - python3
+      - "{{ dg_daytona_recomp_release_dir }}/extract_game.py"
+      - "{{ dg_daytona_recomp_xbla_pkg }}"
+      - --out
+      - "{{ dg_daytona_recomp_assets_dir }}"
+      - --assets
+      - "{{ dg_daytona_recomp_assets_dir }}"
+    creates: "{{ dg_daytona_recomp_assets_dir }}/default.xex"
+
+- name: Check whether release assets/ is still a bundled placeholder directory
+  ansible.builtin.stat:
+    path: "{{ dg_daytona_recomp_release_dir }}/assets"
+  register: _daytona_recomp_release_assets
+
+- name: Remove bundled placeholder assets/ directory before symlinking
+  ansible.builtin.file:
+    path: "{{ dg_daytona_recomp_release_dir }}/assets"
+    state: absent
+  when:
+    - _daytona_recomp_release_assets.stat.exists
+    - not _daytona_recomp_release_assets.stat.islnk
+
+- name: Symlink shared extracted assets/ into the release directory
+  ansible.builtin.file:
+    src: "{{ dg_daytona_recomp_assets_dir }}"
+    dest: "{{ dg_daytona_recomp_release_dir }}/assets"
+    state: link
+    force: true
+
+- name: Seed 4K daytona.ini (preserves later in-game F4 overlay edits)
+  ansible.builtin.template:
+    src: daytona.ini.j2
+    dest: "{{ dg_daytona_recomp_ini }}"
+    mode: "0644"
+    force: false
+
+- name: Symlink persistent daytona.ini into the release directory
+  ansible.builtin.file:
+    src: "{{ dg_daytona_recomp_ini }}"
+    dest: "{{ dg_daytona_recomp_release_dir }}/daytona.ini"
+    state: link
+    force: true
+
+- name: Install the re-entrant Daytona USA Recompiled launcher
+  ansible.builtin.template:
+    src: daytona-recomp.sh.j2
+    dest: "{{ dg_daytona_recomp_launcher }}"
+    mode: "0755"
+
+- name: Render the Daytona USA Recompiled desktop entry
+  ansible.builtin.template:
+    src: daytona-recomp.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/daytona-recomp.desktop"
+    mode: "0644"
+
+- name: Publish the Daytona USA Recompiled desktop entry
+  ansible.builtin.command: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  changed_when: false

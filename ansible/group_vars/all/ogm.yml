@@ -708,6 +708,12 @@ dg_ogm_games:
     category: recomp
     sgdb_query: "Colin McRae Rally"
     github: "{{ dg_cmr_recomp_repo }}"
+  - desktop_id: daytona-recomp
+    id: daytona-recomp
+    name: "Daytona USA (Recomp)"
+    category: recomp
+    sgdb_query: "Daytona USA"
+    github: "{{ dg_daytona_recomp_repo }}"
   - desktop_id: rea-colin-mcrae-3
     id: rea-colin-mcrae-3
     name: "Colin McRae Rally 3 (REA)"

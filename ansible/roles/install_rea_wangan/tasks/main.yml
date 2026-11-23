@@ -41,6 +41,7 @@
     - name: Install the Wangan dependencies in the box
       ansible.builtin.command:
         argv: "{{ ['distrobox-enter', '-n', dg_box_name, '--', 'sudo', 'pacman', '-S', '--noconfirm', '--needed'] + dg_wangan_packages }}"
+        chdir: "{{ dg_box_home }}"
       register: _wangan_pkgs
       changed_when: "'nothing to do' not in _wangan_pkgs.stdout"
 
@@ -90,6 +91,8 @@
           export WANGAN_DATA="{{ dg_wangan_data }}"
           ./wangan-launcher --add-files "{{ dg_wangan_bios_dir }}"
         '
+      args:
+        chdir: "{{ dg_box_home }}"
       register: _wangan_board_files
       changed_when: "'added' in _wangan_board_files.stdout"
 
