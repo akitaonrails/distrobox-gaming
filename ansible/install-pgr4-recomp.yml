@@ -1,0 +1,7 @@
+---
+- name: Install Project Gotham Racing 4 (PGR4 2026 Recomp)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_pgr4_recomp

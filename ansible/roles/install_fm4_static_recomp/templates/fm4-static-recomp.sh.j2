@@ -1,0 +1,33 @@
+#!/usr/bin/env sh
+# Forza Motorsport 4 Static Recomp (i2kiselev/fm4-static-recomp).
+# Windows x64 Vulkan port + .NET launcher; runs from the host via GE-Proton.
+set -eu
+
+APP="{{ dg_fm4sr_current }}"
+PROTON="{{ dg_fm4sr_proton }}"
+if [ ! -f "$APP/FM4StaticRecompLauncher.exe" ]; then
+  printf '%s\n' 'FM4 Static Recomp is not installed. Run: cd ansible && ansible-playbook install-fm4-static-recomp.yml' >&2
+  exit 1
+fi
+if [ ! -x "$PROTON" ]; then
+  printf '%s\n' "Configured GE-Proton build missing at $PROTON." >&2
+  exit 1
+fi
+
+export STEAM_COMPAT_CLIENT_INSTALL_PATH="{{ dg_fm4sr_steam_root }}"
+export STEAM_COMPAT_DATA_PATH="{{ dg_fm4sr_compatdata }}"
+export SteamAppId=0
+export SteamGameId=0
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export PROTON_ENABLE_NVAPI=1
+export DXVK_ENABLE_NVAPI=1
+export PROTON_HIDE_NVIDIA_GPU=0
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+# Disable Wine's Windows.Gaming.Input so XInput handles the 8BitDo pad cleanly.
+export WINEDLLOVERRIDES="windows.gaming.input=d${WINEDLLOVERRIDES:+;$WINEDLLOVERRIDES}"
+
+mkdir -p "$STEAM_COMPAT_DATA_PATH"
+cd "$APP"
+exec "$PROTON" run "$APP/FM4StaticRecompLauncher.exe" "$@"

@@ -1,0 +1,141 @@
+---
+# Project Gotham Racing 4 (tazzkiller/PGR4_2026) — Xbox 360 TU2 static
+# recompilation. Stages the pinned release zip, extracts the owned PGR4 ISO
+# once via extract-xiso, stages Title Update 2 (XboxUnity TUID 21625), symlinks
+# the optional 6.5 GB HD texture pack when present, seeds a maxed-out 4K
+# pgr4.toml, and publishes a host-side GE-Proton launcher and desktop entry.
+
+- name: Check the owned Project Gotham Racing 4 Xbox 360 ISO
+  ansible.builtin.stat:
+    path: "{{ dg_pgr4_iso }}"
+  register: _pgr4_iso
+
+- name: Require the owned PGR4 Xbox 360 ISO
+  ansible.builtin.assert:
+    that: _pgr4_iso.stat.exists
+    fail_msg: "Need the owned PGR4 ISO at {{ dg_pgr4_iso }}. See docs/pgr4-recomp.md."
+
+- name: Check for a running PGR4 Recomp session before install
+  ansible.builtin.command: pgrep -f '[/\\](pgr4|PGR4Launcher)\.exe'
+  register: _pgr4_running
+  failed_when: false
+  changed_when: false
+
+- name: Require PGR4 Recomp to be closed
+  ansible.builtin.assert:
+    that: _pgr4_running.rc == 1
+    fail_msg: "Close Project Gotham Racing 4 (Recomp) before re-running the installer."
+
+- name: Create PGR4 Recomp directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_roms_final_root }}/PC/releases"
+    - "{{ dg_pgr4_tu2_dir_nas }}"
+    - "{{ dg_pgr4_hd_pack_dir }}"
+    - "{{ dg_pgr4_root }}"
+    - "{{ dg_pgr4_release_dir }}"
+    - "{{ dg_pgr4_game_dir }}"
+    - "{{ dg_pgr4_tu2_dir }}"
+    - "{{ dg_pgr4_compatdata }}"
+    - "{{ dg_pgr4_docs_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Stage the pinned PGR4 2026 release zip in PC/releases
+  ansible.builtin.get_url:
+    url: "{{ dg_pgr4_asset_url }}"
+    dest: "{{ dg_pgr4_archive }}"
+    checksum: "sha256:{{ dg_pgr4_asset_sha256 }}"
+    mode: "0644"
+
+- name: Unpack the pinned PGR4 2026 release
+  ansible.builtin.unarchive:
+    src: "{{ dg_pgr4_archive }}"
+    dest: "{{ dg_pgr4_release_dir }}"
+    remote_src: true
+    creates: "{{ dg_pgr4_app_dir }}/pgr4.exe"
+
+- name: Stage PGR4 Title Update 2 (LIVE STFS package)
+  ansible.builtin.get_url:
+    url: "{{ dg_pgr4_tu2_url }}"
+    dest: "{{ dg_pgr4_tu2_dest }}"
+    checksum: "sha256:{{ dg_pgr4_tu2_sha256 }}"
+    mode: "0644"
+
+- name: Extract the owned PGR4 Xbox 360 ISO into tools/pgr4-recomp/game/
+  ansible.builtin.command:
+    argv:
+      - distrobox-enter
+      - -n
+      - "{{ dg_box_name }}"
+      - --
+      - extract-xiso
+      - -d
+      - "{{ dg_pgr4_game_dir }}"
+      - -x
+      - "{{ dg_pgr4_iso }}"
+    chdir: "{{ dg_box_home }}"
+    creates: "{{ dg_pgr4_game_dir }}/default.xex"
+
+- name: Symlink Title Update 2 into tools/pgr4-recomp/title-update/
+  ansible.builtin.file:
+    src: "{{ dg_pgr4_tu2_dest }}"
+    dest: "{{ dg_pgr4_tu2_dir }}/tu00000002_00000000"
+    state: link
+    force: true
+
+- name: Seed maxed-out 4K pgr4.toml (preserves later launcher/in-game edits)
+  ansible.builtin.template:
+    src: pgr4.toml.j2
+    dest: "{{ dg_pgr4_toml }}"
+    mode: "0644"
+    force: false
+
+- name: Check whether the optional 6.5 GB HD texture pack is staged
+  ansible.builtin.stat:
+    path: "{{ dg_pgr4_hd_pack_dest }}"
+  register: _pgr4_hd_pack
+
+- name: Symlink optional textures_hd.pak beside pgr4.exe when present
+  ansible.builtin.file:
+    src: "{{ dg_pgr4_hd_pack_dest }}"
+    dest: "{{ dg_pgr4_app_dir }}/textures_hd.pak"
+    state: link
+    force: true
+  when: _pgr4_hd_pack.stat.exists
+
+- name: Symlink persistent game/, title-update/, and pgr4.toml into release dir
+  ansible.builtin.file:
+    src: "{{ item.src }}"
+    dest: "{{ dg_pgr4_app_dir }}/{{ item.name }}"
+    state: link
+    force: true
+  loop:
+    - { src: "{{ dg_pgr4_game_dir }}", name: game }
+    - { src: "{{ dg_pgr4_tu2_dir }}", name: title-update }
+    - { src: "{{ dg_pgr4_toml }}", name: pgr4.toml }
+
+- name: Point current/ symlink at the active PGR4 2026 release
+  ansible.builtin.file:
+    src: "{{ dg_pgr4_app_dir }}"
+    dest: "{{ dg_pgr4_current }}"
+    state: link
+    force: true
+
+- name: Install the host-side GE-Proton PGR4 Recomp launcher
+  ansible.builtin.template:
+    src: pgr4-recomp.sh.j2
+    dest: "{{ dg_pgr4_launcher }}"
+    mode: "0755"
+
+- name: Render the PGR4 Recomp desktop entry
+  ansible.builtin.template:
+    src: pgr4-recomp.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/pgr4-recomp.desktop"
+    mode: "0644"
+
+- name: Publish the PGR4 Recomp desktop entry
+  ansible.builtin.command: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  changed_when: false

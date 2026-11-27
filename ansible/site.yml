@@ -60,6 +60,7 @@
     - { role: install_fzero_glinux,            tags: [fzero, never] }
     - { role: install_project_midas,           tags: [project_midas, goldeneye, never] }
     - { role: install_hl360_fm4,               tags: [fm4, hl360, never] }
+    - { role: install_fm4_static_recomp,       tags: [fm4_static_recomp, never] }
     - { role: install_fh1_reimagined,          tags: [fh1r, never] }
     - { role: install_gravity_rush,            tags: [gravity_rush, never] }
     - { role: install_kyty_gt7,                tags: [kyty_gt7, never] }
@@ -104,6 +105,7 @@
     - { role: install_redline_recomp,          tags: [redline, never] }
     - { role: install_daytona2_web,            tags: [daytona2_web, never] }
     - { role: install_daytona_recomp,          tags: [daytona_recomp, never] }
+    - { role: install_pgr4_recomp,             tags: [pgr4_recomp, never] }
     - { role: install_supermodel,              tags: [supermodel, never] }
     - { role: install_vf1_recomp,              tags: [vf1_recomp, never] }
     - { role: install_vf3_recomp,              tags: [vf3_recomp, never] }

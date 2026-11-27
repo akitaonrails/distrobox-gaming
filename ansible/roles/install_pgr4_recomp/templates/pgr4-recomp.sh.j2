@@ -1,0 +1,32 @@
+#!/usr/bin/env sh
+# Project Gotham Racing 4 — PGR4 2026 static recompilation (ReXGlue + D3D12).
+# Runs from the host through GE-Proton (VKD3D-Proton + NVAPI for DLSS/Reflex).
+# Starts PGR4Launcher.exe per upstream guidance (pgr4.exe delegates to it).
+set -eu
+
+APP="{{ dg_pgr4_current }}"
+PROTON="{{ dg_pgr4_proton }}"
+if [ ! -f "$APP/PGR4Launcher.exe" ]; then
+  printf '%s\n' 'PGR4 Recomp is not installed. Run: cd ansible && ansible-playbook install-pgr4-recomp.yml' >&2
+  exit 1
+fi
+if [ ! -x "$PROTON" ]; then
+  printf '%s\n' "Configured GE-Proton build missing at $PROTON." >&2
+  exit 1
+fi
+
+export STEAM_COMPAT_CLIENT_INSTALL_PATH="{{ dg_pgr4_steam_root }}"
+export STEAM_COMPAT_DATA_PATH="{{ dg_pgr4_compatdata }}"
+export SteamAppId=0
+export SteamGameId=0
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export PROTON_ENABLE_NVAPI=1
+export DXVK_ENABLE_NVAPI=1
+export PROTON_HIDE_NVIDIA_GPU=0
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+mkdir -p "$STEAM_COMPAT_DATA_PATH"
+cd "$APP"
+exec "$PROTON" run "$APP/PGR4Launcher.exe" "$@"

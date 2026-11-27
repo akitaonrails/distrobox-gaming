@@ -1,0 +1,7 @@
+---
+- name: Install Forza Motorsport 4 Static Recomp (i2kiselev/fm4-static-recomp)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_fm4_static_recomp

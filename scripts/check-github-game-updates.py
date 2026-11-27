@@ -116,6 +116,8 @@ PIN_VARS = {
     "daytona-recomp": ("daytona_recomp.yml", "dg_daytona_recomp_version"),
     "gt6-recomp": ("gt6_recomp.yml", "dg_gt6_recomp_version"),
     "r4-remix": ("r4_remix.yml", "dg_r4_remix_version"),
+    "pgr4-recomp": ("pgr4_recomp.yml", "dg_pgr4_version"),
+    "fm4-static-recomp": ("fm4_static_recomp.yml", "dg_fm4sr_version"),
     "virtua-fighter": ("model1.yml", "dg_model1_vf_version"),
     "virtua-racing": ("model1.yml", "dg_model1_vr_version"),
 }

@@ -1,0 +1,11 @@
+{% from 'ogm-desktop-entry.j2' import ogm_metadata with context -%}
+[Desktop Entry]
+Name=Forza Motorsport 4 (Static Recomp)
+Exec={{ dg_fm4sr_launcher }}
+Terminal=false
+Type=Application
+Icon=applications-games
+Comment=Forza Motorsport 4 (Xbox 360) static recompilation (Vulkan, up to 4x/240 FPS, DLSS/DLAA) via GE-Proton
+Categories=Game;
+Keywords=forza;fm4;motorsport;xbox360;recomp;shiftglue;racing;
+{{ ogm_metadata('fm4-static-recomp') }}

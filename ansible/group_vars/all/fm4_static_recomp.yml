@@ -1,0 +1,32 @@
+---
+# Forza Motorsport 4 — Static Recompilation (i2kiselev/fm4-static-recomp).
+# ShiftGlue + Vulkan renderer with 1x-4x scale, 60-240 FPS, DLSS/DLAA/FSR 2/3/4,
+# in-game PC OPTIONS (BACK+START / F6), and Disc 2/DLC support.
+# Runs from the host through GE-Proton; first-time setup runs inside
+# FM4StaticRecompLauncher.exe (requires accepting Microsoft's C++ runtime /
+# Windows SDK license to compile default.xex from your owned Disc 1 ISO).
+# Installs alongside install_hl360_fm4. See docs/fm4-static-recomp.md.
+
+dg_fm4sr_repo: i2kiselev/fm4-static-recomp
+dg_fm4sr_version: v0.3.3
+dg_fm4sr_asset_name: "FM4StaticRecomp-Launcher-{{ dg_fm4sr_version }}.zip"
+dg_fm4sr_asset_url: >-
+  https://github.com/{{ dg_fm4sr_repo }}/releases/download/{{ dg_fm4sr_version }}/FM4StaticRecomp-Launcher.zip
+dg_fm4sr_asset_sha256: 7f222aa8eb1a9ac8165a03ca7d5eeb37b85e1a5ddf913d3e8e713d0423a882cc
+dg_fm4sr_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_fm4sr_asset_name }}"
+
+# Reuse the owned USA Rev 1 Disc 1 (media ID 33E7B39F) and Disc 2 ISOs from hl360_fm4.yml.
+dg_fm4sr_disc1: "{{ dg_hl360_disc1 }}"
+dg_fm4sr_disc2: "{{ dg_hl360_disc2 }}"
+
+# Local install layout inside the gaming box home. data/ lives at the top level
+# so release upgrades preserve the built game, profiles, saves, and settings.
+dg_fm4sr_root: "{{ dg_box_home }}/tools/fm4-static-recomp"
+dg_fm4sr_release_dir: "{{ dg_fm4sr_root }}/releases/{{ dg_fm4sr_version }}"
+dg_fm4sr_current: "{{ dg_fm4sr_root }}/current"
+dg_fm4sr_data_dir: "{{ dg_fm4sr_root }}/data"
+dg_fm4sr_discs_dir: "{{ dg_fm4sr_root }}/discs"
+dg_fm4sr_compatdata: "{{ dg_box_home }}/compatdata/fm4-static-recomp"
+dg_fm4sr_proton: "{{ ansible_facts.env.HOME }}/.steam/steam/compatibilitytools.d/GE-Proton11-1/proton"
+dg_fm4sr_steam_root: "{{ ansible_facts.env.HOME }}/.steam/steam"
+dg_fm4sr_launcher: "{{ dg_box_home }}/bin/fm4-static-recomp"

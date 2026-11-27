@@ -1,0 +1,107 @@
+---
+# i2kiselev/fm4-static-recomp — Forza Motorsport 4 static recompilation.
+# Stages FM4StaticRecomp-Launcher.zip, unpacks it beside a persistent data/
+# directory, symlinks the owned USA Rev 1 Disc 1 & Disc 2 ISOs into discs/ for
+# convenient selection in the launcher's first-time setup GUI, and publishes a
+# host-side GE-Proton launcher and desktop entry.
+
+- name: Check the owned Forza Motorsport 4 USA Rev 1 Disc 1 ISO
+  ansible.builtin.stat:
+    path: "{{ dg_fm4sr_disc1 }}"
+  register: _fm4sr_disc1
+
+- name: Require the owned Forza Motorsport 4 Disc 1 ISO
+  ansible.builtin.assert:
+    that: _fm4sr_disc1.stat.exists
+    fail_msg: >-
+      Need Forza Motorsport 4 Disc 1 ISO at {{ dg_fm4sr_disc1 }}.
+      See docs/fm4-static-recomp.md.
+
+- name: Check for a running FM4 Static Recomp session before install
+  ansible.builtin.command: pgrep -f 'FM4StaticRecompLauncher\.exe'
+  register: _fm4sr_running
+  failed_when: false
+  changed_when: false
+
+- name: Require FM4 Static Recomp to be closed
+  ansible.builtin.assert:
+    that: _fm4sr_running.rc == 1
+    fail_msg: "Close FM4 Static Recomp before re-running the installer."
+
+- name: Create FM4 Static Recomp directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_roms_final_root }}/PC/releases"
+    - "{{ dg_fm4sr_root }}"
+    - "{{ dg_fm4sr_release_dir }}"
+    - "{{ dg_fm4sr_data_dir }}"
+    - "{{ dg_fm4sr_discs_dir }}"
+    - "{{ dg_fm4sr_compatdata }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Stage the pinned FM4 Static Recomp Launcher zip in PC/releases
+  ansible.builtin.get_url:
+    url: "{{ dg_fm4sr_asset_url }}"
+    dest: "{{ dg_fm4sr_archive }}"
+    checksum: "sha256:{{ dg_fm4sr_asset_sha256 }}"
+    mode: "0644"
+
+- name: Unpack the pinned FM4 Static Recomp Launcher release
+  ansible.builtin.unarchive:
+    src: "{{ dg_fm4sr_archive }}"
+    dest: "{{ dg_fm4sr_release_dir }}"
+    remote_src: true
+    creates: "{{ dg_fm4sr_release_dir }}/FM4StaticRecompLauncher.exe"
+
+- name: Symlink owned Disc 1 ISO into tools/fm4-static-recomp/discs/
+  ansible.builtin.file:
+    src: "{{ dg_fm4sr_disc1 }}"
+    dest: "{{ dg_fm4sr_discs_dir }}/fm4-disc1.iso"
+    state: link
+    force: true
+
+- name: Check for owned Disc 2 ISO
+  ansible.builtin.stat:
+    path: "{{ dg_fm4sr_disc2 }}"
+  register: _fm4sr_disc2
+
+- name: Symlink owned Disc 2 ISO into tools/fm4-static-recomp/discs/ when present
+  ansible.builtin.file:
+    src: "{{ dg_fm4sr_disc2 }}"
+    dest: "{{ dg_fm4sr_discs_dir }}/fm4-disc2.iso"
+    state: link
+    force: true
+  when: _fm4sr_disc2.stat.exists
+
+- name: Symlink persistent data/ directory into the active release directory
+  ansible.builtin.file:
+    src: "{{ dg_fm4sr_data_dir }}"
+    dest: "{{ dg_fm4sr_release_dir }}/data"
+    state: link
+    force: true
+
+- name: Point current/ symlink at the active FM4 Static Recomp release
+  ansible.builtin.file:
+    src: "{{ dg_fm4sr_release_dir }}"
+    dest: "{{ dg_fm4sr_current }}"
+    state: link
+    force: true
+
+- name: Install the host-side GE-Proton FM4 Static Recomp launcher
+  ansible.builtin.template:
+    src: fm4-static-recomp.sh.j2
+    dest: "{{ dg_fm4sr_launcher }}"
+    mode: "0755"
+
+- name: Render the FM4 Static Recomp desktop entry
+  ansible.builtin.template:
+    src: fm4-static-recomp.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/fm4-static-recomp.desktop"
+    mode: "0644"
+
+- name: Publish the FM4 Static Recomp desktop entry
+  ansible.builtin.command: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  changed_when: false

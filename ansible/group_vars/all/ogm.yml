@@ -726,6 +726,18 @@ dg_ogm_games:
     category: port
     sgdb_query: "R4: Ridge Racer Type 4"
     github: "{{ dg_r4_remix_repo }}"
+  - desktop_id: pgr4-recomp
+    id: pgr4-recomp
+    name: "Project Gotham Racing 4 (Recomp)"
+    category: recomp
+    sgdb_query: "Project Gotham Racing 4"
+    github: "{{ dg_pgr4_repo }}"
+  - desktop_id: fm4-static-recomp
+    id: fm4-static-recomp
+    name: "Forza Motorsport 4 (Static Recomp)"
+    category: recomp
+    sgdb_query: "Forza Motorsport 4"
+    github: "{{ dg_fm4sr_repo }}"
   - desktop_id: rea-colin-mcrae-3
     id: rea-colin-mcrae-3
     name: "Colin McRae Rally 3 (REA)"

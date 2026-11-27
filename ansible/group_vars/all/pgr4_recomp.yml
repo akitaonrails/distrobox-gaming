@@ -1,0 +1,42 @@
+---
+# Project Gotham Racing 4 — Xbox 360 (Title Update 2) static recompilation
+# (tazzkiller/PGR4_2026: ReXGlue + pgr4-native D3D12 + DLSS/FSR/XeGTAO).
+# Windows x64 D3D12 build run from the host through GE-Proton (VKD3D-Proton).
+# See docs/pgr4-recomp.md.
+
+dg_pgr4_repo: tazzkiller/PGR4_2026
+dg_pgr4_version: v1.65
+dg_pgr4_asset_name: "PGR4_{{ dg_pgr4_version }}.zip"
+dg_pgr4_asset_url: >-
+  https://github.com/{{ dg_pgr4_repo }}/releases/download/{{ dg_pgr4_version }}/{{ dg_pgr4_asset_name }}
+dg_pgr4_asset_sha256: ba7d89a994bf2da79c25a4c05c5c20e8c80563b8d12c1c6734040d099b6648da
+dg_pgr4_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_pgr4_asset_name }}"
+
+# Owned Xbox 360 ISO (extracted once via extract-xiso) and Title Update 2
+# (Media ID 5A381A4E, XboxUnity TUID 21625, LIVE STFS package).
+dg_pgr4_iso: "{{ dg_roms_final_root }}/xbox360/Project Gotham Racing 4 [RF].iso"
+dg_pgr4_tu2_url: "http://xboxunity.net/Resources/Lib/TitleUpdate.php?tuid=21625"
+dg_pgr4_tu2_dir_nas: "{{ dg_roms_final_root }}/xbox360-updates/Project Gotham Racing 4"
+dg_pgr4_tu2_dest: "{{ dg_pgr4_tu2_dir_nas }}/tu00000002_00000000"
+dg_pgr4_tu2_sha256: 9980cf82c3bbbb32b35c841532c832b5598e99ce50daba8c658645213ab3d9b8
+
+# Optional 6.5 GB HD texture pack linked beside pgr4.exe when present.
+dg_pgr4_hd_pack_url: "https://centerv3.homido.fr/textures_hd.pak"
+dg_pgr4_hd_pack_dir: "{{ dg_roms_final_root }}/PC/mods/pgr4-2026"
+dg_pgr4_hd_pack_dest: "{{ dg_pgr4_hd_pack_dir }}/textures_hd.pak"
+dg_pgr4_hd_pack_sha256: 8d75cc18b3883847116ddeae94c9cbba4cab8d43e25db70e9581a214d2f5bb82
+
+# Local install layout inside the gaming box home. Extracted game/, title-update/,
+# and pgr4.toml live at the top level so version bumps preserve them.
+dg_pgr4_root: "{{ dg_box_home }}/tools/pgr4-recomp"
+dg_pgr4_release_dir: "{{ dg_pgr4_root }}/releases/{{ dg_pgr4_version }}"
+dg_pgr4_app_dir: "{{ dg_pgr4_release_dir }}/PGR4"
+dg_pgr4_current: "{{ dg_pgr4_root }}/current"
+dg_pgr4_game_dir: "{{ dg_pgr4_root }}/game"
+dg_pgr4_tu2_dir: "{{ dg_pgr4_root }}/title-update"
+dg_pgr4_toml: "{{ dg_pgr4_root }}/pgr4.toml"
+dg_pgr4_compatdata: "{{ dg_box_home }}/compatdata/pgr4-recomp"
+dg_pgr4_docs_dir: "{{ dg_pgr4_compatdata }}/pfx/drive_c/users/steamuser/Documents/pgr4"
+dg_pgr4_proton: "{{ ansible_facts.env.HOME }}/.steam/steam/compatibilitytools.d/GE-Proton11-1/proton"
+dg_pgr4_steam_root: "{{ ansible_facts.env.HOME }}/.steam/steam"
+dg_pgr4_launcher: "{{ dg_box_home }}/bin/pgr4-recomp"

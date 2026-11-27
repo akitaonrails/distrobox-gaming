@@ -208,6 +208,12 @@ dg_save_sets:
                                           "file:tools/gt6-recomp/GT6Menu.settings.json"] }
   # R4 Remix (Ridge Racer Type 4 PC port): back up Documents/R4R (save.bin + settings).
   - { name: r4-remix,               src: "compatdata/r4-remix/pfx/drive_c/users/steamuser/Documents/R4R" }
+  # Project Gotham Racing 4 (PGR4 2026 recomp): back up Documents/pgr4 saves + pgr4.toml.
+  - { name: pgr4-recomp,            src: ["compatdata/pgr4-recomp/pfx/drive_c/users/steamuser/Documents/pgr4",
+                                          "file:tools/pgr4-recomp/pgr4.toml"] }
+  # Forza Motorsport 4 Static Recomp (i2kiselev): back up launcher profiles (saves) only,
+  # not the compiled toolchain, shader cache, or extracted discs in data/.
+  - { name: fm4-static-recomp,      src: "tools/fm4-static-recomp/data/profiles" }
   - { name: sega-rally-2,        src: ["file:Games/pc-racing/sega-rally-2/SR2_SAVE.DAT",
                                         "file:Games/pc-racing/sega-rally-2/SR2.CFG",
                                         "file:Games/pc-racing/sega-rally-2/SR2.DSP"] }
