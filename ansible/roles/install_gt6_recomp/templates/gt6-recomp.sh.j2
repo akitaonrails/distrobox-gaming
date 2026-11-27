@@ -1,0 +1,59 @@
+#!/usr/bin/env sh
+# Project Grand Tourer Advanced (Gran Turismo 6 PS3 static recompilation).
+# Windows x64 D3D12 port; GE-Proton runs from the host with its own runtime.
+set -eu
+
+APP="{{ dg_gt6_recomp_current }}"
+PROTON="{{ dg_gt6_recomp_proton }}"
+if [ ! -f "$APP/GT6Recomp.exe" ]; then
+  printf '%s\n' 'GT6 Recomp is not installed. Run: cd ansible && ansible-playbook install-gt6-recomp.yml' >&2
+  exit 1
+fi
+if [ ! -f "$APP/game/EMAIN.ELF" ]; then
+  printf '%s\n' 'Missing game/EMAIN.ELF. Re-run: cd ansible && ansible-playbook install-gt6-recomp.yml' >&2
+  exit 1
+fi
+if [ ! -x "$PROTON" ]; then
+  printf '%s\n' "Configured GE-Proton build missing at $PROTON." >&2
+  exit 1
+fi
+
+export STEAM_COMPAT_CLIENT_INSTALL_PATH="{{ dg_gt6_recomp_steam_root }}"
+export STEAM_COMPAT_DATA_PATH="{{ dg_gt6_recomp_compatdata }}"
+export SteamAppId=0
+export SteamGameId=0
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+# Upstream PLAY_GT6.bat GPU, audio, and PDI acceleration flags.
+export RSX_SHADER_CACHE_DIR='scratch\rsx_shader_cache_v2'
+export GT6_AA=gpu
+export LD_GPU_AA=1
+export GT6_MOVIE_POST=gpu
+export LD_VTX_SLAB=1
+export LD_GPU_VERTEX_PULL=1
+export LD_TYPED_TEXTURES=1
+export LD_TEXTURE_METADATA=1
+export LD_FRAMEBUFFER_SRGB=1
+export LD_SHADOW_COMPARE=1
+export LD_PSO_PREWARM=1
+export LD_SHADER_PREPARE=1
+export RSX_FP_COMPILE_INIT=1
+export GT6_AUDIO_FIFO=1
+export GT6_AUDIO_AVX512=1
+export GT6_MOVIE_CLOCK=device
+export PS3_AUDIO_BUF_MS=40
+export GT6_AUDIO_PERSISTENT_WORKER=1
+export GT6_AUDIO_FIFO_WAIT=1
+export LD_PIPELINE_LOOKAHEAD=1
+export GT6_NATIVE_PDI_IRQ=1
+export GT6_NATIVE_PDI_LEAVES=1
+export PS3_MUTE="${PS3_MUTE:-0}"
+export PS3_VERBOSE=0
+export PS3_FSLOG=0
+
+mkdir -p "$STEAM_COMPAT_DATA_PATH" "$APP/logs" "$APP/scratch"
+cd "$APP"
+exec "$PROTON" run "$APP/GT6Recomp.exe" "$@"

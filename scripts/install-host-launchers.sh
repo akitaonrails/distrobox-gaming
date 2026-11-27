@@ -60,10 +60,13 @@ target_exists_in_box() {
   local box="$1"
   local target="$2"
 
+  # Run from / with stdin detached: the restricted gaming container has no
+  # /run/host mount, so entering from an arbitrary host cwd (like ansible/)
+  # fails with chdir ENOENT, and a host PTY fails with /dev/pts/ptmx ENOENT.
   if [[ "$target" == /* ]]; then
-    distrobox-enter -n "$box" -- test -e "$target" >/dev/null 2>&1
+    (cd / && distrobox-enter -n "$box" -- test -e "$target" </dev/null >/dev/null 2>&1)
   else
-    distrobox-enter -n "$box" -- sh -lc 'command -v "$1" >/dev/null 2>&1' sh "$target"
+    (cd / && distrobox-enter -n "$box" -- sh -lc 'command -v "$1" >/dev/null 2>&1' sh "$target" </dev/null >/dev/null 2>&1)
   fi
 }
 

@@ -1,0 +1,40 @@
+#!/usr/bin/env sh
+# R4 Remix (Ridge Racer Type 4 PC port — D3D12 + Path Tracing + DLSS 4.5/RR).
+# Runs from the host through GE-Proton with NVAPI + DXR enabled for the RTX 5090.
+# Pass --settings to open settings.exe instead of r4r.exe.
+set -eu
+
+APP="{{ dg_r4_remix_current }}"
+PROTON="{{ dg_r4_remix_proton }}"
+if [ ! -f "$APP/r4r.exe" ]; then
+  printf '%s\n' 'R4 Remix is not installed. Run: cd ansible && ansible-playbook install-r4-remix.yml' >&2
+  exit 1
+fi
+if [ ! -x "$PROTON" ]; then
+  printf '%s\n' "Configured GE-Proton build missing at $PROTON." >&2
+  exit 1
+fi
+
+export STEAM_COMPAT_CLIENT_INSTALL_PATH="{{ dg_r4_remix_steam_root }}"
+export STEAM_COMPAT_DATA_PATH="{{ dg_r4_remix_compatdata }}"
+export SteamAppId=0
+export SteamGameId=0
+export VK_ICD_FILENAMES="${VK_ICD_FILENAMES:-/usr/share/vulkan/icd.d/nvidia_icd.json}"
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export PROTON_ENABLE_NVAPI=1
+export DXVK_ENABLE_NVAPI=1
+export PROTON_HIDE_NVIDIA_GPU=0
+export VKD3D_CONFIG="${VKD3D_CONFIG:-dxr,dxr11}"
+export VKD3D_FEATURE_LEVEL="${VKD3D_FEATURE_LEVEL:-12_2}"
+export SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1
+
+mkdir -p "$STEAM_COMPAT_DATA_PATH"
+cd "$APP"
+
+if [ "${1-}" = "--settings" ]; then
+  shift
+  exec "$PROTON" run "$APP/settings.exe" "$@"
+fi
+
+exec "$PROTON" run "$APP/r4r.exe" "$@"

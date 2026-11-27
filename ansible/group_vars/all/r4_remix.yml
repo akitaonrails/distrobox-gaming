@@ -1,0 +1,38 @@
+---
+# R4 Remix — PC port of R4: Ridge Racer Type 4 (USA, SLUS-00797) with
+# path-traced lighting, DLSS 4.5 + Ray Reconstruction, NVIDIA Reflex,
+# widescreen, and unlocked frame rates (i5han/R4-remix).
+# Windows x64 D3D12 build run from the host through GE-Proton (VKD3D-Proton + DXR).
+# See docs/r4-remix.md.
+
+dg_r4_remix_repo: i5han/R4-remix
+dg_r4_remix_version: 0.1.0
+dg_r4_remix_build: cadc145
+dg_r4_remix_asset_name: "r4r-{{ dg_r4_remix_build }}.zip"
+dg_r4_remix_asset_url: "https://downloads.psxremix.dev/{{ dg_r4_remix_asset_name }}"
+dg_r4_remix_asset_sha256: 83db2f39f62b7d08be8c563df866c53aec0c5471e0b1d7a6f63af1a1f080bd85
+dg_r4_remix_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_r4_remix_asset_name }}"
+
+# Owned R4: Ridge Racer Type 4 (USA, SLUS-00797) disc matching Redump MD5
+# bf1d92037b1b2be83b459c11f0b89eb6 (single-track CloneCD .img is byte-identical
+# to the Redump .bin; symlinked as .bin with a generated .cue next to r4r.exe).
+dg_r4_remix_disc_img: "{{ dg_roms_final_root }}/psx-usa/R4 Ridge Racer Type 4 (US)/R4 Ridge Racer Type 4 (US).img"
+dg_r4_remix_disc_md5: bf1d92037b1b2be83b459c11f0b89eb6
+dg_r4_remix_bin_name: "R4 - Ridge Racer Type 4 (USA).bin"
+dg_r4_remix_cue_name: "R4 - Ridge Racer Type 4 (USA).cue"
+
+# Local install layout inside the gaming box home.
+dg_r4_remix_root: "{{ dg_box_home }}/tools/r4-remix"
+dg_r4_remix_release_dir: "{{ dg_r4_remix_root }}/releases/{{ dg_r4_remix_version }}-{{ dg_r4_remix_build }}"
+dg_r4_remix_app_dir: "{{ dg_r4_remix_release_dir }}/r4r-{{ dg_r4_remix_build }}"
+dg_r4_remix_current: "{{ dg_r4_remix_root }}/current"
+dg_r4_remix_compatdata: "{{ dg_box_home }}/compatdata/r4-remix"
+dg_r4_remix_docs_dir: "{{ dg_r4_remix_compatdata }}/pfx/drive_c/users/steamuser/Documents/R4R"
+dg_r4_remix_proton: "{{ ansible_facts.env.HOME }}/.steam/steam/compatibilitytools.d/GE-Proton11-1/proton"
+dg_r4_remix_steam_root: "{{ ansible_facts.env.HOME }}/.steam/steam"
+dg_r4_remix_launcher: "{{ dg_box_home }}/bin/r4-remix"
+
+# Maxed-out RTX 5090 baseline: Remaster (advanced) mode enables path tracing,
+# ray tracing, DLSS Ray Reconstruction, 16x AF, borderless fullscreen, VRR auto,
+# unlocked max_fps, and native gamepad + rumble. Press ~ in-game to cycle modes.
+dg_r4_remix_mode: advanced

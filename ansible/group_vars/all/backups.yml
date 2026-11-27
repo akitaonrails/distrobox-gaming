@@ -202,6 +202,12 @@ dg_save_sets:
   # not the extracted XBLA assets/ or shader cache/.
   - { name: daytona-recomp,         src: ["tools/daytona-recomp/save",
                                           "file:tools/daytona-recomp/daytona.ini"] }
+  # Gran Turismo 6 (PS3 BCES01893) ps3recomp: back up savedata and F2 menu settings,
+  # not the ~14 GB extracted 1.22 updates or RSX shader cache.
+  - { name: gt6-recomp,             src: ["tools/gt6-recomp/game/dev_hdd0/home/00000001/savedata",
+                                          "file:tools/gt6-recomp/GT6Menu.settings.json"] }
+  # R4 Remix (Ridge Racer Type 4 PC port): back up Documents/R4R (save.bin + settings).
+  - { name: r4-remix,               src: "compatdata/r4-remix/pfx/drive_c/users/steamuser/Documents/R4R" }
   - { name: sega-rally-2,        src: ["file:Games/pc-racing/sega-rally-2/SR2_SAVE.DAT",
                                         "file:Games/pc-racing/sega-rally-2/SR2.CFG",
                                         "file:Games/pc-racing/sega-rally-2/SR2.DSP"] }

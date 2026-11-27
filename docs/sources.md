@@ -31,6 +31,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | Sega Rally 2 Native | Model 3 arcade static recompilation, Vulkan renderer with ray tracing, true widescreen; Windows build cross-compiled with MinGW and run under Wine | [snicolast/SegaRally2Native](https://github.com/snicolast/SegaRally2Native) · [doc](sega-rally-2-native.md) |
 | RalliSport Challenge 2 Recompiled | Original Xbox native Linux recompilation | [Mortify7612/RallisportChallenge2-decomp](https://github.com/Mortify7612/RallisportChallenge2-decomp) · [doc](rsc2.md) |
 | Gran Turismo 4 Recompiled | PS2 USA retail static recompilation, Windows build under Wine | [moesuito/gt4-staticrecomp](https://github.com/moesuito/gt4-staticrecomp) · [doc](gt4-recomp.md) |
+| Gran Turismo 6 (Recomp) | PS3 European disc (`BCES01893` 1.22) static recompilation (`ps3recomp` + D3D12), Windows build through GE-Proton | [PrimeTimerer/Project-Grand-Tourer-Advanced](https://github.com/PrimeTimerer/Project-Grand-Tourer-Advanced) · [doc](gt6-recomp.md) |
 | OpenCMR2 | Native Colin McRae Rally 2.0 port | [pablocpas/OpenCMR2](https://github.com/pablocpas/OpenCMR2) · [doc](opencmr2.md) |
 | Screamer Trilogy · REA | Screamer / Screamer 2 / Screamer Rally with 3dfx Glide, FSR and analog pads | [akitaonrails/rea-screamer-trilogy](https://github.com/akitaonrails/rea-screamer-trilogy) · [doc](screamer.md) |
 | REA Colin McRae Rally 3 | Self-contained launcher for the 2003 PC game (own Wine + DXVK, SilentPatch widescreen, HD UI, Xidi, private runtime copy) | [akitaonrails/rea-colin-mcrae-3](https://github.com/akitaonrails/rea-colin-mcrae-3) · [doc](rea-colin-mcrae-3.md) |
@@ -48,6 +49,7 @@ data are provided or linked here** — recomps and hacks need your own legal dum
 | DriveClub Recomp | PS4 static recompilation, Windows build under Proton | [OverkillLabs3/driveclub-recomp](https://github.com/OverkillLabs3/driveclub-recomp) · [doc](driveclub-recomp.md) |
 | I Could Have Given You The World | 007: The World Is Not Enough N64 native Linux recompilation | [riseio/TWIPE_00Sheven](https://github.com/riseio/TWIPE_00Sheven) · [doc](twine-007.md) |
 | Fukami | Ridge Racer V static recompilation | [danisandoval/fukami](https://github.com/danisandoval/fukami) · [doc](fukami-rrv.md) |
+| R4: Ridge Racer Type 4 (Remix) | PS1 `SLUS-00797` PC port with D3D12 path tracing, DLSS 4.5 + Ray Reconstruction, NVIDIA Reflex, and unlocked FPS through GE-Proton | [i5han/R4-remix](https://github.com/i5han/R4-remix) · [doc](r4-remix.md) |
 | Dusk (Twilight Princess) | GameCube Twilight Princess native port | [TwilitRealm/dusklight](https://github.com/TwilitRealm/dusklight) · [doc](dusk-twilight-princess.md) |
 | Project Midas | GoldenEye 007 native PC port from the N64 decompilation (replaced the cblock85 recomp 2026-10-18) | [murkantor/Project-Midas](https://github.com/murkantor/Project-Midas) · [doc](project-midas.md) |
 | FM4 PC Port | Forza Motorsport 4 (Xbox 360) native port via ReXGlue, USA Rev 1 (superseded fm4-recomp 2026-10-27) | [0herculabs/hl360-forza4](https://github.com/0herculabs/hl360-forza4) · [doc](fm4-hl360.md) |

@@ -1,0 +1,208 @@
+---
+# Project Grand Tourer Advanced (Gran Turismo 6 PS3 BCES01893 1.22 static
+# recompilation). Prepares game/ natively on Linux using the owned BCES01893
+# disc, official update PKGs 01.01-01.22, and the box's RPCS3 (for FW 4.93
+# libsre.prx and EMAIN.SELF decryption), then runs GT6Recomp.exe from the host
+# through GE-Proton (D3D12 via VKD3D-Proton).
+
+- name: Check the owned Gran Turismo 6 (BCES01893) disc GT.VOL
+  ansible.builtin.stat:
+    path: "{{ dg_gt6_recomp_gt_vol }}"
+  register: _gt6_vol
+
+- name: Verify the first MiB of GT.VOL matches the canonical BCES01893 disc
+  ansible.builtin.shell: >-
+    head -c 1048576 "{{ dg_gt6_recomp_gt_vol }}" | sha256sum | awk '{print $1}'
+  register: _gt6_vol_head
+  changed_when: false
+  when: _gt6_vol.stat.exists
+
+- name: Require the canonical European BCES01893 Gran Turismo 6 disc
+  ansible.builtin.assert:
+    that:
+      - _gt6_vol.stat.exists
+      - _gt6_vol.stat.size == dg_gt6_recomp_gt_vol_size
+      - _gt6_vol_head.stdout == dg_gt6_recomp_gt_vol_head_sha256
+    fail_msg: >-
+      Need the European Gran Turismo 6 disc (BCES01893, GT.VOL size
+      {{ dg_gt6_recomp_gt_vol_size }}) at {{ dg_gt6_recomp_disc_dir }}.
+      See docs/gt6-recomp.md.
+
+- name: Check for a running GT6Recomp session before install
+  ansible.builtin.command: pgrep -f GT6Recomp.exe
+  register: _gt6_running
+  failed_when: false
+  changed_when: false
+
+- name: Require GT6Recomp to be closed
+  ansible.builtin.assert:
+    that: _gt6_running.rc == 1
+    fail_msg: "Close Gran Turismo 6 (Recomp) before re-running the installer."
+
+- name: Create GT6 Recomp directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_roms_final_root }}/PC/releases"
+    - "{{ dg_gt6_recomp_update_0101_dir }}"
+    - "{{ dg_gt6_recomp_root }}"
+    - "{{ dg_gt6_recomp_release_dir }}"
+    - "{{ dg_gt6_recomp_game_dir }}/dev_hdd0/game"
+    - "{{ dg_gt6_recomp_save_dir }}"
+    - "{{ dg_gt6_recomp_game_dir }}/dev_hdd1"
+    - "{{ dg_gt6_recomp_game_dir }}/firmware"
+    - "{{ dg_gt6_recomp_scratch_dir }}"
+    - "{{ dg_gt6_recomp_logs_dir }}"
+    - "{{ dg_gt6_recomp_compatdata }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Stage the pinned GT6 PC release zip in PC/releases
+  ansible.builtin.get_url:
+    url: "{{ dg_gt6_recomp_asset_url }}"
+    dest: "{{ dg_gt6_recomp_archive }}"
+    checksum: "sha256:{{ dg_gt6_recomp_asset_sha256 }}"
+    mode: "0644"
+
+- name: Unpack the pinned GT6 PC release
+  ansible.builtin.unarchive:
+    src: "{{ dg_gt6_recomp_archive }}"
+    dest: "{{ dg_gt6_recomp_release_dir }}"
+    remote_src: true
+    creates: "{{ dg_gt6_recomp_release_dir }}/GT6Recomp.exe"
+
+- name: Stage official update 01.01 PKG (missing from ps3-DLC/BCES01893)
+  ansible.builtin.get_url:
+    url: "{{ dg_gt6_recomp_update_0101_url }}"
+    dest: "{{ dg_gt6_recomp_update_0101_dest }}"
+    mode: "0644"
+
+- name: Find local BCES01893 update PKGs (01.02-01.22)
+  ansible.builtin.find:
+    paths: "{{ dg_gt6_recomp_updates_dir }}"
+    patterns: "EP9001-BCES01893_00-0000000000000000-A01*.pkg"
+  register: _gt6_local_pkgs
+
+- name: Require all 21 local update PKGs (01.02-01.22)
+  ansible.builtin.assert:
+    that: _gt6_local_pkgs.files | length >= 21
+    fail_msg: >-
+      Expected 21 official update PKGs (01.02-01.22) in
+      {{ dg_gt6_recomp_updates_dir }}, found {{ _gt6_local_pkgs.files | length }}.
+
+- name: Install the GT6 game-data preparation helper
+  ansible.builtin.copy:
+    src: prepare_gt6_game.py
+    dest: "{{ dg_gt6_recomp_root }}/prepare_gt6_game.py"
+    mode: "0755"
+
+- name: Symlink read-only BCES01893 disc and FW 4.93 dev_flash into game/
+  ansible.builtin.file:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    state: link
+    force: true
+  loop:
+    - { src: "{{ dg_gt6_recomp_disc_dir }}", dest: "{{ dg_gt6_recomp_game_dir }}/dev_bdvd" }
+    - { src: "{{ dg_rpcs3_config_dir }}/dev_flash", dest: "{{ dg_gt6_recomp_game_dir }}/dev_flash" }
+
+- name: Extract official updates 01.01-01.22 into game/dev_hdd0/game/BCES01893
+  ansible.builtin.command:
+    argv: >-
+      {{ ['python3', dg_gt6_recomp_root + '/prepare_gt6_game.py', 'extract-updates',
+          dg_gt6_recomp_title_dir, dg_gt6_recomp_update_0101_dest]
+         + (_gt6_local_pkgs.files | map(attribute='path') | sort | list) }}
+  register: _gt6_updates_extract
+  changed_when: "'EXTRACTED:' in _gt6_updates_extract.stdout"
+
+- name: Decrypt FW 4.93 libsre.sprx via RPCS3
+  ansible.builtin.shell: |
+    set -eu
+    tmp=$(mktemp -d "{{ dg_box_home }}/cache/gt6-libsre.XXXXXX")
+    trap 'rm -rf "$tmp"' EXIT
+    cp "{{ dg_rpcs3_config_dir }}/dev_flash/sys/external/libsre.sprx" "$tmp/libsre.sprx"
+    distrobox-enter -n "{{ dg_box_name }}" -- env APPIMAGE_EXTRACT_AND_RUN=1 \
+      "{{ dg_gt6_recomp_rpcs3_appimage }}" --decrypt "$tmp/libsre.sprx" </dev/null
+    mv "$tmp/libsre.prx" "{{ dg_gt6_recomp_game_dir }}/firmware/libsre.prx"
+  args:
+    chdir: "{{ dg_box_home }}"
+    creates: "{{ dg_gt6_recomp_game_dir }}/firmware/libsre.prx"
+
+- name: Build relocated libsre_image.bin and verify SHA-256
+  ansible.builtin.command:
+    argv:
+      - python3
+      - "{{ dg_gt6_recomp_root }}/prepare_gt6_game.py"
+      - relocate-prx
+      - "{{ dg_gt6_recomp_game_dir }}/firmware/libsre.prx"
+      - "{{ dg_gt6_recomp_game_dir }}/firmware/libsre_image.bin"
+      - "{{ dg_gt6_recomp_libsre_prx_sha256 }}"
+      - "{{ dg_gt6_recomp_libsre_image_sha256 }}"
+    creates: "{{ dg_gt6_recomp_game_dir }}/firmware/libsre_image.bin"
+
+- name: Decrypt BCES01893 1.22 EMAIN.SELF into game/EMAIN.ELF via RPCS3
+  ansible.builtin.command:
+    argv:
+      - distrobox-enter
+      - -n
+      - "{{ dg_box_name }}"
+      - --
+      - python3
+      - "{{ dg_gt6_recomp_root }}/prepare_gt6_game.py"
+      - decrypt-emain
+      - "{{ dg_gt6_recomp_rpcs3_appimage }}"
+      - "{{ dg_gt6_recomp_disc_dir }}"
+      - "{{ dg_rpcs3_config_dir }}/dev_flash"
+      - "{{ dg_gt6_recomp_title_dir }}"
+      - "{{ dg_gt6_recomp_game_dir }}/EMAIN.ELF"
+      - "{{ dg_gt6_recomp_elf_sha256 }}"
+    chdir: "{{ dg_box_home }}"
+    creates: "{{ dg_gt6_recomp_game_dir }}/EMAIN.ELF"
+
+- name: Seed 4K GT6Menu.settings.json (preserves later in-game F2 menu edits)
+  ansible.builtin.copy:
+    dest: "{{ dg_gt6_recomp_settings }}"
+    mode: "0644"
+    force: false
+    content: |
+      {
+        "MenuFullHd": true,
+        "ScreenRealRes": 3,
+        "MenuLang": 1
+      }
+
+- name: Symlink persistent game/, scratch/, logs/, and settings into release dir
+  ansible.builtin.file:
+    src: "{{ item.src }}"
+    dest: "{{ dg_gt6_recomp_release_dir }}/{{ item.name }}"
+    state: link
+    force: true
+  loop:
+    - { src: "{{ dg_gt6_recomp_game_dir }}", name: game }
+    - { src: "{{ dg_gt6_recomp_scratch_dir }}", name: scratch }
+    - { src: "{{ dg_gt6_recomp_logs_dir }}", name: logs }
+    - { src: "{{ dg_gt6_recomp_settings }}", name: GT6Menu.settings.json }
+
+- name: Point current/ symlink at the active GT6 PC release
+  ansible.builtin.file:
+    src: "{{ dg_gt6_recomp_release_dir }}"
+    dest: "{{ dg_gt6_recomp_current }}"
+    state: link
+    force: true
+
+- name: Install the host-side GE-Proton GT6 Recomp launcher
+  ansible.builtin.template:
+    src: gt6-recomp.sh.j2
+    dest: "{{ dg_gt6_recomp_launcher }}"
+    mode: "0755"
+
+- name: Render the GT6 Recomp desktop entry
+  ansible.builtin.template:
+    src: gt6-recomp.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/gt6-recomp.desktop"
+    mode: "0644"
+
+- name: Publish the GT6 Recomp desktop entry
+  ansible.builtin.command: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  changed_when: false

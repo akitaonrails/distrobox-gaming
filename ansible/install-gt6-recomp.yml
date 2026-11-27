@@ -1,0 +1,7 @@
+---
+- name: Install Project Grand Tourer Advanced (Gran Turismo 6 PS3 Recomp)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_gt6_recomp

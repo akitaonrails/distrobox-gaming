@@ -1,0 +1,126 @@
+---
+# R4 Remix (i5han/R4-remix) — Ridge Racer Type 4 (USA, SLUS-00797) PC port with
+# D3D12 path tracing, DLSS 4.5 + Ray Reconstruction, and NVIDIA Reflex.
+# Stages the pinned release zip in ROMS_FINAL/PC/releases/, unpacks it, symlinks
+# the verified Redump SLUS-00797 disc image + .cue next to r4r.exe, seeds
+# Remaster (advanced) settings in Documents/R4R/settings.ini, and publishes a
+# host-side GE-Proton launcher and desktop entry.
+
+- name: Check the owned R4 Ridge Racer Type 4 (USA, SLUS-00797) disc image
+  ansible.builtin.stat:
+    path: "{{ dg_r4_remix_disc_img }}"
+    checksum_algorithm: md5
+  register: _r4_disc
+
+- name: Require the Redump-matching SLUS-00797 disc image
+  ansible.builtin.assert:
+    that:
+      - _r4_disc.stat.exists
+      - _r4_disc.stat.checksum == dg_r4_remix_disc_md5
+    fail_msg: >-
+      Need R4: Ridge Racer Type 4 (USA, SLUS-00797) matching Redump MD5
+      {{ dg_r4_remix_disc_md5 }} at {{ dg_r4_remix_disc_img }}.
+      See docs/r4-remix.md.
+
+- name: Check for a running R4 Remix session before install
+  ansible.builtin.command: pgrep -f '[/\\]r4r\.exe'
+  register: _r4_running
+  failed_when: false
+  changed_when: false
+
+- name: Require R4 Remix to be closed
+  ansible.builtin.assert:
+    that: _r4_running.rc == 1
+    fail_msg: "Close R4 Remix before re-running the installer."
+
+- name: Create R4 Remix directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_roms_final_root }}/PC/releases"
+    - "{{ dg_r4_remix_root }}"
+    - "{{ dg_r4_remix_release_dir }}"
+    - "{{ dg_r4_remix_compatdata }}"
+    - "{{ dg_r4_remix_docs_dir }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Stage the pinned R4 Remix release zip in PC/releases
+  ansible.builtin.get_url:
+    url: "{{ dg_r4_remix_asset_url }}"
+    dest: "{{ dg_r4_remix_archive }}"
+    checksum: "sha256:{{ dg_r4_remix_asset_sha256 }}"
+    mode: "0644"
+
+- name: Unpack the pinned R4 Remix release
+  ansible.builtin.unarchive:
+    src: "{{ dg_r4_remix_archive }}"
+    dest: "{{ dg_r4_remix_release_dir }}"
+    remote_src: true
+    creates: "{{ dg_r4_remix_app_dir }}/r4r.exe"
+
+- name: Symlink the verified SLUS-00797 disc image next to r4r.exe
+  ansible.builtin.file:
+    src: "{{ dg_r4_remix_disc_img }}"
+    dest: "{{ dg_r4_remix_app_dir }}/{{ dg_r4_remix_bin_name }}"
+    state: link
+    force: true
+
+- name: Write the Redump CUE sheet next to r4r.exe
+  ansible.builtin.copy:
+    dest: "{{ dg_r4_remix_app_dir }}/{{ dg_r4_remix_cue_name }}"
+    mode: "0644"
+    content: |
+      FILE "{{ dg_r4_remix_bin_name }}" BINARY
+        TRACK 01 MODE2/2352
+          INDEX 01 00:00:00
+
+- name: Point current/ symlink at the active R4 Remix release
+  ansible.builtin.file:
+    src: "{{ dg_r4_remix_app_dir }}"
+    dest: "{{ dg_r4_remix_current }}"
+    state: link
+    force: true
+
+- name: Seed Remaster (advanced) settings in Documents/R4R/settings.ini
+  ansible.builtin.copy:
+    dest: "{{ dg_r4_remix_docs_dir }}/settings.ini"
+    mode: "0644"
+    force: false
+    content: |
+      [settings]
+      mode = {{ dg_r4_remix_mode }}
+
+      [renderer]
+      backend = d3d12
+      adapter = performance
+
+      [display]
+      fullscreen = borderless
+      vsync = false
+      vrr = auto
+      max_fps = auto
+
+      [input]
+      gamepad = true
+      sensitivity = 133
+      deadzone = 0
+      trigger = 25
+      rumble = 100
+
+- name: Install the host-side GE-Proton R4 Remix launcher
+  ansible.builtin.template:
+    src: r4-remix.sh.j2
+    dest: "{{ dg_r4_remix_launcher }}"
+    mode: "0755"
+
+- name: Render the R4 Remix desktop entry
+  ansible.builtin.template:
+    src: r4-remix.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/r4-remix.desktop"
+    mode: "0644"
+
+- name: Publish the R4 Remix desktop entry
+  ansible.builtin.command: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  changed_when: false

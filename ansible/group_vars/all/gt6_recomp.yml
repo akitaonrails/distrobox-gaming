@@ -1,0 +1,50 @@
+---
+# Project Grand Tourer Advanced — Gran Turismo 6 (PS3, BCES01893 1.22) static
+# recompilation (PrimeTimerer/Project-Grand-Tourer-Advanced).
+# Windows x64 D3D12 build run from the host through GE-Proton (VKD3D-Proton).
+# See docs/gt6-recomp.md.
+
+dg_gt6_recomp_repo: PrimeTimerer/Project-Grand-Tourer-Advanced
+dg_gt6_recomp_version: v20261125-2055
+dg_gt6_recomp_asset_name: GT6_PC_20261125-2055.zip
+dg_gt6_recomp_asset_url: >-
+  https://github.com/{{ dg_gt6_recomp_repo }}/releases/download/{{ dg_gt6_recomp_version }}/{{ dg_gt6_recomp_asset_name }}
+dg_gt6_recomp_asset_sha256: c34977d07b8de4627e82e5acf29c5406190271864296cd211f06ca06523dd83f
+dg_gt6_recomp_archive: "{{ dg_roms_final_root }}/PC/releases/{{ dg_gt6_recomp_asset_name }}"
+
+# Owned European disc (BCES01893, read-only) and official update PKGs (01.01-01.22).
+# 01.02-01.22 already live in dg_ps3_dlc_source/BCES01893; 01.01 is staged in
+# PC/releases/gt6-updates/ from Sony's official update server.
+dg_gt6_recomp_disc_dir: "{{ dg_roms_final_root }}/ps3/Gran.Turismo.6.PS3-DUPLEX"
+dg_gt6_recomp_gt_vol: "{{ dg_gt6_recomp_disc_dir }}/PS3_GAME/USRDIR/GT.VOL"
+dg_gt6_recomp_gt_vol_size: 15407310848
+dg_gt6_recomp_gt_vol_head_sha256: ac9cb7d2ab0df1036839022b191e45acc1429375067821850052a70cf249f8cb
+
+dg_gt6_recomp_updates_dir: "{{ dg_ps3_dlc_source }}/BCES01893"
+dg_gt6_recomp_update_0101_name: EP9001-BCES01893_00-0000000000000000-A0101-V0100-PE.pkg
+dg_gt6_recomp_update_0101_url: >-
+  http://b0.ww.np.dl.playstation.net/tppkg/np/BCES01893/BCES01893_T27/7e3350cee3aeb220/{{ dg_gt6_recomp_update_0101_name }}
+dg_gt6_recomp_update_0101_dir: "{{ dg_roms_final_root }}/PC/releases/gt6-updates"
+dg_gt6_recomp_update_0101_dest: "{{ dg_gt6_recomp_update_0101_dir }}/{{ dg_gt6_recomp_update_0101_name }}"
+
+# Canonical SHA-256 hashes from upstream SetupFacts (BCES01893 1.22 + FW 4.93).
+dg_gt6_recomp_elf_sha256: d65b7e9c68b6eda6cb838d9d36de268d8ce248bdd4bc41e4c9f58b01b5ee19fd
+dg_gt6_recomp_libsre_prx_sha256: 9e7ee6edc99b1d372686cf927b883b18f19ed4d32d1faf35e214cca4ae0737b6
+dg_gt6_recomp_libsre_image_sha256: 088bd13689c4980d063c7188631a5904be4bfa510620ef539ffb987985e660ba
+
+# Local install layout inside the gaming box home. game/, scratch/, logs/, and
+# GT6Menu.settings.json live at the top level so release upgrades preserve them.
+dg_gt6_recomp_root: "{{ dg_box_home }}/tools/gt6-recomp"
+dg_gt6_recomp_release_dir: "{{ dg_gt6_recomp_root }}/releases/{{ dg_gt6_recomp_version }}"
+dg_gt6_recomp_current: "{{ dg_gt6_recomp_root }}/current"
+dg_gt6_recomp_game_dir: "{{ dg_gt6_recomp_root }}/game"
+dg_gt6_recomp_title_dir: "{{ dg_gt6_recomp_game_dir }}/dev_hdd0/game/BCES01893"
+dg_gt6_recomp_save_dir: "{{ dg_gt6_recomp_game_dir }}/dev_hdd0/home/00000001/savedata"
+dg_gt6_recomp_scratch_dir: "{{ dg_gt6_recomp_root }}/scratch"
+dg_gt6_recomp_logs_dir: "{{ dg_gt6_recomp_root }}/logs"
+dg_gt6_recomp_settings: "{{ dg_gt6_recomp_root }}/GT6Menu.settings.json"
+dg_gt6_recomp_compatdata: "{{ dg_box_home }}/compatdata/gt6-recomp"
+dg_gt6_recomp_proton: "{{ ansible_facts.env.HOME }}/.steam/steam/compatibilitytools.d/GE-Proton11-1/proton"
+dg_gt6_recomp_steam_root: "{{ ansible_facts.env.HOME }}/.steam/steam"
+dg_gt6_recomp_launcher: "{{ dg_box_home }}/bin/gt6-recomp"
+dg_gt6_recomp_rpcs3_appimage: "{{ dg_box_home }}/tools/rpcs3/rpcs3.AppImage"

@@ -1,0 +1,7 @@
+---
+- name: Install R4 Remix (Ridge Racer Type 4 RTX Path-Traced PC Port)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_r4_remix
