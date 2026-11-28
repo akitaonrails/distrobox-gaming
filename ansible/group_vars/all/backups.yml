@@ -220,6 +220,9 @@ dg_save_sets:
   - { name: scud-race,           src: ["file:Games/scud-race/scudrace.nv",
                                         "file:Games/scud-race/scudrace.ini",
                                         "file:Games/scud-race/online.ini"] }
+  - { name: daytona2,            src: ["file:Games/daytona2/daytona2.nv",
+                                        "file:Games/daytona2/daytona2.ini",
+                                        "file:Games/daytona2/online.ini"] }
   - { name: nightfire-recomp,    src: ["Games/nightfire/NightFire/play/hdd/E/UDATA/45410026",
                                         "file:Games/nightfire/NightFire/play/settings.toml"] }
   - { name: pgr1-recomp,         src: ["Games/pgr1/PGR1/play/hdd/E/UDATA/4d530003",

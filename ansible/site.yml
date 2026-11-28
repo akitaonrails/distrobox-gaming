@@ -77,6 +77,7 @@
     - { role: install_sega_rally_2_native,     tags: [sega_rally_2_native, never] }
     - { role: install_gt6_pc,                  tags: [gt6_pc, never] }
     - { role: install_scud_race,               tags: [scud_race, never] }
+    - { role: install_daytona2,                tags: [daytona2, never] }
     - { role: install_outrunners,               tags: [outrunners, never] }
     - { role: install_nightfire_recomp,         tags: [nightfire_recomp, never] }
     - { role: install_pgr1_recomp,              tags: [pgr1_recomp, never] }
@@ -103,7 +104,6 @@
     - { role: install_rea_sega,                tags: [rea_sega, never] }
     - { role: install_rea_nintendo,            tags: [rea_nintendo, never] }
     - { role: install_redline_recomp,          tags: [redline, never] }
-    - { role: install_daytona2_web,            tags: [daytona2_web, never] }
     - { role: install_daytona_recomp,          tags: [daytona_recomp, never] }
     - { role: install_pgr4_recomp,             tags: [pgr4_recomp, never] }
     - { role: install_supermodel,              tags: [supermodel, never] }

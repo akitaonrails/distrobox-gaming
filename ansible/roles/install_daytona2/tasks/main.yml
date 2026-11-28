@@ -1,0 +1,158 @@
+---
+- name: Verify the Daytona USA 2 and optional bonus ROM archives
+  ansible.builtin.stat:
+    path: "{{ item.source }}"
+    checksum_algorithm: md5
+  loop: "{{ dg_daytona2_roms }}"
+  register: _daytona2_rom_stats
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Require the exact supported arcade sets
+  ansible.builtin.assert:
+    that:
+      - item.stat.isreg | default(false)
+      - item.stat.checksum | default('') == item.item.md5
+    fail_msg: "Missing or wrong {{ item.item.name }} source: {{ item.item.source }}"
+    quiet: true
+  loop: "{{ _daytona2_rom_stats.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+
+- name: Create Daytona USA 2 directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ dg_daytona2_archive | dirname }}"
+    - "{{ dg_daytona2_release_dir }}"
+    - "{{ dg_daytona2_game_dir }}"
+    - "{{ dg_daytona2_prefix }}"
+    - "{{ dg_box_home }}/bin"
+
+- name: Install Wine, SDL2, and rsync inside the gaming box
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sudo pacman -S --needed --noconfirm wine sdl2 rsync
+  args:
+    chdir: "{{ dg_box_home }}"
+  register: _daytona2_packages
+  changed_when: "'installing' in _daytona2_packages.stdout"
+
+- name: Download the pinned Daytona USA 2 PC release
+  ansible.builtin.get_url:
+    url: "{{ dg_daytona2_url }}"
+    dest: "{{ dg_daytona2_archive }}"
+    checksum: "sha256:{{ dg_daytona2_sha256 }}"
+    mode: "0644"
+
+- name: Extract immutable Daytona USA 2 PC release
+  ansible.builtin.unarchive:
+    src: "{{ dg_daytona2_archive }}"
+    dest: "{{ dg_daytona2_release_dir }}"
+    remote_src: true
+    creates: "{{ dg_daytona2_release_dir }}/{{ dg_daytona2_asset_subdir }}/daytona2.exe"
+
+- name: Install release files without replacing player data
+  ansible.builtin.shell: >-
+    rsync -a --exclude='daytona2.ini' --exclude='online.ini'
+    --exclude='Music/' --exclude='*.bin'
+    '{{ dg_daytona2_release_dir }}/{{ dg_daytona2_asset_subdir }}/' '{{ dg_daytona2_game_dir }}/'
+    && touch '{{ dg_daytona2_game_dir }}/.dg-release-{{ dg_daytona2_version }}'
+  args:
+    creates: "{{ dg_daytona2_game_dir }}/.dg-release-{{ dg_daytona2_version }}"
+
+- name: Seed Daytona USA 2 settings without overwriting player changes
+  ansible.builtin.template:
+    src: daytona2.ini.j2
+    dest: "{{ dg_daytona2_game_dir }}/daytona2.ini"
+    force: false
+    mode: "0644"
+
+- name: Check whether high graphics defaults were applied
+  ansible.builtin.stat:
+    path: "{{ dg_daytona2_game_dir }}/.dg-graphics-v1"
+  register: _daytona2_graphics_seeded
+
+- name: Set native widescreen and maximum supported image quality once
+  ansible.builtin.lineinfile:
+    path: "{{ dg_daytona2_game_dir }}/daytona2.ini"
+    regexp: '^{{ item.key }}='
+    line: "{{ item.key }}={{ item.value }}"
+  loop: "{{ dg_daytona2_graphics | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  when: not _daytona2_graphics_seeded.stat.exists
+
+- name: Record first-run graphics setup
+  ansible.builtin.file:
+    path: "{{ dg_daytona2_game_dir }}/.dg-graphics-v1"
+    state: touch
+    mode: "0644"
+  when: not _daytona2_graphics_seeded.stat.exists
+
+- name: Link verified Daytona USA 2 arcade sets
+  ansible.builtin.file:
+    src: "{{ item.source }}"
+    dest: "{{ dg_daytona2_game_dir }}/{{ item.name }}"
+    state: link
+    force: true
+    follow: false
+  loop: "{{ dg_daytona2_roms }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Initialize the dedicated Daytona USA 2 Wine prefix
+  ansible.builtin.shell: >-
+    {{ dg_in_box }} sh -lc 'WINEPREFIX="{{ dg_daytona2_prefix }}" WINEDEBUG=-all
+    env -u PYTHONHOME -u PYTHONPATH wineboot -u'
+  args:
+    chdir: "{{ dg_box_home }}"
+    creates: "{{ dg_daytona2_prefix }}/system.reg"
+
+- name: Force NVIDIA GLX and SDL XInput in the Daytona USA 2 prefix
+  ansible.builtin.shell: |
+    {{ dg_in_box }} sh -lc '
+      set -eu
+      export WINEPREFIX="{{ dg_daytona2_prefix }}" WINEDEBUG=-all
+      key="HKCU\\Software\\Wine\\X11 Driver"
+      if ! wine reg query "$key" /v UseEGL 2>/dev/null | grep -Eiq "REG_SZ[[:space:]]+N[[:space:]]*$"; then
+        wine reg add "$key" /v UseEGL /t REG_SZ /d N /f >/dev/null
+        echo changed
+      fi
+      key="HKLM\\System\\CurrentControlSet\\Services\\winebus"
+      for pair in "DisableHidraw:1" "DisableInput:1" "Enable SDL:1" "Map Controllers:1"; do
+        name=${pair%:*}; value=${pair#*:}
+        if ! wine reg query "$key" /v "$name" 2>/dev/null | grep -Eiq "REG_DWORD[[:space:]]+0x$value[[:space:]]*$"; then
+          wine reg add "$key" /v "$name" /t REG_DWORD /d "$value" /f >/dev/null
+          echo changed
+        fi
+      done
+    '
+  args:
+    chdir: "{{ dg_box_home }}"
+  register: _daytona2_registry
+  changed_when: "'changed' in _daytona2_registry.stdout"
+
+- name: Deploy Daytona USA 2 launcher
+  ansible.builtin.template:
+    src: daytona2.sh.j2
+    dest: "{{ dg_daytona2_launcher }}"
+    mode: "0755"
+
+- name: Render Daytona USA 2 desktop entry
+  ansible.builtin.template:
+    src: daytona2.desktop.j2
+    dest: "{{ dg_desktop_render_dir }}/daytona2.desktop"
+    mode: "0644"
+
+- name: Publish Daytona USA 2 desktop entry
+  ansible.builtin.command:
+    cmd: "{{ dg_project_root }}/scripts/install-host-launchers.sh"
+  environment:
+    DG_DESKTOP_RENDER_DIR: "{{ dg_desktop_render_dir }}"
+    DG_HOST_APPLICATIONS_DIR: "{{ dg_host_applications_dir }}"
+  register: _daytona2_host_launchers
+  changed_when: >-
+    'installed ' in _daytona2_host_launchers.stdout or
+    'removed stale ' in _daytona2_host_launchers.stdout

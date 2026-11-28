@@ -1,0 +1,26 @@
+---
+dg_daytona2_version: "0.0.16"
+dg_daytona2_asset_subdir: Daytona2
+dg_daytona2_url: "https://github.com/wanszai/DaytonaUSA2/releases/download/{{ dg_daytona2_version }}/Daytona2-PC.zip"
+dg_daytona2_archive: "{{ dg_roms_final_root }}/PC/releases/Daytona2-PC-{{ dg_daytona2_version }}.zip"
+dg_daytona2_sha256: e6b2976eb01cd5120734c88037141b2da4b3dcf11d9480631018844a8c05ca47
+dg_daytona2_root: "{{ dg_box_home }}/tools/daytona2"
+dg_daytona2_release_dir: "{{ dg_daytona2_root }}/releases/{{ dg_daytona2_version }}"
+dg_daytona2_game_dir: "{{ dg_box_home }}/Games/daytona2"
+dg_daytona2_prefix: "{{ dg_box_home }}/wineprefixes/daytona2"
+dg_daytona2_launcher: "{{ dg_box_home }}/bin/daytona2"
+dg_daytona2_graphics:
+  scale: 4
+  fullscreen: 1
+  aspect43: 0
+  smooth: 1
+  msaa: 4
+  filter2d: 1
+  filter3d: 1
+  textures: 1
+dg_daytona2_roms:
+  # Required Power Edition set plus both optional bonus sets (Battle on the Edge
+  # and Scud Race). Upstream requests scud.zip with scuda.zip's MD5.
+  - { source: "{{ dg_roms_final_root }}/arcade/model3/dayto2pe.zip", name: dayto2pe.zip, md5: d05ef348c9be8408ef50ea74dae29f71 }
+  - { source: "{{ dg_roms_final_root }}/arcade/model3/daytona2.zip", name: daytona2.zip, md5: 6d26677eb531870542347e7503762a27 }
+  - { source: "{{ dg_roms_final_root }}/arcade/model3/scuda.zip",    name: scud.zip,     md5: d2d619b0ee5cbf74596431b28080c420 }

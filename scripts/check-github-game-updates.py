@@ -110,6 +110,7 @@ PIN_VARS = {
     "sega-rally-hd": ("sega_rally.yml", "dg_sega_rally_version"),
     "sega-rally-2": ("sega_rally_2.yml", "dg_sr2_version"),
     "scud-race": ("scud_race.yml", "dg_scud_version"),
+    "daytona2": ("daytona2.yml", "dg_daytona2_version"),
     "nightfire-recomp": ("nightfire_recomp.yml", "dg_nf_version"),
     "rea-colin-mcrae": ("rea_colin_mcrae.yml", "dg_cmr1_version"),
     "rea-colin-mcrae-recomp": ("rea_colin_mcrae_recomp.yml", "dg_cmr_recomp_version"),

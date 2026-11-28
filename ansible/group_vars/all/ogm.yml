@@ -258,13 +258,6 @@ dg_ogm_games:
     category: recomp
     sgdb_query: "Road Rash 64"
     github: "{{ dg_rr64_repo }}"
-  # Daytona USA 2 Power Edition as a WASM/WebGPU cabinet served from this
-  # box; the desktop entry runs the local server + Chromium wrapper.
-  - desktop_id: gaming-daytona2-web
-    id: daytona2-web
-    category: recomp
-    sgdb_query: "Daytona USA 2"
-    github: "{{ dg_daytona2_web_repo }}"
   - desktop_id: gaming-redline
     id: redline
     category: recomp
@@ -823,6 +816,12 @@ dg_ogm_games:
     category: wine
     sgdb_query: "Scud Race"
     github: wanszai/Scud-Race
+  - desktop_id: daytona2
+    id: daytona2
+    name: Daytona USA 2
+    category: wine
+    sgdb_query: "Daytona USA 2"
+    github: wanszai/DaytonaUSA2
   - desktop_id: nightfire-recomp
     id: nightfire-recomp
     name: 007 NightFire Recomp

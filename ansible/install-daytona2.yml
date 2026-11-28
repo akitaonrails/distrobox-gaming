@@ -1,0 +1,7 @@
+---
+- name: Install Daytona USA 2 PC (wanszai/DaytonaUSA2)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+    - install_daytona2
